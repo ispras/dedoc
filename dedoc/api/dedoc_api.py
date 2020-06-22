@@ -5,20 +5,23 @@ from typing import List, Optional
 from flask import Flask, request
 from flask import Response
 
-import config
+from config import get_config
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.tree_node import TreeNode
-from dedoc.dedoc_manager import DocReaderManager
+from dedoc.manager.dedoc_manager import DocReaderManager
 
-PORT = config.api_port
+
+config = get_config()
+
+PORT = config["api_port"]
 
 
 static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/")
 app = Flask(__name__, static_url_path=static_path)
-app.config["MAX_CONTENT_LENGTH"] = config.max_content_length
+app.config["MAX_CONTENT_LENGTH"] = config["max_content_length"]
 
 manager = DocReaderManager()
 

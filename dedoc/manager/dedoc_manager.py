@@ -5,7 +5,7 @@ from typing import Optional, List, Dict
 
 from werkzeug.datastructures import FileStorage
 
-import manager_config
+from manager_config import get_manager_config
 from dedoc.attachments_extractors.attachments_extractor import AttachmentsExtractor
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.converters.file_converter import FileConverter
@@ -16,18 +16,19 @@ from dedoc.utils import get_unique_name
 
 class DocReaderManager(object):
     def __init__(self, tmp_dir: Optional[str] = None):
+        manager_config = get_manager_config()
         self.tmp_dir = tmp_dir
 
         if tmp_dir is not None and not os.path.exists(tmp_dir):
             os.mkdir(tmp_dir)
 
-        converters = manager_config.converters
+        converters = manager_config["converters"]
         self.converter = FileConverter(converters=converters)
         self.attachments_extractor = AttachmentsExtractor()
 
-        self.doc_parser = DocParser(readers=manager_config.readers)
-        self.structure_constructor = manager_config.structure_constructor
-        self.metadata_extractor = manager_config.metadata_extractor
+        self.doc_parser = DocParser(readers=manager_config["readers"])
+        self.structure_constructor = manager_config["structure_constructor"]
+        self.metadata_extractor = manager_config["metadata_extractor"]
 
     def parse_file(self, file: FileStorage, parameters: Dict[str, str]) -> ParsedDocument:
         original_filename = file.filename.split("/")[-1]
