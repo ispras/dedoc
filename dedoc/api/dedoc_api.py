@@ -5,7 +5,7 @@ from typing import List, Optional
 from flask import Flask, request
 from flask import Response
 
-from config import get_config
+from dedoc.config import get_config
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.data_structures.parsed_document import ParsedDocument

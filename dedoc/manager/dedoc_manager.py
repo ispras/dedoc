@@ -5,7 +5,7 @@ from typing import Optional, List, Dict
 
 from werkzeug.datastructures import FileStorage
 
-from manager_config import get_manager_config
+from dedoc.manager_config import get_manager_config
 from dedoc.attachments_extractors.attachments_extractor import AttachmentsExtractor
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.converters.file_converter import FileConverter
