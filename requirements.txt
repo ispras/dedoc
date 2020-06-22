@@ -1,0 +1,8 @@
+python-docx==0.8.7
+Flask==1.0.2
+odfpy==1.4.0
+requests==2.22.0
+xlrd==1.2.0
+pylzma==0.5.0
+ujson==3.0.0
+
