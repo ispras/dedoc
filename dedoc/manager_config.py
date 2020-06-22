@@ -1,3 +1,5 @@
+from dedoc.attachments_extractors.concrete_attach_extractors.excel_attachments_extractor import \
+    ExcelAttachmentsExtractor
 from dedoc.converters.concrete_converters.docx_converter import DocxConverter
 from dedoc.converters.concrete_converters.excel_converter import ExcelConverter
 from dedoc.metadata_extractor.basic_metadata_extractor import BasicMetadataExtractor
@@ -25,6 +27,8 @@ _config = dict(
     structure_constructor=TreeConstructor(),
 
     metadata_extractor=BasicMetadataExtractor(),
+
+    attachments_extractors=[ExcelAttachmentsExtractor()],
 )
 
 

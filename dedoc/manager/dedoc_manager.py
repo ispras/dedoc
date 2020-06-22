@@ -14,7 +14,7 @@ from dedoc.readers.doc_parser import DocParser
 from dedoc.utils import get_unique_name
 
 
-class DocReaderManager(object):
+class DedocManager(object):
     def __init__(self, tmp_dir: Optional[str] = None):
         manager_config = get_manager_config()
         self.tmp_dir = tmp_dir
@@ -24,7 +24,9 @@ class DocReaderManager(object):
 
         converters = manager_config["converters"]
         self.converter = FileConverter(converters=converters)
-        self.attachments_extractor = AttachmentsExtractor()
+
+        attachments_extractors = manager_config["attachments_extractors"]
+        self.attachments_extractor = AttachmentsExtractor(extractors=attachments_extractors)
 
         self.doc_parser = DocParser(readers=manager_config["readers"])
         self.structure_constructor = manager_config["structure_constructor"]

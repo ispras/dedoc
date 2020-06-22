@@ -11,7 +11,7 @@ from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.tree_node import TreeNode
-from dedoc.manager.dedoc_manager import DocReaderManager
+from dedoc.manager.dedoc_manager import DedocManager
 
 
 config = get_config()
@@ -23,7 +23,7 @@ static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/"
 app = Flask(__name__, static_url_path=static_path)
 app.config["MAX_CONTENT_LENGTH"] = config["max_content_length"]
 
-manager = DocReaderManager()
+manager = DedocManager()
 
 
 def __make_response(document_tree: ParsedDocument) -> Response:
