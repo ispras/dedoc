@@ -14,19 +14,11 @@ _config = [dict(
     api_port=int(os.environ.get('DOCREADER_PORT', '1231')),
     #
 
+    # path to external static files (you may get file from this directory with url
+    # host:port/xturnal_file?fname=<filename>
+    # for example if you want send files from /tmp/dedoc directory uncomment the line below
+    # external_static_files_path="/tmp/dedoc",
 
-    # TABLE RECOGNIZER SETTINGS
-    debug_table_mode=False,
-    min_h_cell=12,
-    min_w_cell=20,
-    type_top_attr=1,
-    type_left_top_attr=2,
-    type_left_attr=3,
-    max_vertical_extended=20,
-
-    path_cells="/tmp/backend_claw/out_tables/data_imgs/Cells/",
-    path_detect="/tmp/backend_claw/out_tables/data_imgs/detect_lines/",
-    rotate_threshold=0.3,
 )]
 
 
