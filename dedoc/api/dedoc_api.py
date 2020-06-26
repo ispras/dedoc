@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from flask import Flask, request
 from flask import Response
+from flask import send_file
 
 from dedoc.config import get_config
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
@@ -20,8 +21,16 @@ PORT = config["api_port"]
 
 
 static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/")
-app = Flask(__name__, static_url_path=static_path)
+app = Flask(__name__, static_url_path=config.get("static_path", static_path))
 app.config["MAX_CONTENT_LENGTH"] = config["max_content_length"]
+
+external_static_files_path = config.get("external_static_files_path")
+if external_static_files_path is not None and not os.path.isdir(external_static_files_path):
+    raise Exception("Could not find directory {}, probably config is incorrect".format(external_static_files_path))
+
+favicon_path = config.get("favicon_path")
+if favicon_path is not None and not os.path.isfile(favicon_path):
+    raise Exception("Could not find file {}, probably config is incorrect".format(favicon_path))
 
 manager = DedocManager()
 
@@ -34,7 +43,7 @@ def __make_response(document_tree: ParsedDocument) -> Response:
     )
 
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload', methods=['POST'])
 def upload_file():
     if request.method == 'POST':
         try:
@@ -58,8 +67,6 @@ def upload_file():
             print(e)
             raise e
 
-    return app.send_static_file("form_input.html")
-
 
 @app.route('/', methods=['GET'])
 def get_info():
@@ -67,9 +74,18 @@ def get_info():
     return app.send_static_file(path)
 
 
+@app.route('/xturnal_file', methods=['GET'])
+def get_xturnal_file():
+    file = request.values["fname"]
+    return send_file(os.path.join(external_static_files_path, file))
+
+
 @app.route('/favicon.ico', methods=['GET'])
 def get_favicon():
-    return app.send_static_file("favicon.ico")
+    if favicon_path is None:
+        return app.send_static_file("favicon.ico")
+    else:
+        return send_file(favicon_path)
 
 
 def get_file(file: str):

@@ -1,8 +1,8 @@
 import os
 
-__was_called = False
+__was_called = [False]
 
-_config = dict(
+_config = [dict(
     # JOBLIB SETTINGS
     # number of parallel jobs in some tasks as OCR
     n_jobs=4,
@@ -12,9 +12,8 @@ _config = dict(
     max_content_length=512 * 1024 * 1024,
     # application port
     api_port=int(os.environ.get('DOCREADER_PORT', '1231')),
+    #
 
-    # LINE CLASSIFIER PARAMETERS
-    intermediate_data_path=None,
 
     # TABLE RECOGNIZER SETTINGS
     debug_table_mode=False,
@@ -28,17 +27,15 @@ _config = dict(
     path_cells="/tmp/backend_claw/out_tables/data_imgs/Cells/",
     path_detect="/tmp/backend_claw/out_tables/data_imgs/detect_lines/",
     rotate_threshold=0.3,
-)
+)]
 
 
 def get_config() -> dict:
-    global __was_called
-    __was_called = True
-    return _config
+    __was_called[0] = True
+    return _config[0]
 
 
 def set_config(config: dict):
-    if __was_called:
+    if __was_called[0]:
         raise Exception("Config changed after application start, application may be inconsistent")
-    global _config
-    _config = config
+    _config[0] = config
