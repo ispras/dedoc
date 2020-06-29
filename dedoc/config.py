@@ -1,8 +1,9 @@
 import os
+import sys
+import importlib.util
 
-__was_called = [False]
 
-_config = [dict(
+_config = dict(
     # JOBLIB SETTINGS
     # number of parallel jobs in some tasks as OCR
     n_jobs=4,
@@ -19,15 +20,14 @@ _config = [dict(
     # for example if you want send files from /tmp/dedoc directory uncomment the line below
     # external_static_files_path="/tmp/dedoc",
 
-)]
+)
 
 
 def get_config() -> dict:
-    __was_called[0] = True
-    return _config[0]
-
-
-def set_config(config: dict):
-    if __was_called[0]:
-        raise Exception("Config changed after application start, application may be inconsistent")
-    _config[0] = config
+    if len(sys.argv) == 2:
+        config_path = os.path.abspath(sys.argv[1])
+        spec = importlib.util.spec_from_file_location("config_module", config_path)
+        config_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(config_module)
+        return config_module._config
+    return _config
