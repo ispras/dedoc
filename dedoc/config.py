@@ -25,7 +25,7 @@ _config = dict(
 
 def get_config() -> dict:
     if len(sys.argv) == 2:
-        config_path = os.path.abspath(sys.argv[1])
+        config_path = os.path.abspath(sys.argv[-1])
         spec = importlib.util.spec_from_file_location("config_module", config_path)
         config_module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(config_module)
