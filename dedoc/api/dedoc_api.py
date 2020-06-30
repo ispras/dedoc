@@ -71,7 +71,14 @@ def upload_file():
 @app.route('/', methods=['GET'])
 def get_info():
     path = "info.html"
-    return app.send_static_file(path)
+    external_static_files_path
+    if external_static_files_path is None:
+        return app.send_static_file(path)
+    else:
+        info_path = os.path.join(external_static_files_path, path)
+        if os.path.isfile(info_path):
+            return send_file(info_path)
+        return app.send_static_file(path)
 
 
 @app.route('/xturnal_file', methods=['GET'])
