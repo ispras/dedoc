@@ -161,7 +161,7 @@ def send_html():
 @app.route('/example_file', methods=['GET'])
 def send_example_file():
     path = request.values["fname"]
-    return app.send_static_file(path)
+    return send_file(os.path.join(example_files_path, path))
 
 
 @app.route('/exampletable_jpg', methods=['GET'])
