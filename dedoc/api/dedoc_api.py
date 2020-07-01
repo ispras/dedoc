@@ -21,6 +21,8 @@ PORT = config["api_port"]
 
 
 static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/")
+example_files_path = os.path.abspath(config["example_file_path"])
+
 app = Flask(__name__, static_url_path=config.get("static_path", static_path))
 app.config["MAX_CONTENT_LENGTH"] = config["max_content_length"]
 
@@ -71,7 +73,6 @@ def upload_file():
 @app.route('/', methods=['GET'])
 def get_info():
     path = "info.html"
-    external_static_files_path
     if external_static_files_path is None:
         return app.send_static_file(path)
     else:
@@ -138,7 +139,7 @@ def __add_texts(text: str, paragraph: TreeNode, tables: Optional[List[Table]], t
 
 def __handle_request():
     file = request.values["fname"]
-    path = os.path.join(static_path, file)
+    path = os.path.join(example_files_path, file)
 
     document_tree = manager.parse_existing_file(path=path, parameters=request.values)
     return document_tree
