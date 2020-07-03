@@ -102,7 +102,6 @@ def send_html():
 def send_example_file():
     path = __get_static_file_path()
     as_attachment = request.values.get("as_attachment") == "true"
-    print(path, as_attachment)
     return send_file(path, as_attachment=as_attachment)
 
 
