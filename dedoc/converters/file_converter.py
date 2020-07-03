@@ -10,7 +10,7 @@ class FileConverter(object):
     def __init__(self, converters: List[BaseConverter]):
         self.converters = converters
 
-    def do_converting(self, tmp_dir: str, filename: str):
+    def do_converting(self, tmp_dir: str, filename: str) -> str:
         name, extension = splitext_(filename)
         mime = get_file_mime_type(os.path.join(tmp_dir, filename))
         for converter in self.converters:

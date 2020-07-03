@@ -13,7 +13,7 @@ _config = dict(
     max_content_length=512 * 1024 * 1024,
     # application port
     api_port=int(os.environ.get('DOCREADER_PORT', '1231')),
-    example_file_path="api/static"
+    static_files_dirs={}
     #
 
     # path to external static files (you may get file from this directory with url

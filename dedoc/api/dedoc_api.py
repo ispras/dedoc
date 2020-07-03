@@ -1,27 +1,23 @@
 import json
 import os
-from typing import List, Optional
 
 from flask import Flask, request
 from flask import Response
 from flask import send_file
 
+from dedoc.api.api_utils import json2html
 from dedoc.config import get_config
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.data_structures.parsed_document import ParsedDocument
-from dedoc.data_structures.table import Table
-from dedoc.data_structures.tree_node import TreeNode
 from dedoc.manager.dedoc_manager import DedocManager
-
 
 config = get_config()
 
 PORT = config["api_port"]
 
-
 static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/")
-example_files_path = os.path.abspath(config["example_file_path"])
+static_files_dirs = config.get("static_files_dirs")
 
 app = Flask(__name__, static_url_path=config.get("static_path", static_path))
 app.config["MAX_CONTENT_LENGTH"] = config["max_content_length"]
@@ -48,18 +44,18 @@ def __make_response(document_tree: ParsedDocument) -> Response:
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if request.method == 'POST':
+        file = request.files['file']
         try:
             # check if the post request has the file part
-            file = request.files['file']
 
             parameters = {k: v for k, v in request.values.items()}
             document_tree = manager.parse_file(file, parameters=parameters)
             if not request.values.get("return_html", False):
                 return __make_response(document_tree)
             else:
-                return __add_texts(text="", paragraph=document_tree.content.structure,
-                                   tables=document_tree.content.tables,
-                                   tabs=0)
+                return json2html(text="", paragraph=document_tree.content.structure,
+                                 tables=document_tree.content.tables,
+                                 tabs=0)
         except (BadFileFormatException, ConversionException) as err:
             print(err)
             file = request.files['file']
@@ -72,74 +68,16 @@ def upload_file():
 
 @app.route('/', methods=['GET'])
 def get_info():
-    path = "info.html"
-    if external_static_files_path is None:
+    key = "start_page_path"
+    if key not in config:
+        path = "info.html"
         return app.send_static_file(path)
     else:
-        info_path = os.path.join(external_static_files_path, path)
-        if os.path.isfile(info_path):
-            return send_file(info_path)
-        return app.send_static_file(path)
+        info_path = os.path.abspath(config[key])
+        return send_file(info_path)
 
 
-@app.route('/xturnal_file', methods=['GET'])
-def get_xturnal_file():
-    file = request.values["fname"]
-    return send_file(os.path.join(external_static_files_path, file))
-
-
-@app.route('/favicon.ico', methods=['GET'])
-def get_favicon():
-    if favicon_path is None:
-        return app.send_static_file("favicon.ico")
-    else:
-        return send_file(favicon_path)
-
-
-def get_file(file: str):
-    return app.send_static_file(file)
-
-
-def __table2html(table: List[List[str]]) -> str:
-    text = '<table border="1" style="border-collapse: collapse; width: 100%;">\n<tbody>\n'
-    for row in table:
-        text += "<tr>\n"
-        for col in row:
-            text += "<td >{}</td>\n".format(col)
-        text += "</tr>\n"
-    text += '</tbody>\n</table>'
-    return text
-
-
-def __add_texts(text: str, paragraph: TreeNode, tables: Optional[List[Table]], tabs: int = 0) -> str:
-
-    if paragraph.metadata.paragraph_type in ["header", "root"]:
-        ptext = "<strong>{}</strong>".format(paragraph.text.strip())
-    elif paragraph.metadata.paragraph_type == "list_item":
-        ptext = "<em>{}</em>".format(paragraph.text.strip())
-    else:
-        ptext = paragraph.text.strip()
-    text += "<p> {tab} {text}     <sub> id = {id} ; type = {type} </sub></p>".format(
-        tab="&nbsp;" * tabs,
-        text=ptext,
-        type=str(paragraph.metadata.paragraph_type),
-        id=paragraph.node_id
-    )
-
-    for subparagraph in paragraph.subparagraphs:
-        text = __add_texts(text=text, paragraph=subparagraph, tables=None, tabs=tabs + 4)
-
-    if tables is not None and len(tables) > 0:
-        text += "<h3>Таблицы:</h3>"
-        for table in tables:
-            text += __table2html(table.cells)
-            text += "<p>&nbsp;</p>"
-    return text
-
-
-def __handle_request():
-    file = request.values["fname"]
-    path = os.path.join(example_files_path, file)
+def __handle_request(path: str):
 
     document_tree = manager.parse_existing_file(path=path, parameters=request.values)
     return document_tree
@@ -147,45 +85,33 @@ def __handle_request():
 
 @app.route('/results_file', methods=['GET'])
 def send_json():
-    document_tree = __handle_request()
+    path = __get_static_file_path()
+    document_tree = __handle_request(path)
     return __make_response(document_tree)
 
 
 @app.route('/results_file_html', methods=['GET'])
 def send_html():
-    document_tree = __handle_request()
-    text_res = __add_texts("", document_tree.content.structure, document_tree.content.tables, 0)
+    path = __get_static_file_path()
+    document_tree = __handle_request(path)
+    text_res = json2html("", document_tree.content.structure, document_tree.content.tables, 0)
     return text_res
 
 
-@app.route('/example_file', methods=['GET'])
+@app.route('/static_file', methods=['GET'])
 def send_example_file():
-    path = request.values["fname"]
-    return send_file(os.path.join(example_files_path, path))
+    path = __get_static_file_path()
+    as_attachment = request.values.get("as_attachment") == "true"
+    print(path, as_attachment)
+    return send_file(path, as_attachment=as_attachment)
 
 
-@app.route('/exampletable_jpg', methods=['GET'])
-def send_jpg():
-    path = "exampletable.jpg"
-    return app.send_static_file(path)
-
-
-@app.route('/exampletable_json', methods=['GET'])
-def parse_jpg():
-    path = os.path.join(static_path, "exampletable.jpg")
-    document_tree = manager.parse_existing_file(path=path, parameters={})
-    tables = document_tree.content.tables
-    return app.response_class(
-        response=json.dumps(obj=tables, ensure_ascii=False, indent=2),
-        status=200,
-        mimetype='application/json'
-    )
+def __get_static_file_path():
+    file = request.values["fname"]
+    directory_name = request.values.get("directory")
+    directory = static_files_dirs[directory_name] if directory_name is not None else static_path
+    return os.path.join(directory, file)
 
 
 def run_api():
     app.run(host='0.0.0.0', port=PORT)
-
-
-if __name__ == "__main__":
-    run_api()
-
