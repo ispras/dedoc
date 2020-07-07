@@ -1,53 +1,30 @@
 <!doctype html>
-<html lang="ru">
-<head>
-    <title>Doc reader | info page</title>
-    <link rel="shortcut icon" href="static_file?fname=favicon.ico" type="image/x-icon"/>
-</head>
-<body>
-<h1>Как парсить документы</h1>
-<p>Идём&nbsp;<a href="static_file?fname=form_input.html" target="_blank" rel="noopener">сюда</a>&nbsp;загружаем файл, смотрим результат.&nbsp;</p>
-<p>&nbsp;</p>
-<h2>Собираем и запускаем</h2>
+<h1>How to parse documents</h1>
+<p>Upload the file&nbsp;<a href="static_file?fname=form_input.html" target="_blank" rel="noopener">here</a>&nbsp;and look at the result.&nbsp;</p>
+
+<h2>Build and Run</h2>
 <blockquote><code>sudo docker-compose build doc_reader</code></blockquote>
-<blockquote><code> </code> <code>
-    sudo docker-compose up doc_reader
-</code></blockquote>
-
-<blockquote><code> </code> После этого сервис поднимется на порту 1231</blockquote>
-<p> Параметры можно указать в конфиге (docreader/config.py) </p>
-<p> Конфиг это файл на языке python, поэтому можно пользоваться
-всем, что умеет стандартный python, например вычислять максимальный размер файла как 512 * 1024 * 1024 </p>
-
-
-
-<h2>Как использовать</h2>
-<p>Необходимо отправить файл с помощью POST запроса по адресу <strong>host:1231/upload</strong></p>
-<p>&nbsp;У файла должно сохранится название.</p>
-<p>Дополнительные опции запроса:</p>
+<blockquote><code>sudo docker-compose up doc_reader</code></blockquote>
+<blockquote> -&gt; Service should rise at port 1231</blockquote>
+<p>Service parameters are configured in the config file (docreader/config.py)</p>
+<p>The config is a python file, so you can use everything that standard python can do, for example, calculate the maximum file size as 512 * 1024 * 1024</p>
+<h2>How to use</h2>
+<p>You must send the file using the POST request to the address <strong>host:1231/upload</strong></p>
+<p> The name of the downloaded file should appear on the form</p>
+<p>Additional query options:</p>
 <ol>
-    <li><strong>language</strong>: str - язык рапознавания документа. По-умолчанию установлено значение "rus+eng".
-        Доступные значения: "rus+eng", "rus", "eng".
-    </li>
-    <li><strong>with_attachments</strong>: boolean - опция включающая анализ вложенных файлов. По-умолчанию установлено
-        значение False. Доступные значения True, False.
-    </li>
-    <li><strong>document_type</strong>: str - тип документа.
-        Для некоторых документов мы обучили специальные классификаторы, они разбираются в такую-же структуру, как и остальные
-        документы, но содержат свои типы узлов в дереве, отличается так же и то, как производится разбор в дерево (Кто куда вложен)
-        Классификатор надо тренировать для каждого формата документа (т.е. если мы хотим парсить законы в pdf и docx надо
-        добавлять два классификатора). Пока есть только law и pdf.
-    </li>
+<li><strong>language</strong>: string - document recognition language. The default value is "rus+eng". Available values: "rus+eng", "rus", "eng".</li>
+<li><strong>with_attachments</strong>: boolean - option including analysis of attached files. The option is False by default. Available values: True, False.</li>
+<li><strong>document_type</strong>: string - document type. The service contains classifiers that extract the structure in different ways depending on the type of document. The difference lies in the use of different types of nodes and rules for parsing the structure of the document into the final tree.
+This option does not change the output format of parsing a document.
+    While there are only 2 types of documents: "pdf" - ordinary documents, "law" - laws.
+</li>
 </ol>
-
-<h1> Другие полезные ссылки </h1>
-
+<h2>Other useful links</h2>
 <ul>
-    <li> <p><a href="static_file?fname=code_example.html" target="_blank" rel="noopener"> <h4> Пример кода </h4> </a>&nbsp;</p>
-    <li> <p><a href="static_file?fname=format_description.html" target="_blank" rel="noopener"> <h4>Структура распознанного документа</h4> </a>&nbsp;</p>
-    <li> <p><a href="static_file?fname=errors.html" target="_blank" rel="noopener"> <h4>Возможные ошибки</h4> </a>&nbsp;</p>
-    <li> <p><a href="static_file?fname=supported_formats.html" target="_blank" rel="noopener"> <h4>Поддерживаемые форматы</h4> </a>&nbsp;</p>
+    <li> <p><a href="static_file?fname=code_example.html" target="_blank" rel="noopener"> <b> Code Example </b> </a>&nbsp;</p>
+    <li> <p><a href="static_file?fname=format_description.html" target="_blank" rel="noopener"> <b>Recognized Document Structure</b> </a>&nbsp;</p>
+    <li> <p><a href="static_file?fname=errors.html" target="_blank" rel="noopener"> <b>Possible Error</b> </a>&nbsp;</p>
+    <li> <p><a href="static_file?fname=supported_formats.html" target="_blank" rel="noopener"> <b>Supported Formats</b> </a>&nbsp;</p>
 </ul>
 
-</body>
-</html>

@@ -1,99 +1,97 @@
-<h1>Структура распознанного документа</h1>
-<p> Возвращается структура ParsedDocument, структура возвращается в виде Json. </p>
+
+<!doctype html>
+<h1>Recognized Document Structure</h1>
+<p> The ParsedDocument structure is returned, the structure is returned as a Json format.</p>
 
 <h2 id="ParsedDocument"> ParsedDocument </h2>
 <ol>
-    <li><strong>metadata</strong>: <a href="#DocumentMetadata"> DocumentMetadata </a> (обязательное поле) -
-        метаинформация документа
+    <li><strong>metadata</strong>: <a href="#DocumentMetadata"> DocumentMetadata </a> (required field) -
+        document meta-information
     </li>
-    <li><strong>content</strong>: <a href="#DocumentContent"> DocumentContent </a> (обязательное поле) - разобранная
-        структура документа
+    <li><strong>content</strong>: <a href="#DocumentContent"> DocumentContent </a> (required field) - parsed document structure
     </li>
-    <li><strong>attachments</strong>: List[<a href="#ParsedDocument"> ParsedDocument </a> ] (необязательное поле) -
-        вложенные документы, возвращается только
-        если задано условие обработки вложенных файлов.
+    <li><strong>attachments</strong>: List[<a href="#ParsedDocument"> ParsedDocument </a> ] (optional field) -
+        attached documents, returned only if the condition for processing attached files is set. See the "with_attachment" parameter in the POST-request
     </li>
 </ol>
 
-<h2 id="DocumentMetadata"> DocumentMetadata. Метаинформация документа </h2>
+<h2 id="DocumentMetadata"> DocumentMetadata</h2>
+<p>Contains document meta-information.</p>
 <ol>
-    <li><strong>file_name</strong>: <a> str </a> (обязательное поле) - имя файла <em> (пример: "example.pdf") </em></li>
-    <li><strong>size</strong>: <a> int </a> (обязательное поле) - размер файла в байтах <em> (пример: 20060) </em></li>
-    <li><strong>modified_time</strong>: <a> int </a> (обязательное поле) - дата модификации документа в формате <a
-            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime </a> <em> (пример: 1590579805) </em></li>
-    <li><strong>created_time</strong>: <a> int </a> (обязательное поле) - дата создания документа в формате <a
-            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime</a> <em> (пример: 1590579805) </em></li>
-    <li><strong>access_time</strong>: <a> int </a> (обязательное поле) - дата доступа к файло в формате <a
-            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime</a> <em> (пример: 1590579805) </em></li>
-    <li><strong>file_type</strong>: <a> str </a> (необязательное поле) - mime-тип файла <em> (пример:
+    <li><strong>file_name</strong>: <a> string </a> (required field) - file name<em> (example: "example.pdf") </em></li>
+    <li><strong>size</strong>: <a> integer </a> (required field) - file size in bytes<em> (example: 20060) </em></li>
+    <li><strong>modified_time</strong>: <a> integer </a> (required field) - modification date of the document in the format <a
+            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime </a> <em> (example: 1590579805) </em></li>
+    <li><strong>created_time</strong>: <a> integer </a> (required field) - creation date of the document in the format <a
+            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime</a> <em> (example: 1590579805) </em></li>
+    <li><strong>access_time</strong>: <a> integer </a> (required field) - file access date in format <a
+            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime</a> <em> (example: 1590579805) </em></li>
+    <li><strong>file_type</strong>: <a> string </a> (optional field) - mime-type file <em> (example:
         "application/pdf") </em></li>
 </ol>
 
 
-<h2 id="DocumentContent"> DocumentContent. Структура содержимого документа</h2>
+<h2 id="DocumentContent"> DocumentContent</h2>
+<p>Contains document content structure</p>
 <ol>
-    <li><strong>tables</strong>: <a href="#Table"> List[Tables] </a> (обязательное поле) - список таблиц</li>
-    <li><strong>structure</strong>: <a href="#TreeNode"> TreeNode</a> (обязательное поле) - древовидная структура
-        документа
+    <li><strong>tables</strong>: <a href="#Table"> List[Table] </a> (required field) - list of tables in a document</li>
+    <li><strong>structure</strong>: <a href="#TreeNode"> TreeNode</a> (required field) - document tree structure
     </li>
 </ol>
 
-<h3 id="Table"> Table. Разобранные таблицы.</h3>
+<h3 id="Table">Table</h3>
+Detected and parsed table in a document
 <ol>
-    <li><strong>cells</strong>: <a> List[List[str]] </a> (обязательное поле) - список списков строк таблицы, строка
-        таблицы представляет из себя списко содержимого ячеек. Ячейка содрежит текст,
+    <li><strong>cells</strong>: <a> List[List[string]] </a> (required field) - list of table cell lists. The cell contains text.
     </li>
-    <li><strong>metadata</strong>: <a href="#TableMetadata"> TableMetadata</a> (обязательное поле) - метаинформация о
-        таблице
+    <li><strong>metadata</strong>: <a href="#TableMetadata"> TableMetadata</a> (required field) - table meta information
     </li>
 </ol>
 
-<h4 id="TableMetadata"> TableMetadata. Метаинформация таблицы.</h4>
+<h4 id="TableMetadata"> TableMetadata</h4>
+<p>Contains table meta information</p>
 <ol>
-    <li><strong>page_id</strong>: <a> int </a> (необязательное поле) - номер страницы на которой начинается таблица.
+    <li><strong>page_id</strong>: <a> integer </a> (optional field) - page number on which the table begins
     </li>
 </ol>
 
-<h3 id="TreeNode"> TreeNode. Древовидная структура документа.</h3>
+<h3 id="TreeNode"> TreeNode</h3>
+<p>Contains document tree structure</p>
 <ol>
-    <li><strong>id</strong> : str (обязательное поле) - идентификатор элемента документа. Уникален в рамкох одного
-        дерева (т.е. в этом дереве не будет другого такого id, а во attachment может встретиться)
-        Идентификатор имеет вид 0.2.1 где каждое число символизирует порядковый номер на соотвтетствующем уровне
-        иерархии. <br/> Например id 0.2.1 означает что этот элемент это вторая подглова третьей главы
-        (нумерация с 0, первое число это корень документа);
+    <li><strong>id</strong> : string (required field) - document item identifier. It is unique in for one tree (i.e. in this tree there will not be another such id, but in attachment it can occur).
+         The identifier has the form 0.2.1 where each number symbolizes a serial number at an appropriate level
+        иерархии. <br/>For example id 0.2.1 means that this element is the second subhead of the third chapter. The first number is the root of the document. Numbering goes from 0.
     </li>
-    <li><strong>text</strong>: str (обязательное поле) -&nbsp;текст элемента;</li>
-    <li><strong>annotations</strong>: List[<a href="#Annotation"> Annotation </a>] (обязательное поле) - поле описывает
-        какие-либо свойства текста, например жирность, размер шрифта etc. На данный момент пустые.
+    <li><strong>text</strong>: string (required field) -&nbsp;element text;</li>
+    <li><strong>annotations</strong>: List[<a href="#Annotation"> Annotation </a>] (required field) - the field describes any properties of the text, for example, boldness, font size, etc. Currently empty.
     </li>
-    <li><strong>metadata</strong>: <a href="#ParagraphMetadata"> ParagraphMetadata </a> (обязательное поле) -
-        метоинформация, относящаяся ко всему субпараграфу, например номер страницы и положение на этой странице.
+    <li><strong>metadata</strong>: <a href="#ParagraphMetadata"> ParagraphMetadata </a> (required field) -
+        meta-information relevant to the entire subparagraph, such as page number and position on this page.
     </li>
-    <li><strong>subparagraphs</strong>: List[<a href="#TreeNode"> TreeNode </a> ] (обязательное поле) -
-        "дети" текущего элемента (например подглавы для главы). Структура "детей" аналогична текущей.
+    <li><strong>subparagraphs</strong>: List[<a href="#TreeNode"> TreeNode </a> ] (required field) -
+       "children" of the current item (for example, sub-chapters for a chapter). The structure of "children" is similar to the current one.
     </li>
 </ol>
 
 
-<h4 id="Annotation"> Annotation. Аннотации текста.</h4>
+<h4 id="Annotation"> Annotation</h4>
+<p>Contains text annotations</p>
 <ol>
-    <li><strong> start </strong> : int (обязательное поле) - индекс начала аннотации.</li>
-    <li><strong> end </strong> : int (обязательное поле) - индекс конца аннотации.</li>
-    <li><strong> value </strong> : str (обязательное поле) - значение аннотации.</li>
+    <li><strong> start </strong> : integer (required field) - annotation start index.</li>
+    <li><strong> end </strong> : integer (required field) - annotation end index.</li>
+    <li><strong> value </strong> : string (required field) - annotation value.</li>
 </ol>
 
-<h4 id="ParagraphMetadata"> ParagraphMetadata. Метаинформаци, относящаяся к параграфу.</h4>
+<h4 id="ParagraphMetadata"> ParagraphMetadata</h4>
+<p>Contains paragraph meta information</p>
 <ol>
-    <li><strong> type </strong> : str (обязательное поле) - тип параграфа (заголовок, элемент списка и так далее),
-        возможные значения
-        зависят от типа документа.
+    <li><strong> type </strong> : string (required field) - paragraph type (title, list item and so on),
+        possible values depend on the type of document. See the query parameter "document_type".
     </li>
-    <li><strong> predicted_classes </strong> : Dict[str -> float] (необязательное поле) - результаты работы
-        классификатора,
-        тип параграфа -> вероятность того, что параграф относится к такому типу, список ключей зависит от типа
-        документа.
+    <li><strong> predicted_classes </strong> : Dict[string -> float] (optional field) - classifier results, paragraph type -> the probability that a paragraph is of this type, the list of keys depends on the type of document.
     </li>
-    <li><strong> page_id </strong> : int (необязательное поле) - страница на которой начинается этот параграф.</li>
-    <li><strong> line_id </strong> : int (необязательное поле) - номер строки, на которой начинается этот параграф.</li>
+    <li><strong> page_id </strong> : integer (optional field) - page on which this paragraph begins.</li>
+    <li><strong> line_id </strong> : int (optional field) - The line number on which this paragraph begins.</li>
 </ol>
+
 
