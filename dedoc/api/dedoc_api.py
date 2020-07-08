@@ -70,7 +70,7 @@ def upload_file():
 def get_info():
     key = "start_page_path"
     if key not in config:
-        path = "info.html"
+        path = "html_eng/info.html"
         return app.send_static_file(path)
     else:
         info_path = os.path.abspath(config[key])
