@@ -1,12 +1,17 @@
 <!doctype html>
+<html lang="en">
+<head>
+    <title>deDOC| info page</title>
+    <link rel="stylesheet" href="static_file?fname=styles.css" />
+</head>
 <h1>How to parse documents</h1>
 <p>Upload the file&nbsp;<a href="static_file?fname=form_input.html" target="_blank" rel="noopener">here</a>&nbsp;and look at the result.&nbsp;</p>
 
 <h2>Build and Run</h2>
-<blockquote><code>sudo docker-compose build doc_reader</code></blockquote>
-<blockquote><code>sudo docker-compose up doc_reader</code></blockquote>
+<blockquote><code>docker build . -t dedoc_container</code></blockquote>
+<blockquote><code>docker run -p 1231:1231 --rm dedoc_container:latest python3 /dedoc/main.py</code></blockquote>
 <blockquote> -&gt; Service should rise at port 1231</blockquote>
-<p>Service parameters are configured in the config file (docreader/config.py)</p>
+<p>Service parameters are configured in the config file (dedoc_project/dedoc/config.py)</p>
 <p>The config is a python file, so you can use everything that standard python can do, for example, calculate the maximum file size as 512 * 1024 * 1024</p>
 <h2>How to use</h2>
 <p>You must send the file using the POST request to the address <strong>host:1231/upload</strong></p>
@@ -15,10 +20,6 @@
 <ol>
 <li><strong>language</strong>: string - document recognition language. The default value is "rus+eng". Available values: "rus+eng", "rus", "eng".</li>
 <li><strong>with_attachments</strong>: boolean - option including analysis of attached files. The option is False by default. Available values: True, False.</li>
-<li><strong>document_type</strong>: string - document type. The service contains classifiers that extract the structure in different ways depending on the type of document. The difference lies in the use of different types of nodes and rules for parsing the structure of the document into the final tree.
-This option does not change the output format of parsing a document.
-    While there are only 2 types of documents: "pdf" - ordinary documents, "law" - laws.
-</li>
 </ol>
 <h2>Other useful links</h2>
 <ul>
@@ -27,4 +28,8 @@ This option does not change the output format of parsing a document.
     <li> <p><a href="static_file?fname=errors.html" target="_blank" rel="noopener"> <b>Possible Error</b> </a>&nbsp;</p>
     <li> <p><a href="static_file?fname=supported_formats.html" target="_blank" rel="noopener"> <b>Supported Formats</b> </a>&nbsp;</p>
 </ul>
+
+<footer style="padding-top: 2%">
+<p><a href="static_file?fname=html_rus/info.html" target="_blank" rel="noopener"> go to the Russian version </a>&nbsp;</p>
+</footer>
 
