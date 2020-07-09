@@ -93,6 +93,9 @@ Detected and parsed table in a document
     <li><strong> type </strong> : string (required field) - paragraph type (paragraph, list item and so on).
         Can be paragraph, list, list_item, raw_text, named_header.
     </li>
+    <li><strong> predicted_classes </strong> : Dict[str -> float] (optional field) - classifier results, paragraph type
+        is the probability that the paragraph is of this type, the list of keys depends on the type of document.
+    </li>
     <li><strong> page_id </strong> : integer (optional field) - page on which this paragraph begins.</li>
     <li><strong> line_id </strong> : integer (optional field) - The line number on which this paragraph begins.</li>
 </ol>

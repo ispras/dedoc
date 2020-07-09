@@ -16,13 +16,16 @@
 <body>
 <div style="margin: 20px">
 <h2>Распознавание структуры документа</h2>
-    <form class="box" method="post" enctype=multipart/form-data action="/upload" style="margin: 20px">
+    <form class="box" method="post" enctype=multipart/form-data action="/upload">
         <p><label>
             <input type="checkbox" name="return_html" value="return_html">
         </label> return_html</p>
         <p><label>
             <input type="checkbox" name="with_attachments" value=true>
         </label> with_attachments</p>
+        <p><label>
+            <input type="text" name="document_type" >
+        </label> document_type</p>
         <div class="row">
             <div class="col-md-4"><input type=file name=file class="btn btn-default" data-buttonText="Выберите файл"></div>
             <div class="col-md-2"><input type=submit value=Загрузить class="btn btn-default"></div>
