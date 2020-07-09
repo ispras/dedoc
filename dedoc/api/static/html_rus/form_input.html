@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Загрузка файла</title>
+    <link rel="stylesheet" href="static_file?fname=styles.css" />
+    <link rel="shortcut icon" href="static_file?favicon.ico" type="image/x-icon"/>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+
+</head>
+<body>
+<div style="margin: 20px">
+<h2>Распознавание структуры документа</h2>
+    <form class="box" method="post" enctype=multipart/form-data action="/upload" style="margin: 20px">
+        <p><label>
+            <input type="checkbox" name="return_html" value="return_html">
+        </label> return_html</p>
+        <p><label>
+            <input type="checkbox" name="with_attachments" value=true>
+        </label> with_attachments</p>
+        <div class="row">
+            <div class="col-md-4"><input type=file name=file class="btn btn-default" data-buttonText="Выберите файл"></div>
+            <div class="col-md-2"><input type=submit value=Загрузить class="btn btn-default"></div>
+        </div>
+    </form>
+</div>
+</body>
+</html>

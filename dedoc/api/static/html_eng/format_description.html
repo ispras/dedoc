@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Recognized Document Structure</title>
+    <link rel="stylesheet" href="static_file?fname=styles.css" />
+</head>
+<h1>Recognized Document Structure</h1>
+<p><a href="static_file?fname=html_eng/info.html" target="_blank" rel="noopener"> <- go to the main page</a>&nbsp;</p>
+<p> The ParsedDocument structure is returned, the structure is returned as a Json format.</p>
+
+<h2 id="ParsedDocument"> ParsedDocument </h2>
+<ol>
+    <li><strong>metadata</strong>: <a href="#DocumentMetadata"> DocumentMetadata </a> (required field) -
+        document meta-information
+    </li>
+    <li><strong>content</strong>: <a href="#DocumentContent"> DocumentContent </a> (required field) - parsed document structure
+    </li>
+    <li><strong>attachments</strong>: List[<a href="#ParsedDocument"> ParsedDocument </a> ] (optional field) -
+        attached documents, returned only if the condition for processing attached files is set. See the "with_attachment" parameter in the POST-request
+    </li>
+</ol>
+
+<h2 id="DocumentMetadata"> DocumentMetadata</h2>
+<p>Contains document meta-information (for example file name, size, access time).</p>
+<ol>
+    <li><strong>file_name</strong>: <a> string </a> (required field) - file name<em> (example: "example.odt") </em></li>
+    <li><strong>size</strong>: <a> integer </a> (required field) - file size in bytes<em> (example: 20060) </em></li>
+    <li><strong>modified_time</strong>: <a> integer </a> (required field) - modification date of the document in the format <a
+            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime </a> <em> (example: 1590579805) </em></li>
+    <li><strong>created_time</strong>: <a> integer </a> (required field) - creation date of the document in the format <a
+            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime</a> <em> (example: 1590579805) </em></li>
+    <li><strong>access_time</strong>: <a> integer </a> (required field) - file access date in format <a
+            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime</a> <em> (example: 1590579805) </em></li>
+    <li><strong>file_type</strong>: <a> string </a> (optional field) - mime-type file <em> (example:
+        "application/vnd.oasis.opendocument.text") </em></li>
+</ol>
+
+
+<h2 id="DocumentContent"> DocumentContent</h2>
+<p>Contains document content structure</p>
+<ol>
+    <li><strong>tables</strong>: <a href="#Table"> List[Table] </a> (required field) - list of tables in a document</li>
+    <li><strong>structure</strong>: <a href="#TreeNode"> TreeNode</a> (required field) - document tree structure
+    </li>
+</ol>
+
+<h3 id="Table">Table</h3>
+Detected and parsed table in a document
+<ol>
+    <li><strong>cells</strong>: <a> List[List[string]] </a> (required field) - list of table cell lists. The cell contains text.
+    </li>
+    <li><strong>metadata</strong>: <a href="#TableMetadata"> TableMetadata</a> (required field) - table meta information
+    </li>
+</ol>
+
+<h4 id="TableMetadata"> TableMetadata</h4>
+<p>Contains table meta information</p>
+<ol>
+    <li><strong>page_id</strong>: <a> integer </a> (optional field) - page number on which the table begins. Can be null.
+    </li>
+</ol>
+
+<h3 id="TreeNode"> TreeNode</h3>
+<p>Contains document tree structure</p>
+<ol>
+    <li><strong>id</strong> : string (required field) - document item identifier. It is unique in for one tree (i.e. in this tree there will not be another such id, but in attachment it can occur).
+         The identifier has the form 0.2.1 where each number symbolizes a serial number at an appropriate level
+        иерархии. <br/>For example id 0.2.1 means that this element is the second subhead of the third chapter. The first number is the root of the document. Numbering goes from 0.
+    </li>
+    <li><strong>text</strong>: string (required field) -&nbsp;element text;</li>
+    <li><strong>annotations</strong>: List[<a href="#Annotation"> Annotation </a>] (required field) - the field describes any properties of the text, for example, boldness, font size, etc. Currently empty.
+    </li>
+    <li><strong>metadata</strong>: <a href="#ParagraphMetadata"> ParagraphMetadata </a> (required field) -
+        meta-information relevant to the entire subparagraph, such as page number and position on this page.
+    </li>
+    <li><strong>subparagraphs</strong>: List[<a href="#TreeNode"> TreeNode </a> ] (required field) -
+       "children" of the current item (for example, sub-chapters for a chapter). The structure of "children" is similar to the current one.
+    </li>
+</ol>
+
+
+<h4 id="Annotation"> Annotation</h4>
+<p>Contains text annotations</p>
+<ol>
+    <li><strong> start </strong> : integer (required field) - annotation start index.</li>
+    <li><strong> end </strong> : integer (required field) - annotation end index.</li>
+    <li><strong> value </strong> : string (required field) - annotation value.</li>
+</ol>
+
+<h4 id="ParagraphMetadata"> ParagraphMetadata</h4>
+<p>Contains paragraph meta information</p>
+<ol>
+    <li><strong> type </strong> : string (required field) - paragraph type (paragraph, list item and so on).
+        Can be paragraph, list, list_item, raw_text, named_header.
+    </li>
+    <li><strong> page_id </strong> : integer (optional field) - page on which this paragraph begins.</li>
+    <li><strong> line_id </strong> : integer (optional field) - The line number on which this paragraph begins.</li>
+</ol>
+
+

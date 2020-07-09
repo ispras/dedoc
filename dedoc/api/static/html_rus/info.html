@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>deDOC| info page</title>
+    <link rel="shortcut icon" href="static_file?fname=favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="static_file?fname=styles.css" />
+    <meta name="viewport" content="width=device-width">
+</head>
+<body>
+<div class="content">
+<h1>Как парсить документы</h1>
+<p>Идём&nbsp;<a href="static_file?fname=html_rus/form_input.html" target="_blank" rel="noopener">сюда</a>&nbsp;загружаем файл, смотрим результат.&nbsp;</p>
+
+<h2>Сборка и запуск</h2>
+<blockquote><code>docker build . -t dedoc_container</code></blockquote>
+<blockquote><code>docker run -p 1231:1231 --rm dedoc_container:latest python3 /dedoc/main.py</code></blockquote>
+
+<blockquote><code> </code> -> Cервис поднимется на порту 1231</blockquote>
+<p> Параметры можно указать в конфигурационном файле (dedoc_project/dedoc/config.py) </p>
+<p> Конфиг это файл на языке python, поэтому можно пользоваться
+всем, что умеет стандартный python, например вычислять максимальный размер файла как 512 * 1024 * 1024 </p>
+
+<h2>Как использовать</h2>
+<p>Необходимо отправить файл с помощью POST запроса по адресу <strong>host:1231/upload</strong></p>
+<p>&nbsp;У файла должно сохранится название.</p>
+<p>Дополнительные опции запроса:</p>
+<ol>
+    <li><strong>language</strong>: str - язык рапознавания документа. По-умолчанию установлено значение "rus+eng".
+        Доступные значения: "rus+eng", "rus", "eng".
+    </li>
+    <li><strong>with_attachments</strong>: boolean - опция включающая анализ вложенных файлов. По-умолчанию установлено
+        значение False. Доступные значения True, False.
+    </li>
+</ol>
+
+<h1> Другие полезные ссылки </h1>
+
+<ul>
+    <li> <p><a href="static_file?fname=html_rus/code_example.html" target="_blank" rel="noopener"> <b> Пример кода </b> </a>&nbsp;</p>
+    <li> <p><a href="static_file?fname=html_rus/format_description.html" target="_blank" rel="noopener"> <b>Структура распознанного документа</b> </a>&nbsp;</p>
+    <li> <p><a href="static_file?fname=html_rus/errors.html" target="_blank" rel="noopener"> <b>Возможные ошибки</b> </a>&nbsp;</p>
+    <li> <p><a href="static_file?fname=html_rus/supported_formats.html" target="_blank" rel="noopener"> <b>Поддерживаемые форматы</b> </a>&nbsp;</p>
+</ul>
+</div>
+</body>
+<footer style="padding-top: 2%">
+<p><a href="static_file?fname=html_eng/info.html" target="_blank" rel="noopener"> Go to english version </a>&nbsp;</p>
+</footer>
+</html>

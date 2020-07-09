@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Поддерживаемые форматы</title>
+    <link rel="stylesheet" href="static_file?fname=styles.css" />
+</head>
+<h2>Поддерживаемые форматы</h2>
+<h3>Word</h3>
+<ol>
+    <li><a href="static_file?fname=example.doc&as_attachment=true" target="_blank" rel="noopener">doc</a> (
+        <a href="results_file?fname=example.doc" target="_blank" rel="noopener">результат</a>,
+        <a href="results_file_html?fname=example.doc" target="_blank" rel="noopener">результат в html</a>
+        )
+    </li>
+    <li><a href="static_file?fname=example.docx&as_attachment=true" target="_blank" rel="noopener">docx</a> (
+        <a href="results_file?fname=example.docx" target="_blank" rel="noopener">результат</a>,
+        <a href="results_file_html?fname=example.docx" target="_blank" rel="noopener">результат в html</a>
+        )
+
+    </li>
+    <li><a href="static_file?fname=example.odt&as_attachment=true" target="_blank" rel="noopener">odt</a> (
+        <a href="results_file?fname=example.odt" target="_blank" rel="noopener">результат</a>,
+        <a href="results_file_html?fname=example.odt" target="_blank" rel="noopener">результат в html</a>
+        )
+    </li>
+</ol>
+<h3>Excel</h3>
+<ol>
+    <li><a href="static_file?fname=example.ods&as_attachment=true" target="_blank" rel="noopener">ods</a> (openoffice excel) (
+        <a href="results_file?fname=example.ods" target="_blank" rel="noopener">результат</a>
+        <a href="results_file_html?fname=example.ods" target="_blank" rel="noopener">результат в html</a>
+        )
+    </li>
+    <li><a href="static_file?fname=example.xls&as_attachment=true" target="_blank" rel="noopener">xls</a> (old excel format) (
+        <a href="results_file?fname=example.xls" target="_blank" rel="noopener">результат</a>,
+        <a href="results_file_html?fname=example.xls" target="_blank" rel="noopener">результат в html</a>
+        )
+    </li>
+    <li><a href="static_file?fname=example.xlsx&as_attachment=true" target="_blank" rel="noopener">xlsx</a> (new excel format) (
+        <a href="results_file?fname=example.xlsx" target="_blank" rel="noopener">результат</a>,
+        <a href="results_file_html?fname=example.xlsx" target="_blank" rel="noopener">результат в html</a>
+        )
+    </li>
+</ol>
+    <h3>CSV и значения разделителя </h3>
+   <p>Если вы используете нестандартный разделитель, вы можете задать его значение в параметре "delimiter" вашего POST-запроса.
+       Например delimiter=";". Примеры использования вы можете найти в dedoc_project/dedoc/tests/test_api_csv.py
+   </p>
+    <ol>
+    <li>
+        <a href="static_file?fname=books_2.csv&as_attachment=true" target="_blank" rel="noopener">csv</a> (
+        <a href="results_file?fname=books_2.csv" target="_blank" rel="noopener">результат</a>,
+        <a href="results_file_html?fname=books_2.csv" target="_blank" rel="noopener">результат в html</a>
+        )
+
+    </li>
+    <li>
+        <a href="static_file?fname=csv_tab.tsv&as_attachment=true" target="_blank" rel="noopener">tsv</a> (
+        <a href="results_file?fname=csv_tab.ts" target="_blank" rel="noopener">результат</a>,
+        <a href="results_file_html?fname=csv_tab.tsv" target="_blank" rel="noopener">результат в html</a>
+        )
+    </li>
+</ol>
+<h3>Другие форматы</h3>
+<ol>
+    <li><a href="static_file?fname=doc_001.txt&as_attachment=true" target="_blank" rel="noopener">txt file </a> (
+        <a href="results_file?fname=doc_001.txt" target="_blank" rel="noopener">результат</a>,
+        <a href="results_file_html?fname=doc_001.txt" target="_blank" rel="noopener">результат в html</a>
+        )
+    </li>
+    <li><a href="static_file?fname=realistic_json.json&as_attachment=true" target="_blank" rel="noopener">json file </a> (
+        <a href="results_file?fname=realistic_json.json" target="_blank" rel="noopener">результат</a>,
+        <a href="results_file_html?fname=realistic_json.json" target="_blank" rel="noopener">результат в html</a>
+        )
+        Здесь ключи анализируются как типы вершины, списки обрабатываются как списки.
+    </li>
+</ol>

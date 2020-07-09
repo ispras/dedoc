@@ -1,0 +1,30 @@
+{
+  "next_page": "Next Page »",
+  "type": "news",
+  "platform": "infosecnews",
+  "start_url": "https://infosecnews.org",
+  "next_page-href": "https://www.infosecnews.org/page/3/",
+  "news_link": "Leading privacy and cybersecurity law firm investigates Tandem Diabetes Care data breach",
+  "news_link-href": "https://www.infosecnews.org/leading-privacy-and-cybersecurity-law-firm-investigates-tandem-diabetes-care-data-breach/",
+  "title": "Leading privacy and cybersecurity law firm investigates Tandem Diabetes Care data breach",
+  "publication_date": "April 20, 2020",
+  "author": "William Knowles",
+  "text": [
+    "We take the privacy and confidentiality of our customers’ information very seriously and apologize for any inconvenience or concern this incident may cause our customers.",
+    "With the next sentence…",
+    "Tandem Diabetes Care, Inc. (“Tandem”) is committed to protecting the confidentiality and security of our customers’ information. Regrettably, this notice is to inform our customers of a recent phishing incident that may have involved some customer information.",
+    "Some customer information is “reputational risk management code” for only 140,781 customers.",
+    "We are continuing to invest heavily in cyber security and data protection safeguards. We are also implementing additional email security controls, strengthening our user authorization and authentication processes, and limiting the types of data permitted to be transferred via email.",
+    "On January 17, 2020, Tandem Diabetes Care learned that an unauthorized person gained access to a Tandem employee’s email account through a security incident commonly known as “phishing.”",
+    "Once we learned about the incident, we immediately secured the account and a cyber security firm was engaged to assist in our investigation. Our investigation determined that a limited number of Tandem employee email accounts may have been accessed by an unauthorized user between January 17, 2020 and January 20, 2020.",
+    "Through the investigation, Tandem Diabetes Care learned that some customers’ information may have been contained in one or more of the Tandem email accounts affected by the incident. The affected email accounts may have contained customer names, contact information, information related to those customers’ use of Tandem’s products or services, clinical data regarding their diabetes therapy, and in a few limited instances, Social Security numbers.",
+    "On LinkedIn, Tandem Diabetes Care lists some 935 employees, but only three security people (understandably some of the security team might have temporarily pulled their profiles offline) and currently Tandem is looking for a Security Analyst II and a VP, Information Technology but neither of the job descriptions mention having knowing how to perform phishing exercises.",
+    "While you would think all this bad news is terrible for Tandem Diabetes Care’s stock price, guess again, when the data breach was submitted to the U.S. Department of Health and Human Services on March 13, 2020, TNDM – Tandem Diabetes Care, Inc closed at $46.55 a share and closed on Apri 18, 2020 at $72.94 a share.",
+    "So it should come to no surprised that Stueve Siegel Hanson LLP, a small Kansas City law firm known for their eight-figure legal outcomes would explore legal options for this data breach.",
+    "KANSAS CITY, Mo., April 1, 2020 /PRNewswire-PRWeb/ — Stueve Siegel Hanson LLP, a national leader in privacy and cybersecurity litigation, is investigating the data breach at Tandem Diabetes Care, Inc. that compromised the sensitive personal information of 140,000 patients, the firm announced today.",
+    "On January 17, Tandem discovered its email system had been hacked through a “phishing” scheme. An internal investigation showed several employee email accounts were compromised for three days between January 17 and January 20. The compromised information included names, email addresses, contact information, Social Security numbers and a range of patient data, including details related to customers’ use of Tandem products or services, and clinical data about diabetes therapy.",
+    "Tandem announced the data breach on March 16 and said it would notify affected customers. Individuals who receive these notifications can contact Stueve Siegel Hanson at 816.714.7105 or online to discuss their legal options.",
+    "Recognized by Law360 as “Cybersecurity & Privacy Group of the Year,” Stueve Siegel Hanson has prosecuted cases involving the largest data breaches in U.S. history, securing billions of dollars for affected customers. In 2019, the firm’s work included:"
+  ],
+  "url": "https://www.infosecnews.org/leading-privacy-and-cybersecurity-law-firm-investigates-tandem-diabetes-care-data-breach/"
+}
