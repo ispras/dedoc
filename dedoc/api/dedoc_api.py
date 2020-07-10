@@ -6,13 +6,14 @@ from flask import Response
 from flask import send_file
 
 from dedoc.api.api_utils import json2html
-from dedoc.config import get_config
+from dedoc.config import Configuration
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.manager.dedoc_manager import DedocManager
 
-config = get_config()
+# Initialization config
+config = Configuration.getInstance().getConfig()
 
 PORT = config["api_port"]
 
@@ -109,7 +110,7 @@ def __get_static_file_path():
     file = request.values["fname"]
     directory_name = request.values.get("directory")
     directory = static_files_dirs[directory_name] if directory_name is not None else static_path
-    return os.path.join(directory, file)
+    return os.path.abspath(os.path.join(directory, file))
 
 
 def run_api():
