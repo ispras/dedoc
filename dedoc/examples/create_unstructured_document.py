@@ -26,7 +26,7 @@ table = Table(cells=table_cells, metadata=table_metadata)
 # lets build firs line, it is document tree root:
 text = "DOCUMENT TITLE"
 metadata = ParagraphMetadata(
-    paragraph_type="tile",
+    paragraph_type="title",
     predicted_classes=None,
     page_id=0,
     line_id=0
@@ -43,7 +43,7 @@ hierarchy_level = HierarchyLevel(
     # if can_be_multiline is true than several lines in a row with same level_1, level_2 and paragraph_type
     # will be merged in one tree node
     can_be_multiline=True,
-    paragraph_type="tile"
+    paragraph_type="title"
 )
 
 # Annotations: one may specify some information about some part of the text, for example that some word
