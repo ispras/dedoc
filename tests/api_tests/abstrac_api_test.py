@@ -52,3 +52,20 @@ class AbstractTestApiDocReader(unittest.TestCase):
             result = json.loads(r.content.decode())
             return result
 
+    def _send_request_wo_file(self, data: dict = None, expected_code: int = 200):
+        host = self.__get_host()
+        port = self.__get_port()
+
+        if data is None:
+            data = {}
+
+        r = requests.post("http://{host}:{port}/upload".format(host=host, port=port), data=data)
+
+        self.assertEqual(expected_code, r.status_code)
+        if expected_code != 200:
+            return None
+
+        result = json.loads(r.content.decode())
+        return result
+
+
