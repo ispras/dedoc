@@ -1,12 +1,20 @@
 from collections import OrderedDict
 from typing import List
 
+from dedoc.data_structures.serializable import Serializable
 from dedoc.data_structures.table_metadata import TableMetadata
 
 
-class Table:
+class Table(Serializable):
 
     def __init__(self, cells: List[List[str]], metadata: TableMetadata):
+        """
+        This class hold information about about tables in the document. We assume that table has rectangle form
+        (has same number of columns in each row)
+        :param cells: list of list of cells (cell is string). Table representation is row-based e.q. external list
+        contains list of rows.
+        :param metadata: some table metadata, as location, size and so on.
+        """
         self.cells = cells
         self.metadata = metadata
 

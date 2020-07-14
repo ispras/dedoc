@@ -1,7 +1,9 @@
 from collections import OrderedDict
 
+from dedoc.data_structures.serializable import Serializable
 
-class Annotation:
+
+class Annotation(Serializable):
 
     def __init__(self, start: int, end: int, value: str):
         """

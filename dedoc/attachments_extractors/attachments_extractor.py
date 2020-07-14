@@ -1,14 +1,9 @@
 import os
-from collections import namedtuple
 from typing import List
 
 from dedoc.attachments_extractors.base_attachments_extractor import BaseAttachmentsExtractor
-from dedoc.attachments_extractors.concrete_attach_extractors.excel_attachments_extractor import \
-    ExcelAttachmentsExtractor
-from dedoc.extensions import recognized_mimes
+from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.utils import get_file_mime_type, save_data_to_unique_file
-
-AttachedFile = namedtuple("AttachedFile", ["original_name", "tmp_name_file"])
 
 
 class AttachmentsExtractor(object):

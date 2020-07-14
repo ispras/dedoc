@@ -40,16 +40,16 @@ def get_unique_name(filename: str) -> str:
     return str(ts) + '_' + str(rnd) + ext
 
 
-def save_data_to_unique_file(dir: str, filename: str, binary_data: bytes) -> str:
+def save_data_to_unique_file(directory: str, filename: str, binary_data: bytes) -> str:
     """
     Saving binary data into unique name by the filename
-    :param dir: directory of file (without filename)
+    :param directory: directory of file (without filename)
     :param filename: name of file (base)
     :param binary_data: data for saving
     :return: filename of saved file
     """
     unique_filename = get_unique_name(filename)
-    with open(os.path.join(dir, unique_filename), "wb") as file_disc:
+    with open(os.path.join(directory, unique_filename), "wb") as file_disc:
         file_disc.write(binary_data)
 
     return unique_filename
