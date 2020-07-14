@@ -9,6 +9,7 @@ from dedoc.api.api_utils import json2html
 from dedoc.config import Configuration
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.common.exceptions.conversion_exception import ConversionException
+from dedoc.common.exceptions.missing_file_exception import MissingFileException
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.manager.dedoc_manager import DedocManager
 
@@ -46,6 +47,10 @@ def __make_response(document_tree: ParsedDocument) -> Response:
 def upload_file():
     if request.method == 'POST':
         file = request.files['file']
+        if file is None:
+            err = MissingFileException("Error: Missing content in request file parameter")
+            print(err)
+            return app.response_class(response=err.msg, status=err.code)
         try:
             # check if the post request has the file part
 
@@ -60,7 +65,7 @@ def upload_file():
         except (BadFileFormatException, ConversionException) as err:
             print(err)
             file = request.files['file']
-            return app.response_class(response="Unsupported file format for {}".format(file.filename), status=415)
+            return app.response_class(response="Unsupported file format for {}".format(file.filename), status=err.code)
         except Exception as e:
             print("exception on file {}".format(file))
             print(e)
