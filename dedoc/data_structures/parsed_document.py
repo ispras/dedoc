@@ -3,14 +3,21 @@ from collections import OrderedDict
 
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.document_metadata import DocumentMetadata
+from dedoc.data_structures.serializable import Serializable
 
 
-class ParsedDocument:
+class ParsedDocument(Serializable):
 
     def __init__(self,
                  metadata: DocumentMetadata,
                  content: DocumentContent,
                  attachments: Optional[List["ParsedDocument"]] = None):
+        """
+        This class hold information about document content, metadata and attachments.
+        :param metadata: document metadata as size, creation date and so on
+        :param content: text and tables
+        :param attachments: result of analysis of attached files
+        """
         self.metadata = metadata
         self.content = content
         self.attachments = attachments

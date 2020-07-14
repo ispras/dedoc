@@ -8,6 +8,9 @@ from dedoc.utils import splitext_
 
 
 class ExcelAttachmentsExtractor(BaseAttachmentsExtractor):
+    """
+    Extract attachments from excel files
+    """
 
     def can_extract(self, mime: str, filename: str) -> bool:
         if mime in recognized_mimes.excel_like_format:

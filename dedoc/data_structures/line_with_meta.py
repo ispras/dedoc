@@ -12,6 +12,18 @@ class LineWithMeta:
                  hierarchy_level: Optional[HierarchyLevel],
                  metadata: ParagraphMetadata,
                  annotations: List[Annotation]):
+        """
+        Structural unit of document - line (or paragraph) of text and it metadata. One LineWithMeta should not contain
+        text from different logical part of the document (for example document title and raw text of document should not
+        lay in the same line) One the other one logical part of the document may be represented by more than one line
+        (for example document title may consists of many lines).
+
+        :param line: raw text of the document line
+        :param hierarchy_level: special characteristic of line, help to construct tree-structured represtntation from
+        flat list of lines, define the nesting level of the line. Lesser hierarchy level - close to root.
+        :param metadata: line metadata (related to the entire line, as type of the line or page number)
+        :param annotations: metadata related to some part of the text, for example font size of font type and so on.
+        """
 
         self.__check_hierarchy_level(hierarchy_level)
         self._line = line
@@ -47,10 +59,3 @@ class LineWithMeta:
 
     def __repr__(self) -> str:
         return "LineWithMeta({})".format(self.line[:65])
-
-    def add_metadata(self, param: dict):
-        for key, value in param.items():
-            self._metadata[key] = value
-
-
-

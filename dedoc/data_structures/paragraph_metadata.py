@@ -1,14 +1,24 @@
 from collections import OrderedDict
 from typing import Dict, Optional
 
+from dedoc.data_structures.serializable import Serializable
 
-class ParagraphMetadata:
+
+class ParagraphMetadata(Serializable):
 
     def __init__(self,
                  paragraph_type: str,
                  predicted_classes: Optional[Dict[str, float]],
                  page_id: int,
                  line_id: Optional[int]):
+        """
+        This class hold information about document node metadata, such us type or location
+        :param paragraph_type: logical type of paragraph such us title or list_item
+        :param predicted_classes: (optional), if paragraph type was classified with some ml algorithm it may hold
+        information about prediction probabilities.
+        :param page_id: Page where paragraph starts, starts from page 0
+        :param line_id: Line nume where paragraph starts, starts from 0
+        """
         self.paragraph_type = paragraph_type
         self.predicted_classes = predicted_classes
         self.page_id = page_id
