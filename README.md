@@ -1,22 +1,23 @@
 # Dedoc
 
 ## About
-This project called Dedoc and it purpose is 
-* Extract text and it metadata from various types of document (what was written in document and how it 
-was written)  
-* Retrieve logical structure of the document (build tree Title -> section -> subsection and so on) 
+This project is called Dedoc and its purpose is:
+* Extract text and it metadata from various types of documents (what and how was written in the document)  
+* Retrieve the logical structure of the document (build tree Title -> section -> subsection and so on) 
 *  Extract useful document metadata and attachments.
 * Provide a framework that allows you to add new types of documents to the analysis
 
-This project may be useful as a first step of automated  document analysis pipeline (before the NLP part for example)
+This project may be useful as a first step of automatic document analysis pipeline (e.g. before the NLP part)
 
-This project use Rest Api and can work in docker container.  
-You may see online  documentation by running the project. 
+This project has REST Api and you can run it in Docker container
+To read full Dedoc documentation run the project and go to localhost:1231.
  
 
 ## Run the project
 How to build and run the project
 
+Ensure you have Git and Docker installed
+ 
 Clone the project 
 ```bash
 git clone https://gitlab.at.ispras.ru/Ilya/dedoc_project.git
@@ -24,13 +25,13 @@ git clone https://gitlab.at.ispras.ru/Ilya/dedoc_project.git
 cd dedoc_project/
 ```
  
- Ensure that you install docker on your system and
+Ensure you have Docker installed
  
  ```bash
 docker build . -t dedoc_container
 docker run -p 1231:1231 --rm dedoc_container:latest python3 /dedoc/main.py
 ```
 
-Now you may go to  localhost:1231 and look at docs and examples. 
+Now you can go to the localhost:1231 and look at the docs and examples.
 
-You may change port and host in config file (dedoc/config.py). 
+You can change the port and host in the config file

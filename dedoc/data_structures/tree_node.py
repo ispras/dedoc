@@ -21,10 +21,10 @@ class TreeNode(Serializable):
         """
         TreeNode helps to represent document as recursive tree structure. It has parent node (None for root ot the tree)
         and list of children nodes (empty list for list node)
-        :param node_id: node id unique in one document
+        :param node_id: node id is unique in one document
         :param text: text of node
         :param annotations: some metadata related to the part of the text (as font size)
-        :param metadata: metadata related to all node (as node type)
+        :param metadata: metadata refers to entire node (as node type)
         :param subparagraphs: list of child of this node
         :param hierarchy_level: helps to define the position of this node in the document tree
         :param parent: parent node (None for root, not none for other nodes)
@@ -49,7 +49,7 @@ class TreeNode(Serializable):
     @staticmethod
     def create(texts: Iterable[str]) -> "TreeNode":
         """
-        Create root node with given text
+        Creates a root node with given text
         :param texts: this text should be the title of the document (or should be empty for documents without title)
         :return: root of the document tree
         """
@@ -66,7 +66,7 @@ class TreeNode(Serializable):
 
     def add_child(self, line: LineWithMeta) -> "TreeNode":
         """
-        Create new tree node - children of the given node from given line. Return newly created node
+        Create a new tree node - children of the given node from given line. Return newly created node
         :param line: Line with meta, new node will be build from this line
         :return: return created node (child of the self)
         """
@@ -84,7 +84,7 @@ class TreeNode(Serializable):
 
     def add_text(self, line: LineWithMeta):
         """
-        add text and annotations from given line, text separated with \n
+        add the text and annotations from given line, text is separated with \n
         :param line: line with text to add
         :return:
         """
