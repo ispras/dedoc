@@ -2,7 +2,7 @@
 
 ## About
 This project is called Dedoc and its purpose is:
-* Extract text and it metadata from various types of documents (what and how was written in the document)  
+* Extract text and its metadata from various types of documents (what and how was written in the document)  
 * Retrieve the logical structure of the document (build tree Title -> section -> subsection and so on) 
 *  Extract useful document metadata and attachments.
 * Provide a framework that allows you to add new types of documents to the analysis

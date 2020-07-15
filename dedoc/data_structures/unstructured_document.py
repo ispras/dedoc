@@ -8,7 +8,8 @@ class UnstructuredDocument:
 
     def __init__(self, tables: List[Table], lines: List[LineWithMeta]):
         """
-        That class hold information about document content: its text and tables. Text is represented as flat list of lines.
+        That class holds information about document content: its text and tables. Text is represented as flat
+        list of lines.
         :param tables: list of document tables
         :param lines: list of document lines
         """

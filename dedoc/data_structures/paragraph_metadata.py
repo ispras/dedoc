@@ -12,7 +12,7 @@ class ParagraphMetadata(Serializable):
                  page_id: int,
                  line_id: Optional[int]):
         """
-        That class hold information about document node metadata, such as type or location
+        That class holds information about document node metadata, such as type or location
         :param paragraph_type: logical type of paragraph such as title or list_item
         :param predicted_classes: (optional), if the paragraph type was classified with some ml algorithm it can hold
         information about prediction probabilities.

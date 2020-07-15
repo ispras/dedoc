@@ -16,10 +16,10 @@ class LineWithMeta:
         Structural unit of document - line (or paragraph) of text and its metadata. One LineWithMeta should not contain
         text from different logical parts of the document (for example document title and raw text of document should not
         lay in the same line) One the other one logical part of the document may be represented by more than one line
-        (for example document title may consists of many lines).
+        (for example document title may consist of many lines).
 
         :param line: raw text of the document line
-        :param hierarchy_level: special characteristic of line, help to construct tree-structured represtntation from
+        :param hierarchy_level: special characteristic of line, helps to construct tree-structured representation from
         flat list of lines, define the nesting level of the line. The lower the level of the hierarchy,
         the closer it is to the root.
         :param metadata: line metadata (related to the entire line, as type of the line or page number)

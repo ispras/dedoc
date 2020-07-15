@@ -67,7 +67,7 @@ class TreeNode(Serializable):
     def add_child(self, line: LineWithMeta) -> "TreeNode":
         """
         Create a new tree node - children of the given node from given line. Return newly created node
-        :param line: Line with meta, new node will be build from this line
+        :param line: Line with meta, new node will be built from this line
         :return: return created node (child of the self)
         """
         new_node = TreeNode(
