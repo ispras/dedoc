@@ -6,8 +6,7 @@ from dedoc.data_structures.attached_file import AttachedFile
 
 class BaseAttachmentsExtractor(ABC):
     """
-    BaseAttachmentsExtractor is responsible for extracting attached files in one type of files (for example in pdf or
-    docx files)
+    BaseAttachmentsExtractor is responsible for extracting attached files from PDF or docx file types
     """
 
     @abstractmethod
@@ -24,7 +23,7 @@ class BaseAttachmentsExtractor(ABC):
     @abstractmethod
     def get_attachments(self, tmpdir: str, filename: str) -> List[AttachedFile]:
         """
-        Extract attachments from given file and save it in tmpdir.
+        Extract attachments from given file and save it in the tmpdir directory where the file is located
         This method can only be called on appropriate files,
         ensure that `can_extract` is True for given file.
         :param tmpdir: directory where file is located, all attached files should also be saved in this directory.

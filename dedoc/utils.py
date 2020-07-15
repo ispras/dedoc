@@ -42,7 +42,7 @@ def get_unique_name(filename: str) -> str:
 
 def save_data_to_unique_file(directory: str, filename: str, binary_data: bytes) -> str:
     """
-    Saving binary data into unique name by the filename
+    Saving binary data into a unique name by the filename
     :param directory: directory of file (without filename)
     :param filename: name of file (base)
     :param binary_data: data for saving

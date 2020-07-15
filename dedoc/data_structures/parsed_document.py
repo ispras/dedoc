@@ -13,8 +13,8 @@ class ParsedDocument(Serializable):
                  content: DocumentContent,
                  attachments: Optional[List["ParsedDocument"]] = None):
         """
-        This class hold information about document content, metadata and attachments.
-        :param metadata: document metadata as size, creation date and so on
+        That class hold information about the document content, metadata and attachments.
+        :param metadata: document metadata such as size, creation , creation date and so on
         :param content: text and tables
         :param attachments: result of analysis of attached files
         """

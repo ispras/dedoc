@@ -8,7 +8,7 @@ class TableMetadata(Serializable):
 
     def __init__(self, page_id: Optional[int]):
         """
-        Hold information about table location in document
+        Holds the information about the table location in the document
         :param page_id: number of page where table starts
         """
         self.page_id = page_id

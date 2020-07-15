@@ -1,8 +1,8 @@
 
 class ConversionException(Exception):
     """
-    Raise if conversion of the file ends unsuccessfully or don't finished and converter terminate the process
-    of conversion.
+    Can be raised if conversion of the file ended unsuccessfully or didn't finish at all
+    (converter terminated the process)
     """
 
     def __init__(self, msg: str):

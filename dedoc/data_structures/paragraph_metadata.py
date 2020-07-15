@@ -12,12 +12,12 @@ class ParagraphMetadata(Serializable):
                  page_id: int,
                  line_id: Optional[int]):
         """
-        This class hold information about document node metadata, such us type or location
-        :param paragraph_type: logical type of paragraph such us title or list_item
-        :param predicted_classes: (optional), if paragraph type was classified with some ml algorithm it may hold
+        That class holds information about document node metadata, such as type or location
+        :param paragraph_type: logical type of paragraph such as title or list_item
+        :param predicted_classes: (optional), if the paragraph type was classified with some ml algorithm it can hold
         information about prediction probabilities.
-        :param page_id: Page where paragraph starts, starts from page 0
-        :param line_id: Line nume where paragraph starts, starts from 0
+        :param page_id: Page where paragraph starts. The numeration starts from page 0.
+        :param line_id: Line number where paragraph starts.  The numeration starts from page 0.
         """
         self.paragraph_type = paragraph_type
         self.predicted_classes = predicted_classes

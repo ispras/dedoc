@@ -9,9 +9,9 @@ class Table(Serializable):
 
     def __init__(self, cells: List[List[str]], metadata: TableMetadata):
         """
-        This class hold information about about tables in the document. We assume that table has rectangle form
-        (has same number of columns in each row)
-        :param cells: list of list of cells (cell is string). Table representation is row-based e.q. external list
+        That class holds information about tables in the document. We assume that a table has rectangle form
+        (has the same number of columns in each row)
+        :param cells: a list of list of cells (cell is string). Table representation is row-based e.q. external list
         contains list of rows.
         :param metadata: some table metadata, as location, size and so on.
         """

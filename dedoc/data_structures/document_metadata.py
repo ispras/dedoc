@@ -13,8 +13,8 @@ class DocumentMetadata(Serializable):
                  access_time: int,
                  file_type: str):
         """
-        hold information about document metadata.
-        :param file_name: original document name (before rename and conversion, so it may contain non-ascii,
+        holds information about document metadata.
+        :param file_name: original document name (before rename and conversion, so it can contain non-ascii symbols,
         spaces and so on)
         :param size: size of the original file in bytes
         :param modified_time: time of the last modification in unix time format (seconds since the epoch)
