@@ -46,3 +46,10 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual("4.5. п", lines[10].line)
         self.assertEqual("4.6. п", lines[11].line)
 
+    def test_tz_file(self):
+        any_doc_reader = DocxReader()
+        path = os.path.join(os.path.dirname(__file__), "data/tz.docx")
+        result, _ = any_doc_reader.read(path)
+        lines = result.lines
+
+        self.assertEqual("Техническое задание\nна оказание услуг по созданию системы защиты персональных данных ", lines[0].line)
