@@ -42,8 +42,11 @@ class DocxReader(BaseReader):
 
     def _get_text(self, paragraph: Paragraph) -> str:
         xml = paragraph._element.xml
-        xml = "".join(re.findall(r'<w:t.*</w:t>', xml))
-        return re.sub(r'</?w:t.*?>', "", xml)
+        xml_br = re.sub("<w:br/>", "<w:t>\n</w:t>", xml)
+        xml_texts = re.findall(r'<w:t [^>]*>[\s\S]*?</w:t>|<w:t>[\s\S]*?</w:t>', xml_br)
+        texts = [re.sub(r'</?w:t.*?>', "", text) for text in xml_texts]
+        text = "".join(texts)
+        return text
 
     def _iter_block_items(self, parent: Document):
         for child in parent.element.body.iterchildren():
