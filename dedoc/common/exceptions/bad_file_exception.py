@@ -10,3 +10,7 @@ class BadFileFormatException(Exception):
 
     def __str__(self) -> str:
         return "BadFileException({})".format(self.msg)
+
+    @property
+    def code(self) -> int:
+        return 415
