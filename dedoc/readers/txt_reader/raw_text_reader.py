@@ -1,5 +1,7 @@
 from typing import Optional, Tuple
 
+from unicodedata import normalize
+
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
@@ -19,6 +21,7 @@ class RawTextReader(BaseReader):
         with open(path) as file:
             lines = []
             for line_id, line in enumerate(file):
+                line = normalize('NFC', line)
                 metadata = ParagraphMetadata(page_id=0,
                                              line_id=line_id,
                                              predicted_classes=None,
