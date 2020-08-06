@@ -5,6 +5,7 @@ from typing import Optional, List, Dict
 
 from werkzeug.datastructures import FileStorage
 
+from dedoc.data_structures.document_content import DocumentContent
 from dedoc.manager_config import get_manager_config
 from dedoc.attachments_extractors.attachments_extractor import AttachmentsExtractor
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
@@ -68,7 +69,6 @@ class DedocManager(object):
         """
         Function of complete parsing document with 'filename' with attachment files analyze
         """
-
         # Step 1 - Converting
         filename_convert = self.converter.do_converting(tmp_dir, filename)
         # Step 2 - Parsing content of converted file
@@ -81,10 +81,10 @@ class DedocManager(object):
         document_content = self.structure_constructor.construct_tree(unstructured_document)
 
         # Step 3 - Adding meta-information
-        parsed_document = self.metadata_extractor.add_metadata(doc=document_content,
-                                                               directory=tmp_dir,
-                                                               filename=filename,
-                                                               original_filename=original_file_name)
+        parsed_document = self.__parse_file_meta(document_content=document_content,
+                                                 directory=tmp_dir,
+                                                 filename=filename,
+                                                 original_file_name=original_file_name)
 
         with_attachments = parameters.get("with_attachments", "False").lower() == "true"
 
@@ -95,6 +95,18 @@ class DedocManager(object):
                                                              tmp_dir=tmp_dir)
             parsed_document.add_attachments(parsed_attachment_files)
 
+        return parsed_document
+
+    def __parse_file_meta(self, document_content: Optional[DocumentContent], directory: str, filename: str,
+                          original_file_name: str) -> ParsedDocument:
+        """
+        Decorator with metainformation
+        document_content - None for unsupported document in attachments
+        """
+        parsed_document = self.metadata_extractor.add_metadata(doc=document_content,
+                                                               directory=directory,
+                                                               filename=filename,
+                                                               original_filename=original_file_name)
         return parsed_document
 
     def __get_attachments(self,
@@ -111,7 +123,12 @@ class DedocManager(object):
                                                                      filename=attachment,
                                                                      parameters=parameters,
                                                                      original_file_name=original_file_name_att
-                                                                     ))
+                                                                       ))
                 except BadFileFormatException:
-                    pass  # ignore attachments with extension that we can't handle
+                    # return empty ParsedDocument with Meta information
+                    parsed_attachment_files.append(self.__parse_file_meta(document_content=None,
+                                                             directory=tmp_dir,
+                                                             filename=filename,
+                                                             original_file_name=original_file_name_att))
+
         return parsed_attachment_files

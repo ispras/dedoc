@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.document_metadata import DocumentMetadata
@@ -8,7 +9,7 @@ from dedoc.utils import get_file_mime_type
 
 class BasicMetadataExtractor:
 
-    def add_metadata(self, doc: DocumentContent, directory: str, filename: str, original_filename: str) -> ParsedDocument:
+    def add_metadata(self, doc: Optional[DocumentContent], directory: str, filename: str, original_filename: str) -> ParsedDocument:
         meta_info = self.__get_base_meta_information(directory, filename, original_filename)
         metadata = DocumentMetadata(
             file_name=meta_info["file_name"],

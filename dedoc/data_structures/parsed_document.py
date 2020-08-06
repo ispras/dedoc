@@ -10,7 +10,7 @@ class ParsedDocument(Serializable):
 
     def __init__(self,
                  metadata: DocumentMetadata,
-                 content: DocumentContent,
+                 content: Optional[DocumentContent],
                  attachments: Optional[List["ParsedDocument"]] = None):
         """
         That class hold information about the document content, metadata and attachments.
@@ -32,7 +32,7 @@ class ParsedDocument(Serializable):
 
     def to_dict(self):
         res = OrderedDict()
-        res["content"] = self.content.to_dict()
+        res["content"] = self.content.to_dict() if self.content is not None else []
         res["metadata"] = self.metadata.to_dict()
         if self.attachments is not None:
             res["attachments"] = [attachment.to_dict() for attachment in self.attachments]
