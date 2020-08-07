@@ -1,9 +1,11 @@
-import re
+import zipfile
+from bs4 import BeautifulSoup
+from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
+from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
+from dedoc.readers.docx_reader.data_structures import Paragraph
 
 from docx import Document
-from docx.oxml.text.paragraph import CT_P
 from docx.table import Table as DocxTable
-from docx.text.paragraph import Paragraph
 
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
@@ -16,6 +18,7 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.data_structures.annotation import Annotation
 
 
 class DocxReader(BaseReader):
@@ -23,95 +26,99 @@ class DocxReader(BaseReader):
         self.remove_empty_paragraphs = True
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: str) -> bool:
+    def can_read(self,
+                 path: str,
+                 mime: str,
+                 extension: str,
+                 document_type: str) -> bool:
         return extension in recognized_extensions.docx_like_format or mime in recognized_mimes.docx_like_format
 
     def read(self,
              path: str,
              document_type: Optional[str] = None,
              parameters: Optional[dict] = None) -> Tuple[UnstructuredDocument, bool]:
+        # extract tables
         document = Document(path)
         tables = [self._process_table(table) for table in document.tables]
-        lines = self._get_lines(document)
+        # extract text lines
+        lines = self._process_lines(path)
+
         return UnstructuredDocument(lines=lines, tables=tables), True
 
-    def _process_table(self, table: DocxTable) -> Table:
+    def _process_table(self,
+                       table: DocxTable) -> Table:
         cells = [[cell.text for cell in row.cells] for row in table.rows]
         metadata = TableMetadata(page_id=None)
         return Table(cells=cells, metadata=metadata)
 
-    def _get_text(self, paragraph: Paragraph) -> str:
-        xml = paragraph._element.xml
-        xml_br = re.sub("<w:br/>", "<w:t>\n</w:t>", xml)
-        xml_texts = re.findall(r'<w:t [^>]*>[\s\S]*?</w:t>|<w:t>[\s\S]*?</w:t>', xml_br)
-        texts = [re.sub(r'</?w:t.*?>', "", text) for text in xml_texts]
-        text = "".join(texts)
-        return text
+    def _process_lines(self,
+                       path: str) -> List[LineWithMeta]:
+        # TODO do not extract table contents
+        document_xml = zipfile.ZipFile(path)
+        body = BeautifulSoup(document_xml.read('word/document.xml'), 'xml').body
+        styles_extractor = StylesExtractor(BeautifulSoup(document_xml.read('word/styles.xml'), 'xml'))
+        try:
+            numbering_extractor = NumberingExtractor(BeautifulSoup(document_xml.read('word/numbering.xml'), 'xml'),
+                                                     styles_extractor)
+            styles_extractor.numbering_extractor = numbering_extractor
+        except KeyError:
+            numbering_extractor = None
 
-    def _iter_block_items(self, parent: Document):
-        for child in parent.element.body.iterchildren():
-            if isinstance(child, CT_P):
-                yield Paragraph(child, parent)
+        # the list of paragraph with their properties
+        paragraph_list = []
+        paragraphs = body.find_all('w:p')
+        for paragraph in paragraphs:
+            # TODO text may be without w:t
+            if not paragraph.t:
+                continue
 
-    def _get_style_level(self, paragraph: Paragraph) -> Optional[int]:
-        if paragraph.style:
-            name = paragraph.style.name.lower()
+            paragraph_list.append(Paragraph(paragraph, styles_extractor, numbering_extractor))
+        return self._get_lines_with_meta(paragraph_list)
 
-            if re.match(r'heading \d', name):
-                return int(name[len("heading "):]) - 1
-
-        return None
-
-    def _get_text_level(self, paragraph: Paragraph) -> Optional[int]:
-        text = self._get_text(paragraph)
-
-        if re.match(r"^(Глава|Параграф)\s*(\d\\.)*(\d\\.?)?", text):
-            return 0
-
-        if re.match(r"^(Статья|Пункт)\s*(\d\\.)*(\d\\.?)?", text):
-            return 1
-
-        return None
-
-    def _get_section_level(self, paragraph: Paragraph) -> Optional[int]:
-        if "<w:outlineLvl w:val=" in paragraph._element.xml:
-            return int(re.findall(r'<w:outlineLvl w:val="\d+', paragraph._element.xml)[0][21:])
-
-        style_level = self._get_style_level(paragraph)
-        if style_level is not None:
-            return style_level
-
-        text_level = self._get_text_level(paragraph)
-        if text_level is not None:
-            return text_level
-
-        return None
-
-    def _get_lines(self, document: Document) -> List[LineWithMeta]:
-        lines = []
+    def _get_lines_with_meta(self,
+                             paragraph_list: list) -> List[LineWithMeta]:
+        """
+        :param paragraph_list: list of Paragraph
+        :return: list of LineWithMeta
+        """
+        lines_with_meta = []
         paragraph_id = 0
 
-        for block in self._iter_block_items(document):
-            if not isinstance(block, Paragraph):
-                continue  # go only by paragraphs
-
-            text = self._get_text(block)
-
-            if self.remove_empty_paragraphs and text.isspace():
-                continue
+        for paragraph in paragraph_list:
+            # line_with_meta - dictionary
+            # [{"text": "",
+            # "properties": [[start, end, {"indent", "size", "bold", "italic", "underlined"}], ...] }, ...]
+            # start, end - character's positions begin with 0, end isn't included
+            # indent = {"firstLine", "hanging", "start", "left"}
+            line_with_meta = paragraph.get_info()
+            
+            text = line_with_meta["text"]
+            annotations = []
+            for item in line_with_meta["properties"]:
+                if item[2]["bold"]:
+                    annotations.append(Annotation(item[0], item[1], "bold"))
+                if item[2]["italic"]:
+                    annotations.append(Annotation(item[0], item[1], "italic"))
+                if item[2]["underlined"]:
+                    annotations.append(Annotation(item[0], item[1], "underlined"))
 
             paragraph_id += 1
             metadata = ParagraphMetadata(paragraph_type="raw_text",
                                          predicted_classes=None,
                                          page_id=0,
                                          line_id=paragraph_id)
-
-            lines.append(LineWithMeta(line=text, hierarchy_level=None, metadata=metadata, annotations=[]))
-
-        lines = self.hierarchy_level_extractor.get_hierarchy_level(lines)
-        return lines
-
-    def __get_doc(self, path) -> Document:
-        return Document(path)
+            lines_with_meta.append(LineWithMeta(line=text, hierarchy_level=None,
+                                                metadata=metadata, annotations=annotations))
+            lines_with_meta = self.hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
+        return lines_with_meta
 
 
+if __name__ == "__main__":
+    filename = input()
+    docx_reader = DocxReader()
+    result, _ = docx_reader.read(filename)
+    lines = result.lines
+    for line in lines:
+        print(line.line)
+        print(line.annotations)
+        print(line.hierarchy_level.level_1, line.hierarchy_level.level_2)
