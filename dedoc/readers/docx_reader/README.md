@@ -33,8 +33,6 @@ docx, созданный с помощью текстового редактор
 
 * word/theme1.xml — тема (состоит из цветовой схемы, шрифтов и форматирования)
 
-![alt text](./examples/namelist.png)
-
 ## Документация для word/document.xml
 
 1) document
@@ -52,8 +50,6 @@ rPr - свойства элемента
 цифры в свойствах - двадцатые пункта
 
 1440 двадцатых пункта = 1 дюйм
-
-![alt text](examples/document_example.png)
 
 ### Свойства параграфа
 
@@ -224,13 +220,9 @@ rPr - свойства элемента
 
 * numId - номер экземпляра типа списка
 
-![alt text](./examples/numbering_example.png)
-
 ## Стили
 
 **Иерархия стилей:** 
-
-![alt text](./examples/inheritance.png)
 
 documentDefault -> таблицы -> параграфы -> нумерация -> символы -> прямое форматирование, то есть все, что не в стилях (document.xml)
 
@@ -304,10 +296,6 @@ documentDefault -> таблицы -> параграфы -> нумерация ->
 
 ## TODO 
 
-* ind - if any single attribute on this element is omitted on a given paragraph, its value is determined by the setting previously set at any level of the style hierarchy (i.e. that previous setting remains unchanged).
-
-* numPr - The presence of this element specifies that the paragraph inherits the properties specified by the numbering definition in the num element (§17.9.15) at the level specified by the level specified in the lvl element (§17.9.6) and shall have an associated number positioned before the beginning of the text flow in this paragraph. When this element appears as part of the paragraph formatting for a paragraph style, then any numbering level defined using the ilvl element shall be ignored, and the pStyle element (§17.9.23) on the associated abstract numbering definition shall be used instead.
-
 * outlineLvl - This element specifies the outline level which shall be associated with the current paragraph in the document. The outline level specifies an integer which defines the level of the associated text. This level shall not affect the appearance of the text in the document, but shall be used to calculate the TOC field (§17.16.5.68) if the appropriate field switches have been set, and can be used by consumers to provide additional application behaviour.
 The outline level of text in the document (specified using the val attribute) can be from 0 to 9, where 9 specifically indicates that there is no outline level specifically applied to this paragraph. If this element is omitted, then the outline level of the content is assumed to be 9 (no level).
 
@@ -315,20 +303,10 @@ The outline level of text in the document (specified using the val attribute) ca
 If this element is omitted on a given paragraph, its value is determined by the setting previously
 set at any level of the style hierarchy (i.e. that previous setting remains unchanged). If this setting is never specified in the style hierarchy, then the default line number settings for the section, as specified in the lnNumType element shall apply to each line of this paragraph.
 
-[Example: Consider a document with three paragraphs, each of which are displayed on five lines , all contained in a section which has the lnNumType element specified. If the second paragraph should be exempted from that line numbering, this requirement would be specified using the following WordprocessingML:
-  <w:pPr>
-    <w:suppressLineNumbers />
-</w:pPr>
-The paragraph would then be exempted from line by a consumer at display time, which would result in paragraph one using line numbers one through five, the second paragraph having no line numbers, and the third paragraph using line numbers six through ten. end example]
-
 * vanish - This element specifies whether the contents of this run shall be hidden from display at display time in a document. [Note: The setting should affect the normal display of text, but an application can have settings to force hidden text to be displayed. end note]
 This formatting property is a toggle property (§17.7.3).
 If this element is not present, the default value is to leave the formatting applied at previous level in the style hierarchy .If this element is never applied in the style hierarchy, then this text shall not be hidden when displayed in a document.
 
-[Example: Consider a run of text which must have the hidden text property turned on for the contents of the run. This constraint is specified using the following WordprocessingML:
-  <w:rPr>
-    <w:vanish />
-</w:rPr>
-This run declares that the vanish property is set for the contents of this run, so the contents of this run is hidden when the document contents are displayed. end example]
-
 * footers, headers, endnotes, sections etc.
+
+* hierarchy level
