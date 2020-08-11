@@ -1,13 +1,10 @@
 from bs4 import BeautifulSoup
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
-from dedoc.readers.docx_reader.properties_extractor import change_properties
-from dedoc.readers.docx_reader.data_structures import BaseProperties, Paragraph, Raw
+from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
+from dedoc.readers.docx_reader.data_structures import BaseProperties, Paragraph, Run
+from typing import List, Dict, Union
 import re
 
-bad_file_num = 0
-# pages 691 - 733 in the documentation
-
-# page 1424
 numFmtList = {"decimal": "1",  # 1, 2, 3, ..., 10, 11, 12, ...
               "lowerLetter": "a",  # a, b, c, ..., y, z, aa, bb, cc, ..., yy, zz, aaa, bbb, ccc, ...
               "lowerRoman": "i",  # i, ii, iii, iv, ..., xviii, xix, xx, xxi, ...
@@ -50,7 +47,6 @@ def get_next_item(num_fmt: str,
         return result
 
 
-# page 1402
 getSuffix = {"nothing": "",
              "space": " ",
              "tab": "\t"}
@@ -85,7 +81,7 @@ class AbstractNum:
         self.levels = {}
 
     def parse(self,
-              lvl_list: list):
+              lvl_list: List[BeautifulSoup]):
         """
         save information about levels in self.levels
         :param lvl_list: list with BeautifulSoup trees which contain information about levels
@@ -134,14 +130,13 @@ class AbstractNum:
             elif 'suff' not in self.levels[ilvl]:
                 self.levels[ilvl]['suff'] = getSuffix["tab"]
 
-            # TODO check override case
-            # extract information from paragraphs and raws properties
+            # extract information from paragraphs and runs properties
             if lvl.pStyle:
                 self.levels[ilvl]['styleId'] = lvl.pStyle['w:val']
             elif 'styleId' not in self.levels[ilvl]:
                 self.levels[ilvl]['styleId'] = None
 
-            # paragraph -> raw
+            # paragraph -> run
             if lvl.pPr:
                 self.levels[ilvl]['pPr'] = lvl.pPr
             elif 'pPr' not in self.levels[ilvl]:
@@ -152,13 +147,17 @@ class AbstractNum:
             elif 'rPr' not in self.levels[ilvl]:
                 self.levels[ilvl]['rPr'] = None
 
+            if lvl.startOverride:
+                self.levels[ilvl]['restart'] = True
+                self.levels[ilvl]['start'] = int(lvl.startOverride['w:val'])
+
 
 class Num(AbstractNum):
 
     def __init__(self,
                  num_id: str,
-                 abstract_num_list: dict,
-                 num_list: dict,
+                 abstract_num_list: Dict[str, BeautifulSoup],
+                 num_list: Dict[str, BeautifulSoup],
                  styles_extractor: StylesExtractor):
         """
         :param num_id: numId for num element
@@ -183,14 +182,9 @@ class Num(AbstractNum):
         if num_tree.lvlOverride:
             lvl_list = num_tree.find_all('w:lvlOverride')
             self.parse(lvl_list)
-            # w:startOverride
-            for lvl in lvl_list:
-                if lvl.startOverride:
-                    self.levels[lvl['w:ilvl']]['restart'] = True
-                    self.levels[lvl['w:ilvl']]['start'] = int(lvl.startOverride['w:val'])
 
     def get_level_info(self,
-                       level_num: str):
+                       level_num: str) -> Dict[str, Union[str, bool, int]]:
         return self.levels[level_num].copy()
 
 
@@ -215,12 +209,16 @@ class NumberingExtractor:
         else:
             raise Exception("styles extractor must not be empty")
 
-        self.numerations = {}  # {(abstractNumId, ilvl): current number for list element}
+        # {(abstractNumId, ilvl): current number for list element}
+        self.numerations = {}
         self.prev_num_id = None
         self.prev_abstract_num_id = None
-        self.prev_ilvl = {}  # {abstractNumId: ilvl} previous ilvl for list element with given numId
-        self.prev_numId = {}  # {abstractNumId: numId} previous numId for list element with given numId
-        self.shifts = {}  # {(abstractNumId, ilvl): shift for wrong numeration}
+        # {abstractNumId: ilvl} previous ilvl for list element with given numId
+        self.prev_ilvl = {}
+        # {abstractNumId: numId} previous numId for list element with given numId and abstractNumId
+        self.prev_numId = {}
+        # {(abstractNumId, ilvl): shift for wrong numeration}
+        self.shifts = {}
 
         abstract_num_list = {abstract_num['w:abstractNumId']: abstract_num
                              for abstract_num in xml.find_all('w:abstractNum')}
@@ -229,9 +227,9 @@ class NumberingExtractor:
         # dictionary with num properties
         self.num_list = {num_id: Num(num_id, abstract_num_list, num_list, styles_extractor) for num_id in num_list}
 
-    def get_list_text(self,
-                      ilvl: str,
-                      num_id: str):
+    def _get_list_text(self,
+                       ilvl: str,
+                       num_id: str) -> str:
         """
         counts list item number and it's text
         :param ilvl: string with list ilvl
@@ -255,7 +253,7 @@ class NumberingExtractor:
                     for level in levels:
                         if int(level[1:]) - 1 == correct_ilvl:
                             continue
-                        self.get_next_number(num_id, level[1:])
+                        self._get_next_number(num_id, level[1:])
                 except KeyError:
                     correct_ilvl -= 1
                 correct = True
@@ -271,16 +269,17 @@ class NumberingExtractor:
         if abstract_num_id in self.prev_ilvl:
             prev_ilvl = self.prev_ilvl[abstract_num_id]
             # startOverride:
-            if abstract_num_id in self.prev_numId:
-                prev_num_id = self.prev_numId[abstract_num_id]
-            else:
-                prev_num_id = None
-            if prev_num_id and prev_num_id != num_id and lvl_info['restart']:
+            if lvl_info['restart']:
+                if abstract_num_id in self.prev_numId:
+                    prev_num_id = self.prev_numId[abstract_num_id]
+                else:
+                    prev_num_id = None
+                if prev_num_id and prev_num_id != num_id:
+                    self.numerations[(abstract_num_id, ilvl)] = lvl_info['start']
+            # it's a new deeper level
+            if prev_ilvl < ilvl and lvl_info['lvlRestart'] or (abstract_num_id, ilvl) not in self.numerations:
                 self.numerations[(abstract_num_id, ilvl)] = lvl_info['start']
-            # it's a new level
-            elif prev_ilvl < ilvl and lvl_info['lvlRestart'] or (abstract_num_id, ilvl) not in self.numerations:
-                self.numerations[(abstract_num_id, ilvl)] = lvl_info['start']
-            # it's a continue of the old level
+            # it's a continue of the old level (current level <= previous level)
             else:
                 self.numerations[(abstract_num_id, ilvl)] += 1
         # there isn't the information about this list
@@ -297,17 +296,19 @@ class NumberingExtractor:
             # level = '%level'
             level = level[1:]
             try:
-                next_number = self.get_next_number(num_id, level)
+                next_number = self._get_next_number(num_id, level)
             except KeyError as err:
+                # TODO handle very strange list behaviour
+                # if we haven't found given abstractNumId we set counter = 1
                 self.numerations[tuple(err.args[0])] = 1
-                next_number = self.get_next_number(num_id, level)
+                next_number = self._get_next_number(num_id, level)
             text = re.sub(r'%\d+', next_number, text, count=1)
         text += lvl_info['suff']
         return text
 
-    def get_next_number(self,
-                        num_id: str,
-                        level: str):
+    def _get_next_number(self,
+                         num_id: str,
+                         level: str):
         """
         computes the shift from the first item for given list and text of next item according to the shift
         :param num_id: string with list numId
@@ -322,22 +323,20 @@ class NumberingExtractor:
             return lvl_info['lvlText']
 
         shift = self.numerations[(abstract_num_id, ilvl)] - 1
-        # TODO handle very strange list behaviour
-        # if we haven't found given abstractNumId we use previous
         num_fmt = get_next_item(lvl_info['numFmt'], shift)
         return num_fmt
 
     def parse(self,
               xml: BeautifulSoup,
               paragraph_properties: BaseProperties,
-              raw_properties: BaseProperties):
+              run_properties: BaseProperties):
         """
         parses numPr content and extracts properties for paragraph for given numId and list level
         changes old_paragraph properties according to list properties
-        changes raw_properties adding text of numeration and it's properties
+        changes run_properties adding text of numeration and it's properties
         :param xml: BeautifulSoup tree with numPr from document.xml or styles.xml (style content)
         :param paragraph_properties: Paragraph for changing
-        :param raw_properties: Raw for changing
+        :param run_properties: Run for changing
         """
         if not xml:
             return None
@@ -361,13 +360,12 @@ class NumberingExtractor:
             ilvl = ilvl['w:val']
 
         lvl_info = self.num_list[num_id].get_level_info(ilvl)
-        text = self.get_list_text(ilvl, num_id)
+        text = self._get_list_text(ilvl, num_id)
         if lvl_info['styleId']:
             self.styles_extractor.parse(lvl_info['styleId'], paragraph_properties, "numbering")
-            if hasattr(paragraph_properties, 'r_pr') and paragraph_properties.r_pr:
-                change_properties(raw_properties, paragraph_properties.r_pr)
         if lvl_info['pPr']:
-            change_properties(paragraph_properties, lvl_info['pPr'])
+            change_paragraph_properties(paragraph_properties, lvl_info['pPr'])
         if lvl_info['rPr']:
-            change_properties(raw_properties, lvl_info['rPr'])
-        raw_properties.text = text
+            change_run_properties(run_properties, lvl_info['rPr'])
+            change_run_properties(paragraph_properties, lvl_info['rPr'])
+        run_properties.text = text

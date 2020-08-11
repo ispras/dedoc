@@ -2,7 +2,7 @@ import zipfile
 from bs4 import BeautifulSoup
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
-from dedoc.readers.docx_reader.data_structures import Paragraph
+from dedoc.readers.docx_reader.data_structures import Paragraph, ParagraphInfo
 
 from docx import Document
 from docx.table import Table as DocxTable
@@ -45,8 +45,8 @@ class DocxReader(BaseReader):
 
         return UnstructuredDocument(lines=lines, tables=tables), True
 
-    def _process_table(self,
-                       table: DocxTable) -> Table:
+    @staticmethod
+    def _process_table(table: DocxTable) -> Table:
         cells = [[cell.text for cell in row.cells] for row in table.rows]
         metadata = TableMetadata(page_id=None)
         return Table(cells=cells, metadata=metadata)
@@ -76,7 +76,7 @@ class DocxReader(BaseReader):
         return self._get_lines_with_meta(paragraph_list)
 
     def _get_lines_with_meta(self,
-                             paragraph_list: list) -> List[LineWithMeta]:
+                             paragraph_list: List[Paragraph]) -> List[LineWithMeta]:
         """
         :param paragraph_list: list of Paragraph
         :return: list of LineWithMeta
@@ -90,7 +90,8 @@ class DocxReader(BaseReader):
             # "properties": [[start, end, {"indent", "size", "bold", "italic", "underlined"}], ...] }, ...]
             # start, end - character's positions begin with 0, end isn't included
             # indent = {"firstLine", "hanging", "start", "left"}
-            line_with_meta = paragraph.get_info()
+            paragraph_properties = ParagraphInfo(paragraph)
+            line_with_meta = paragraph_properties.get_info()
             
             text = line_with_meta["text"]
             annotations = []
@@ -111,14 +112,3 @@ class DocxReader(BaseReader):
                                                 metadata=metadata, annotations=annotations))
             lines_with_meta = self.hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
         return lines_with_meta
-
-
-if __name__ == "__main__":
-    filename = input()
-    docx_reader = DocxReader()
-    result, _ = docx_reader.read(filename)
-    lines = result.lines
-    for line in lines:
-        print(line.line)
-        print(line.annotations)
-        print(line.hierarchy_level.level_1, line.hierarchy_level.level_2)

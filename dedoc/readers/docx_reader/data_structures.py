@@ -1,18 +1,26 @@
 from bs4 import BeautifulSoup
-from dedoc.readers.docx_reader.properties_extractor import change_properties
+from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
+from typing import Dict, List, Union
 
 
 class BaseProperties:
 
     def __init__(self,
-                 xml: BeautifulSoup or None,
-                 styles_extractor):
-        self.size = 0
-        self.indent = {'firstLine': 0, 'hanging': 0, 'start': 0, 'left': 0}
-        self.bold = False
-        self.italic = False
-        self.underlined = False
-        self.xml = xml
+                 styles_extractor,
+                 properties=None):
+        if properties:
+            self.size = properties.size
+            self.indent = properties.indent.copy()
+            self.bold = properties.bold
+            self.italic = properties.italic
+            self.underlined = properties.underlined
+            properties.underlined = properties.underlined
+        else:
+            self.size = 0
+            self.indent = {'firstLine': 0, 'hanging': 0, 'start': 0, 'left': 0}
+            self.bold = False
+            self.italic = False
+            self.underlined = False
         self.styles_extractor = styles_extractor
 
 
@@ -24,12 +32,13 @@ class Paragraph(BaseProperties):
                  numbering_extractor):
 
         self.numbering_extractor = numbering_extractor
-        self.raws = []
-        self.r_pr = None  # rPr from styles
-        super().__init__(xml, styles_extractor)
+        self.runs = []
+        self.xml = xml  # BeautifulSoup tree with paragraph properties
+        self.r_pr = None  # rPr from styles of numbering if it exists
+        super().__init__(styles_extractor)
         self.parse()
 
-    def parse(self):
+    def parse(self) -> None:
         # hierarchy: properties in styles -> direct properties (paragraph, character)
         # 1) documentDefault (styles.xml)
         # 2) tables (styles.xml)
@@ -49,91 +58,93 @@ class Paragraph(BaseProperties):
         if self.xml.pStyle:
             self.styles_extractor.parse(self.xml.pStyle['w:val'], self, "paragraph")
 
-        # 5) character style parsed later for each raw TODO check if there are character styles for paragraphs
+        # 5) character style parsed later for each run
         # 6) paragraph direct formatting
         if self.xml.pPr:
-            change_properties(self, self.xml.pPr)
-            if self.xml.pPr.rPr:
-                change_properties(self, self.xml.pPr.rPr)
+            change_paragraph_properties(self, self.xml.pPr)
+
         # 7) numbering direct formatting
-        if self.xml.numPr and self.numbering_extractor:
-            try:
-                numbering_raw = Raw(self, self.styles_extractor)
-                if self.r_pr:
-                    change_properties(numbering_raw, self.r_pr)
-                self.numbering_extractor.parse(self.xml.numPr, self, numbering_raw)
-                if len(numbering_raw.text) > 0:
-                    self.raws.append(numbering_raw)
-            except KeyError as error:
-                print(error)
+        self._get_numbering_formatting()
 
         # 8) character direct formatting
-        raw_list = self.xml.find_all('w:r')
-        for raw_tree in raw_list:
-            if self.r_pr:
-                new_raw = Raw(raw_tree, self.styles_extractor)
-                change_properties(new_raw, self.r_pr)  # raw properties from paragraph properties
-                change_properties(new_raw, raw_tree)
-            else:
-                new_raw = Raw(raw_tree, self.styles_extractor)
-            if not new_raw.text:
-                continue
-            if not new_raw.size:
-                new_raw.size = self.size
-            if self.raws and self.raws[-1] == new_raw:
-                # it's is not completely correct because of incorrect information in raw
-                self.raws[-1].text += new_raw.text
-            else:
-                if len(new_raw.text) > 0:
-                    self.raws.append(new_raw)
+        self._make_run_list()
 
-    def get_info(self):
+    def _get_numbering_formatting(self):
+        if self.xml.numPr and self.numbering_extractor:
+            numbering_run = Run(self, self.styles_extractor)
+            self.numbering_extractor.parse(self.xml.numPr, self, numbering_run)
+            if numbering_run.text:
+                if self.xml.pPr.rPr:
+                    change_run_properties(numbering_run, self.xml.pPr.rPr)
+                self.runs.append(numbering_run)
+
+    def _make_run_list(self):
+        run_list = self.xml.find_all('w:r')
+        for run_tree in run_list:
+            new_run = Run(self, self.styles_extractor)
+            if run_tree.rStyle:
+                self.styles_extractor.parse(run_tree.rStyle['w:val'], new_run, "character")
+                if self.xml.pPr and self.xml.pPr.rPr:
+                    change_run_properties(new_run, self.xml.pPr.rPr)
+            if run_tree.rPr:
+                change_run_properties(new_run, run_tree.rPr)
+            new_run.get_text(run_tree)
+            if not new_run.text:
+                continue
+
+            if self.runs and self.runs[-1] == new_run:
+                self.runs[-1].text += new_run.text
+            else:
+                self.runs.append(new_run)
+
+
+class ParagraphInfo:
+
+    def __init__(self,
+                 paragraph: Paragraph):
+        self.text = ""
+        self.properties = []
+        for run in paragraph.runs:
+            start, end = len(self.text), len(self.text) + len(run.text)
+            if start == end:
+                continue
+            if not self.text:
+                self.text = run.text
+            else:
+                self.text += run.text
+            properties = dict()
+            properties['indent'] = paragraph.indent.copy()
+            if run.size:
+                properties['size'] = run.size
+            else:
+                properties['size'] = paragraph.size
+            properties['bold'] = run.bold
+            properties['italic'] = run.italic
+            properties['underlined'] = run.underlined
+            self.properties.append([start, end, properties])
+
+    def get_info(self) -> Dict[str, Union[str, List[List[Union[int, int, Dict[str, int]]]]]]:
         """
         :return: dictionary {"text": "",
         "properties": [[start, end, {"indent", "size", "bold", "italic", "underlined"}], ...] }
         start, end - character's positions begin with 0, end isn't included
         indent = {"firstLine", "hanging", "start", "left"}
         """
-        line_metadata = {"text": "", "properties": []}
-        for raw in self.raws:
-            start, end = len(line_metadata['text']), len(line_metadata['text']) + len(raw.text)
-            if start == end:
-                continue
-            if not line_metadata['text']:
-                line_metadata['text'] = raw.text
-            else:
-                line_metadata['text'] += raw.text
-            properties = dict()
-            properties['indent'] = self.indent.copy()
-            if raw.size:
-                properties['size'] = raw.size
-            else:
-                properties['size'] = self.size
-            properties['bold'] = raw.bold
-            properties['italic'] = raw.italic
-            properties['underlined'] = raw.underlined
-            line_metadata['properties'].append([start, end, properties])
-
-        return line_metadata
+        return {"text": self.text, "properties": self.properties}
 
 
-class Raw(BaseProperties):
+class Run(BaseProperties):
 
     def __init__(self,
-                 xml: BeautifulSoup or BaseProperties,
+                 properties: BaseProperties,
                  styles_extractor):
 
         self.text = ""
-        super().__init__(xml, styles_extractor)
-        if isinstance(xml, BaseProperties):
-            self.xml = None
-            if xml.size:
-                self.size = xml.size
-        else:
-            self.parse()
+        super().__init__(styles_extractor, properties)
 
-    def parse(self):
-        for tag in self.xml:
+    def get_text(self,
+                 xml):
+        for tag in xml:
             if tag.name == 't' and tag.text:
                 self.text += tag.text
             elif tag.name == 'tab':
@@ -143,18 +154,15 @@ class Raw(BaseProperties):
             elif tag.name == 'cr':
                 self.text += '\r'
             elif tag.name == 'sym':
-                pass  # TODO
+                try:
+                    self.text += chr(int("0x" + tag['w:char'], 16))
+                except KeyError:
+                    pass
 
-        if self.xml.rStyle:
-            self.styles_extractor.parse(self.xml.rStyle['w:val'], self, "character")
-
-        if self.xml.rPr:
-            change_properties(self, self.xml.rPr)
-
-    def __eq__(self, other):
-        if other:
-            return self.size == other.size and self.bold == other.bold \
-                   and self.italic == other.italic and self.underlined == other.underlined
-        else:
+    def __eq__(self,
+               other):
+        if not isinstance(other, Run):
             return False
+        return self.size == other.size and self.bold == other.bold \
+               and self.italic == other.italic and self.underlined == other.underlined
 

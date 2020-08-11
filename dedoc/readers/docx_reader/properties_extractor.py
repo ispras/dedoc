@@ -1,28 +1,25 @@
 from bs4 import BeautifulSoup
 
 
-def change_properties(old_properties,
-                      tree: BeautifulSoup):
+def change_paragraph_properties(old_properties,
+                                tree: BeautifulSoup):
     """
-    changes old properties if they were found in tree
-    :param old_properties: Paragraph or Raw
+    changes old properties indent, size if they were found in tree
+    :param old_properties: Paragraph
     :param tree: BeautifulSoup tree with properties
     """
-    # size
-    if tree.sz:
-        try:
-            old_properties.size = int(tree.sz['w:val'])
-        except KeyError:
-            pass
-    # indent
-    if tree.ind:
-        indent_properties = ['firstLine', 'hanging', 'start', 'left']
-        for indent_property in indent_properties:
-            try:
-                old_properties.indent[indent_property] = int(tree.ind['w:' + indent_property])
-            except KeyError:
-                pass
+    change_indent(old_properties, tree)
+    change_size(old_properties, tree)
 
+
+def change_run_properties(old_properties,
+                          tree: BeautifulSoup):
+    """
+    changes old properties: bold, italic, underlined, size if they were found in tree
+    :param old_properties: Run
+    :param tree: BeautifulSoup tree with properties
+    """
+    change_size(old_properties, tree)
     # bold
     if tree.b:
         try:
@@ -50,5 +47,35 @@ def change_properties(old_properties,
                 old_properties.underlined = False
             else:
                 old_properties.underlined = True
+        except KeyError:
+            pass
+
+
+def change_indent(old_properties,
+                  tree: BeautifulSoup):
+    """
+    changes old properties: indent if it was found in tree
+    :param old_properties: Paragraph
+    :param tree: BeautifulSoup tree with properties
+    """
+    if tree.ind:
+        indent_properties = ['firstLine', 'hanging', 'start', 'left']
+        for indent_property in indent_properties:
+            try:
+                old_properties.indent[indent_property] = int(tree.ind['w:' + indent_property])
+            except KeyError:
+                pass
+
+
+def change_size(old_properties,
+                tree: BeautifulSoup):
+    """
+    changes old properties: size if it was found in tree
+    :param old_properties: Paragraph or Run
+    :param tree: BeautifulSoup tree with properties
+    """
+    if tree.sz:
+        try:
+            old_properties.size = int(tree.sz['w:val'])
         except KeyError:
             pass
