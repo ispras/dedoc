@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
-from dedoc.readers.docx_reader.data_structures import BaseProperties, Paragraph, Run
+from dedoc.readers.docx_reader.data_structures import BaseProperties
 from typing import List, Dict, Union
 import re
 
@@ -185,6 +185,10 @@ class Num(AbstractNum):
 
     def get_level_info(self,
                        level_num: str) -> Dict[str, Union[str, bool, int]]:
+        """
+        :param level_num: ilvl for getting information for specific level
+        :return: properties for the level
+        """
         return self.levels[level_num].copy()
 
 
@@ -219,6 +223,8 @@ class NumberingExtractor:
         self.prev_numId = {}
         # {(abstractNumId, ilvl): shift for wrong numeration}
         self.shifts = {}
+        # the number of levels for current list
+        self.levels_count = 1
 
         abstract_num_list = {abstract_num['w:abstractNumId']: abstract_num
                              for abstract_num in xml.find_all('w:abstractNum')}
@@ -292,6 +298,7 @@ class NumberingExtractor:
 
         text = lvl_info['lvlText']
         levels = re.findall(r'%\d+', text)
+        self.levels_count = len(levels)
         for level in levels:
             # level = '%level'
             level = level[1:]
@@ -339,10 +346,10 @@ class NumberingExtractor:
         :param run_properties: Run for changing
         """
         if not xml:
-            return None
+            return
         ilvl, num_id = xml.ilvl, xml.numId
         if not num_id or num_id['w:val'] not in self.num_list:
-            return None
+            return
         else:
             num_id = num_id['w:val']
 
@@ -355,7 +362,7 @@ class NumberingExtractor:
                     if 'styleId' in level and level['styleId'] == style_id:
                         ilvl = level_num
             except KeyError:
-                return None
+                return
         else:
             ilvl = ilvl['w:val']
 
@@ -369,3 +376,5 @@ class NumberingExtractor:
             change_run_properties(run_properties, lvl_info['rPr'])
             change_run_properties(paragraph_properties, lvl_info['rPr'])
         run_properties.text = text
+        paragraph_properties.list_level = self.levels_count
+

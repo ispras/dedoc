@@ -5,6 +5,7 @@ from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.data_structures import Paragraph, ParagraphInfo
 
 from docx import Document
+from docx.opc.exceptions import PackageNotFoundError
 from docx.table import Table as DocxTable
 
 from dedoc.extensions import recognized_extensions, recognized_mimes
@@ -12,6 +13,7 @@ from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 
 from typing import List, Optional, Tuple
 
+from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
@@ -37,9 +39,16 @@ class DocxReader(BaseReader):
              path: str,
              document_type: Optional[str] = None,
              parameters: Optional[dict] = None) -> Tuple[UnstructuredDocument, bool]:
+
         # extract tables
-        document = Document(path)
-        tables = [self._process_table(table) for table in document.tables]
+        try:
+            document = Document(path)
+            tables = [self._process_table(table) for table in document.tables]
+        except IndexError:
+            tables = []
+        except PackageNotFoundError:
+            tables = []
+
         # extract text lines
         lines = self._process_lines(path)
 
@@ -66,13 +75,13 @@ class DocxReader(BaseReader):
 
         # the list of paragraph with their properties
         paragraph_list = []
-        paragraphs = body.find_all('w:p')
-        for paragraph in paragraphs:
-            # TODO text may be without w:t
-            if not paragraph.t:
-                continue
 
+        for paragraph in body:
+            # ignore tables
+            if paragraph.name == 'tbl':
+                continue
             paragraph_list.append(Paragraph(paragraph, styles_extractor, numbering_extractor))
+
         return self._get_lines_with_meta(paragraph_list)
 
     def _get_lines_with_meta(self,
@@ -85,17 +94,25 @@ class DocxReader(BaseReader):
         paragraph_id = 0
 
         for paragraph in paragraph_list:
-            # line_with_meta - dictionary
-            # [{"text": "",
-            # "properties": [[start, end, {"indent", "size", "bold", "italic", "underlined"}], ...] }, ...]
+
+            # line with meta:
+            # {"text": "", "type": ""("paragraph" ,"list_item", "raw_text"), "level": (1,1) (hierarchy_level),
+            # "properties": [[start, end, {"indent", "size", "alignment", "bold", "italic", "underlined"}], ...] }
             # start, end - character's positions begin with 0, end isn't included
             # indent = {"firstLine", "hanging", "start", "left"}
             paragraph_properties = ParagraphInfo(paragraph)
             line_with_meta = paragraph_properties.get_info()
             
             text = line_with_meta["text"]
+            paragraph_type = line_with_meta["type"]
+            level = line_with_meta["level"]
+            if level:
+                hierarchy_level = HierarchyLevel(level[0], level[1], False, paragraph_type)
+            else:
+                hierarchy_level = HierarchyLevel(None, None, False, "raw_text")
             annotations = []
             for item in line_with_meta["properties"]:
+                # TODO add indent, size, alignment
                 if item[2]["bold"]:
                     annotations.append(Annotation(item[0], item[1], "bold"))
                 if item[2]["italic"]:
@@ -104,11 +121,11 @@ class DocxReader(BaseReader):
                     annotations.append(Annotation(item[0], item[1], "underlined"))
 
             paragraph_id += 1
-            metadata = ParagraphMetadata(paragraph_type="raw_text",
+            metadata = ParagraphMetadata(paragraph_type=paragraph_type,
                                          predicted_classes=None,
                                          page_id=0,
                                          line_id=paragraph_id)
-            lines_with_meta.append(LineWithMeta(line=text, hierarchy_level=None,
+            lines_with_meta.append(LineWithMeta(line=text, hierarchy_level=hierarchy_level,
                                                 metadata=metadata, annotations=annotations))
             lines_with_meta = self.hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
         return lines_with_meta

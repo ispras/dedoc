@@ -53,9 +53,6 @@ class StylesExtractor:
         :param old_properties: properties for saving style properties
         :param style_type: "paragraph" or "character" or "numbering" (auxiliary, it will be changed as "paragraph")
         """
-        # if tag b, i presents, but there isn't its value, then w:val = True
-        # for tag u value = 'none'
-        # for indent and size value = 0
 
         # TODO firstLineChars etc.
         # TODO link
@@ -97,11 +94,11 @@ class StylesExtractor:
                 print(error)
 
     @staticmethod
-    def _apply_styles(old_properties,
+    def _apply_styles(old_properties: BaseProperties,
                       styles: List[BeautifulSoup]):
         """
         applies all styles to old_properties
-        :param old_properties:
+        :param old_properties: properties for changing
         :param styles: styles in order to apply
         """
         # hierarchy of styles: defaults -> paragraph -> numbering -> character
