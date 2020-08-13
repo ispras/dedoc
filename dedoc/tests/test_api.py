@@ -31,9 +31,9 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertEqual("1.2.1. Поясним за непонятное", lst["subparagraphs"][0]["text"])
         self.assertEqual("1.2.2. Поясним за понятное", lst["subparagraphs"][1]["text"])
         self.assertEqual("а) это даже ежу понятно",
-                         lst["subparagraphs"][1]["subparagraphs"][0]["subparagraphs"][0]["text"])
+                         lst["subparagraphs"][1]["subparagraphs"][0]["subparagraphs"][0]["text"].strip())
         self.assertEqual("б) это ежу не понятно",
-                         lst["subparagraphs"][1]["subparagraphs"][0]["subparagraphs"][1]["text"])
+                         lst["subparagraphs"][1]["subparagraphs"][0]["subparagraphs"][1]["text"].strip())
         self.assertEqual("1.2.3.", lst["subparagraphs"][2]["text"])
 
         table1, table2 = result["content"]["tables"]

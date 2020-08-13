@@ -15,7 +15,7 @@ class TestAnyDocReader(unittest.TestCase):
     #     doc_reader = DocxReader()
     #     old_docx_reader = OldDocxReader()
     #     # path to the directory with example documents
-    #     path = input("input path: ")  # '/Users/anastasiabogatenkova/DOCXParser/examples/docx/docx/'
+    #     path = input("input path: ")  #
     #     filenames = os.listdir(path)
     #     i = 0
     #     wrong = 0
