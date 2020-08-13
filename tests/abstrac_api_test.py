@@ -7,7 +7,7 @@ import unittest
 
 class AbstractTestApiDocReader(unittest.TestCase):
 
-    data_directory_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../tests", "data"))
+    data_directory_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../tests", "data"))
     print(data_directory_path)
 
     def _check_metainfo(self, metainfo, actual_type: str, actual_name: str):

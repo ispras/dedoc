@@ -1,4 +1,4 @@
-from dedoc.tests.abstrac_api_test import AbstractTestApiDocReader
+from tests.abstrac_api_test import AbstractTestApiDocReader
 
 
 class TestApiDocReader(AbstractTestApiDocReader):
