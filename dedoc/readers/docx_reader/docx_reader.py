@@ -11,7 +11,7 @@ from docx.table import Table as DocxTable
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 
-from typing import List, Optional, Tuple
+from typing import List, Dict, Tuple, Optional, Union
 
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
@@ -27,6 +27,7 @@ class DocxReader(BaseReader):
     def __init__(self):
         self.remove_empty_paragraphs = True
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
+        self.annotations = []
 
     def can_read(self,
                  path: str,
@@ -102,6 +103,7 @@ class DocxReader(BaseReader):
             # indent = {"firstLine", "hanging", "start", "left"}
             paragraph_properties = ParagraphInfo(paragraph)
             line_with_meta = paragraph_properties.get_info()
+            self.annotations.append(line_with_meta)
             
             text = line_with_meta["text"]
             paragraph_type = line_with_meta["type"]
@@ -129,3 +131,10 @@ class DocxReader(BaseReader):
                                                 metadata=metadata, annotations=annotations))
             lines_with_meta = self.hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
         return lines_with_meta
+
+    @property
+    def get_annotations(self) -> List[Dict[str, Union[str, Optional[Tuple[int, int]],
+                                                      List[List[Union[int, int,
+                                                                      Dict[str, Union[int, bool, str,
+                                                                                      Dict[str, int]]]]]]]]]:
+        return self.annotations
