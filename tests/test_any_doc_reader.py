@@ -20,8 +20,8 @@ class TestAnyDocReader(unittest.TestCase):
 
         self.assertEqual("1.2.1. Поясним за непонятное", lines[7].line)
         self.assertEqual("1.2.2. Поясним за понятное", lines[8].line)
-        self.assertEqual("а) это даже ежу понятно", lines[9].line)
-        self.assertEqual("б) это ежу не понятно", lines[10].line)
+        self.assertEqual("а) это даже ежу понятно", lines[9].line.strip())
+        self.assertEqual("б) это ежу не понятно", lines[10].line.strip())
 
         self.assertEqual("1.2.3.", lines[11].line)
 
