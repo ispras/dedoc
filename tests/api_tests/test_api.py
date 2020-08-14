@@ -60,9 +60,16 @@ class TestApiDocReader(AbstractTestApiDocReader):
         result = self._send_request(file_name)
         content = result["content"]["structure"]
         self.assertEqual(content["subparagraphs"][1]["text"].rstrip(),
-                         '     Статья 1. Сфера действия настоящего Федерального закона')
+                         '     Статья 1. Сфера действия настоящёго Федерального закона')
 
         self._check_metainfo(result['metadata'], 'text/plain', file_name)
+
+    def test_text2(self):
+        file_name = "pr_17.txt"
+        result = self._send_request(file_name)
+        content = result["content"]["structure"]
+        res = str(content)
+        self.assertFalse("ufeff" in  res)
 
     def test_bin_file(self):
         self._send_request("file.bin", expected_code=415)
