@@ -1,3 +1,4 @@
+import codecs
 from typing import Optional, Tuple
 
 from unicodedata import normalize
@@ -18,10 +19,10 @@ class RawTextReader(BaseReader):
              path: str,
              document_type: Optional[str] = None,
              parameters: Optional[dict] = None) -> Tuple[UnstructuredDocument, bool]:
-        with open(path) as file:
+        with codecs.open(path, errors="ignore", encoding="utf-8-sig") as file:
             lines = []
             for line_id, line in enumerate(file):
-                line = normalize('NFC', line)
+                line = normalize('NFC', line).replace("й", "й")  # й replace matter
                 metadata = ParagraphMetadata(page_id=0,
                                              line_id=line_id,
                                              predicted_classes=None,

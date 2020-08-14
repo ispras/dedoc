@@ -59,7 +59,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         result = self._send_request(file_name)
         content = result["content"]["structure"]
         self.assertEqual(content["subparagraphs"][1]["text"].rstrip(),
-                         '     Статья 1. Сфера действия настоящего Федерального закона')
+                         '     Статья 1. Сфера действия настоящёго Федерального закона')
 
         self._check_metainfo(result['metadata'], 'text/plain', file_name)
 
