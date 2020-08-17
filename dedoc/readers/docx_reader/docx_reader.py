@@ -81,6 +81,11 @@ class DocxReader(BaseReader):
             # ignore tables
             if paragraph.name == 'tbl':
                 continue
+            if paragraph.name != 'p':
+                child_paragraph_list = paragraph.find_all('w:p')
+                for child_paragraph in child_paragraph_list:
+                    paragraph_list.append(Paragraph(child_paragraph, styles_extractor, numbering_extractor))
+                continue
             paragraph_list.append(Paragraph(paragraph, styles_extractor, numbering_extractor))
 
         return self._get_lines_with_meta(paragraph_list)
@@ -97,14 +102,15 @@ class DocxReader(BaseReader):
         for paragraph in paragraph_list:
 
             # line with meta:
-            # {"text": "", "type": ""("paragraph" ,"list_item", "raw_text"), "level": (1,1) (hierarchy_level),
-            # "properties": [[start, end, {"indent", "size", "alignment", "bold", "italic", "underlined"}], ...] }
-            # start, end - character's positions begin with 0, end isn't included
-            # indent = {"firstLine", "hanging", "start", "left"}
+            # {"text": "",
+            #  "type": ""("paragraph" ,"list_item", "raw_text"), "level": (1,1) or None (hierarchy_level),
+            #  "indent": {"firstLine", "hanging", "start", "left"}, "alignment": "" ("left", "right", "center", "both"),
+            #  "annotations": [[start, end, size], [start, end, "bold"], [start, end, "italic"],
+            #  [start, end, "underlined"], ...] }
             paragraph_properties = ParagraphInfo(paragraph)
             line_with_meta = paragraph_properties.get_info()
             self.annotations.append(line_with_meta)
-            
+
             text = line_with_meta["text"]
             paragraph_type = line_with_meta["type"]
             level = line_with_meta["level"]
@@ -113,14 +119,9 @@ class DocxReader(BaseReader):
             else:
                 hierarchy_level = HierarchyLevel(None, None, False, "raw_text")
             annotations = []
-            for item in line_with_meta["properties"]:
+            for annotation in line_with_meta["annotations"]:
                 # TODO add indent, size, alignment
-                if item[2]["bold"]:
-                    annotations.append(Annotation(item[0], item[1], "bold"))
-                if item[2]["italic"]:
-                    annotations.append(Annotation(item[0], item[1], "italic"))
-                if item[2]["underlined"]:
-                    annotations.append(Annotation(item[0], item[1], "underlined"))
+                annotations.append(Annotation(*annotation))
 
             paragraph_id += 1
             metadata = ParagraphMetadata(paragraph_type=paragraph_type,
@@ -133,8 +134,6 @@ class DocxReader(BaseReader):
         return lines_with_meta
 
     @property
-    def get_annotations(self) -> List[Dict[str, Union[str, Optional[Tuple[int, int]],
-                                                      List[List[Union[int, int,
-                                                                      Dict[str, Union[int, bool, str,
-                                                                                      Dict[str, int]]]]]]]]]:
+    def get_annotations(self) -> List[Dict[str, Union[str, Optional[Tuple[int, int]], Dict[str, int],
+                                                      List[Tuple[int, int, str]]]]]:
         return self.annotations
