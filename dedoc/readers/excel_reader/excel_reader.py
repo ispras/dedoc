@@ -15,8 +15,10 @@ class ExcelReader(BaseReader):
     def __init__(self):
         pass
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: str) -> bool:
-        return extension in recognized_extensions.excel_like_format or mime in recognized_mimes.excel_like_format
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str]) -> bool:
+        return ((extension in recognized_extensions.excel_like_format or mime in recognized_mimes.excel_like_format) and
+                document_type is None
+                )
 
     def __parse_sheet(self, sheet_id: int, sheet: Sheet) -> Table:
         n_rows = sheet.nrows

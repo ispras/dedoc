@@ -1,5 +1,5 @@
 import codecs
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Iterable
 
 from unicodedata import normalize
 
@@ -15,24 +15,26 @@ class RawTextReader(BaseReader):
     def __init__(self):
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
 
+    def _get_lines(self, path: str) -> Iterable[Tuple[int, str]]:
+        with codecs.open(path, errors="ignore", encoding="utf-8-sig") as file:
+            for line_id, line in enumerate(file):
+                line = normalize('NFC', line).replace("й", "й")  # й replace matter
+                yield line_id, line
+
     def read(self,
              path: str,
              document_type: Optional[str] = None,
              parameters: Optional[dict] = None) -> Tuple[UnstructuredDocument, bool]:
-        with codecs.open(path, errors="ignore", encoding="utf-8-sig") as file:
-            lines = []
-            for line_id, line in enumerate(file):
-                line = normalize('NFC', line).replace("й", "й")  # й replace matter
-                metadata = ParagraphMetadata(page_id=0,
-                                             line_id=line_id,
-                                             predicted_classes=None,
-                                             paragraph_type="raw_text")
-                line_with_meta = LineWithMeta(line=line, hierarchy_level=None, metadata=metadata, annotations=[])
-                lines.append(line_with_meta)
-            lines = self.hierarchy_level_extractor.get_hierarchy_level(lines)
+        lines = []
+        for line_id, line in self._get_lines(path):
+            metadata = ParagraphMetadata(page_id=0,
+                                         line_id=line_id,
+                                         predicted_classes=None,
+                                         paragraph_type="raw_text")
+            line_with_meta = LineWithMeta(line=line, hierarchy_level=None, metadata=metadata, annotations=[])
+            lines.append(line_with_meta)
+        lines = self.hierarchy_level_extractor.get_hierarchy_level(lines)
         return UnstructuredDocument(lines=lines, tables=[]), False
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: str) -> bool:
-        return extension.endswith(".txt")
-
-
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str]) -> bool:
+        return extension.endswith(".txt") and document_type is None

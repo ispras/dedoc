@@ -33,8 +33,9 @@ class DocxReader(BaseReader):
                  path: str,
                  mime: str,
                  extension: str,
-                 document_type: str) -> bool:
-        return extension in recognized_extensions.docx_like_format or mime in recognized_mimes.docx_like_format
+                 document_type: Optional[str]) -> bool:
+        return ((extension in recognized_extensions.docx_like_format or mime in recognized_mimes.docx_like_format) and
+                document_type is None)
 
     def read(self,
              path: str,
