@@ -13,8 +13,8 @@ class CSVReader(BaseReader):
     def __init__(self):
         self.default_separator = ","
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: str) -> bool:
-        return extension in recognized_extensions.csv_like_format
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str]) -> bool:
+        return extension in recognized_extensions.csv_like_format and document_type is None
 
     def read(self,
              path: str,
