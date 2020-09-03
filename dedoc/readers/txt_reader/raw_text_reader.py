@@ -37,4 +37,4 @@ class RawTextReader(BaseReader):
         return UnstructuredDocument(lines=lines, tables=[]), False
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str]) -> bool:
-        return extension.endswith(".txt") and document_type is None
+        return extension.endswith(".txt") and not document_type

@@ -16,7 +16,7 @@ class ExcelReader(BaseReader):
         pass
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str]) -> bool:
-        if document_type is not None:
+        if document_type:
             return False
 
         return extension in recognized_extensions.excel_like_format or mime in recognized_mimes.excel_like_format

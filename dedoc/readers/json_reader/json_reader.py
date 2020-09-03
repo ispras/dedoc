@@ -12,7 +12,7 @@ from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 class JsonReader(BaseReader):
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str]) -> bool:
-        return extension.endswith(".json") and document_type is None
+        return extension.endswith(".json") and not document_type
 
     def read(self,
              path: str,
