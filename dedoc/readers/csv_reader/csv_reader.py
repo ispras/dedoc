@@ -14,7 +14,7 @@ class CSVReader(BaseReader):
         self.default_separator = ","
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str]) -> bool:
-        return extension in recognized_extensions.csv_like_format and document_type is None
+        return extension in recognized_extensions.csv_like_format and not document_type
 
     def read(self,
              path: str,
