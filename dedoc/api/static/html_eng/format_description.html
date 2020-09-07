@@ -63,9 +63,9 @@ Detected and parsed table in a document
 <h3 id="TreeNode"> TreeNode</h3>
 <p>Contains document tree structure</p>
 <ol>
-    <li><strong>id</strong> : string (required field) - document item identifier. It is unique in for one tree (i.e. in this tree there will not be another such id, but in attachment it can occur).
+    <li><strong>node_id</strong> : string (required field) - document item identifier. It is unique in for one tree (i.e. in this tree there will not be another such node_id, but in attachment it can occur).
          The identifier has the form 0.2.1 where each number symbolizes a serial number at an appropriate level
-        иерархии. <br/>For example id 0.2.1 means that this element is the second subhead of the third chapter. The first number is the root of the document. Numbering goes from 0.
+        иерархии. <br/>For example node_id 0.2.1 means that this element is the second subhead of the third chapter. The first number is the root of the document. Numbering goes from 0.
     </li>
     <li><strong>text</strong>: string (required field) -&nbsp;element text;</li>
     <li><strong>annotations</strong>: List[<a href="#Annotation"> Annotation </a>] (required field) - the field describes any properties of the text, for example, boldness, font size, etc. Currently empty.
@@ -90,8 +90,11 @@ Detected and parsed table in a document
 <h4 id="ParagraphMetadata"> ParagraphMetadata</h4>
 <p>Contains paragraph meta information</p>
 <ol>
-    <li><strong> type </strong> : string (required field) - paragraph type (paragraph, list item and so on).
-        Can be paragraph, list, list_item, raw_text, named_header.
+    <li><strong> paragraph_type </strong> : string (required field) - paragraph type (paragraph, list item and so on).
+        Possible values depend on the type of document.
+        Default values: ['root', 'paragraph', 'raw_text', 'list', 'list_item', 'named_header']
+        Values for document_type 'law': ['root', 'raw_text', 'struct_unit', 'item', 'article', 'subitem',
+        'footer', 'header', 'title', 'part']
     </li>
     <li><strong> predicted_classes </strong> : Dict[str -> float] (optional field) - classifier results, paragraph type
         is the probability that the paragraph is of this type, the list of keys depends on the type of document.
