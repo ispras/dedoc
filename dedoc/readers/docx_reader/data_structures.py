@@ -95,6 +95,8 @@ class Paragraph(BaseProperties):
         self.runs = []
         # level of list of the paragraph is a list item
         self.list_level = None
+        self.style_level = None
+        self.style_name = None
 
         self.xml = xml
         super().__init__(styles_extractor)
@@ -184,6 +186,8 @@ class ParagraphInfo:
         """
         self.text = ""
         self.list_level = paragraph.list_level
+        self.style_level = paragraph.style_level
+        self.style_name = paragraph.style_name
         self.properties = []
         for run in paragraph.runs:
             start, end = len(self.text), len(self.text) + len(run.text)
@@ -211,11 +215,13 @@ class ParagraphInfo:
         defines the type of paragraph and it's level according to it's type
         :return: hierarchy level if the paragraph isn't raw text else returns None
         """
-        # 0 - Глава, Параграф
+        # 0 - Глава, Параграф, heading
         # 1 - Статья, Пункт
         # 2 - list item
-        if self.list_level:
+        if self.list_level is not None:
             return 2, self.list_level
+        if self.style_level is not None:
+            return 0, self.style_level
         if re.match(r"^(Глава|Параграф)\s*(\d\\.)*(\d\\.?)?", self.text):
             return 0, 0
         if re.match(r"^(Статья|Пункт)\s*(\d\\.)*(\d\\.?)?", self.text):
@@ -265,6 +271,8 @@ class ParagraphInfo:
             if prop:
                 annotation = (prop[0], prop[1], annotation_name)
                 result['annotations'].append(annotation)
+        if self.style_name:
+            result['annotations'].append((0, len(self.text), "style:" + self.style_name))
         return result
 
     def make_annotation(self,
