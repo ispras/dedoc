@@ -5,13 +5,15 @@ from dedoc.data_structures.tree_node import TreeNode
 
 
 def json2html(text: str, paragraph: TreeNode, tables: Optional[List[Table]], tabs: int = 0) -> str:
+    ptext = __annotations2html(paragraph)
 
     if paragraph.metadata.paragraph_type in ["header", "root"]:
-        ptext = "<strong>{}</strong>".format(paragraph.text.strip())
+        ptext = "<strong>{}</strong>".format(ptext.strip())
     elif paragraph.metadata.paragraph_type == "list_item":
-        ptext = "<em>{}</em>".format(paragraph.text.strip())
+        ptext = "<em>{}</em>".format(ptext.strip())
     else:
-        ptext = paragraph.text.strip()
+        ptext = ptext.strip()
+
     text += "<p> {tab} {text}     <sub> id = {id} ; type = {type} </sub></p>".format(
         tab="&nbsp;" * tabs,
         text=ptext,
@@ -28,6 +30,42 @@ def json2html(text: str, paragraph: TreeNode, tables: Optional[List[Table]], tab
             text += __table2html(table.cells)
             text += "<p>&nbsp;</p>"
     return text
+
+
+def __value2tag(value: str) -> str:
+    if value == "bold":
+        return "b"
+
+    if value == "italic":
+        return "i"
+
+    if value == "underlined":
+        return "u"
+
+    return value
+
+
+def __annotations2html(paragraph: TreeNode) -> str:
+    indexes = dict()
+
+    for annotation in paragraph.annotations:
+        if annotation.value not in ["bold", "italic", "underlined"]:
+            continue
+
+        tag = __value2tag(annotation.value)
+
+        indexes.setdefault(annotation.start, "")
+        indexes.setdefault(annotation.end, "")
+        indexes[annotation.start] += "<" + tag + ">"
+        indexes[annotation.end] = "</" + tag + ">" + indexes[annotation.end]
+
+    insert_tags = sorted([(index, tag) for index, tag in indexes.items()], reverse=True)
+    text = paragraph.text
+
+    for index, tag in insert_tags:
+        text = text[:index] + tag + text[index:]
+
+    return text.replace("\n", "<br>")
 
 
 def __table2html(table: List[List[str]]) -> str:
