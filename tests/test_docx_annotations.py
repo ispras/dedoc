@@ -11,13 +11,13 @@ class TestDocxAnnotations(unittest.TestCase):
         result, _ = docx_reader.read(path)
         lines_with_meta = docx_reader.get_annotations
         # bold, italic, underlined
-        self.assertEqual([(0, 10, 'style:Body')], lines_with_meta[0]['annotations'])
-        self.assertEqual([(0, 11, "italic"), (0, 11, 'style:Body')], lines_with_meta[1]['annotations'])
-        self.assertEqual([(0, 9, "bold"), (0, 9, 'style:Body')], lines_with_meta[2]['annotations'])
-        self.assertEqual([(0, 15, "underlined"), (0, 15, 'style:Body')], lines_with_meta[3]['annotations'])
-        self.assertEqual([(0, 6, "italic"), (0, 16, 'style:Body')], lines_with_meta[4]['annotations'])
-        self.assertEqual([(8, 12, "bold"), (0, 12, 'style:Body')], lines_with_meta[5]['annotations'])
-        self.assertEqual([(0, 19, "bold"), (5, 19, "underlined"), (0, 19, 'style:Body')], lines_with_meta[6]['annotations'])
+        self.assertEqual([(0, 10, 'style:body')], lines_with_meta[0]['annotations'])
+        self.assertEqual([(0, 11, "italic"), (0, 11, 'style:body')], lines_with_meta[1]['annotations'])
+        self.assertEqual([(0, 9, "bold"), (0, 9, 'style:body')], lines_with_meta[2]['annotations'])
+        self.assertEqual([(0, 15, "underlined"), (0, 15, 'style:body')], lines_with_meta[3]['annotations'])
+        self.assertEqual([(0, 6, "italic"), (0, 16, 'style:body')], lines_with_meta[4]['annotations'])
+        self.assertEqual([(8, 12, "bold"), (0, 12, 'style:body')], lines_with_meta[5]['annotations'])
+        self.assertEqual([(0, 19, "bold"), (5, 19, "underlined"), (0, 19, 'style:body')], lines_with_meta[6]['annotations'])
 
         # alignment
         self.assertEqual("left", lines_with_meta[8]['alignment'])

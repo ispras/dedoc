@@ -221,7 +221,7 @@ class ParagraphInfo:
         if self.list_level is not None:
             return 2, self.list_level
         if self.style_level is not None:
-            return 1, self.style_level
+            return self.style_level, 0
         if re.match(r"^(Глава|Параграф)\s*(\d\\.)*(\d\\.?)?", self.text):
             return 0, 0
         if re.match(r"^(Статья|Пункт)\s*(\d\\.)*(\d\\.?)?", self.text):
