@@ -95,6 +95,8 @@ class Paragraph(BaseProperties):
         self.runs = []
         # level of list of the paragraph is a list item
         self.list_level = None
+        self.style_level = None
+        self.style_name = None
 
         self.xml = xml
         super().__init__(styles_extractor)
@@ -184,6 +186,8 @@ class ParagraphInfo:
         """
         self.text = ""
         self.list_level = paragraph.list_level
+        self.style_level = paragraph.style_level
+        self.style_name = paragraph.style_name
         self.properties = []
         for run in paragraph.runs:
             start, end = len(self.text), len(self.text) + len(run.text)
@@ -204,6 +208,7 @@ class ParagraphInfo:
             properties['italic'] = run.italic
             properties['underlined'] = run.underlined
             self.properties.append([start, end, properties])
+        self.last_properties = {"bold": [], "italic": [], "underlined": []}
 
     def _get_hierarchy_level(self) -> Optional[Tuple[int, int]]:
         """
@@ -211,37 +216,92 @@ class ParagraphInfo:
         :return: hierarchy level if the paragraph isn't raw text else returns None
         """
         # 0 - Глава, Параграф
-        # 1 - Статья, Пункт
+        # 1 - Статья, Пункт, heading
         # 2 - list item
-        if self.list_level:
+        if self.list_level is not None:
             return 2, self.list_level
+        if self.style_level is not None:
+            return self.style_level, 0
         if re.match(r"^(Глава|Параграф)\s*(\d\\.)*(\d\\.?)?", self.text):
             return 0, 0
         if re.match(r"^(Статья|Пункт)\s*(\d\\.)*(\d\\.?)?", self.text):
             return 1, 0
         return None
 
-    def get_info(self) -> Dict[str, Union[str, Optional[Tuple[int, int]],
-                                          List[List[Union[int, int,
-                                                          Dict[str, Union[int, bool, str, Dict[str, int]]]]]]]]:
+    def get_info(self) -> Dict[str, Union[str, Optional[Tuple[int, int]], Dict[str, int],
+                                          List[Tuple[int, int, str]]]]:
         """
         returns paragraph properties in special format
         :return: dictionary {"text": "",
         "type": ""("paragraph" ,"list_item", "raw_text"), "level": (1,1) or None (hierarchy_level),
-        "properties": [[start, end, {"indent", "size", "alignment", "bold", "italic", "underlined"}], ...] }
+        "indent": {"firstLine", "hanging", "start", "left"}, "alignment": "" ("left", "right", "center", "both"),
+        "annotations": [[start, end, size], [start, end, "bold"], [start, end, "italic"],
+        [start, end, "underlined"], ...] }
         start, end - character's positions begin with 0, end isn't included
-        indent = {"firstLine", "hanging", "start", "left"}
         """
         hierarchy_level = self._get_hierarchy_level()
-        if not hierarchy_level:
-            return {"text": self.text, "type": "raw_text", "level": hierarchy_level, "properties": self.properties}
-        if hierarchy_level[0] == 0 or hierarchy_level[0] == 1:
-            paragraph_type = "paragraph"
-        elif hierarchy_level[0] == 2:
-            paragraph_type = "list_item"
+        result = dict()
+        result['text'] = self.text
+        result['level'] = hierarchy_level
+        if self.properties:
+            result['indent'] = self.properties[0][2]['indent']
+            result['alignment'] = self.properties[0][2]['alignment']
         else:
-            paragraph_type = "raw_text"
-        return {"text": self.text, "type": paragraph_type, "level": hierarchy_level, "properties": self.properties}
+            result['indent'] = {"firstLine": 0, "hanging": 0, "start": 0, "left": 0}
+            result['alignment'] = "left"
+
+        if not hierarchy_level:
+            result['type'] = "raw_text"
+        elif self.style_level is not None:
+            result['type'] = "style_header"
+        elif hierarchy_level[0] == 0 or hierarchy_level[0] == 1:
+            result['type'] = "paragraph"
+        elif hierarchy_level[0] == 2:
+            result['type'] = "list_item"
+        else:
+            result['type'] = "raw_text"
+
+        result['annotations'] = []
+        # TODO add size
+        self.last_properties = {"bold": [], "italic": [], "underlined": []}
+        for prop in self.properties:
+            for annotation_name in ["bold", "italic", "underlined"]:
+                annotation = self.make_annotation(prop, annotation_name)
+                if annotation:
+                    result['annotations'].append(annotation)
+        for annotation_name, prop in self.last_properties.items():
+            if prop:
+                annotation = (prop[0], prop[1], annotation_name)
+                result['annotations'].append(annotation)
+        if self.style_name:
+            result['annotations'].append((0, len(self.text), "style:" + self.style_name))
+        return result
+
+    def make_annotation(self,
+                        prop: List[Union[int, Dict[str, Union[str, int, bool, Dict[str, int]]]]],
+                        annotation_name: str) -> Optional[Tuple[int, int, str]]:
+        """
+        makes new annotation if some properties were found else returns None
+        :param prop: list with properties and it's positions in the text
+        :param annotation_name: "bold", "italic" or "underlined"
+        :return: annotation or None
+        """
+        if type(prop[2]) != dict or annotation_name not in prop[2]:
+            return None
+        if prop[2][annotation_name] or \
+                self.last_properties[annotation_name] and re.fullmatch(r"\s+", self.text[prop[0]:prop[1]]):
+            if self.last_properties[annotation_name]:
+                self.last_properties[annotation_name][1] = prop[1]
+            else:
+                self.last_properties[annotation_name] = [prop[0], prop[1]]  # start, end
+            return None
+        else:
+            if self.last_properties[annotation_name]:
+                annotation = (self.last_properties[annotation_name][0],
+                              self.last_properties[annotation_name][1], annotation_name)
+                self.last_properties[annotation_name] = []
+                return annotation
+            return None
 
     @property
     def get_text(self) -> str:

@@ -12,21 +12,34 @@ class HierarchyLevelExtractor:
         self.bracket_num = re.compile("^[0-9]+\\)")
         self.letter = re.compile("^(([а-я]|[a-z])\\))")
 
+    def __need_update_level(self, hierarchy_level: HierarchyLevel, extracted_level: HierarchyLevel):
+        if hierarchy_level is None:
+            return True
+
+        return extracted_level.level_1 is not None
+
     def get_hierarchy_level(self, lines: Iterable[LineWithMeta]) -> List[LineWithMeta]:
         previous_header = None
         previous_hierarchy_level = None
         result = []
         for line in lines:
-            hierarchy_level = self.__get_hierarchy_level_single_line(line=line,
+            hierarchy_level = line.hierarchy_level
+            extracted_level = self.__get_hierarchy_level_single_line(line=line,
                                                                      previous_header=previous_header,
                                                                      previous_hierarchy_level=previous_hierarchy_level)
+
+            if self.__need_update_level(hierarchy_level, extracted_level):
+                hierarchy_level = extracted_level
+
             if not hierarchy_level.is_raw_text():
                 previous_header = line.line
                 previous_hierarchy_level = hierarchy_level
+
             line.set_hierarchy_level(hierarchy_level)
             line.metadata.paragraph_type = hierarchy_level.paragraph_type
             assert line.hierarchy_level is not None
             result.append(line)
+
         return result
 
     def __get_hierarchy_level_single_line(self,

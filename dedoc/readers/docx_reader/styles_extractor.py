@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
 from dedoc.readers.docx_reader.data_structures import BaseProperties, Run
 from typing import Optional, List
+import re
 
 
 class StylesExtractor:
@@ -78,6 +79,14 @@ class StylesExtractor:
         if not style:
             return
 
+        if hasattr(old_properties, "style_name"):
+            name = style.find("w:name")
+            if name:
+                old_properties.style_name = name["w:val"].lower()
+            else:
+                old_properties.style_name = style_id.lower()
+            old_properties.style_level = self._get_style_level(old_properties.style_name)
+
         styles = self._get_styles_hierarchy(style, style_type)
 
         self._apply_styles(old_properties, styles)
@@ -129,3 +138,13 @@ class StylesExtractor:
                 pass
         styles = styles[::-1] + [style]
         return styles
+
+    @staticmethod
+    def _get_style_level(style_name: str) -> Optional[int]:
+        """
+        :param style_name: name of the style
+        :returns: level if style name begins with heading else None
+        """
+        if re.match(r'heading \d', style_name):
+            return int(style_name[len("heading "):]) - 1
+        return None
