@@ -17,16 +17,21 @@ class HierarchyLevelExtractor:
         previous_hierarchy_level = None
         result = []
         for line in lines:
-            hierarchy_level = self.__get_hierarchy_level_single_line(line=line,
+            hierarchy_level = line.hierarchy_level
+
+            if hierarchy_level is None or self.chapter.match(line.line.lower().strip()):
+                hierarchy_level = self.__get_hierarchy_level_single_line(line=line,
                                                                      previous_header=previous_header,
                                                                      previous_hierarchy_level=previous_hierarchy_level)
             if not hierarchy_level.is_raw_text():
                 previous_header = line.line
                 previous_hierarchy_level = hierarchy_level
+
             line.set_hierarchy_level(hierarchy_level)
             line.metadata.paragraph_type = hierarchy_level.paragraph_type
             assert line.hierarchy_level is not None
             result.append(line)
+
         return result
 
     def __get_hierarchy_level_single_line(self,

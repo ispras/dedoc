@@ -82,7 +82,7 @@ class StylesExtractor:
         if hasattr(old_properties, "style_name"):
             name = style.find("w:name")
             if name:
-                old_properties.style_name = name["w:val"]
+                old_properties.style_name = name["w:val"].lower()
             else:
                 old_properties.style_name = style_id.lower()
             old_properties.style_level = self._get_style_level(old_properties.style_name)
