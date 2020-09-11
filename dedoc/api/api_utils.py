@@ -42,6 +42,10 @@ def __value2tag(value: str) -> str:
     if value == "underlined":
         return "u"
 
+    if value.startswith("style:heading "):
+        level = value[14:]
+        return "h" + level if int(level) < 7 else "strong"
+
     return value
 
 
@@ -49,10 +53,12 @@ def __annotations2html(paragraph: TreeNode) -> str:
     indexes = dict()
 
     for annotation in paragraph.annotations:
-        if annotation.value not in ["bold", "italic", "underlined"]:
+        value = annotation.value
+
+        if value not in ["bold", "italic", "underlined"] and not value.startswith("style:heading "):
             continue
 
-        tag = __value2tag(annotation.value)
+        tag = __value2tag(value)
 
         indexes.setdefault(annotation.start, "")
         indexes.setdefault(annotation.end, "")
