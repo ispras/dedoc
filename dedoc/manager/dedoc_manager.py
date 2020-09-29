@@ -110,33 +110,6 @@ class DedocManager(object):
                                                                original_filename=original_file_name)
         return parsed_document
 
-    def __get_attachments_from_json_fields(self, filename: str, parameters: dict, tmp_dir: str) -> List[ParsedDocument]:
-        if not filename.endswith('.json'):
-            return []
-
-        if not parameters.get("html_fields", False):
-            return []
-
-        with open(tmp_dir + '/' + filename) as f:
-            data = json.load(f)
-
-        parsed_attachment_files = []
-        fields = json.loads(parameters["html_fields"])
-
-        for field in fields:
-            attachment_filename = tmp_dir + '/' + field + '.html'
-
-            with open(attachment_filename, 'w') as f:
-                f.write(data[field])
-
-            parsed_attachment_files.append(self.__parse_file(tmp_dir=tmp_dir,
-                                                             filename=attachment_filename,
-                                                             parameters=parameters,
-                                                             original_file_name=attachment_filename
-                                                             ))
-
-        return parsed_attachment_files
-
     def __get_attachments(self,
                           filename: str,
                           need_analyze_attachments: bool,
@@ -158,7 +131,5 @@ class DedocManager(object):
                                                              directory=tmp_dir,
                                                              filename=filename,
                                                              original_file_name=original_file_name_att))
-
-            parsed_attachment_files.extend(self.__get_attachments_from_json_fields(filename, parameters, tmp_dir))
 
         return parsed_attachment_files

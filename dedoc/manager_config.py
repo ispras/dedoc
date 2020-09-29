@@ -7,7 +7,6 @@ from dedoc.readers.csv_reader.csv_reader import CSVReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.readers.excel_reader.excel_reader import ExcelReader
 from dedoc.readers.json_reader.json_reader import JsonReader
-from dedoc.readers.fake_reader import FakeReader
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from dedoc.structure_constructor.tree_constructor import TreeConstructor
 
@@ -23,7 +22,6 @@ _config = dict(
              CSVReader(),
              RawTextReader(),
              JsonReader(),
-             FakeReader()
              ],
 
     structure_constructor=TreeConstructor(),
