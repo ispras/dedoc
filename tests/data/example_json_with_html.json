@@ -1,0 +1,7 @@
+{
+	"title": "some title for test",
+	"body": "<h1>Header1</h1><p>some text for test</p><h2>Header2</h2><p>some text after header 2</p>",
+	"another_field": [1, 2, 3],
+	"test": 4,
+	"log": true
+}

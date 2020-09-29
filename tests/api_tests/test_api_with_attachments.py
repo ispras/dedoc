@@ -18,3 +18,13 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, dict(with_attachments=True))
         attachments = result['attachments']
 
+    def test_json_attachments(self):
+        file_name = 'example_json_with_html.json'
+        parameters = dict()
+        parameters["with_attachments"] = True
+        parameters["html_fields"] = '["title", "body"]'
+
+        result = self._send_request(file_name, parameters)
+        attachments = result["attachments"]
+
+        self.assertEqual(len(attachments), 2)
