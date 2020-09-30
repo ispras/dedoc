@@ -129,8 +129,10 @@ class DocxReader(BaseReader):
                                          predicted_classes=None,
                                          page_id=0,
                                          line_id=paragraph_id)
-            lines_with_meta.append(LineWithMeta(line=text, hierarchy_level=hierarchy_level,
-                                                metadata=metadata, annotations=annotations))
+            lines_with_meta.append(LineWithMeta(line=text,
+                                                hierarchy_level=hierarchy_level,
+                                                metadata=metadata,
+                                                annotations=annotations))
             lines_with_meta = self.hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
         return lines_with_meta
 

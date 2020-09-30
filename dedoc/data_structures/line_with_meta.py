@@ -34,9 +34,11 @@ class LineWithMeta:
         self._annotations = annotations
 
     def __check_hierarchy_level(self, hierarchy_level: HierarchyLevel):
-        assert hierarchy_level is None or isinstance(hierarchy_level, HierarchyLevel)
+        if not (hierarchy_level is None or isinstance(hierarchy_level, HierarchyLevel)):
+            raise Exception(hierarchy_level)
         assert hierarchy_level is None or hierarchy_level.level_1 is None or hierarchy_level.level_1 >= 0
-        assert hierarchy_level is None or hierarchy_level.level_2 is None or hierarchy_level.level_2 >= 0
+        if not (hierarchy_level is None or hierarchy_level.level_2 is None or hierarchy_level.level_2 >= 0):
+            raise Exception(hierarchy_level)
 
     @property
     def line(self) -> str:

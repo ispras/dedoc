@@ -10,6 +10,8 @@ class HierarchyLevel:
     list_item = "list_item"
 
     def __init__(self, level_1: Optional[int], level_2: Optional[int], can_be_multiline: bool, paragraph_type: str):
+        assert level_1 is None or level_1 >= 0
+        assert level_2 is None or level_2 >= 0
         self.level_1 = level_1
         self.level_2 = level_2
         self.can_be_multiline = can_be_multiline
@@ -36,6 +38,11 @@ class HierarchyLevel:
         if self.paragraph_type != HierarchyLevel.raw_text and other.paragraph_type == HierarchyLevel.raw_text:
             return True
         return (self.level_1, self.level_2) < (other.level_1, other.level_2)
+
+    def __str__(self):
+        return "HierarchyLevel(level_1={}, level_2={}, can_be_multiline={}, paragraph_type={})".format(
+            self.level_1, self.level_2, self.can_be_multiline, self.paragraph_type
+        )
 
     def is_raw_text(self) -> bool:
         return self.paragraph_type == HierarchyLevel.raw_text
