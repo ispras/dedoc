@@ -1,5 +1,5 @@
-from collections import OrderedDict
-from typing import List, Iterable, Optional
+from collections import OrderedDict, defaultdict
+from typing import List, Iterable, Optional, Dict
 
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
@@ -92,12 +92,13 @@ class TreeNode(Serializable):
         new_annotations = []
         text_length = len(self.text)
         for annotation in line.annotations:
-            new_annotation = Annotation(start=annotation.start + text_length,
+            new_annotation = Annotation(start=annotation.start + text_length - 1,
                                         end=annotation.end + text_length,
                                         value=annotation.value)
             new_annotations.append(new_annotation)
         self.text += line.line
         self.annotations.extend(new_annotations)
+        self.annotations = self._merge_annotations(self.annotations)
 
     def get_root(self):
         """
@@ -107,3 +108,38 @@ class TreeNode(Serializable):
         while node.parent is not None:
             node = node.parent
         return node
+
+    @staticmethod
+    def _group_annotations(annotations: List[Annotation]) -> Dict[str, List[Annotation]]:
+        annotations_group_by_value = defaultdict(list)
+        for annotation in annotations:
+            annotations_group_by_value[annotation.value].append(annotation)
+        return annotations_group_by_value
+
+    @staticmethod
+    def _merge_annotations(annotations: List[Annotation]) -> List[Annotation]:
+        """
+        Merge annotations when end of the firs annotation and start of the second match and has same value.
+        Used with add_text
+        """
+        annotations_group_by_value = TreeNode._group_annotations(annotations)
+
+        merged_set = set()
+        merged = []
+        for annotation_group in annotations_group_by_value.values():
+            for firs_annotation in annotation_group:
+                for second_annotation in annotation_group:
+                    if firs_annotation.end == second_annotation.start:
+                        merged_annotation = Annotation(start=firs_annotation.start,
+                                                       end=second_annotation.end,
+                                                       value=firs_annotation.value)
+                        merged.append(merged_annotation)
+                        merged_set.add((firs_annotation.end, firs_annotation.start, firs_annotation.value))
+                        merged_set.add((second_annotation.end, second_annotation.start, second_annotation.value))
+        other_annotations = [annotation for annotation in annotations
+                             if (annotation.end, annotation.start, annotation.value) not in merged_set]
+        return sorted(other_annotations + merged, key=lambda a: a.start)
+
+
+
+

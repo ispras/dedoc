@@ -17,7 +17,8 @@ class TestDocxAnnotations(unittest.TestCase):
         self.assertEqual([(0, 15, "underlined"), (0, 15, 'style:body')], lines_with_meta[3]['annotations'])
         self.assertEqual([(0, 6, "italic"), (0, 16, 'style:body')], lines_with_meta[4]['annotations'])
         self.assertEqual([(8, 12, "bold"), (0, 12, 'style:body')], lines_with_meta[5]['annotations'])
-        self.assertEqual([(0, 19, "bold"), (5, 19, "underlined"), (0, 19, 'style:body')], lines_with_meta[6]['annotations'])
+        self.assertSetEqual({(0, 19, "bold"), (5, 19, "underlined"), (0, 19, 'style:body')},
+                            set(lines_with_meta[6]['annotations']))
 
         # alignment
         self.assertEqual("left", lines_with_meta[8]['alignment'])
@@ -49,8 +50,9 @@ class TestDocxAnnotations(unittest.TestCase):
         self.assertEqual([(0, len(lines_with_meta[47]['text']), "bold")], lines_with_meta[47]['annotations'])
         self.assertEqual([(0, len(lines_with_meta[48]['text']), "italic")], lines_with_meta[48]['annotations'])
         self.assertEqual([(0, len(lines_with_meta[49]['text']), "underlined")], lines_with_meta[49]['annotations'])
-        self.assertEqual([(0, len(lines_with_meta[50]['text']), "bold"),
-                          (0, len(lines_with_meta[50]['text']), "italic")], lines_with_meta[50]['annotations'])
-        self.assertEqual([(0, len(lines_with_meta[51]['text']), "bold"),
-                          (0, len(lines_with_meta[51]['text']), "italic"),
-                          (0, len(lines_with_meta[51]['text']), "underlined")], lines_with_meta[51]['annotations'])
+        self.assertSetEqual({(0, len(lines_with_meta[50]['text']), "bold"),
+                             (0, len(lines_with_meta[50]['text']), "italic")}, set(lines_with_meta[50]['annotations']))
+        self.assertSetEqual({(0, len(lines_with_meta[51]['text']), "bold"),
+                             (0, len(lines_with_meta[51]['text']), "italic"),
+                             (0, len(lines_with_meta[51]['text']), "underlined")},
+                            set(lines_with_meta[51]['annotations']))
