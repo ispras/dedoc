@@ -11,3 +11,7 @@ class ConversionException(Exception):
 
     def __str__(self) -> str:
         return "ConversionException({})".format(self.msg)
+
+    @property
+    def code(self) -> int:
+        return 415
