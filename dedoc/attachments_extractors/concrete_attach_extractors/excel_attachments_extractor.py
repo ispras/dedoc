@@ -18,7 +18,7 @@ class ExcelAttachmentsExtractor(BaseAttachmentsExtractor):
             return ext == '.xlsx'
         return False
 
-    def get_attachments(self, tmpdir: str, filename: str) -> List[List]:
+    def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[List]:
         attachments = []
         name, ext = splitext_(filename)
         if ext == '.xlsx':

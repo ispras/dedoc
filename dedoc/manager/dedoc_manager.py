@@ -117,7 +117,9 @@ class DedocManager(object):
                           tmp_dir: str) -> List[ParsedDocument]:
         parsed_attachment_files = []
         if need_analyze_attachments:
-            attachment_files = self.attachments_extractor.get_attachments(tmp_dir=tmp_dir, filename=filename)
+            attachment_files = self.attachments_extractor.get_attachments(tmp_dir=tmp_dir,
+                                                                          filename=filename,
+                                                                          parameters=parameters)
             for original_file_name_att, attachment in attachment_files:
                 try:
                     parsed_attachment_files.append(self.__parse_file(tmp_dir=tmp_dir,
