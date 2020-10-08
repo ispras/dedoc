@@ -2,12 +2,12 @@ import os
 import zipfile
 from typing import List
 
-from dedoc.attachments_extractors.base_attachments_extractor import BaseAttachmentsExtractor
+from dedoc.attachments_extractors.base_concrete_attach_extractor import BaseConcreteAttachmentsExtractor
 from dedoc.extensions import recognized_mimes
 from dedoc.utils import splitext_
 
 
-class ExcelAttachmentsExtractor(BaseAttachmentsExtractor):
+class ExcelAttachmentsExtractor(BaseConcreteAttachmentsExtractor):
     """
     Extract attachments from excel files
     """
