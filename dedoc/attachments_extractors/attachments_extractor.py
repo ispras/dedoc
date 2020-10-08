@@ -10,7 +10,7 @@ from dedoc.utils import get_file_mime_type, save_data_to_unique_file
 class AttachmentsExtractor(BaseAttachmentsExtractor):
 
     def __init__(self, extractors: List[BaseConcreteAttachmentsExtractor]):
-        super().__init__(extractors)
+        self.extractors = extractors
 
     def get_attachments(self, tmp_dir: str, filename: str, parameters: dict) -> List[AttachedFile]:
         """
