@@ -118,5 +118,13 @@ def __get_static_file_path():
     return os.path.abspath(os.path.join(directory, file))
 
 
-def run_api():
+def get_api() -> Flask:
+    """
+    Function is used for adding additional routing handlers
+    :return: Flask Application
+    """
+    return app
+
+
+def run_api(app: Flask):
     app.run(host='0.0.0.0', port=PORT)
