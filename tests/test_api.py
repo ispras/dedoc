@@ -54,6 +54,10 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
         self._check_metainfo(result['metadata'], 'application/vnd.oasis.opendocument.text', file_name)
 
+    def test_tricky_doc(self):
+        file_name = "doc.docx"
+        result = self._send_request(file_name)
+
     def test_text(self):
         file_name = "doc_001.txt"
         result = self._send_request(file_name)
