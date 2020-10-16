@@ -24,6 +24,8 @@
 <p>Contains document meta-information (for example file name, size, access time).</p>
 <ol>
     <li><strong>file_name</strong>: <a> string </a> (required field) - file name<em> (example: "example.odt") </em></li>
+    <li><strong>bucket_name</strong>: <a> str </a> (optional field) -  bucket name in which the file is located.
+         Included when analyzing a file from a cloud storage <em> (example: "dedoc") </em></li>
     <li><strong>size</strong>: <a> integer </a> (required field) - file size in bytes<em> (example: 20060) </em></li>
     <li><strong>modified_time</strong>: <a> integer </a> (required field) - modification date of the document in the format <a
             href="https://en.wikipedia.org/wiki/Unix_time">UnixTime </a> <em> (example: 1590579805) </em></li>

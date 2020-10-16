@@ -2,7 +2,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from dedoc.data_structures.attached_file import AttachedFile
+from dedoc.attachments_extractors.base_attached_file import BaseAttachedFile
 
 
 class BaseAttachmentsExtractor(ABC):
@@ -11,12 +11,13 @@ class BaseAttachmentsExtractor(ABC):
     """
 
     @abstractmethod
-    def get_attachments(self, tmp_dir: str, filename: str, parameters: dict) -> List[AttachedFile]:
+    def get_attachments(self, tmp_dir: str, filename: str, parameters: dict) -> List[BaseAttachedFile]:
         """
-        Extract attachments from given file.
+        Extracts attachments from given file.
         This method can only be called on appropriate files,
 
-        :param tmpdir: directory where file is located, all attached files should also be saved in this directory.
+        :param tmpdir: directory where file is located, all attached files should also be saved in anywere
+        (for example: you can saved attached files in tmp_dir or into cloud storage).
         :param filename: Name of the file from which you should extract attachments (not abs path, only file name, use
         os.path.join(tmpdir, filename) to obtain path)
         :param parameters: dict with different parameters for extracting
