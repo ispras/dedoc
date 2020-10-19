@@ -29,7 +29,7 @@ Ensure you have Docker installed
  
  ```bash
 docker build . -t dedoc_container
-docker run -p 1231:1231 --rm dedoc_container:latest python3 /dedoc/main.py
+docker run -p 1231:1231 --rm dedoc_container:latest python3.5 /dedoc/main.py
 ```
 
 Now you can go to the localhost:1231 and look at the docs and examples.

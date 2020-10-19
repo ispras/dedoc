@@ -6,10 +6,7 @@ import unittest
 
 
 class AbstractTestApiDocReader(unittest.TestCase):
-
     data_directory_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
-
-
 
     def _check_metainfo(self, metainfo, actual_type: str, actual_name: str):
         self.assertEqual(metainfo['file_type'], actual_type)
@@ -67,5 +64,3 @@ class AbstractTestApiDocReader(unittest.TestCase):
 
         result = json.loads(r.content.decode())
         return result
-
-

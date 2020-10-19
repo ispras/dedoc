@@ -1,6 +1,7 @@
+from dedoc.attachments_extractors.base_attached_file import BaseAttachedFile
 
 
-class AttachedFile:
+class AttachedFile(BaseAttachedFile):
 
     def __init__(self, original_name: str, tmp_file_path: str):
         """
@@ -11,6 +12,8 @@ class AttachedFile:
         self.original_name = original_name
         self.tmp_file_path = tmp_file_path
 
-    def __iter__(self):
-        yield self.original_name
-        yield self.tmp_file_path
+    def get_filename_in_path(self) -> str:
+        return self.tmp_file_path
+
+    def get_original_filename(self) -> str:
+        return self.original_name

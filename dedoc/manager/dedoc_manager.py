@@ -1,14 +1,11 @@
+import copy
 import os
 import tempfile
-
 from typing import Optional, List, Dict
-
 from werkzeug.datastructures import FileStorage
 
-from dedoc.attachments_extractors.base_attachments_extractor import BaseAttachmentsExtractor
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.manager_config import get_manager_config
-from dedoc.attachments_extractors.attachments_extractor import AttachmentsExtractor
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.converters.file_converter import FileConverter
 from dedoc.data_structures.parsed_document import ParsedDocument
@@ -19,9 +16,7 @@ manager_config = get_manager_config()
 
 
 class DedocManager(object):
-    def __init__(self, tmp_dir: Optional[str] = None,
-                 attachments_extractor: BaseAttachmentsExtractor =
-                 AttachmentsExtractor(extractors=manager_config["attachments_extractors"])):
+    def __init__(self, tmp_dir: Optional[str] = None):
         manager_config = get_manager_config()
         self.tmp_dir = tmp_dir
 
@@ -31,8 +26,7 @@ class DedocManager(object):
         converters = manager_config["converters"]
         self.converter = FileConverter(converters=converters)
 
-        self.attachments_extractor = attachments_extractor
-
+        self.attachments_extractor = manager_config["attachments_extractor"]
         self.doc_parser = DocParser(readers=manager_config["readers"])
         self.structure_constructor = manager_config["structure_constructor"]
         self.metadata_extractor = manager_config["metadata_extractor"]
@@ -88,7 +82,8 @@ class DedocManager(object):
         parsed_document = self.__parse_file_meta(document_content=document_content,
                                                  directory=tmp_dir,
                                                  filename=filename,
-                                                 original_file_name=original_file_name)
+                                                 original_file_name=original_file_name,
+                                                 parameters=parameters)
 
         with_attachments = parameters.get("with_attachments", "False").lower() == "true"
 
@@ -101,8 +96,12 @@ class DedocManager(object):
 
         return parsed_document
 
-    def __parse_file_meta(self, document_content: Optional[DocumentContent], directory: str, filename: str,
-                          original_file_name: str) -> ParsedDocument:
+    def __parse_file_meta(self,
+                          document_content: Optional[DocumentContent],
+                          directory: str,
+                          filename: str,
+                          original_file_name: str,
+                          parameters: dict) -> ParsedDocument:
         """
         Decorator with metainformation
         document_content - None for unsupported document in attachments
@@ -110,7 +109,8 @@ class DedocManager(object):
         parsed_document = self.metadata_extractor.add_metadata(doc=document_content,
                                                                directory=directory,
                                                                filename=filename,
-                                                               original_filename=original_file_name)
+                                                               original_filename=original_file_name,
+                                                               parameters=parameters)
         return parsed_document
 
     def __get_attachments(self,
@@ -123,18 +123,23 @@ class DedocManager(object):
             attachment_files = self.attachments_extractor.get_attachments(tmp_dir=tmp_dir,
                                                                           filename=filename,
                                                                           parameters=parameters)
-            for original_file_name_att, attachment in attachment_files:
+            for attachment in attachment_files:
+                parameters_copy = copy.deepcopy(parameters)
+                parameters_copy["is_attached"] = True
+                parameters_copy["attachment"] = attachment
                 try:
                     parsed_attachment_files.append(self.__parse_file(tmp_dir=tmp_dir,
-                                                                     filename=attachment,
-                                                                     parameters=parameters,
-                                                                     original_file_name=original_file_name_att
-                                                                       ))
+                                                                     filename=attachment.get_filename_in_path(),
+                                                                     parameters=parameters_copy,
+                                                                     original_file_name=attachment.get_original_filename()
+                                                                     ))
                 except BadFileFormatException:
                     # return empty ParsedDocument with Meta information
-                    parsed_attachment_files.append(self.__parse_file_meta(document_content=None,
-                                                             directory=tmp_dir,
-                                                             filename=filename,
-                                                             original_file_name=original_file_name_att))
+                    parsed_attachment_files.append(
+                        self.__parse_file_meta(document_content=None,
+                                               directory=tmp_dir,
+                                               filename=filename,
+                                               original_file_name=attachment.get_original_filename(),
+                                               parameters=parameters_copy))
 
         return parsed_attachment_files

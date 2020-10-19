@@ -9,8 +9,15 @@ from dedoc.utils import get_file_mime_type
 
 class BasicMetadataExtractor:
 
-    def add_metadata(self, doc: Optional[DocumentContent], directory: str, filename: str, original_filename: str) -> ParsedDocument:
-        meta_info = self.__get_base_meta_information(directory, filename, original_filename)
+    def add_metadata(self,
+                     doc: Optional[DocumentContent],
+                     directory: str,
+                     filename: str,
+                     original_filename: str,
+                     parameters: dict = None) -> ParsedDocument:
+        if parameters is None:
+            parameters = {}
+        meta_info = self._get_base_meta_information(directory, filename, original_filename, parameters)
         metadata = DocumentMetadata(
             file_name=meta_info["file_name"],
             file_type=meta_info["file_type"],
@@ -22,7 +29,7 @@ class BasicMetadataExtractor:
         parsed_document = ParsedDocument(metadata=metadata, content=doc)
         return parsed_document
 
-    def __get_base_meta_information(self, dir: str, filename: str, name_actual: str):
+    def _get_base_meta_information(self, dir: str, filename: str, name_actual: str, parameters: dict) -> dict:
         (mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(os.path.join(dir, filename))
         meta = {
             "file_name": name_actual,
