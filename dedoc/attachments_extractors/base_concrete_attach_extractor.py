@@ -21,10 +21,10 @@ class BaseConcreteAttachmentsExtractor(ABC):
     @abstractmethod
     def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[List[Union[str, bytes]]]:
         """
-        Extracts attachments from given file and return name of attachment and containing in bytes.
+        Extract attachments from given file and save it in the tmpdir directory where the file is located
         This method can only be called on appropriate files,
         ensure that `can_extract` is True for given file.
-        :param tmpdir: directory where file is located
+        :param tmpdir: directory where file is located, all attached files should also be saved in this directory.
         :param filename: Name of the file from which you should extract attachments (not abs path, only file name, use
         os.path.join(tmpdir, filename) to obtain path)
         :param parameters: dict with different parameters for extracting
