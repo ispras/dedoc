@@ -1,7 +1,7 @@
 import os
 import zipfile
 import olefile
-from typing import List, Tuple, BinaryIO
+from typing import List, Tuple, Union
 
 from dedoc.attachments_extractors.base_concrete_attach_extractor import BaseConcreteAttachmentsExtractor
 from dedoc.extensions import recognized_mimes
@@ -14,7 +14,7 @@ class DocxAttachmentsExtractor(BaseConcreteAttachmentsExtractor):
     """
 
     @staticmethod
-    def __parse_ole_contents(stream: BinaryIO) -> Tuple[str, BinaryIO]:
+    def __parse_ole_contents(stream: bytes) -> Tuple[str, bytes]:
         """
         Parse the binary content of olefile
         :param stream: binary content of olefile
@@ -65,11 +65,10 @@ class DocxAttachmentsExtractor(BaseConcreteAttachmentsExtractor):
             return ext == '.docx'
         return False
 
-    def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[List]:
+    def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[List[Union[str, bytes]]]:
         """
         :param tmpdir: directory where file is located
-        :param filename: Name of the file from which you should extract attachments (not abs path, only file name, use
-        os.path.join(tmpdir, filename) to obtain path)
+        :param filename: Name of the file from which you should extract attachments
         :param parameters: dict with different parameters for extracting
         :return: list of lists (name of original file and binary file content)
         """

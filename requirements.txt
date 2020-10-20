@@ -2,7 +2,7 @@ python-docx==0.8.10
 Flask==1.1.2
 requests==2.24.0
 xlrd==1.2.0
-ujson==3.0.0
-beautifulsoup4==4.9.1
+ujson==3.2.0
+beautifulsoup4==4.9.3
 docx==0.2.4
 olefile~=0.46
