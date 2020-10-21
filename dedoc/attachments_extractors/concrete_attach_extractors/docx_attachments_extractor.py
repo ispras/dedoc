@@ -81,22 +81,25 @@ class DocxAttachmentsExtractor(BaseConcreteAttachmentsExtractor):
 
                 attachments = [file for file in files if file.startswith("word/media/")]
                 attachments += [file for file in files if file.startswith("word/embeddings/")]
+                try:
+                    for attachment in attachments:
+                        namefile = os.path.split(attachment)[-1]
+                        if not namefile.endswith('.emf') and not namefile.endswith('.bin'):
+                            result.append([namefile, zfile.read(attachment)])
 
-                for attachment in attachments:
-                    namefile = os.path.split(attachment)[-1]
-                    if not namefile.endswith('.emf') and not namefile.endswith('.bin'):
-                        result.append([namefile, zfile.read(attachment)])
-
-                    elif namefile.endswith('.bin'):
-                        # extracting PDF-files
-                        ole = olefile.OleFileIO(zfile.open(attachment).read())
-                        if ole.exists("CONTENTS"):
-                            data = ole.openstream('CONTENTS').read()
-                            if data[0:5] == b'%PDF-':
-                                result.append([namefile[:-4] + '.pdf', data])
-                        # extracting files in other formats
-                        elif ole.exists("\x01Ole10Native"):
-                            data = ole.openstream("\x01Ole10Native").read()
-                            namefile, contents = self.__parse_ole_contents(data)
-                            result.append([namefile, contents])
+                        elif namefile.endswith('.bin'):
+                            # extracting PDF-files
+                            with zfile.open(attachment) as f:
+                                ole = olefile.OleFileIO(f.read())
+                            if ole.exists("CONTENTS"):
+                                data = ole.openstream('CONTENTS').read()
+                                if data[0:5] == b'%PDF-':
+                                    result.append([os.path.splitext(namefile)[-1] + '.pdf', data])
+                            # extracting files in other formats
+                            elif ole.exists("\x01Ole10Native"):
+                                data = ole.openstream("\x01Ole10Native").read()
+                                namefile, contents = self.__parse_ole_contents(data)
+                                result.append([namefile, contents])
+                except Exception as error:
+                    print(error)
         return result
