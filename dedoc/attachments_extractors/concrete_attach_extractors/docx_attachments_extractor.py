@@ -89,7 +89,7 @@ class DocxAttachmentsExtractor(BaseConcreteAttachmentsExtractor):
 
                     elif namefile.endswith('.bin'):
                         # extracting PDF-files
-                        ole = olefile.OleFileIO(zfile.open(attachment))
+                        ole = olefile.OleFileIO(zfile.open(attachment).read())
                         if ole.exists("CONTENTS"):
                             data = ole.openstream('CONTENTS').read()
                             if data[0:5] == b'%PDF-':

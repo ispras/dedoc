@@ -138,7 +138,7 @@ class DedocManager(object):
                     parsed_attachment_files.append(
                         self.__parse_file_meta(document_content=None,
                                                directory=tmp_dir,
-                                               filename=filename,
+                                               filename=attachment.get_filename_in_path(),
                                                original_file_name=attachment.get_original_filename(),
                                                parameters=parameters_copy))
 
