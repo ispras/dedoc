@@ -1,0 +1,25 @@
+image:  docker:stable
+
+services:
+  - name: docker:dind
+    entrypoint: []
+    command:
+      - /bin/sh
+      - -c
+      - dockerd-entrypoint.sh --insecure-registry=nexus.intra.ispras.ru:31334
+
+stages:
+  - test
+
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+
+before_script:
+  - apk add --no-cache docker-compose
+
+test:
+  stage: test
+  script:
+    - test="true" docker-compose up  --build --exit-code-from test
+
