@@ -26,7 +26,7 @@ class TestDocxAttachmentsExtractor(unittest.TestCase):
         tmp_dir = os.path.join(os.path.dirname(__file__), 'data/with_attachments_docx/')
         extracted = 0
         for i in range(1, 4):
-            filename = f'with_attachments_{i}.docx'
+            filename = 'with_attachments_{}.docx'.format(i)
             mime = get_file_mime_type(os.path.join(tmp_dir, filename))
             self.assertTrue(docx_attachment_extractor.can_extract(mime, filename))
             attachments = docx_attachment_extractor.get_attachments(tmp_dir, filename, {})
