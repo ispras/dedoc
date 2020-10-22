@@ -1,8 +1,8 @@
 import unittest
 from typing import List, Set, Tuple
 
-from data_structures.annotation import Annotation
-from data_structures.tree_node import TreeNode
+from dedoc.data_structures.annotation import Annotation
+from dedoc.data_structures.tree_node import TreeNode
 
 
 class TestTreeNode(unittest.TestCase):

@@ -5,3 +5,4 @@ xlrd==1.2.0
 ujson==3.2.0
 beautifulsoup4==4.9.3
 docx==0.2.4
+olefile~=0.46
