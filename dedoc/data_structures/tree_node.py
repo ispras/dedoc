@@ -2,10 +2,11 @@ from collections import OrderedDict, defaultdict
 from typing import List, Iterable, Optional, Dict
 
 from dedoc.data_structures.annotation import Annotation
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.paragraph_metadata import BaseParagraphMetadata
 from dedoc.data_structures.serializable import Serializable
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.manager_config import get_manager_config
 
 
 class TreeNode(Serializable):
@@ -14,7 +15,7 @@ class TreeNode(Serializable):
                  node_id: str,
                  text: str,
                  annotations: List[Annotation],
-                 metadata: ParagraphMetadata,
+                 metadata: BaseParagraphMetadata,
                  subparagraphs: List["TreeNode"],
                  hierarchy_level: HierarchyLevel,
                  parent: Optional["TreeNode"]):
@@ -54,7 +55,8 @@ class TreeNode(Serializable):
         :return: root of the document tree
         """
         text = "\n".join(texts)
-        metadata = ParagraphMetadata(paragraph_type="root", page_id=0, line_id=0, predicted_classes=None)
+        paragraph_metadata = get_manager_config()['paragraph_metadata']()
+        metadata = paragraph_metadata.full_fields(paragraph_type="root", page_id=0, line_id=0, predicted_classes=None)
         hierarchy_level = HierarchyLevel(0, 0, True, paragraph_type="root")
         return TreeNode("0",
                         text,

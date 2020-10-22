@@ -29,7 +29,7 @@ class DedocManager(object):
         self.attachments_extractor = manager_config["attachments_extractor"]
         self.doc_parser = DocParser(readers=manager_config["readers"])
         self.structure_constructor = manager_config["structure_constructor"]
-        self.metadata_extractor = manager_config["metadata_extractor"]
+        self.document_metadata_extractor = manager_config["document_metadata_extractor"]
 
     def parse_file(self, file: FileStorage, parameters: Dict[str, str]) -> ParsedDocument:
         original_filename = file.filename.split("/")[-1]
@@ -106,11 +106,11 @@ class DedocManager(object):
         Decorator with metainformation
         document_content - None for unsupported document in attachments
         """
-        parsed_document = self.metadata_extractor.add_metadata(doc=document_content,
-                                                               directory=directory,
-                                                               filename=filename,
-                                                               original_filename=original_file_name,
-                                                               parameters=parameters)
+        parsed_document = self.document_metadata_extractor.add_metadata(doc=document_content,
+                                                                        directory=directory,
+                                                                        filename=filename,
+                                                                        original_filename=original_file_name,
+                                                                        parameters=parameters)
         return parsed_document
 
     def __get_attachments(self,

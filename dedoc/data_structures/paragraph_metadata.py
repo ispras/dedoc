@@ -4,13 +4,9 @@ from typing import Dict, Optional
 from dedoc.data_structures.serializable import Serializable
 
 
-class ParagraphMetadata(Serializable):
+class BaseParagraphMetadata(Serializable):
 
-    def __init__(self,
-                 paragraph_type: str,
-                 predicted_classes: Optional[Dict[str, float]],
-                 page_id: int,
-                 line_id: Optional[int]):
+    def __init__(self):
         """
         That class holds information about document node metadata, such as type or location
         :param paragraph_type: logical type of paragraph such as title or list_item
@@ -19,10 +15,21 @@ class ParagraphMetadata(Serializable):
         :param page_id: Page where paragraph starts. The numeration starts from page 0.
         :param line_id: Line number where paragraph starts.  The numeration starts from page 0.
         """
+        self.paragraph_type = None
+        self.predicted_classes = None
+        self.page_id = None
+        self.line_id = None
+
+    def full_fields(self, paragraph_type: str,
+                    predicted_classes: Optional[Dict[str, float]],
+                    page_id: int,
+                    line_id: Optional[int]) -> 'BaseParagraphMetadata':
         self.paragraph_type = paragraph_type
         self.predicted_classes = predicted_classes
         self.page_id = page_id
         self.line_id = line_id
+
+        return self
 
     def to_dict(self) -> dict:
         res = OrderedDict()

@@ -2,14 +2,14 @@ from typing import List, Optional
 from collections import OrderedDict
 
 from dedoc.data_structures.document_content import DocumentContent
-from dedoc.data_structures.document_metadata import DocumentMetadata
+from dedoc.data_structures.document_metadata import BaseDocumentMetadata
 from dedoc.data_structures.serializable import Serializable
 
 
 class ParsedDocument(Serializable):
 
     def __init__(self,
-                 metadata: DocumentMetadata,
+                 metadata: BaseDocumentMetadata,
                  content: Optional[DocumentContent],
                  attachments: Optional[List["ParsedDocument"]] = None):
         """
@@ -27,7 +27,7 @@ class ParsedDocument(Serializable):
             self.attachments = []
         self.attachments.extend(new_attachment)
 
-    def set_metadata(self, metadata: DocumentMetadata):
+    def set_metadata(self, metadata: BaseDocumentMetadata):
         self.metadata = metadata
 
     def to_dict(self):
