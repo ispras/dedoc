@@ -74,7 +74,7 @@ class DedocManager(object):
             parameters=parameters
         )
 
-        document_content = self.structure_constructor.construct_tree(unstructured_document)
+        document_content = self.structure_constructor.structure_document(unstructured_document)
 
         # Step 3 - Adding meta-information
         parsed_document = self.__parse_file_meta(document_content=document_content,

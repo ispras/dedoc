@@ -1,4 +1,6 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
+
+from soupsieve.util import deprecated
 
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
@@ -7,19 +9,17 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.configuration_manager import get_manager_config
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from structure_constructor.abstract_structure_constructor import AbstractStructureConstructor
 
 
-class TreeConstructor:
+class TreeConstructor(AbstractStructureConstructor):
 
     def __init__(self):
         pass
 
-    def construct_tree(self, document: UnstructuredDocument) -> DocumentContent:
-        """
-
-        :param document: document with linear structure
-        :return:
-        """
+    def structure_document(self,
+                           document: UnstructuredDocument,
+                           structure_type: Optional[str] = None) -> DocumentContent:
         lines = document.lines
         document_name, not_document_name = self.__get_document_name(lines)
         not_document_name = self.__add_lists(not_document_name)
@@ -45,6 +45,10 @@ class TreeConstructor:
                 tree = tree.add_child(line=line)
         tree = tree.get_root()
         return DocumentContent(tables=document.tables, structure=tree)
+
+    @deprecated("use structurize_document instead")
+    def construct_tree(self, document: UnstructuredDocument) -> DocumentContent:
+        return self.structure_document(document)
 
     def __get_document_name(self, lines: List[LineWithMeta]) -> Tuple[List[LineWithMeta], List[LineWithMeta]]:
         document_name = []
