@@ -3,7 +3,7 @@ from typing import List, Tuple
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.tree_node import TreeNode
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.manager_config import get_manager_config
+from dedoc.configuration_manager import get_manager_config
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 

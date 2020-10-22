@@ -5,7 +5,7 @@ from typing import Optional, List, Dict
 from werkzeug.datastructures import FileStorage
 
 from dedoc.data_structures.document_content import DocumentContent
-from dedoc.manager_config import get_manager_config
+from dedoc.configuration_manager import get_manager_config
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.converters.file_converter import FileConverter
 from dedoc.data_structures.parsed_document import ParsedDocument

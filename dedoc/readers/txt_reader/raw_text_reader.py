@@ -4,7 +4,7 @@ from typing import Optional, Tuple, Iterable
 from unicodedata import normalize
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.manager_config import get_manager_config
+from dedoc.configuration_manager import get_manager_config
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 from dedoc.data_structures.line_with_meta import LineWithMeta

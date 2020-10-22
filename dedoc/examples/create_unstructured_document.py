@@ -5,7 +5,7 @@ from dedoc.data_structures.table_metadata import TableMetadata
 
 
 #  First of all lets create some table, table consist of cells (list of rows, and row is a list of strings
-from dedoc.manager_config import get_manager_config
+from dedoc.configuration_manager import get_manager_config
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 
 table_cells = [

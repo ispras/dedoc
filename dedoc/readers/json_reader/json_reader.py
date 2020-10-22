@@ -4,7 +4,7 @@ import ujson as json
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.manager_config import get_manager_config
+from dedoc.configuration_manager import get_manager_config
 from dedoc.readers.base_reader import BaseReader
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 
