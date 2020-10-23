@@ -16,7 +16,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
 
     def test_list(self):
         file_name = "list.json"
-        result = self._send_request(file_name)["content"]["structure"]
+        result = self._send_request(file_name, data=dict(structure_type="tree"))["content"]["structure"]
         list_node = result["subparagraphs"][0]
         self.assertEqual("list", list_node["metadata"]["paragraph_type"])
         list_items = list_node["subparagraphs"]
@@ -37,7 +37,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
 
     def test_dict_with_list(self):
         file_name = "dict_with_list.json"
-        result = self._send_request(file_name)["content"]["structure"]
+        result = self._send_request(file_name, data=dict(structure_type="tree"))["content"]["structure"]
         nodes = result["subparagraphs"]
         self.assertEqual("days", nodes[0]["metadata"]["paragraph_type"])
         first_list_items = nodes[1]["subparagraphs"][0]["subparagraphs"]
@@ -54,7 +54,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
 
     def test_list_with_dict(self):
         file_name = "list_with_dict.json"
-        result = self._send_request(file_name)["content"]["structure"]
+        result = self._send_request(file_name, data=dict(structure_type="tree"))["content"]["structure"]
         nodes = result["subparagraphs"][0]
         self.assertEqual("list", nodes["metadata"]["paragraph_type"])
 
@@ -72,7 +72,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
 
     def test_realistic(self):
         file_name = "realistic_json.json"
-        result = self._send_request(file_name)["content"]["structure"]
+        result = self._send_request(file_name, data=dict(structure_type="tree"))["content"]["structure"]
         result_dict = {node["metadata"]["paragraph_type"]: node["text"] for node in result["subparagraphs"]}
         with open(self._get_abs_path(file_name)) as file:
             real_dict = json.load(file)

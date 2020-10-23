@@ -5,6 +5,7 @@ from flask import Flask, request
 from flask import Response
 from flask import send_file
 
+from common.exceptions.structure_extractor_exception import StructureExtractorException
 from dedoc.api.api_utils import json2html
 from dedoc.config import Configuration
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
@@ -66,6 +67,8 @@ def upload_file():
             print(err)
             file = request.files['file']
             return app.response_class(response="Unsupported file format for {}".format(file.filename), status=err.code)
+        except StructureExtractorException as err:
+            return app.response_class(response="Unsupported structure type for {}".format(err.msg), status=err.code)
         except Exception as e:
             print("exception on file {}".format(file))
             print(e)
