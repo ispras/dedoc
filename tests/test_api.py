@@ -5,14 +5,14 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
     def test_doc(self):
         file_name = "example.doc"
-        result = self._send_request(file_name)
+        result = self._send_request(file_name, data=dict(structure_type="tree"))
         self.__check_doc_like(result)
 
         self._check_metainfo(result['metadata'], 'application/msword', file_name)
 
     def test_docx(self):
         file_name = "example.docx"
-        result = self._send_request(file_name)
+        result = self._send_request(file_name, data=dict(structure_type="tree"))
         self.__check_doc_like(result)
 
         self._check_metainfo(result['metadata'],
@@ -49,7 +49,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
     def test_odt(self):
         file_name = "example.odt"
-        result = self._send_request(file_name)
+        result = self._send_request(file_name, data=dict(structure_type="tree"))
         self.__check_doc_like(result)
 
         self._check_metainfo(result['metadata'], 'application/vnd.oasis.opendocument.text', file_name)
@@ -60,7 +60,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
     def test_text(self):
         file_name = "doc_001.txt"
-        result = self._send_request(file_name)
+        result = self._send_request(file_name, data=dict(structure_type="tree"))
         content = result["content"]["structure"]
         self.assertEqual(content["subparagraphs"][1]["text"].rstrip(),
                          '     Статья 1. Сфера действия настоящёго Федерального закона')

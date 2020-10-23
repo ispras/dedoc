@@ -5,7 +5,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
     def test_en_doc(self):
         file_name = "english_doc.doc"
-        result = self._send_request(file_name, dict(language="eng"))
+        result = self._send_request(file_name, dict(language="eng", structure_type="tree"))
         content = result["content"]
         structure = content["structure"]
 
@@ -20,7 +20,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
     def test_en_docx(self):
         file_name = "english_doc.docx"
-        result = self._send_request(file_name, dict(language="eng"))
+        result = self._send_request(file_name, dict(language="eng", structure_type="tree"))
         content = result["content"]
         structure = content["structure"]
 
@@ -35,7 +35,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
     def test_en_odt(self):
         file_name = "english_doc.odt"
-        result = self._send_request(file_name, dict(language="eng"))
+        result = self._send_request(file_name, dict(language="eng", structure_type="tree"))
         content = result["content"]
         structure = content["structure"]
 

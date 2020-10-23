@@ -5,6 +5,7 @@ RUN locale-gen ru_RU.UTF-8
 ENV LANG ru_RU.utf8
 ENV LANGUAGE ru_RU:ru
 ENV LC_ALL ru_RU.UTF-8
+ADD requirements.txt .
 
 RUN apt-get update && apt-get install software-properties-common -y \
     && add-apt-repository ppa:deadsnakes/ppa \
