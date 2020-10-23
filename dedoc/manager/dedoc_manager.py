@@ -5,14 +5,12 @@ from typing import Optional, List, Dict
 from werkzeug.datastructures import FileStorage
 
 from dedoc.data_structures.document_content import DocumentContent
-from dedoc.manager_config import get_manager_config
+from dedoc.configuration_manager import get_manager_config
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.converters.file_converter import FileConverter
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.readers.doc_parser import DocParser
 from dedoc.utils import get_unique_name
-
-manager_config = get_manager_config()
 
 
 class DedocManager(object):
@@ -29,7 +27,7 @@ class DedocManager(object):
         self.attachments_extractor = manager_config["attachments_extractor"]
         self.doc_parser = DocParser(readers=manager_config["readers"])
         self.structure_constructor = manager_config["structure_constructor"]
-        self.metadata_extractor = manager_config["metadata_extractor"]
+        self.document_metadata_extractor = manager_config["document_metadata_extractor"]
 
     def parse_file(self, file: FileStorage, parameters: Dict[str, str]) -> ParsedDocument:
         original_filename = file.filename.split("/")[-1]
@@ -106,11 +104,11 @@ class DedocManager(object):
         Decorator with metainformation
         document_content - None for unsupported document in attachments
         """
-        parsed_document = self.metadata_extractor.add_metadata(doc=document_content,
-                                                               directory=directory,
-                                                               filename=filename,
-                                                               original_filename=original_file_name,
-                                                               parameters=parameters)
+        parsed_document = self.document_metadata_extractor.add_metadata(doc=document_content,
+                                                                        directory=directory,
+                                                                        filename=filename,
+                                                                        original_filename=original_file_name,
+                                                                        parameters=parameters)
         return parsed_document
 
     def __get_attachments(self,

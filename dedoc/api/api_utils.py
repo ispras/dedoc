@@ -1,10 +1,9 @@
 from typing import Optional, List
 
 from dedoc.data_structures.table import Table
-from dedoc.data_structures.tree_node import TreeNode
 
 
-def json2html(text: str, paragraph: TreeNode, tables: Optional[List[Table]], tabs: int = 0) -> str:
+def json2html(text: str, paragraph: 'TreeNode', tables: Optional[List[Table]], tabs: int = 0) -> str:
     ptext = __annotations2html(paragraph)
 
     if paragraph.metadata.paragraph_type in ["header", "root"]:
@@ -49,7 +48,7 @@ def __value2tag(value: str) -> str:
     return value
 
 
-def __annotations2html(paragraph: TreeNode) -> str:
+def __annotations2html(paragraph: 'TreeNode') -> str:
     indexes = dict()
 
     for annotation in paragraph.annotations:

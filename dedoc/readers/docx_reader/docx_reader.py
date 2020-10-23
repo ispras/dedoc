@@ -1,5 +1,8 @@
 import zipfile
 from bs4 import BeautifulSoup
+
+from dedoc.configuration_manager import get_manager_config
+from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.data_structures import Paragraph, ParagraphInfo
@@ -14,7 +17,6 @@ from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 from typing import List, Dict, Tuple, Optional, Union
 
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
@@ -129,6 +131,7 @@ class DocxReader(BaseReader):
                                          predicted_classes=None,
                                          page_id=0,
                                          line_id=paragraph_id)
+
             lines_with_meta.append(LineWithMeta(line=text,
                                                 hierarchy_level=hierarchy_level,
                                                 metadata=metadata,

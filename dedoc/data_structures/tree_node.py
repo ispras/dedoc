@@ -6,6 +6,7 @@ from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.serializable import Serializable
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.configuration_manager import get_manager_config
 
 
 class TreeNode(Serializable):
@@ -139,7 +140,3 @@ class TreeNode(Serializable):
         other_annotations = [annotation for annotation in annotations
                              if (annotation.end, annotation.start, annotation.value) not in merged_set]
         return sorted(other_annotations + merged, key=lambda a: a.start)
-
-
-
-

@@ -4,6 +4,7 @@ from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.tree_node import TreeNode
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.configuration_manager import get_manager_config
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 

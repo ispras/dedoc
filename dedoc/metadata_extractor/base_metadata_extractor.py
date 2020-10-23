@@ -7,7 +7,7 @@ from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.utils import get_file_mime_type
 
 
-class BasicMetadataExtractor:
+class BaseMetadataExtractor:
 
     def add_metadata(self,
                      doc: Optional[DocumentContent],
