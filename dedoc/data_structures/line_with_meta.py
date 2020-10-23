@@ -1,7 +1,7 @@
 from typing import Optional, List
 
 from dedoc.data_structures.annotation import Annotation
-from dedoc.data_structures.paragraph_metadata import BaseParagraphMetadata
+from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 
 
@@ -10,7 +10,7 @@ class LineWithMeta:
     def __init__(self,
                  line: str,
                  hierarchy_level: Optional[HierarchyLevel],
-                 metadata: BaseParagraphMetadata,
+                 metadata: ParagraphMetadata,
                  annotations: List[Annotation]):
         """
         Structural unit of document - line (or paragraph) of text and its metadata. One LineWithMeta should not contain
@@ -29,7 +29,7 @@ class LineWithMeta:
         self.__check_hierarchy_level(hierarchy_level)
         self._line = line
         self._hierarchy_level = hierarchy_level
-        assert isinstance(metadata, BaseParagraphMetadata)
+        assert isinstance(metadata, ParagraphMetadata)
         self._metadata = metadata
         self._annotations = annotations
 
@@ -49,7 +49,7 @@ class LineWithMeta:
         return self._hierarchy_level
 
     @property
-    def metadata(self) -> BaseParagraphMetadata:
+    def metadata(self) -> ParagraphMetadata:
         return self._metadata
 
     @property

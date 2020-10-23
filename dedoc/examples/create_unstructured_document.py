@@ -1,5 +1,6 @@
 #  in this example we create UnstructuredDocument, lets construct document corresponding to example.docx
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 
@@ -24,7 +25,7 @@ table = Table(cells=table_cells, metadata=table_metadata)
 # hierarchy structure hidden in HierarchyLevel attribute of LineWithMeta
 # lets build firs line, it is document tree root:
 text = "DOCUMENT TITLE"
-metadata = get_manager_config()['paragraph_metadata']().full_fields(
+metadata = ParagraphMetadata(
     paragraph_type="title",
     predicted_classes=None,
     page_id=0,

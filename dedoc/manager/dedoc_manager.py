@@ -12,8 +12,6 @@ from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.readers.doc_parser import DocParser
 from dedoc.utils import get_unique_name
 
-manager_config = get_manager_config()
-
 
 class DedocManager(object):
     def __init__(self, tmp_dir: Optional[str] = None):

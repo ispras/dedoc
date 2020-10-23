@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 from dedoc.data_structures.document_content import DocumentContent
+from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.tree_node import TreeNode
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.configuration_manager import get_manager_config
@@ -77,8 +78,8 @@ class TreeConstructor:
                                 paragraph_type="list",
                                 can_be_multiline=False
                             ),
-                            metadata=get_manager_config()['paragraph_metadata']().full_fields(paragraph_type="list",
-                                                                                            page_id=line.metadata.page_id,
-                                                                                            line_id=line.metadata.line_id,
-                                                                                            predicted_classes=None),
+                            metadata=ParagraphMetadata(paragraph_type="list",
+                                                       page_id=line.metadata.page_id,
+                                                       line_id=line.metadata.line_id,
+                                                       predicted_classes=None),
                             annotations=[])

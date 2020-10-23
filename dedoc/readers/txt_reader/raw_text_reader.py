@@ -3,6 +3,7 @@ from typing import Optional, Tuple, Iterable
 
 from unicodedata import normalize
 
+from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.configuration_manager import get_manager_config
 from dedoc.readers.base_reader import BaseReader
@@ -27,10 +28,10 @@ class RawTextReader(BaseReader):
              parameters: Optional[dict] = None) -> Tuple[UnstructuredDocument, bool]:
         lines = []
         for line_id, line in self._get_lines(path):
-            metadata = get_manager_config()['paragraph_metadata']().full_fields(page_id=0,
-                                                                              line_id=line_id,
-                                                                              predicted_classes=None,
-                                                                              paragraph_type="raw_text")
+            metadata = ParagraphMetadata(page_id=0,
+                                         line_id=line_id,
+                                         predicted_classes=None,
+                                         paragraph_type="raw_text")
             line_with_meta = LineWithMeta(line=line, hierarchy_level=None, metadata=metadata, annotations=[])
             lines.append(line_with_meta)
         lines = self.hierarchy_level_extractor.get_hierarchy_level(lines)

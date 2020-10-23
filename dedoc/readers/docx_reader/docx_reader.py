@@ -2,6 +2,7 @@ import zipfile
 from bs4 import BeautifulSoup
 
 from dedoc.configuration_manager import get_manager_config
+from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.data_structures import Paragraph, ParagraphInfo
@@ -126,10 +127,11 @@ class DocxReader(BaseReader):
                 annotations.append(Annotation(*annotation))
 
             paragraph_id += 1
-            metadata = get_manager_config()['paragraph_metadata']().full_fields(paragraph_type=paragraph_type,
-                                                                                predicted_classes=None,
-                                                                                page_id=0,
-                                                                                line_id=paragraph_id)
+            metadata = ParagraphMetadata(paragraph_type=paragraph_type,
+                                         predicted_classes=None,
+                                         page_id=0,
+                                         line_id=paragraph_id)
+
             lines_with_meta.append(LineWithMeta(line=text,
                                                 hierarchy_level=hierarchy_level,
                                                 metadata=metadata,

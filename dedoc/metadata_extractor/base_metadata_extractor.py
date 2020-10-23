@@ -2,7 +2,7 @@ import os
 from typing import Optional
 
 from dedoc.data_structures.document_content import DocumentContent
-from dedoc.data_structures.document_metadata import BaseDocumentMetadata
+from dedoc.data_structures.document_metadata import DocumentMetadata
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.utils import get_file_mime_type
 
@@ -18,7 +18,7 @@ class BaseMetadataExtractor:
         if parameters is None:
             parameters = {}
         meta_info = self._get_base_meta_information(directory, filename, original_filename, parameters)
-        metadata = BaseDocumentMetadata().full_fields(
+        metadata = DocumentMetadata(
             file_name=meta_info["file_name"],
             file_type=meta_info["file_type"],
             size=meta_info["size"],

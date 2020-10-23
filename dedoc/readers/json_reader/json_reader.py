@@ -3,6 +3,7 @@ from typing import Optional, Tuple
 import ujson as json
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.configuration_manager import get_manager_config
 from dedoc.readers.base_reader import BaseReader
@@ -76,10 +77,10 @@ class JsonReader(BaseReader):
                                          level_2=level2,
                                          can_be_multiline=False,
                                          paragraph_type=paragraph_type_meta)
-        metadata = get_manager_config()['paragraph_metadata']().full_fields(paragraph_type=paragraph_type,
-                                                                          predicted_classes=None,
-                                                                          page_id=0,
-                                                                          line_id=None)
+        metadata = ParagraphMetadata(paragraph_type=paragraph_type,
+                                     predicted_classes=None,
+                                     page_id=0,
+                                     line_id=None)
         line = LineWithMeta(
             line=self.__get_text(value),
             hierarchy_level=hierarchy_level,
