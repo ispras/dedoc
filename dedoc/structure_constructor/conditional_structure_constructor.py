@@ -1,9 +1,9 @@
 from typing import Optional, Dict
 
-from common.exceptions.structure_extractor_exception import StructureExtractorException
-from data_structures.document_content import DocumentContent
-from data_structures.unstructured_document import UnstructuredDocument
-from structure_constructor.abstract_structure_constructor import AbstractStructureConstructor
+from dedoc.common.exceptions.structure_extractor_exception import StructureExtractorException
+from dedoc.data_structures.document_content import DocumentContent
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.structure_constructor.abstract_structure_constructor import AbstractStructureConstructor
 
 
 class ConditionalStructureExtractor(AbstractStructureConstructor):

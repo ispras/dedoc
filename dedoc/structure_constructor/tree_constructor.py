@@ -9,7 +9,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.configuration_manager import get_manager_config
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from structure_constructor.abstract_structure_constructor import AbstractStructureConstructor
+from dedoc.structure_constructor.abstract_structure_constructor import AbstractStructureConstructor
 
 
 class TreeConstructor(AbstractStructureConstructor):
