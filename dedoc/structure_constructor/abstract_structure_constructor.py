@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from data_structures.document_content import DocumentContent
-from data_structures.unstructured_document import UnstructuredDocument
+from dedoc.data_structures.document_content import DocumentContent
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
 
 
 class AbstractStructureConstructor(ABC):

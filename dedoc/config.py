@@ -2,8 +2,6 @@ import os
 import importlib.util
 import argparse
 
-import dedoc.manager_config
-
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config_path", help="path to configuration file")
 parser.add_argument("-m", "--module", help="Only for tests")
@@ -55,7 +53,7 @@ class Configuration(object):
             spec = importlib.util.spec_from_file_location("config_module", args.config_path)
             config_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(config_module)
-            self.__config = dedoc.config._config
+            self.__config = config_module._config
         else:
             self.__config = _config
 
