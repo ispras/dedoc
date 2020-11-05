@@ -1,0 +1,18 @@
+{
+  "DocumentContent": {
+        "type": "object",
+        "description": "Структура содержимого документа",
+        "properties": {
+          "tables":{
+            "type": "array",
+            "items": {
+              "$ref": "table.json#/Table"
+            }
+          },
+          "structure": {
+            "$ref": "tree_node.json#/TreeNode"
+          }
+
+        }
+      }
+}

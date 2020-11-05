@@ -1,0 +1,54 @@
+{
+  "DocumentMetadata": {
+        "type": "object",
+        "description": "Метаинформация документа",
+        "properties": {
+          "file_name": {
+            "type": "string",
+            "required": true,
+            "description": "file name",
+            "example": "example.odt"
+          },
+          "bucket_name": {
+            "type": "string",
+            "required": false,
+            "description": "bucket name in which the file is located. Included when analyzing a file from a cloud storage",
+            "example": "dedoc"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "description": "file size in bytes",
+            "example": "20060"
+          },
+          "modified_time": {
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "description": "modification date of the document in the format UnixTime",
+            "example": "1590579805"
+          },
+          "created_time": {
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "description": "creation date of the document in the format UnixTime",
+            "example": "1590579805"
+          },
+          "access_time": {
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "description": "file access date in format UnixTime",
+            "example": "1590579805"
+          },
+          "file_type": {
+            "type": "string",
+            "required": false,
+            "description": "mime-type file",
+            "example": "application/vnd.oasis.opendocument.text"
+          }
+        }
+      }
+}

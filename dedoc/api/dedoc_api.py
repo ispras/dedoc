@@ -4,6 +4,8 @@ import os
 from flask import Flask, request
 from flask import Response
 from flask import send_file
+from flask_cors import CORS
+from flask_swagger_ui import get_swaggerui_blueprint
 
 from dedoc.common.exceptions.structure_extractor_exception import StructureExtractorException
 from dedoc.api.api_utils import json2html
@@ -23,6 +25,23 @@ static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/"
 static_files_dirs = config.get("static_files_dirs")
 
 app = Flask(__name__, static_url_path=config.get("static_path", static_path))
+
+# ---- swagger specific ---- #
+SWAGGER_URL = '/swagger'
+API_URL = os.path.abspath(config.get("swagger_pathfile", os.path.join(static_path, 'swagger/swagger.json')))
+SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': "Automatic structure document extractor"
+    }
+)
+# CORS is need for debug from swagger form
+CORS = CORS(app)
+app.config['SWAGGER_BASEPATH'] = API_URL
+app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
+# ---- end swagger specific ---- #
+
 app.config["MAX_CONTENT_LENGTH"] = config["max_content_length"]
 
 external_static_files_path = config.get("external_static_files_path")
@@ -57,7 +76,7 @@ def upload_file():
 
             parameters = {k: v for k, v in request.values.items()}
             document_tree = manager.parse_file(file, parameters=parameters)
-            if not request.values.get("return_html", False):
+            if request.values.get("return_html", "False").lower() == "false":
                 return __make_response(document_tree)
             else:
                 return json2html(text="", paragraph=document_tree.content.structure,
@@ -79,15 +98,16 @@ def upload_file():
 def get_info():
     key = "start_page_path"
     if key not in config:
+        print('app.send_static_file(path)')
         path = "html_eng/info.html"
         return app.send_static_file(path)
     else:
         info_path = os.path.abspath(config[key])
+        print('send_file(info_path)')
         return send_file(info_path)
 
 
 def __handle_request(path: str):
-
     document_tree = manager.parse_existing_file(path=path, parameters=request.values)
     return document_tree
 
