@@ -1,10 +1,10 @@
 import os
 
-from dedoc.converters.base_converter import BaseConverter
+from converters.concrete_converters.abstract_converter import AbstractConverter
 from dedoc.extensions import converted_extensions, converted_mimes
 
 
-class ExcelConverter(BaseConverter):
+class ExcelConverter(AbstractConverter):
     def __init__(self):
         super().__init__()
 

@@ -8,7 +8,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.utils import splitext_, get_file_mime_type
 
 
-class DocParser(object):
+class ReaderComposition(object):
 
     def __init__(self, readers: List[BaseReader]):
         self.readers = readers

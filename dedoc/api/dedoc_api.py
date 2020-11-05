@@ -33,7 +33,7 @@ favicon_path = config.get("favicon_path")
 if favicon_path is not None and not os.path.isfile(favicon_path):
     raise Exception("Could not find file {}, probably config is incorrect".format(favicon_path))
 
-manager = DedocManager()
+manager = DedocManager.from_config()
 
 
 def __make_response(document_tree: ParsedDocument) -> Response:
