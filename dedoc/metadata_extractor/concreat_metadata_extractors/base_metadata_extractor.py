@@ -9,6 +9,9 @@ from metadata_extractor.concreat_metadata_extractors.abstract_metadata_extractor
 
 
 class BaseMetadataExtractor(AbstractMetadataExtractor):
+    """
+    Base class for metadata extractor. Inheritor should implement two methods: can_extract and add_metadata
+    """
 
     def can_extract(self,
                     doc: Optional[DocumentContent],
@@ -17,6 +20,17 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
                     converted_filename: str,
                     original_filename: str,
                     parameters: dict = None) -> bool:
+        """
+        check if this extractor can handle given file. Return True if can handle and False otherwise
+
+        :type doc: document content
+        :type directory: path to directory where original file and converted file are located
+        :type filename: name of file after rename (for example 23141.doc)
+        :type converted_filename: name of file after rename and conversion (for example 23141.docx)
+        :type original_filename: file name before rename
+        :type parameters: additional parameters
+
+        """
         return True
 
     def add_metadata(self,
@@ -26,6 +40,17 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
                      converted_filename: str,
                      original_filename: str,
                      parameters: dict = None) -> ParsedDocument:
+        """
+        add metadata to doc. Use this method only if this extractor can_extract this file
+
+        :type doc: document content
+        :type directory: path to directory where original file and converted file are located
+        :type filename: name of file after rename (for example 23141.doc)
+        :type converted_filename: name of file after rename and conversion (for example 23141.docx)
+        :type original_filename: file name before rename
+        :type parameters: additional parameters
+
+        """
         if parameters is None:
             parameters = {}
         meta_info = self._get_base_meta_information(directory, filename, original_filename, parameters)

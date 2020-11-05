@@ -4,7 +4,7 @@ from typing import List, Union
 
 class AbstractAttachmentsExtractor(ABC):
     """
-    BaseConcreteAttachmentsExtractor is responsible for extracting attached files from PDF or docx file types
+    AbstractAttachmentsExtractor is responsible for extracting attached files from PDF or docx file types
     """
 
     @abstractmethod
