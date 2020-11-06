@@ -1,6 +1,6 @@
 import os
 
-from converters.concrete_converters.abstract_converter import AbstractConverter
+from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
 from dedoc.extensions import converted_extensions, converted_mimes
 
 
