@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from dedoc.common.exceptions.conversion_exception import ConversionException
 
 
-class BaseConverter(ABC):
+class AbstractConverter(ABC):
     def __init__(self):
         self.timeout = 10
         self.period_checking = 0.05

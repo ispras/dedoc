@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from typing import List, Union
 
 
-class BaseConcreteAttachmentsExtractor(ABC):
+class AbstractAttachmentsExtractor(ABC):
     """
-    BaseConcreteAttachmentsExtractor is responsible for extracting attached files from PDF or docx file types
+    AbstractAttachmentsExtractor is responsible for extracting attached files from PDF or docx file types
     """
 
     @abstractmethod

@@ -48,6 +48,16 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertListEqual(["Петров", "Пётр", "Петрович"], table2["cells"][2])
         self.assertListEqual(["Сидоров", "Сидор", "Сидорович"], table2["cells"][3])
 
+        metadata = result["metadata"]
+        self.assertTrue(metadata["file_name"].startswith("example"))
+        self.assertTrue(metadata["modified_time"] is not None)
+        self.assertTrue(metadata["created_time"] is not None)
+        self.assertTrue(metadata["access_time"] is not None)
+        self.assertTrue(metadata["keywords"] is not None)
+        self.assertIn("created_date", metadata)
+        self.assertIn("modified_date", metadata)
+        self.assertIn("last_printed_date", metadata)
+
     def test_odt(self):
         file_name = "example.odt"
         result = self._send_request(file_name, data={"structure_type": "tree"})

@@ -3,12 +3,12 @@ import zipfile
 import olefile
 from typing import List, Tuple, Union
 
-from dedoc.attachments_extractors.base_concrete_attach_extractor import BaseConcreteAttachmentsExtractor
+from attachments_extractors.concrete_attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.extensions import recognized_mimes
 from dedoc.utils import splitext_
 
 
-class DocxAttachmentsExtractor(BaseConcreteAttachmentsExtractor):
+class DocxAttachmentsExtractor(AbstractAttachmentsExtractor):
     """
     Extract attachments from docx files
     """
