@@ -17,13 +17,13 @@ class DocumentMetadata(Serializable):
     """
 
     def __init__(self,
-                    file_name: str,
-                    size: int,
-                    modified_time: int,
-                    created_time: int,
-                    access_time: int,
-                    file_type: str,
-                    other_fields: dict = None):
+                 file_name: str,
+                 size: int,
+                 modified_time: int,
+                 created_time: int,
+                 access_time: int,
+                 file_type: str,
+                 other_fields: dict = None):
         self.file_name = file_name
         self.size = size
         self.modified_time = modified_time

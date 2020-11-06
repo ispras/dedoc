@@ -1,15 +1,14 @@
 import os
 from typing import List
 
-from dedoc.attachments_extractors.base_attachments_extractor import BaseAttachmentsExtractor
-from dedoc.attachments_extractors.base_concrete_attach_extractor import BaseConcreteAttachmentsExtractor
+from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.utils import get_file_mime_type, save_data_to_unique_file
 
 
-class AttachmentsExtractor(BaseAttachmentsExtractor):
+class AttachmentsExtractorComposition:
 
-    def __init__(self, extractors: List[BaseConcreteAttachmentsExtractor]):
+    def __init__(self, extractors: List[AbstractAttachmentsExtractor]):
         self.extractors = extractors
 
     def get_attachments(self, tmp_dir: str, filename: str, parameters: dict) -> List[AttachedFile]:

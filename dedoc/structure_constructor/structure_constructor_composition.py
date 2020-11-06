@@ -3,10 +3,10 @@ from typing import Optional, Dict
 from dedoc.common.exceptions.structure_extractor_exception import StructureExtractorException
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.structure_constructor.abstract_structure_constructor import AbstractStructureConstructor
+from dedoc.structure_constructor.concreat_structure_constructors.abstract_structure_constructor import AbstractStructureConstructor
 
 
-class ConditionalStructureExtractor(AbstractStructureConstructor):
+class StructureConstructorComposition(AbstractStructureConstructor):
 
     def __init__(self,
                  extractors: Dict[str, AbstractStructureConstructor],
