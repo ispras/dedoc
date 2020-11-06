@@ -2,7 +2,7 @@ import os
 import zipfile
 from typing import List, Union
 
-from attachments_extractors.concrete_attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
+from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.extensions import recognized_mimes
 from dedoc.utils import splitext_
 
