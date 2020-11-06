@@ -4,7 +4,7 @@ import tempfile
 from typing import Optional, List, Dict
 from werkzeug.datastructures import FileStorage
 
-from attachments_extractors.attachments_extractor_composition import AttachmentsExtractorComposition
+from dedoc.attachments_extractors.attachments_extractor_composition import AttachmentsExtractorComposition
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.configuration_manager import get_manager_config
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
@@ -12,8 +12,8 @@ from dedoc.converters.file_converter import FileConverterComposition
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.utils import get_unique_name
-from metadata_extractor.metadata_extractor_composition import MetadataExtractorComposition
-from structure_constructor.structure_constructor_composition import StructureConstructorComposition
+from dedoc.metadata_extractor.metadata_extractor_composition import MetadataExtractorComposition
+from dedoc.structure_constructor.structure_constructor_composition import StructureConstructorComposition
 
 
 class DedocManager(object):

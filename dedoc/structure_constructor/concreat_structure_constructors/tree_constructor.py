@@ -8,7 +8,7 @@ from dedoc.data_structures.tree_node import TreeNode
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from structure_constructor.concreat_structure_constructors.abstract_structure_constructor import AbstractStructureConstructor
+from dedoc.structure_constructor.concreat_structure_constructors.abstract_structure_constructor import AbstractStructureConstructor
 
 
 class TreeConstructor(AbstractStructureConstructor):

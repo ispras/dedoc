@@ -1,7 +1,6 @@
 import zipfile
 from bs4 import BeautifulSoup
 
-from dedoc.configuration_manager import get_manager_config
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor

@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from data_structures.document_content import DocumentContent
-from data_structures.parsed_document import ParsedDocument
+from dedoc.data_structures.document_content import DocumentContent
+from dedoc.data_structures.parsed_document import ParsedDocument
 
 
 class AbstractMetadataExtractor(ABC):

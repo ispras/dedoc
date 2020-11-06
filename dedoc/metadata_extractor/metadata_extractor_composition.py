@@ -1,8 +1,8 @@
 from typing import List, Optional
 
-from data_structures.document_content import DocumentContent
-from data_structures.parsed_document import ParsedDocument
-from metadata_extractor.concreat_metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
+from dedoc.data_structures.document_content import DocumentContent
+from dedoc.data_structures.parsed_document import ParsedDocument
+from dedoc.metadata_extractor.concreat_metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 
 
 class MetadataExtractorComposition:

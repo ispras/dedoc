@@ -1,7 +1,7 @@
 import os
 from typing import List
 
-from attachments_extractors.concrete_attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
+from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.utils import get_file_mime_type, save_data_to_unique_file
 

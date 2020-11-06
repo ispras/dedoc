@@ -2,7 +2,7 @@ import os
 from stat import S_IREAD, S_IRGRP, S_IROTH
 from typing import List
 
-from converters.concrete_converters.abstract_converter import AbstractConverter
+from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
 from dedoc.utils import splitext_, get_file_mime_type
 
 
