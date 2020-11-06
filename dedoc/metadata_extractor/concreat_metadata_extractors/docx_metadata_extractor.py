@@ -7,7 +7,7 @@ import docx
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.document_metadata import DocumentMetadata
 from dedoc.data_structures.parsed_document import ParsedDocument
-from metadata_extractor.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
+from dedoc.metadata_extractor.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
 class DocxMetadataExtractor(BaseMetadataExtractor):

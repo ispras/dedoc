@@ -3,7 +3,7 @@ import zipfile
 import olefile
 from typing import List, Tuple, Union
 
-from attachments_extractors.concrete_attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
+from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.extensions import recognized_mimes
 from dedoc.utils import splitext_
 
