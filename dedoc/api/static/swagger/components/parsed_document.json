@@ -1,0 +1,20 @@
+{
+      "ParsedDocument": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "$ref": "document_metadata.json#/DocumentMetadata"
+          },
+          "content": {
+            "$ref": "document_content.json#/DocumentContent"
+          },
+          "attachments": {
+            "type": "array",
+            "required": false,
+            "items": {
+              "$ref": "#/ParsedDocument"
+            }
+          }
+        }
+      }
+}

@@ -1,0 +1,177 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "description": "API description",
+    "version": "1.0.0",
+    "title": "Automatic structure document extractor",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Upload File",
+      "description": "Example API for requesting and return document structure requests"
+    }
+  ],
+  "paths": {
+    "/upload": {
+      "post": {
+        "tags": [
+          "Upload File"
+        ],
+        "summary": "Returns reconized document structure",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "description": "язык рапознавания документа.",
+            "schema": {
+              "type": "string",
+              "default": "rus+eng",
+              "enum": ["rus+eng", "rus", "eng"]
+            }
+          },
+          {
+            "in": "query",
+            "name": "with_attachments",
+            "required": false,
+            "description": "опция включающая анализ вложенных файлов.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "return_html",
+            "required": false,
+            "description": "опция для возврата ответа в html-виде.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "document_type",
+            "required": false,
+            "description": "тип документа. ",
+            "schema": {
+              "type": "string",
+              "enum": ["", "law", "article"],
+              "default": ""
+            }
+          },
+          {
+            "in": "query",
+            "name": "structure_type",
+            "required": false,
+            "description": "тип выходной структуры (линейная или древовидная)",
+            "schema": {
+              "type": "string",
+              "enum": ["linear", "tree"],
+              "default": "linear"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pdf_with_text_layer",
+            "required": false,
+            "description": "опция плагина Docreader для извлечения текста из текстового слоя в PDF или с помощью OCR-методов из изображения документов.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "orient_analysis_cells",
+            "required": false,
+            "description": "опция плагина Docreader модуля распознавания таблиц включение анализа повернутых ячеек в заголовках таблиц.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "orient_cell_angle",
+            "required": false,
+            "description": "опция плагина Docreader для установки ориентации ячеек в заголовках таблиц.  \"90\" - ячейки повернуты на 90 градусов по часовой стрелке, \"270\" - ячейки повернуты на 90 градусов против часовой стрелки (или 270 по часовой)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "90",
+                "270"
+              ],
+              "default": "270"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParsedDocument"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ParsedDocument": {
+        "$ref": "components/parsed_document.json#/ParsedDocument"
+      },
+      "DocumentMetadata": {
+        "$ref": "components/document_metadata.json#/DocumentMetadata"
+      },
+      "DocumentContent": {
+        "$ref": "components/document_content.json#/DocumentContent"
+      },
+      "Table": {
+        "$ref": "components/table.json#/Table"
+      },
+      "TableMetadata": {
+        "$ref": "components/table_metadata.json#/TableMetadata"
+      },
+      "TreeNode": {
+        "$ref": "components/tree_node.json#/TreeNode"
+      },
+      "Annotation": {
+        "$ref": "components/annotation.json#/Annotation"
+      },
+      "ParagraphMetadata": {
+        "$ref": "components/paragraph_metadata.json#/ParagraphMetadata"
+      }
+    }
+  }
+}
