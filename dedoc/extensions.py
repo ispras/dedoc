@@ -4,6 +4,7 @@ from typing import List
 from dedoc.utils import get_extensions_by_mimes
 
 Extensions = namedtuple('Parts', 'excel_like_format '
+                                 'pptx_like_format '
                                  'csv_like_format '
                                  'docx_like_format '
                                  'archive_like_format '
@@ -14,15 +15,18 @@ Extensions = namedtuple('Parts', 'excel_like_format '
 converted_extensions = Extensions(
     excel_like_format=[],
     docx_like_format=[],
+    pptx_like_format=[],
     archive_like_format=[],
     image_like_format=['.pcx', '.webp', '.sgi', '.hdr', '.sr', '.pic'],
     pdf_like_format=[],
     csv_like_format=[]
 )
-# .sgi, .hdr, .sr, .ras - не зарегестрованы в mime
+# .sgi, .hdr, .sr, .ras - не зарегистрованы в mime
 converted_mimes = Extensions(
     excel_like_format=["application/vnd.oasis.opendocument.spreadsheet", "application/vnd.ms-excel"],
     docx_like_format=['application/msword', "application/vnd.oasis.opendocument.text"],
+    pptx_like_format=['application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                      'application/vnd.ms-powerpoint'],
     archive_like_format=[],
     image_like_format=['image/gif',
                        'image/x-portable-pixmap', 'image/x-portable-anymap', 'image/x-portable-graymap',
@@ -35,6 +39,7 @@ converted_mimes = Extensions(
 recognized_extensions = Extensions(
     excel_like_format=[],
     docx_like_format=[],
+    pptx_like_format=[],
     archive_like_format=[".tar.gz"],
     image_like_format=[],
     pdf_like_format=[],
@@ -44,6 +49,7 @@ recognized_extensions = Extensions(
 recognized_mimes = Extensions(
     excel_like_format=['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'],
     docx_like_format=['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    pptx_like_format=['application/vnd.openxmlformats-officedocument.presentationml.presentation'],
     archive_like_format=['application/zip', 'application/x-tar', 'application/x-rar-compressed', 'application/rar', 'application/x-7z-compressed'],
     image_like_format=['image/jpeg', 'image/png', 'image/tiff', 'image/x-ms-bmp', 'image/bmp'],
     pdf_like_format=['application/pdf'],
