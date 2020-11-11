@@ -26,7 +26,7 @@ converted_mimes = Extensions(
     excel_like_format=["application/vnd.oasis.opendocument.spreadsheet", "application/vnd.ms-excel"],
     docx_like_format=['application/msword', "application/vnd.oasis.opendocument.text"],
     pptx_like_format=['application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                      'application/vnd.ms-powerpoint'],
+                      'application/vnd.ms-powerpoint', 'application/vnd.oasis.opendocument.presentation'],
     archive_like_format=[],
     image_like_format=['image/gif',
                        'image/x-portable-pixmap', 'image/x-portable-anymap', 'image/x-portable-graymap',

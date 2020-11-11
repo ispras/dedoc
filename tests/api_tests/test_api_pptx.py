@@ -29,3 +29,8 @@ class TestApiExcelReader(AbstractTestApiDocReader):
         file_name = "example.ppt"
         result = self._send_request(file_name)
         self.__check_content(result['content'])
+
+    def test_odp(self):
+        file_name = "example.odp"
+        result = self._send_request(file_name)
+        self.__check_content(result['content'])
