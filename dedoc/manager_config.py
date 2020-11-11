@@ -5,6 +5,7 @@ from dedoc.attachments_extractors.concrete_attachments_extractors.excel_attachme
     ExcelAttachmentsExtractor
 from dedoc.converters.concrete_converters.docx_converter import DocxConverter
 from dedoc.converters.concrete_converters.excel_converter import ExcelConverter
+from dedoc.converters.concrete_converters.pptx_converter import PptxConverter
 from dedoc.converters.file_converter import FileConverterComposition
 from dedoc.metadata_extractor.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.metadata_extractor.concreat_metadata_extractors.docx_metadata_extractor import DocxMetadataExtractor
@@ -12,6 +13,7 @@ from dedoc.metadata_extractor.metadata_extractor_composition import MetadataExtr
 from dedoc.readers.csv_reader.csv_reader import CSVReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.readers.excel_reader.excel_reader import ExcelReader
+from dedoc.readers.pptx_reader.pptx_reader import PptxReader
 from dedoc.readers.json_reader.json_reader import JsonReader
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
@@ -24,11 +26,12 @@ from dedoc.structure_constructor.structure_constructor_composition import Struct
 concrete_attachments_extractors = [ExcelAttachmentsExtractor(), DocxAttachmentsExtractor()]
 
 _config = dict(
-    converter=FileConverterComposition(converters=[DocxConverter(), ExcelConverter()]),
+    converter=FileConverterComposition(converters=[DocxConverter(), ExcelConverter(), PptxConverter()]),
 
     reader=ReaderComposition(readers=
                              [DocxReader(),
                               ExcelReader(),
+                              PptxReader(),
                               CSVReader(),
                               RawTextReader(),
                               JsonReader(),
