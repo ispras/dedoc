@@ -53,3 +53,26 @@ class TestAnyDocReader(unittest.TestCase):
         lines = result.lines
 
         self.assertEqual("Техническое задание\nна оказание услуг по созданию системы защиты персональных данных ", lines[0].line)
+
+    def test_headers_footers_docx(self):
+        any_doc_reader = DocxReader()
+        path = os.path.join(os.path.dirname(__file__), "data/footer_header_example.docx")
+        result, _ = any_doc_reader.read(path)
+        lines = result.lines
+        self.assertEqual("This is header for even pages", lines[0].line)
+        self.assertEqual("This is header for odd pages", lines[4].line)
+        self.assertEqual("3", lines[6].line)
+        self.assertEqual("This is the first header", lines[8].line)
+        self.assertEqual("This is example document for testing headers, footers, footnotes and endnotes.", lines[12].line)
+        self.assertEqual("This sentence is made for testing footnote.", lines[13].line)
+        self.assertEqual("This sentence is made for testing endnote.", lines[14].line)
+        self.assertEqual("New page-1", lines[16].line)
+        self.assertEqual("New page-2", lines[18].line)
+        self.assertEqual(" this is the first footnote", lines[21].line)
+        self.assertEqual(" this is the second footnote", lines[22].line)
+        self.assertEqual(" this is the first endnote", lines[25].line)
+        self.assertEqual(" this is the second endnote", lines[26].line)
+        self.assertEqual("This is footer for even pages", lines[27].line)
+        self.assertEqual("This is footer for odd pages", lines[31].line)
+        self.assertEqual("This is the first footer", lines[35].line)
+
