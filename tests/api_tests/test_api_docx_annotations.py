@@ -1,12 +1,19 @@
 from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
+import json
+import re
 
 
 class TestApiDocxAnnotations(AbstractTestApiDocReader):
 
+    @staticmethod
+    def __get_indent(annotations):
+        for annotation in annotations:
+            if 'value' in annotation and annotation['value'].startswith('indent'):
+                return json.loads(re.sub("'", '"', annotation['value'][7:]))
+
     def test_example_1(self):
         result = self._send_request("annotation_docx/example_1.docx")['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in result]
-
         # bold, italic, underlined
         self.assertTrue({'start': 0, 'end': 10, 'value': 'style:body'} in annotations[1])
         self.assertTrue({'start': 0, 'end': 11, 'value': 'italic'} in annotations[2])
@@ -22,12 +29,9 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertTrue({'start': 0, 'end': 10, 'value': 'alignment:right'} in annotations[11])
         self.assertTrue({'start': 0, 'end': 28, 'value': 'alignment:both'} in annotations[12])
         # indent
-        self.assertTrue({'start': 0, 'end': 11,
-                         'value': "indent:{'left': 0, 'firstLine': 0, 'hanging': 0, 'start': 0}"} in annotations[13])
-        self.assertTrue({'start': 0, 'end': 10,
-                         'value': "indent:{'left': 720, 'firstLine': 0, 'hanging': 0, 'start': 0}"} in annotations[14])
-        self.assertTrue({'start': 0, 'end': 11,
-                         'value': "indent:{'left': 1440, 'firstLine': 0, 'hanging': 0, 'start': 0}"} in annotations[15])
+        self.assertEqual({'left': 0, 'firstLine': 0, 'hanging': 0, 'start': 0}, self.__get_indent(annotations[13]))
+        self.assertEqual({'left': 720, 'firstLine': 0, 'hanging': 0, 'start': 0}, self.__get_indent(annotations[14]))
+        self.assertEqual({'left': 1440, 'firstLine': 0, 'hanging': 0, 'start': 0}, self.__get_indent(annotations[15]))
 
     def test_example_2(self):
         result = self._send_request("annotation_docx/example_2.docx")['content']['structure']['subparagraphs']
