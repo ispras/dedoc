@@ -206,7 +206,7 @@ class NumberingExtractor:
             if not self.numbering:
                 raise Exception("there are no numbering")
         else:
-            raise Exception("xml must not be empty")
+            return
 
         if styles_extractor:
             self.styles_extractor = styles_extractor
