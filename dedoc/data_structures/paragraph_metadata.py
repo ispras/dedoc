@@ -1,6 +1,9 @@
 from collections import OrderedDict
 from typing import Dict, Optional
 
+from flask_restplus import fields, Api, Model
+
+from dedoc.api.models.custom_fields import wild_any_fields, wild_forbid_fields
 from dedoc.data_structures.serializable import Serializable
 
 
@@ -16,28 +19,23 @@ class ParagraphMetadata(Serializable):
     """
 
     def __init__(self, paragraph_type: str,
-                    predicted_classes: Optional[Dict[str, float]],
-                    page_id: int,
-                    line_id: Optional[int],
-                    other_fields=None):
-        if other_fields is None:
-            other_fields = {}
-        if other_fields is None:
-            other_fields = dict()
+                 predicted_classes: Optional[Dict[str, float]],
+                 page_id: int,
+                 line_id: Optional[int],
+                 other_fields=None):
         self.paragraph_type = paragraph_type
         self.predicted_classes = predicted_classes
         self.page_id = page_id
         self.line_id = line_id
-        self.other_fields = other_fields
+        if other_fields is not None and len(other_fields) > 0:
+            self.extend_other_fields(other_fields)
 
     def extend_other_fields(self, new_fields: dict):
-        assert(new_fields is not None)
-        assert(len(new_fields) > 0)
+        assert (new_fields is not None)
+        assert (len(new_fields) > 0)
 
-        if self.other_fields is None:
-            self.other_fields = {}
-        for (key, value) in new_fields.items():
-            self.other_fields[key] = value
+        for key, value in new_fields.items():
+            setattr(self, key, value)
 
     def to_dict(self) -> dict:
         res = OrderedDict()
@@ -46,8 +44,25 @@ class ParagraphMetadata(Serializable):
             res["predicted_classes"] = self.predicted_classes
         res["page_id"] = self.page_id
         res["line_id"] = self.line_id
-        if self.other_fields is not None:
-            for (key, value) in self.other_fields.items():
-                res[key] = value
 
         return res
+
+    @staticmethod
+    def get_api_dict(api: Api) -> Model:
+        return api.model('ParagraphMetadata', {
+            'paragraph_type': fields.String(description="paragraph type (header, list_item, list) and etc.",
+                                            required=True,
+                                            example="header"),
+            'predicted_classes': fields.Nested(api.model("Predicts", {'*': wild_any_fields}),
+                                               allow_null=True,
+                                               skip_none=True,
+                                               required=False,
+                                               description="classification result, where [{type_paragraph: "
+                                                           "probability}]. Probability is the probability that a "
+                                                           "paragraph belongs to a specific paragraph type, "
+                                                           "paragraph type values depends on the input document type"),
+            'page_id': fields.Integer(description="page number of begin paragraph", required=False, example=0),
+            'line_id': fields.Integer(description="line number of begin paragraph", required=True, example=13),
+            '_*': wild_forbid_fields,  # don't get private fields
+            '*': wild_any_fields
+        })

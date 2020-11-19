@@ -19,7 +19,10 @@ _config = dict(
     max_content_length=512 * 1024 * 1024,
     # application port
     api_port=int(os.environ.get('DOCREADER_PORT', '1231')),
-    static_files_dirs={}
+    static_files_dirs={},
+    recursion_deep_attachments=10,
+    recursion_deep_subparagraphs=30,
+    import_path_init_api_args="dedoc.api.api_args"
     #
 
     # path to external static files (you may get file from this directory with url

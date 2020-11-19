@@ -31,6 +31,8 @@ class ReaderComposition(object):
                 return unstructured_document, need_analyze_attachments
 
         raise BadFileFormatException(
-            "no one can read file: name = {}, extension = {}, mime = {}, document type = {}".format(
-                filename, extension, mime, document_type)
+            msg="no one can read file: name = {}, extension = {}, mime = {}, document type = {}".format(
+                filename, extension, mime, document_type),
+            msg_api="Unsupported file format {} of the input file {}".format(mime, filename)
+
         )

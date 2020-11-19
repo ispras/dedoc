@@ -8,5 +8,5 @@ beautifulsoup4==4.9.3
 docx==0.2.4
 olefile~=0.46
 Werkzeug==0.16.0
-flask_swagger_ui==3.36.0
-flask-cors==3.0.9
+flask_cors==3.0.9
+flask-restplus==0.13.0

@@ -38,4 +38,5 @@ class AbstractConverter(ABC):
             t += self.period_checking
 
             if t >= self.timeout:
-                raise ConversionException("fail with {tmp_dir}/{filename}".format(tmp_dir=tmp_dir, filename=filename))
+                raise ConversionException(msg="fail with {tmp_dir}/{filename}".format(tmp_dir=tmp_dir, filename=filename),
+                                          msg_api="Unsupported file format {}".format(filename))
