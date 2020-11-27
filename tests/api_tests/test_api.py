@@ -16,8 +16,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.__check_doc_like(result)
 
         self._check_metainfo(result['metadata'],
-                              'application/vnd.openxmlformats-officedocument.wordprocessingml.document', file_name)
-
+                             'application/vnd.openxmlformats-officedocument.wordprocessingml.document', file_name)
 
     def __check_doc_like(self, result):
         content = result["content"]["structure"]
@@ -53,10 +52,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertTrue(metadata["modified_time"] is not None)
         self.assertTrue(metadata["created_time"] is not None)
         self.assertTrue(metadata["access_time"] is not None)
-        self.assertTrue(metadata["keywords"] is not None)
-        self.assertIn("created_date", metadata)
         self.assertIn("modified_date", metadata)
-        self.assertIn("last_printed_date", metadata)
 
     def test_odt(self):
         file_name = "example.odt"
@@ -79,7 +75,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]
         res = str(content)
-        self.assertFalse("ufeff" in  res)
+        self.assertFalse("ufeff" in res)
 
     def test_bin_file(self):
         self._send_request("file.bin", expected_code=415)

@@ -11,21 +11,21 @@ class TestApiExcelReader(AbstractTestApiDocReader):
         rows1 = table1["cells"]
         rows2 = table2["cells"]
 
-        self.assertEqual(1, rows1[0][0])
-        self.assertEqual(2, rows1[0][1])
-        self.assertEqual(3, rows1[0][2])
-        self.assertEqual(4, rows1[1][0])
-        self.assertEqual(5, rows1[1][1])
-        self.assertEqual(6, rows1[1][2])
+        self.assertEqual("1.0", rows1[0][0])
+        self.assertEqual("2.0", rows1[0][1])
+        self.assertEqual("3.0", rows1[0][2])
+        self.assertEqual("4.0", rows1[1][0])
+        self.assertEqual("5.0", rows1[1][1])
+        self.assertEqual("6.0", rows1[1][2])
 
-        self.assertEqual(11, rows2[0][0])
-        self.assertEqual(22, rows2[0][1])
-        self.assertEqual(33, rows2[0][2])
-        self.assertEqual(44, rows2[0][3])
-        self.assertEqual(55, rows2[1][0])
-        self.assertEqual(66, rows2[1][1])
-        self.assertEqual(77, rows2[1][2])
-        self.assertEqual(88, rows2[1][3])
+        self.assertEqual("11.0", rows2[0][0])
+        self.assertEqual("22.0", rows2[0][1])
+        self.assertEqual("33.0", rows2[0][2])
+        self.assertEqual("44.0", rows2[0][3])
+        self.assertEqual("55.0", rows2[1][0])
+        self.assertEqual("66.0", rows2[1][1])
+        self.assertEqual("77.0", rows2[1][2])
+        self.assertEqual("88.0", rows2[1][3])
 
     def test_ods(self):
         file_name = "example.ods"

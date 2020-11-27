@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+from flask_restplus import fields, Api, Model
+
 from dedoc.data_structures.serializable import Serializable
 
 
@@ -25,3 +27,15 @@ class Annotation(Serializable):
         res["end"] = self.end
         res["value"] = self.value
         return res
+
+    @staticmethod
+    def get_api_dict(api: Api) -> Model:
+        return api.model('Annotation', {
+            'start': fields.Integer(description='annotation start index', required=True, example=0),
+            'end': fields.Integer(description='annotation end index', required=True, example=4),
+            'value': fields.String(description='annotation value. The value can contain style name (then begins'
+                                               'with the line \"style:\") or other values',
+                                   required=True,
+                                   example="style: TimesNewRoman",
+                                   enum=["style:*", "bold", "italic", "underground"])
+        })

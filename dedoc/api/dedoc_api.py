@@ -1,144 +1,138 @@
-import json
+import importlib
 import os
 
 from flask import Flask, request
-from flask import Response
 from flask import send_file
-from flask_cors import CORS
-from flask_swagger_ui import get_swaggerui_blueprint
 
+from flask_restplus import Resource, Api
+
+from dedoc.api.swagger_api_utils import get_command_keep_models
 from dedoc.common.exceptions.structure_extractor_exception import StructureExtractorException
 from dedoc.api.api_utils import json2html
-from dedoc.config import Configuration
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.common.exceptions.missing_file_exception import MissingFileException
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.manager.dedoc_manager import DedocManager
 
-# Initialization config
-config = Configuration.getInstance().getConfig()
+from dedoc.api import app, config, static_files_dirs, PORT, static_path
 
-PORT = config["api_port"]
-
-static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/")
-static_files_dirs = config.get("static_files_dirs")
-
-app = Flask(__name__, static_url_path=config.get("static_path", static_path))
-
-# ---- swagger specific ---- #
-SWAGGER_URL = '/swagger'
-API_URL = os.path.abspath(config.get("swagger_pathfile", os.path.join(static_path, 'swagger/swagger.json')))
-SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
-    SWAGGER_URL,
-    API_URL,
-    config={
-        'app_name': "Automatic structure document extractor"
-    }
-)
-# CORS is need for debug from swagger form
-CORS = CORS(app)
-app.config['SWAGGER_BASEPATH'] = API_URL
-app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
-# ---- end swagger specific ---- #
-
-app.config["MAX_CONTENT_LENGTH"] = config["max_content_length"]
-
-external_static_files_path = config.get("external_static_files_path")
-if external_static_files_path is not None and not os.path.isdir(external_static_files_path):
-    raise Exception("Could not find directory {}, probably config is incorrect".format(external_static_files_path))
-
-favicon_path = config.get("favicon_path")
-if favicon_path is not None and not os.path.isfile(favicon_path):
-    raise Exception("Could not find file {}, probably config is incorrect".format(favicon_path))
-
-manager = DedocManager.from_config()
-
-
-def __make_response(document_tree: ParsedDocument) -> Response:
-    return app.response_class(
-        response=json.dumps(obj=document_tree.to_dict(), ensure_ascii=False, indent=2),
-        status=200,
-        mimetype='application/json'
-    )
-
-
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if request.method == 'POST':
-        file = request.files['file']
-        if file is None:
-            err = MissingFileException("Error: Missing content in request file parameter")
-            print(err)
-            return app.response_class(response=err.msg, status=err.code)
-        try:
-            # check if the post request has the file part
-
-            parameters = {k: v for k, v in request.values.items()}
-            document_tree = manager.parse_file(file, parameters=parameters)
-            if request.values.get("return_html", "False").lower() == "false":
-                return __make_response(document_tree)
-            else:
-                return json2html(text="", paragraph=document_tree.content.structure,
-                                 tables=document_tree.content.tables,
-                                 tabs=0)
-        except (BadFileFormatException, ConversionException) as err:
-            print(err)
-            file = request.files['file']
-            return app.response_class(response="Unsupported file format for {}".format(file.filename), status=err.code)
-        except StructureExtractorException as err:
-            return app.response_class(response="Unsupported structure type for {}".format(err.msg), status=err.code)
-        except Exception as e:
-            print("exception on file {}".format(file))
-            print(e)
-            raise e
+module_api_args = importlib.import_module(config['import_path_init_api_args'])
 
 
 @app.route('/', methods=['GET'])
 def get_info():
+    """
+    Root URL '/' is need start with simple Flask before rest-plus.API otherwise you will get 404 Error. It is bug of rest-plus lib.
+    """
     key = "start_page_path"
     if key not in config:
-        print('app.send_static_file(path)')
         path = "html_eng/info.html"
         return app.send_static_file(path)
     else:
         info_path = os.path.abspath(config[key])
-        print('send_file(info_path)')
         return send_file(info_path)
 
 
-def __handle_request(path: str):
-    document_tree = manager.parse_existing_file(path=path, parameters=request.values)
-    return document_tree
+api = Api(app, doc='/swagger/', description=get_command_keep_models())
 
 
-@app.route('/results_file', methods=['GET'])
-def send_json():
-    path = __get_static_file_path()
-    document_tree = __handle_request(path)
-    return __make_response(document_tree)
+@api.route('/upload')
+@api.expect(module_api_args.init_args(api))
+class UploadFile(Resource):
+    @api.marshal_with(ParsedDocument.get_api_dict(api), skip_none=True)
+    def post(self):
+        if request.method == 'POST':
+            if 'file' not in request.files or request.files['file'] is None or request.files['file'].filename == "":
+                raise MissingFileException("Error: Missing content in request file parameter")
+
+            # check if the post request has the file part
+            parameters = {k: v for k, v in request.values.items()}
+            document_tree = manager.parse_file(request.files['file'], parameters=parameters)
+            if request.values.get("return_html", "False").lower() == "false":
+                return document_tree
+            else:
+                return json2html(text="", paragraph=document_tree.content.structure,
+                                 tables=document_tree.content.tables,
+                                 tabs=0)
 
 
-@app.route('/results_file_html', methods=['GET'])
-def send_html():
-    path = __get_static_file_path()
-    document_tree = __handle_request(path)
-    text_res = json2html("", document_tree.content.structure, document_tree.content.tables, 0)
-    return text_res
+@api.route('/static_file')
+@api.doc(False)
+class SendExampleFile(Resource):
+    def get(self):
+        path = _get_static_file_path()
+        as_attachment = request.values.get("as_attachment") == "true"
+        return send_file(path, as_attachment=as_attachment)
 
 
-@app.route('/static_file', methods=['GET'])
-def send_example_file():
-    path = __get_static_file_path()
-    as_attachment = request.values.get("as_attachment") == "true"
-    return send_file(path, as_attachment=as_attachment)
+@api.route('/results_file')
+@api.doc(False)
+class SendJson(Resource):
+    @api.marshal_with(ParsedDocument.get_api_dict(api), skip_none=True)
+    def get(self):
+        path = _get_static_file_path()
+        document_tree = _handle_request(path)
+        return document_tree
 
 
-def __get_static_file_path():
+@api.route('/results_file_html')
+@api.doc(False)
+class SendHtml(Resource):
+
+    def get(self):
+        path = _get_static_file_path()
+        document_tree = _handle_request(path)
+        text_res = json2html("", document_tree.content.structure, document_tree.content.tables, 0)
+        return text_res
+
+
+# ==================== Declare API exceptions =======================
+
+@api.errorhandler(MissingFileException)
+def handle_missing_file_exception(error):
+    return {'message': error.msg_api}, error.code
+
+
+@api.errorhandler(BadFileFormatException)
+def handle_bad_file_format_exception(error):
+    return {'message': error.msg_api}, error.code
+
+
+@api.errorhandler(ConversionException)
+def handle_conversion_exception(error):
+    return {'message': error.msg_api}, error.code
+
+
+@api.errorhandler(StructureExtractorException)
+def handle_structure_extractor_exception(error):
+    return {'message': error.msg_api}, error.code
+
+
+@api.errorhandler(Exception)
+def handle_exception(error):
+    return {'message': str(error)}, 500
+
+
+manager = DedocManager.from_config()
+
+
+# ==================== Utils API functions =======================
+
+
+def _get_static_file_path():
     file = request.values["fname"]
     directory_name = request.values.get("directory")
     directory = static_files_dirs[directory_name] if directory_name is not None else static_path
     return os.path.abspath(os.path.join(directory, file))
+
+
+def _handle_request(path: str):
+    document_tree = manager.parse_existing_file(path=path, parameters=request.values)
+    return document_tree
+
+
+# ==================== Public functions =======================
 
 
 def get_api() -> Flask:

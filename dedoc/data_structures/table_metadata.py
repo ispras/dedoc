@@ -1,6 +1,8 @@
 from collections import OrderedDict
 from typing import Optional
 
+from flask_restplus import fields, Api, Model
+
 from dedoc.data_structures.serializable import Serializable
 
 
@@ -17,3 +19,9 @@ class TableMetadata(Serializable):
         res = OrderedDict()
         res["page_id"] = self.page_id
         return res
+
+    @staticmethod
+    def get_api_dict(api: Api) -> Model:
+        return api.model('TableMetadata', {
+            'page_id': fields.Integer(readonly=False, description='table start page number')
+        })

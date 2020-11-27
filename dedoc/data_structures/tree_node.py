@@ -1,6 +1,8 @@
 from collections import OrderedDict, defaultdict
 from typing import List, Iterable, Optional, Dict
+from flask_restplus import fields, Api, Model
 
+from dedoc.config import get_config
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.serializable import Serializable
@@ -45,6 +47,33 @@ class TreeNode(Serializable):
         res["metadata"] = self.metadata.to_dict()
         res["subparagraphs"] = [node.to_dict() for node in self.subparagraphs]
         return res
+
+    @staticmethod
+    def get_api_dict(api: Api, depth: int = 0, name: str = 'TreeNode') -> Model:
+        return api.model(name, {
+            'node_id': fields.String(description="Document element identifier. It is unique within one tree (i.e. "
+                                                 "there will be no other such node_id in this tree, but in attachment "
+                                                 "it may occur) The identifier has the form 0.2.1 where each number "
+                                                 "means a serial number at the corresponding level of the hierarchy.",
+                                     required=True,
+                                     example="0.2.1"
+                                     ),
+            'text': fields.String(description="text of node", required=True, example="Закон"),
+            'annotations': fields.List(fields.Nested(Annotation.get_api_dict(api),
+                                                     description="Text annotations "
+                                                                 "(font, size, bold, italic and etc)")),
+            'metadata': fields.Nested(ParagraphMetadata.get_api_dict(api),
+                                      skip_none=True,
+                                      allow_null=False,
+                                      description="Paragraph meta information"),
+            'subparagraphs': fields.List(fields.Nested(api.model('others_TreeNode', {})),
+                                         description="Node childes (with type 'TreeNode') of structure tree")
+            if depth == get_config()['recursion_deep_subparagraphs']
+            else fields.List(fields.Nested(TreeNode.get_api_dict(api,
+                                                                 depth=depth + 1,
+                                                                 name='refTreeNode' + str(depth))),
+                             description="Node childes (with type 'TreeNode') of structure tree")
+        })
 
     @staticmethod
     def create(texts: Iterable[str]) -> "TreeNode":
