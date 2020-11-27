@@ -196,4 +196,3 @@ class DocxReader(BaseReader):
                                                 annotations=annotations))
             lines_with_meta = self.hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
         return lines_with_meta
-
