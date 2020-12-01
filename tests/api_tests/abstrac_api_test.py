@@ -46,8 +46,10 @@ class AbstractTestApiDocReader(unittest.TestCase):
             self.assertEqual(expected_code, r.status_code)
             if expected_code != 200:
                 return None
-            result = json.loads(r.content.decode())
-            return result
+            if "return_html" in data and data["return_html"]:
+                return r.content.decode()
+            else:
+                return json.loads(r.content.decode())
 
     def _send_request_wo_file(self, data: dict = None, expected_code: int = 200):
         host = self.__get_host()

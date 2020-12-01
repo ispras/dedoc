@@ -1,8 +1,7 @@
 import os
-
 from flask import Flask
 from flask_cors import CORS
-from dedoc.api.swagger_api_utils import get_command_keep_models
+
 from dedoc.config import Configuration
 
 config = Configuration.getInstance().getConfig()
@@ -23,4 +22,3 @@ if external_static_files_path is not None and not os.path.isdir(external_static_
 favicon_path = config.get("favicon_path")
 if favicon_path is not None and not os.path.isfile(favicon_path):
     raise Exception("Could not find file {}, probably config is incorrect".format(favicon_path))
-

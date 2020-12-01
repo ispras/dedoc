@@ -1,10 +1,12 @@
 import importlib
+import json
 import os
+from functools import wraps
 
 from flask import Flask, request
 from flask import send_file
-
-from flask_restplus import Resource, Api
+from flask_restplus import Resource, Api, Model
+from werkzeug.local import LocalProxy
 
 from dedoc.api.swagger_api_utils import get_command_keep_models
 from dedoc.common.exceptions.structure_extractor_exception import StructureExtractorException
@@ -15,7 +17,7 @@ from dedoc.common.exceptions.missing_file_exception import MissingFileException
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.manager.dedoc_manager import DedocManager
 
-from dedoc.api import app, config, static_files_dirs, PORT, static_path
+from dedoc.api.init_api import app, config, static_files_dirs, PORT, static_path
 
 module_api_args = importlib.import_module(config['import_path_init_api_args'])
 
@@ -37,16 +39,41 @@ def get_info():
 api = Api(app, doc='/swagger/', description=get_command_keep_models())
 
 
+def marshal_with_wrapper(model: Model, request_post: LocalProxy, **other):
+    """
+    Response marshalling with json indent=2 for json and outputs html for return_html==True
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+
+            if request_post.values.get("return_html", "False").lower() == "false":
+                func2 = api.marshal_with(model, **other)(func)
+                ob = func2(*args, **kwargs)
+                return app.response_class(
+                    response=json.dumps(obj=ob, ensure_ascii=False, indent=2),
+                    status=200,
+                    mimetype='application/json')
+            else:
+                return app.response_class(
+                    response=func(*args, **kwargs),
+                    status=200,
+                    mimetype='text/html;charset=utf-8')
+
+        return wrapper
+    return decorator
+
+
 @api.route('/upload')
 @api.expect(module_api_args.init_args(api))
 class UploadFile(Resource):
-    @api.marshal_with(ParsedDocument.get_api_dict(api), skip_none=True)
+    @api.doc('parsed document', model=ParsedDocument.get_api_dict(api))
+    @marshal_with_wrapper(ParsedDocument.get_api_dict(api), request, skip_none=True)
     def post(self):
         if request.method == 'POST':
             if 'file' not in request.files or request.files['file'] is None or request.files['file'].filename == "":
-                raise MissingFileException("Error: Missing content in request file parameter")
-
-            # check if the post request has the file part
+                raise MissingFileException("Error: Missing content in request_post file parameter")
+            # check if the post request_post has the file part
             parameters = {k: v for k, v in request.values.items()}
             document_tree = manager.parse_file(request.files['file'], parameters=parameters)
             if request.values.get("return_html", "False").lower() == "false":
@@ -69,7 +96,7 @@ class SendExampleFile(Resource):
 @api.route('/results_file')
 @api.doc(False)
 class SendJson(Resource):
-    @api.marshal_with(ParsedDocument.get_api_dict(api), skip_none=True)
+    @marshal_with_wrapper(ParsedDocument.get_api_dict(api), request, skip_none=True)
     def get(self):
         path = _get_static_file_path()
         document_tree = _handle_request(path)
@@ -107,11 +134,6 @@ def handle_conversion_exception(error):
 @api.errorhandler(StructureExtractorException)
 def handle_structure_extractor_exception(error):
     return {'message': error.msg_api}, error.code
-
-
-@api.errorhandler(Exception)
-def handle_exception(error):
-    return {'message': str(error)}, 500
 
 
 manager = DedocManager.from_config()

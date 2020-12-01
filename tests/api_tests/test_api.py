@@ -82,3 +82,18 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
     def test_send_wo_file(self):
         self._send_request_wo_file(expected_code=400)
+
+    def test_return_html(self):
+        file_name = "example.doc"
+        result = self._send_request(file_name, data={"structure_type": "tree", "return_html": "true"})
+        self.assertTrue("<p>  <strong></strong>     <sub> id = 0 ; type = root </sub></p><p> &nbsp;&nbsp;&nbsp;&nbsp; "
+                        "<b>Пример документа</b>" in result)
+        self.assertTrue("<tbody>\n"
+                        "<tr>\n"
+                        "<td >N</td>\n"
+                        "<td >Фамилия</td>\n"
+                        "<td >Имя</td>\n"
+                        "<td >Организация</td>\n"
+                        "<td >Телефон</td>\n"
+                        "<td >Примечания</td>\n"
+                        "</tr>" in result)

@@ -2,12 +2,12 @@ import os
 import importlib.util
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--config_path", help="path to configuration file")
-parser.add_argument("-m", "--module", help="Only for tests")
-parser.add_argument("-f", "--test_files", metavar="VALUE", nargs='*', help="Only for tests")
-parser.add_argument('-v', "--unitest_verbose_mode", nargs='?', help="to enable verbose mode of unittest. Only for tests")
-args = parser.parse_args()
+parser_config = argparse.ArgumentParser()
+parser_config.add_argument("-c", "--config_path", help="path to configuration file")
+parser_config.add_argument("-m", "--module", help="Only for tests")
+parser_config.add_argument("-f", "--test_files", metavar="VALUE", nargs='*', help="Only for tests")
+parser_config.add_argument('-v', "--unitest_verbose_mode", nargs='?', help="to enable verbose mode of unittest. Only for tests")
+args_config = parser_config.parse_args()
 
 _config = dict(
     # JOBLIB SETTINGS
@@ -52,8 +52,8 @@ class Configuration(object):
         return cls.__instance
 
     def __initConfig(self):
-        if args.config_path is not None:
-            spec = importlib.util.spec_from_file_location("config_module", args.config_path)
+        if args_config.config_path is not None:
+            spec = importlib.util.spec_from_file_location("config_module", args_config.config_path)
             config_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(config_module)
             self.__config = config_module._config
