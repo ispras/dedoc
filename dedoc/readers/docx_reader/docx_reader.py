@@ -76,7 +76,11 @@ class DocxReader(BaseReader):
             return []
 
         styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'))
-        numbering_extractor = NumberingExtractor(self.__get_bs_tree('word/numbering.xml'), styles_extractor)
+        num_tree = self.__get_bs_tree('word/numbering.xml')
+        if num_tree:
+            numbering_extractor = NumberingExtractor(num_tree, styles_extractor)
+        else:
+            numbering_extractor = None
         styles_extractor.numbering_extractor = numbering_extractor
 
         footers, headers = [], []
