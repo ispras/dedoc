@@ -76,3 +76,11 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual("This is footer for odd pages", lines[31].line)
         self.assertEqual("This is the first footer", lines[35].line)
 
+    def test_docx_without_numbering(self):
+        any_doc_reader = DocxReader()
+        path = os.path.join(os.path.dirname(__file__), "data/without_numbering.docx")
+        try:
+            result, _ = any_doc_reader.read(path)
+        except AttributeError:
+            result = None
+        self.assertTrue(result is not None)
