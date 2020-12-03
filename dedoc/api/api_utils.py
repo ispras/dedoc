@@ -31,14 +31,14 @@ def json2html(text: str, paragraph: 'TreeNode', tables: Optional[List[Table]], t
     return text
 
 
-def __value2tag(value: str) -> str:
-    if value == "bold":
+def __value2tag(name: str, value: str) -> str:
+    if name == "bold":
         return "b"
 
-    if value == "italic":
+    if name == "italic":
         return "i"
 
-    if value == "underlined":
+    if name == "underlined":
         return "u"
 
     if value.startswith("style:heading "):
@@ -52,12 +52,15 @@ def __annotations2html(paragraph: 'TreeNode') -> str:
     indexes = dict()
 
     for annotation in paragraph.annotations:
+        name = annotation.name
         value = annotation.value
 
-        if value not in ["bold", "italic", "underlined"] and not value.startswith("style:heading "):
+        if name not in ["bold", "italic", "underlined"] and not name.startswith("style:heading "):
+            continue
+        elif name not in ["bold", "italic", "underlined"] and annotation.value == "False":
             continue
 
-        tag = __value2tag(value)
+        tag = __value2tag(name, value)
 
         indexes.setdefault(annotation.start, "")
         indexes.setdefault(annotation.end, "")
