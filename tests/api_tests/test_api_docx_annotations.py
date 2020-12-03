@@ -1,6 +1,4 @@
 from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
-import json
-import re
 
 
 class TestApiDocxAnnotations(AbstractTestApiDocReader):
@@ -39,9 +37,9 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertTrue({'start': 66, 'end': 73, 'name': 'italic', 'value': 'True'} in annotations[35] and
                         {'start': 75, 'end': 89, 'name': 'bold', 'value': 'True'} in annotations[35] and
                         {'start': 91, 'end': 111, 'name': 'underlined', 'value': 'True'} in annotations[35] and
-                        {'start': 0, 'end': 153, 'name': 'size', 'value': '20.0'} in annotations[35] and
-                        {'start': 153, 'end': 175, 'name': 'size', 'value': '14.0'} in annotations[35] and
-                        {'start': 175, 'end': 183, 'name': 'size', 'value': '11.0'} in annotations[35])
+                        {'start': 0, 'end': 153, 'name': 'size', 'value': '14.0'} in annotations[35] and
+                        {'start': 153, 'end': 175, 'name': 'size', 'value': '20.0'} in annotations[35] and
+                        {'start': 183, 'end': 199, 'name': 'size', 'value': '11.0'} in annotations[35])
         # alignment
         self.assertTrue({'start': 0, 'end': 45, 'name': 'alignment', 'value': 'right'} in annotations[43])
         self.assertTrue({'start': 0, 'end': 39, 'name': 'alignment', 'value': 'center'} in annotations[44])
