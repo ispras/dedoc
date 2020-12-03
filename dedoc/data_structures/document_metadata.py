@@ -47,7 +47,7 @@ class DocumentMetadata(Serializable):
         for key, value in new_fields.items():
             setattr(self, key, value)
 
-    def to_dict(self) -> dict:
+    def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()
         res["file_name"] = self.file_name
         res["size"] = self.size

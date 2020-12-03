@@ -19,10 +19,10 @@ class DocumentContent(Serializable):
         self.tables = tables
         self.structure = structure
 
-    def to_dict(self) -> dict:
+    def to_dict(self, old_version) -> dict:
         res = OrderedDict()
-        res["structure"] = self.structure.to_dict()
-        res["tables"] = [table.to_dict() for table in self.tables]
+        res["structure"] = self.structure.to_dict(old_version)
+        res["tables"] = [table.to_dict(old_version) for table in self.tables]
         return res
 
     @staticmethod

@@ -33,12 +33,12 @@ class ParsedDocument(Serializable):
     def set_metadata(self, metadata: DocumentMetadata):
         self.metadata = metadata
 
-    def to_dict(self):
+    def to_dict(self, old_version: bool):
         res = OrderedDict()
-        res["content"] = self.content.to_dict() if self.content is not None else []
-        res["metadata"] = self.metadata.to_dict()
+        res["content"] = self.content.to_dict(old_version) if self.content is not None else []
+        res["metadata"] = self.metadata.to_dict(old_version)
         if self.attachments is not None:
-            res["attachments"] = [attachment.to_dict() for attachment in self.attachments]
+            res["attachments"] = [attachment.to_dict(old_version) for attachment in self.attachments]
         return res
 
     @staticmethod

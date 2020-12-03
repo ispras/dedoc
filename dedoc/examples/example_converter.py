@@ -11,4 +11,4 @@ with open(filename, 'rb') as fp:
     parsed_document = manager.parse_file(file, parameters={"document_type": "example"})
 
     print(parsed_document)
-    print(parsed_document.to_dict())
+    print(parsed_document.to_dict(old_version=True))

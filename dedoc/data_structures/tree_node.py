@@ -39,13 +39,13 @@ class TreeNode(Serializable):
         self.hierarchy_level = hierarchy_level
         self.parent = parent
 
-    def to_dict(self) -> dict:
+    def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()
         res["node_id"] = self.node_id
         res["text"] = self.text
-        res["annotations"] = [annotation.to_dict() for annotation in self.annotations]
-        res["metadata"] = self.metadata.to_dict()
-        res["subparagraphs"] = [node.to_dict() for node in self.subparagraphs]
+        res["annotations"] = [annotation.to_dict(old_version) for annotation in self.annotations]
+        res["metadata"] = self.metadata.to_dict(old_version)
+        res["subparagraphs"] = [node.to_dict(old_version) for node in self.subparagraphs]
         return res
 
     @staticmethod

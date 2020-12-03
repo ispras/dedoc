@@ -20,10 +20,10 @@ class Table(Serializable):
         self.cells = cells
         self.metadata = metadata
 
-    def to_dict(self) -> dict:
+    def to_dict(self, old_version) -> dict:
         res = OrderedDict()
         res["cells"] = self.cells
-        res["metadata"] = self.metadata.to_dict()
+        res["metadata"] = self.metadata.to_dict(old_version)
         return res
 
     @staticmethod

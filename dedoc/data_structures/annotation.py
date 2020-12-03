@@ -22,12 +22,15 @@ class Annotation(Serializable):
         self.name = name
         self.value = value
 
-    def to_dict(self) -> dict:
+    def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()
         res["start"] = self.start
         res["end"] = self.end
-        res["name"] = self.name
-        res["value"] = self.value
+        if old_version:
+            res["value"] = self.name + ":" + self.value
+        else:
+            res["name"] = self.name
+            res["value"] = self.value
         return res
 
     @staticmethod
