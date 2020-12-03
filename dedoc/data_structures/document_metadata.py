@@ -61,7 +61,6 @@ class DocumentMetadata(Serializable):
 
         return res
 
-
     @staticmethod
     def get_api_dict(api: Api) -> Model:
         return api.model('DocumentMetadata', {
@@ -76,4 +75,3 @@ class DocumentMetadata(Serializable):
             'file_type': fields.String(description='mime-type file', example="application/vnd.oasis.opendocument.text"),
             '*': wild_any_fields
         })
-

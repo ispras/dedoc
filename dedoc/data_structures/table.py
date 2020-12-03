@@ -35,5 +35,3 @@ class Table(Serializable):
                                       readonly=True,
                                       description='Table meta information')
         })
-
-

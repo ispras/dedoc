@@ -33,8 +33,7 @@ class TreeConstructor(AbstractStructureConstructor):
             # multiline header
             elif (line.hierarchy_level.can_be_multiline and
                   line.hierarchy_level == tree.hierarchy_level and
-                  line.hierarchy_level.paragraph_type == tree.hierarchy_level.paragraph_type
-            ):
+                  line.hierarchy_level.paragraph_type == tree.hierarchy_level.paragraph_type):
                 tree.add_text(line)
             # move up and add child
 

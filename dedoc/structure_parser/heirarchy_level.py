@@ -56,4 +56,3 @@ class HierarchyLevel:
                               level_2=None,
                               can_be_multiline=False,
                               paragraph_type=HierarchyLevel.raw_text)
-

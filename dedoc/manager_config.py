@@ -28,14 +28,13 @@ concrete_attachments_extractors = [ExcelAttachmentsExtractor(), DocxAttachmentsE
 _config = dict(
     converter=FileConverterComposition(converters=[DocxConverter(), ExcelConverter(), PptxConverter()]),
 
-    reader=ReaderComposition(readers=
-                             [DocxReader(),
-                              ExcelReader(),
-                              PptxReader(),
-                              CSVReader(),
-                              RawTextReader(),
-                              JsonReader(),
-                              ]),
+    reader=ReaderComposition(readers=[DocxReader(),
+                                      ExcelReader(),
+                                      PptxReader(),
+                                      CSVReader(),
+                                      RawTextReader(),
+                                      JsonReader(),
+                                      ]),
 
     structure_constructor=StructureConstructorComposition(
         extractors={"linear": LinearConstructor(), "tree": TreeConstructor()},

@@ -50,4 +50,3 @@ class AbstractTestApiDocReader(unittest.TestCase):
                 return None
             result = json.loads(r.content.decode())
             return result
-

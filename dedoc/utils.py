@@ -11,7 +11,7 @@ def splitext_(path: str) -> Tuple[str, str]:
     get extensions with several dots
     """
     if len(path.split('.')) > 2:
-        return path.split('.')[0], '.'+'.'.join(path.split('.')[-2:])
+        return path.split('.')[0], '.' + '.'.join(path.split('.')[-2:])
     return splitext(path)
 
 
@@ -68,7 +68,3 @@ def get_extensions_by_mimes(mimes: List[str]):
     for mime in mimes:
         exts.extend(get_extensions_by_mime(mime))
     return exts
-
-
-
-

@@ -30,6 +30,3 @@ class TestApiDocReader(AbstractTestApiDocReader):
     def test_incorrect_structure(self):
         file_name = "example.docx"
         result = self._send_request(file_name, data={"structure_type": "bagel"}, expected_code=400)
-
-
-

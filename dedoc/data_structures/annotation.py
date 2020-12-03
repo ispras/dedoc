@@ -45,5 +45,3 @@ class Annotation(Serializable):
                                    required=True,
                                    example="left")
         })
-
-
