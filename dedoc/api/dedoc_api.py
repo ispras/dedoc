@@ -111,7 +111,10 @@ class SendHtml(Resource):
         path = _get_static_file_path()
         document_tree = _handle_request(path)
         text_res = json2html("", document_tree.content.structure, document_tree.content.tables, 0)
-        return text_res
+        return app.response_class(
+            response=text_res,
+            status=200,
+            mimetype='text/html;charset=utf-8')
 
 
 # ==================== Declare API exceptions =======================
