@@ -260,7 +260,8 @@ class ParagraphInfo:
         result['annotations'] = []
         if self.properties:
             # TODO more complex information about indent
-            result['annotations'].append(("indentation", 0, len(self.text), self.properties[0][2]['indent']['left']))
+            result['annotations'].append(("indentation", 0, len(self.text),
+                                          str(self.properties[0][2]['indent']['left'])))
             result['annotations'].append(("alignment", 0, len(self.text), self.properties[0][2]['alignment']))
 
         self.last_properties = {"bold": [], "italic": [], "underlined": [], "size": []}
