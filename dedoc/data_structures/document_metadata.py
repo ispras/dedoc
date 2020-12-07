@@ -47,7 +47,7 @@ class DocumentMetadata(Serializable):
         for key, value in new_fields.items():
             setattr(self, key, value)
 
-    def to_dict(self) -> dict:
+    def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()
         res["file_name"] = self.file_name
         res["size"] = self.size
@@ -60,7 +60,6 @@ class DocumentMetadata(Serializable):
         #         res[key] = value
 
         return res
-
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
@@ -76,4 +75,3 @@ class DocumentMetadata(Serializable):
             'file_type': fields.String(description='mime-type file', example="application/vnd.oasis.opendocument.text"),
             '*': wild_any_fields
         })
-

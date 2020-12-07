@@ -15,7 +15,7 @@ class TableMetadata(Serializable):
         """
         self.page_id = page_id
 
-    def to_dict(self) -> dict:
+    def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()
         res["page_id"] = self.page_id
         return res

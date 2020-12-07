@@ -39,13 +39,13 @@ class TreeNode(Serializable):
         self.hierarchy_level = hierarchy_level
         self.parent = parent
 
-    def to_dict(self) -> dict:
+    def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()
         res["node_id"] = self.node_id
         res["text"] = self.text
-        res["annotations"] = [annotation.to_dict() for annotation in self.annotations]
-        res["metadata"] = self.metadata.to_dict()
-        res["subparagraphs"] = [node.to_dict() for node in self.subparagraphs]
+        res["annotations"] = [annotation.to_dict(old_version) for annotation in self.annotations]
+        res["metadata"] = self.metadata.to_dict(old_version)
+        res["subparagraphs"] = [node.to_dict(old_version) for node in self.subparagraphs]
         return res
 
     @staticmethod
@@ -123,6 +123,7 @@ class TreeNode(Serializable):
         for annotation in line.annotations:
             new_annotation = Annotation(start=annotation.start + text_length - 1,
                                         end=annotation.end + text_length,
+                                        name=annotation.name,
                                         value=annotation.value)
             new_annotations.append(new_annotation)
         self.text += line.line
@@ -142,7 +143,7 @@ class TreeNode(Serializable):
     def _group_annotations(annotations: List[Annotation]) -> Dict[str, List[Annotation]]:
         annotations_group_by_value = defaultdict(list)
         for annotation in annotations:
-            annotations_group_by_value[annotation.value].append(annotation)
+            annotations_group_by_value[(annotation.name, annotation.value)].append(annotation)
         return annotations_group_by_value
 
     @staticmethod
@@ -151,20 +152,23 @@ class TreeNode(Serializable):
         Merge annotations when end of the firs annotation and start of the second match and has same value.
         Used with add_text
         """
-        annotations_group_by_value = TreeNode._group_annotations(annotations)
+        annotations_group_by_name_value = TreeNode._group_annotations(annotations)
 
         merged_set = set()
         merged = []
-        for annotation_group in annotations_group_by_value.values():
+        for annotation_group in annotations_group_by_name_value.values():
             for firs_annotation in annotation_group:
                 for second_annotation in annotation_group:
                     if firs_annotation.end == second_annotation.start:
                         merged_annotation = Annotation(start=firs_annotation.start,
                                                        end=second_annotation.end,
+                                                       name=firs_annotation.name,
                                                        value=firs_annotation.value)
                         merged.append(merged_annotation)
-                        merged_set.add((firs_annotation.end, firs_annotation.start, firs_annotation.value))
-                        merged_set.add((second_annotation.end, second_annotation.start, second_annotation.value))
+                        merged_set.add((firs_annotation.end, firs_annotation.start,
+                                        firs_annotation.name, firs_annotation.value))
+                        merged_set.add((second_annotation.end, second_annotation.start,
+                                        second_annotation.name, second_annotation.value))
         other_annotations = [annotation for annotation in annotations
-                             if (annotation.end, annotation.start, annotation.value) not in merged_set]
+                             if (annotation.end, annotation.start, annotation.name, annotation.value) not in merged_set]
         return sorted(other_annotations + merged, key=lambda a: a.start)

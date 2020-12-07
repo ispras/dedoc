@@ -21,7 +21,13 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.annotation import Annotation
+from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
+from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
+from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
+from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
+from dedoc.data_structures.concrete_annotations.alignment_annotation import AlignmentAnnotation
+from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
+from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
 
 
 class DocxReader(BaseReader):
@@ -76,7 +82,11 @@ class DocxReader(BaseReader):
             return []
 
         styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'))
-        numbering_extractor = NumberingExtractor(self.__get_bs_tree('word/numbering.xml'), styles_extractor)
+        num_tree = self.__get_bs_tree('word/numbering.xml')
+        if num_tree:
+            numbering_extractor = NumberingExtractor(num_tree, styles_extractor)
+        else:
+            numbering_extractor = None
         styles_extractor.numbering_extractor = numbering_extractor
 
         footers, headers = [], []
@@ -160,25 +170,31 @@ class DocxReader(BaseReader):
             # {"text": "",
             #  "type": ""("paragraph" ,"list_item", "raw_text", "style_header"),
             #  "level": (1,1) or None (hierarchy_level),
-            #  "annotations": [[start, end, size], [start, end, "bold"], [start, end, "italic"],
-            #  [start, end, "underlined"], [start, end, "annotations:{'firstLine', 'hanging', 'start', 'left'}"],
-            #  [start, end, "alignment:left" ("left", "right", "center", "both")], [start, end, "size:26"]}
+            #  "annotations": [["size", start, end, size], ["bold", start, end, "True"], ...]}
             paragraph_properties = ParagraphInfo(paragraph)
             line_with_meta = paragraph_properties.get_info()
 
             text = line_with_meta["text"]
-            # if not text:
-            #     # ignore empty paragraphs
-            #     continue
+
             paragraph_type = line_with_meta["type"]
             level = line_with_meta["level"]
             if level:
                 hierarchy_level = HierarchyLevel(level[0], level[1], False, paragraph_type)
             else:
                 hierarchy_level = HierarchyLevel(None, None, False, "raw_text")
+
+            dict2annotations = {
+                "bold": BoldAnnotation,
+                "italic": ItalicAnnotation,
+                "underlined": UnderlinedAnnotation,
+                "size": SizeAnnotation,
+                "indentation": IndentationAnnotation,
+                "alignment": AlignmentAnnotation,
+                "style": StyleAnnotation
+            }
             annotations = []
             for annotation in line_with_meta["annotations"]:
-                annotations.append(Annotation(*annotation))
+                annotations.append(dict2annotations[annotation[0]](*annotation[1:]))
 
             paragraph_id += 1
             metadata = ParagraphMetadata(paragraph_type=paragraph_type,
@@ -192,4 +208,3 @@ class DocxReader(BaseReader):
                                                 annotations=annotations))
             lines_with_meta = self.hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
         return lines_with_meta
-

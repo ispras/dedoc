@@ -230,16 +230,16 @@ class ParagraphInfo:
             return 1, 0
         return None
 
-    def get_info(self) -> Dict[str, Union[str, Optional[Tuple[int, int]], List[Tuple[int, int, str]]]]:
+    def get_info(self) -> Dict[str, Union[str, Optional[Tuple[int, int]], List[Tuple[str, int, int, str]]]]:
         """
         returns paragraph properties in special format
         :return: dictionary {"text": "",
         "type": "" ("paragraph" ,"list_item", "raw_text", "style_header"),
         "level": (1,1) or None (hierarchy_level),
-        "annotations": [[start, end, size], [start, end, "bold"], [start, end, "italic"],
-        [start, end, "underlined"], [start, end, "annotations:{'firstLine', 'hanging', 'start', 'left'}"],
-        [start, end, "alignment:left" ("left", "right", "center", "both")], [start, end, "size:26"] ...] }
+        "annotations": [(name, start, end, value), ...] }
+        name - annotation name
         start, end - character's positions begin with 0, end isn't included
+        value - annotation value
         """
         hierarchy_level = self._get_hierarchy_level()
         result = dict()
@@ -259,8 +259,10 @@ class ParagraphInfo:
 
         result['annotations'] = []
         if self.properties:
-            result['annotations'].append((0, len(self.text), "indent:" + str(self.properties[0][2]['indent'])))
-            result['annotations'].append((0, len(self.text), "alignment:" + str(self.properties[0][2]['alignment'])))
+            # TODO more complex information about indent
+            result['annotations'].append(("indentation", 0, len(self.text),
+                                          str(self.properties[0][2]['indent']['left'])))
+            result['annotations'].append(("alignment", 0, len(self.text), self.properties[0][2]['alignment']))
 
         self.last_properties = {"bold": [], "italic": [], "underlined": [], "size": []}
         for prop in self.properties:
@@ -271,24 +273,23 @@ class ParagraphInfo:
                     result['annotations'].append(annotation)
             annotation = self.make_annotation(prop, "size")
             if annotation:
-                annotation = (annotation[0], annotation[1], "size:" + str(prop[2]["size"]))
                 result['annotations'].append(annotation)
         for annotation_name, prop in self.last_properties.items():
             # add last properties, which were not added during previous step
             if prop:
                 if annotation_name != "size":
-                    annotation = (prop[0], prop[1], annotation_name)
+                    annotation = (annotation_name, prop[0], prop[1], "True")
                     result['annotations'].append(annotation)
                 else:
-                    annotation = (prop[0], prop[1], "size:" + str(prop[2]))
+                    annotation = ("size", prop[0], prop[1], str(prop[2] / 2))
                     result['annotations'].append(annotation)
         if self.style_name:
-            result['annotations'].append((0, len(self.text), "style:" + self.style_name))
+            result['annotations'].append(("style", 0, len(self.text), self.style_name))
         return result
 
     def make_annotation(self,
                         prop: List[Union[int, Dict[str, Union[str, int, bool, Dict[str, int]]]]],
-                        annotation_name: str) -> Optional[Tuple[int, int, str]]:
+                        annotation_name: str) -> Optional[Tuple[str, int, int, str]]:
         """
         makes new annotation if some new properties were found
         else saves annotation in last_properties and returns None
@@ -310,9 +311,10 @@ class ParagraphInfo:
                 self.last_properties[annotation_name][1] = prop[1]
                 return None
             # else save current annotation and return previous annotation
-            annotation = (self.last_properties[annotation_name][0],
+            annotation = ('size',
+                          self.last_properties[annotation_name][0],
                           self.last_properties[annotation_name][1],
-                          'size:' + str(self.last_properties[annotation_name][2]))
+                          str(self.last_properties[annotation_name][2] / 2))
             self.last_properties[annotation_name] = [prop[0], prop[1], prop[2][annotation_name]]
             return annotation
 
@@ -326,8 +328,9 @@ class ParagraphInfo:
             return None
         else:
             if self.last_properties[annotation_name]:
-                annotation = (self.last_properties[annotation_name][0],
-                              self.last_properties[annotation_name][1], annotation_name)
+                annotation = (annotation_name,
+                              self.last_properties[annotation_name][0],
+                              self.last_properties[annotation_name][1], "True")
                 self.last_properties[annotation_name] = []
                 return annotation
             return None

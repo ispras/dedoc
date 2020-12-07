@@ -7,7 +7,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta, HierarchyLevel
 class HierarchyLevelExtractor:
 
     def __init__(self):
-        self.chapter = re.compile("^(статья|пункт|параграф|глава|определение)\s*([0-9]+\\.)*([0-9]+\\.?)")
+        self.chapter = re.compile("^(статья|пункт|параграф|глава|определение)\s*([0-9]+\\.)*([0-9]+\\.?)")  # noqa
         self.dotted_num = re.compile("^([0-9]+\\.)+([0-9]+\\.?)?(\\s|$)")
         self.bracket_num = re.compile("^[0-9]+\\)")
         self.letter = re.compile("^(([а-я]|[a-z])\\))")
@@ -90,8 +90,8 @@ class HierarchyLevelExtractor:
         if self.dotted_num.match(line_text):
             line_num = [n for n in line_text.strip().split()[0].split(".") if len(n) > 0]
             if (all((float(n) <= 1900 for n in line_num)) and  # FIX dates like 9.05.1945
-                    len(line_text.split()[0]) <= 9  # too long items is rare a list
-            ):
+                    len(line_text.split()[0]) <= 9):  # too long items is rare a list
+
                 return HierarchyLevel(2, len(line_num), False, paragraph_type=HierarchyLevel.list_item)
         elif self.bracket_num.match(line_text):
             line_num = [n for n in line_text.strip().split()[0].split(".") if len(n) > 0]
@@ -100,8 +100,8 @@ class HierarchyLevelExtractor:
             # now we check if tesseract recognize russian б as 6 (bi as six)
             if (first_item == "6)" and
                     previous_header is not None and
-                    previous_header.strip().startswith(("a)", "а)"))  # here is russian and english letters
-            ):
+                    previous_header.strip().startswith(("a)", "а)"))):  # here is russian and english letters
+
                 return HierarchyLevel(4, 1, False, paragraph_type=HierarchyLevel.list_item)
             return HierarchyLevel(3, len(line_num), False, paragraph_type=HierarchyLevel.list_item)
         elif self.letter.match(line_text):

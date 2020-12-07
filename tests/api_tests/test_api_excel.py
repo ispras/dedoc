@@ -44,5 +44,3 @@ class TestApiExcelReader(AbstractTestApiDocReader):
         result = self._send_request(file_name)
         tables = result["content"]["tables"]
         self.__check_content(tables)
-
-

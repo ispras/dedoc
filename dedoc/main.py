@@ -11,6 +11,6 @@ from dedoc.configuration_manager import ConfigurationManager
 ConfigurationManager().getInstance()
 
 # 2 - run service
-from dedoc.api.dedoc_api import run_api, get_api
+from dedoc.api.dedoc_api import run_api, get_api  # noqa
 
 run_api(get_api())

@@ -37,7 +37,7 @@ class ParagraphMetadata(Serializable):
         for key, value in new_fields.items():
             setattr(self, key, value)
 
-    def to_dict(self) -> dict:
+    def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()
         res["paragraph_type"] = self.paragraph_type
         if self.predicted_classes is not None:

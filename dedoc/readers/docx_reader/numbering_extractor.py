@@ -377,4 +377,3 @@ class NumberingExtractor:
             change_run_properties(paragraph_properties, lvl_info['rPr'])
         run_properties.text = text
         paragraph_properties.list_level = self.levels_count
-

@@ -20,5 +20,3 @@ class LinearConstructor(AbstractStructureConstructor):
             tree.add_child(line)
 
         return DocumentContent(tables=document.tables, structure=tree)
-
-

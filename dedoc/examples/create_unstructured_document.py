@@ -64,4 +64,3 @@ line1 = LineWithMeta(
 # HierarchyLevel(1, 1) for 1.
 # HierarchyLevel(1, 2) for 1.1.
 # HierarchyLevel(1, 4) for 1.2.1.1. and so on
-

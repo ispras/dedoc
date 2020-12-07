@@ -21,7 +21,6 @@ class ExcelReader(BaseReader):
 
         return extension in recognized_extensions.excel_like_format or mime in recognized_mimes.excel_like_format
 
-
     def __parse_sheet(self, sheet_id: int, sheet: Sheet) -> Table:
         n_rows = sheet.nrows
         n_cols = sheet.ncols

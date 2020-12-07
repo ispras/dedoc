@@ -16,7 +16,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.__check_doc_like(result)
 
         self._check_metainfo(result['metadata'],
-                              'application/vnd.openxmlformats-officedocument.wordprocessingml.document', file_name)
+                             'application/vnd.openxmlformats-officedocument.wordprocessingml.document', file_name)
 
     def __check_doc_like(self, result):
         content = result["content"]["structure"]
