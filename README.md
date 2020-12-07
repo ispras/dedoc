@@ -22,7 +22,7 @@ Clone the project
 ```bash
 git clone https://github.com/ispras/dedoc.git
 
-cd dedoc_project/
+cd dedoc/
 ```
  
 Ensure you have Docker installed
