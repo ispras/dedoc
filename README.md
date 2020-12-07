@@ -20,7 +20,7 @@ Ensure you have Git and Docker installed
  
 Clone the project 
 ```bash
-git clone https://gitlab.at.ispras.ru/Ilya/dedoc_project.git
+git clone https://github.com/ispras/dedoc.git
 
 cd dedoc_project/
 ```
