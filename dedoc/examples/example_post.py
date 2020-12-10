@@ -13,7 +13,7 @@ with open(file_path, 'rb') as file:
     # file we want to parse
     files = {'file': (file_name, file)}
     # dict with additional parameters
-    data = {"document_type": "example"}
+    data = {"document_type": ""}
     # and now we send post request with attached file and paremeters.
     r = requests.post("http://localhost:1231/upload", files=files, data=data)
     # wait for response, parse json result and print it
