@@ -1,3 +1,6 @@
+import logging
+import sys
+
 from dedoc.attachments_extractors.attachments_extractor_composition import AttachmentsExtractorComposition
 from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import \
     DocxAttachmentsExtractor
@@ -25,28 +28,31 @@ from dedoc.structure_constructor.structure_constructor_composition import Struct
 
 concrete_attachments_extractors = [ExcelAttachmentsExtractor(), DocxAttachmentsExtractor()]
 
+logging.basicConfig(stream=sys.stdout,
+                    level=logging.INFO,
+                    format="%(asctime)s - %(pathname)s - %(levelname)s - %(message)s")
 
-def get_manager_config(config: dict):
-    return dict(
-        converter=FileConverterComposition(converters=[DocxConverter(), ExcelConverter(), PptxConverter()]),
+_config = dict(
+    converter=FileConverterComposition(converters=[DocxConverter(), ExcelConverter(), PptxConverter()]),
 
-        reader=ReaderComposition(readers=[DocxReader(),
-                                          ExcelReader(),
-                                          PptxReader(),
-                                          CSVReader(),
-                                          RawTextReader(),
-                                          JsonReader(),
-                                          ]),
+    reader=ReaderComposition(readers=[DocxReader(),
+                                      ExcelReader(),
+                                      PptxReader(),
+                                      CSVReader(),
+                                      RawTextReader(),
+                                      JsonReader(),
+                                      ]),
 
-        structure_constructor=StructureConstructorComposition(
-            extractors={"linear": LinearConstructor(), "tree": TreeConstructor()},
-            default_extractor=LinearConstructor()
-        ),
+    structure_constructor=StructureConstructorComposition(
+        extractors={"linear": LinearConstructor(), "tree": TreeConstructor()},
+        default_extractor=LinearConstructor()
+    ),
 
-        document_metadata_extractor=MetadataExtractorComposition(extractors=[
-            DocxMetadataExtractor(),
-            BaseMetadataExtractor()
-        ]),
+    document_metadata_extractor=MetadataExtractorComposition(extractors=[
+        DocxMetadataExtractor(),
+        BaseMetadataExtractor()
+    ]),
 
-        attachments_extractor=AttachmentsExtractorComposition(extractors=concrete_attachments_extractors, config=config)
-    )
+    attachments_extractor=AttachmentsExtractorComposition(extractors=concrete_attachments_extractors),
+    logger=logging.getLogger()
+)
