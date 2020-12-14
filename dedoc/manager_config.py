@@ -1,3 +1,6 @@
+import logging
+import sys
+
 from dedoc.attachments_extractors.attachments_extractor_composition import AttachmentsExtractorComposition
 from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import \
     DocxAttachmentsExtractor
@@ -25,6 +28,10 @@ from dedoc.structure_constructor.structure_constructor_composition import Struct
 
 concrete_attachments_extractors = [ExcelAttachmentsExtractor(), DocxAttachmentsExtractor()]
 
+logging.basicConfig(stream=sys.stdout,
+                    level=logging.INFO,
+                    format="%(asctime)s - %(pathname)s - %(levelname)s - %(message)s")
+
 _config = dict(
     converter=FileConverterComposition(converters=[DocxConverter(), ExcelConverter(), PptxConverter()]),
 
@@ -46,5 +53,6 @@ _config = dict(
         BaseMetadataExtractor()
     ]),
 
-    attachments_extractor=AttachmentsExtractorComposition(extractors=concrete_attachments_extractors)
+    attachments_extractor=AttachmentsExtractorComposition(extractors=concrete_attachments_extractors),
+    logger=logging.getLogger()
 )
