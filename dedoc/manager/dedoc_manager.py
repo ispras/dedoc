@@ -33,18 +33,18 @@ class ThreadManager(Thread):
     def run(self):
         while True:
             if self.queue.empty():
-                self.logger.debug("NOTHING TO DO GO TO SLEEP")
+                self.logger.debug("nothing to do go to sleep")
                 sleep(0.3)
             else:
                 self.logger.debug("{} files to handle".format(self.queue.qsize()))
                 uid, tmp_dir, filename, parameters, original_file_name = self.queue.get()
-                self.logger.info("START HANDLE FILE {}".format(original_file_name))
+                self.logger.info("start handle file {}".format(original_file_name))
                 try:
                     result = self.__parse_file(tmp_dir=tmp_dir,
                                                filename=filename,
                                                parameters=parameters,
                                                original_file_name=original_file_name)
-                    self.logger.info("FINISH HANDLE FILE {}".format(original_file_name))
+                    self.logger.info("finish handle file {}".format(original_file_name))
                     self.result[uid] = result
                 except Exception as e:
                     self.result[uid] = e
@@ -59,19 +59,19 @@ class ThreadManager(Thread):
         """
         # Step 1 - Converting
         filename_convert = self.converter.do_converting(tmp_dir, filename)
-        self.logger.info("FINISH CONVERSION {} -> {}".format(filename, filename_convert))
+        self.logger.info("finish conversion {} -> {}".format(filename, filename_convert))
         # Step 2 - Parsing content of converted file
         unstructured_document, contains_attachments = self.reader.parse_file(
             tmp_dir=tmp_dir,
             filename=filename_convert,
             parameters=parameters
         )
-        self.logger.info("PARSE FILE {}".format(filename_convert))
+        self.logger.info("parse file {}".format(filename_convert))
         document_content = self.structure_constructor.structure_document(document=unstructured_document,
                                                                          structure_type=parameters.get(
                                                                              "structure_type")
                                                                          )
-        self.logger.info("GET DOCUMENT CONTENT {}".format(filename_convert))
+        self.logger.info("get document content {}".format(filename_convert))
         # Step 3 - Adding meta-information
         parsed_document = self.__parse_file_meta(document_content=document_content,
                                                  directory=tmp_dir,
@@ -79,7 +79,7 @@ class ThreadManager(Thread):
                                                  converted_filename=filename_convert,
                                                  original_file_name=original_file_name,
                                                  parameters=parameters)
-        self.logger.info("GET STRUCTURE AND METADATA {}".format(filename_convert))
+        self.logger.info("get structure and metadata {}".format(filename_convert))
 
         with_attachments = parameters.get("with_attachments", "False").lower() == "true"
 
@@ -88,7 +88,7 @@ class ThreadManager(Thread):
                                                              need_analyze_attachments=contains_attachments,
                                                              parameters=parameters,
                                                              tmp_dir=tmp_dir)
-            self.logger.info("GET ATTACHMENTS {}".format(filename_convert))
+            self.logger.info("get attachments {}".format(filename_convert))
             parsed_document.add_attachments(parsed_attachment_files)
 
         return parsed_document
@@ -148,7 +148,7 @@ class ThreadManager(Thread):
 class DedocManager(object):
 
     @staticmethod
-    def from_config(tmp_dir: Optional[str] = None) -> "DedocManager":
+    def from_config(tmp_dir: Optional[str] = None, logger: Optional[logging.Logger] = None) -> "DedocManager":
         manager_config = get_manager_config()
 
         if tmp_dir is not None and not os.path.exists(tmp_dir):
@@ -156,7 +156,7 @@ class DedocManager(object):
 
         result = {}
         queue = Queue()
-        logger = manager_config.get("logger", logging.getLogger(__name__))
+        logger = logger if logger is not None else logging.getLogger(__name__)
         thread_manager = ThreadManager(manager_config=manager_config, queue=queue, result=result, logger=logger)
         thread_manager.start()
         return DedocManager(tmp_dir=tmp_dir, thread_manager=thread_manager, queue=queue, result=result, logger=logger)
@@ -176,7 +176,7 @@ class DedocManager(object):
 
     def parse_file(self, file: FileStorage, parameters: Dict[str, str]) -> ParsedDocument:
         original_filename = file.filename.split("/")[-1]
-        self.logger.info("GET FILE {}".format(original_filename))
+        self.logger.info("get file {}".format(original_filename))
         filename = get_unique_name(original_filename)
 
         if self.tmp_dir is None:
@@ -200,7 +200,7 @@ class DedocManager(object):
         )
 
     def parse_existing_file(self, path: str, parameters: Dict[str, str]) -> ParsedDocument:
-        self.logger.info("PARSE EXISTING FILE {}".format(path))
+        self.logger.info("parse existing file {}".format(path))
         with open(path, 'rb') as fp:
             file = FileStorage(fp, filename=path)
             return self.parse_file(file=file, parameters=parameters)

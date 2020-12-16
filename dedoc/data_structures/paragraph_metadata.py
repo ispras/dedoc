@@ -64,5 +64,5 @@ class ParagraphMetadata(Serializable):
             'page_id': fields.Integer(description="page number of begin paragraph", required=False, example=0),
             'line_id': fields.Integer(description="line number of begin paragraph", required=True, example=13),
             '_*': wild_forbid_fields,  # don't get private fields
-            '*': wild_any_fields
+            '[a-z]*': wild_any_fields
         })

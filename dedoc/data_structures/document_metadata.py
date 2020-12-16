@@ -73,5 +73,5 @@ class DocumentMetadata(Serializable):
             'access_time': fields.Integer(description='file access time in format UnixTime',
                                           example="1590579805"),
             'file_type': fields.String(description='mime-type file', example="application/vnd.oasis.opendocument.text"),
-            '*': wild_any_fields
+            '[a-z]*': wild_any_fields
         })

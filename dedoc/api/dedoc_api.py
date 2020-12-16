@@ -139,7 +139,7 @@ def handle_structure_extractor_exception(error):
     return {'message': error.msg_api}, error.code
 
 
-manager = DedocManager.from_config()
+manager = DedocManager.from_config(logger=config.get("logger"))
 
 
 # ==================== Utils API functions =======================
