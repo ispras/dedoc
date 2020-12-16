@@ -102,7 +102,8 @@ class AbstractNum:
                 self.levels[ilvl] = {}
 
             if lvl.lvlText and lvl.lvlText['w:val']:
-
+                # some characters in bullets are displayed incorrectly
+                # replace them with the unicode version
                 if hex(ord(lvl.lvlText['w:val'][0])) == "0xf0b7":
                     self.levels[ilvl]['lvlText'] = chr(int("0x2022", 0))
                 elif hex(ord(lvl.lvlText['w:val'][0])) == "0xf0a7":
