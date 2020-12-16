@@ -68,3 +68,13 @@ def get_extensions_by_mimes(mimes: List[str]):
     for mime in mimes:
         exts.extend(get_extensions_by_mime(mime))
     return exts
+
+
+def read_version(config: dict) -> str:
+    if os.path.isfile(config.get("version_file", '')):
+        with open(config["version_file"]) as file:
+            return file.read().strip()
+    else:
+        logger = config.get("logger")
+        if logger is not None:
+            logger.warning("VERSION FILE NOT FOUND AT {}".format(config.get("version_file")))

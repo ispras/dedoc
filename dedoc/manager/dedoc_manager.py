@@ -14,12 +14,12 @@ from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.configuration_manager import get_manager_config
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.parsed_document import ParsedDocument
-from dedoc.utils import get_unique_name
+from dedoc.utils import get_unique_name, read_version
 
 
 class ThreadManager(Thread):
 
-    def __init__(self, manager_config: dict, queue: Queue, result: dict, logger: logging.Logger):
+    def __init__(self, manager_config: dict, queue: Queue, result: dict, logger: logging.Logger, *, config: dict):
         Thread.__init__(self)
         self.converter = manager_config["converter"]
         self.attachments_extractor = manager_config["attachments_extractor"]
@@ -29,6 +29,7 @@ class ThreadManager(Thread):
         self.queue = queue
         self.result = result
         self.logger = logger
+        self.config = config
 
     def run(self):
         while True:
@@ -90,7 +91,7 @@ class ThreadManager(Thread):
                                                              tmp_dir=tmp_dir)
             self.logger.info("get attachments {}".format(filename_convert))
             parsed_document.add_attachments(parsed_attachment_files)
-
+        parsed_document.version = read_version(config=self.config)
         return parsed_document
 
     def __parse_file_meta(self,
@@ -148,7 +149,7 @@ class ThreadManager(Thread):
 class DedocManager(object):
 
     @staticmethod
-    def from_config(tmp_dir: Optional[str] = None, logger: Optional[logging.Logger] = None) -> "DedocManager":
+    def from_config(tmp_dir: Optional[str] = None, *, config: dict) -> "DedocManager":
         manager_config = get_manager_config()
 
         if tmp_dir is not None and not os.path.exists(tmp_dir):
@@ -156,23 +157,36 @@ class DedocManager(object):
 
         result = {}
         queue = Queue()
+        logger = config.get("logger")
         logger = logger if logger is not None else logging.getLogger(__name__)
-        thread_manager = ThreadManager(manager_config=manager_config, queue=queue, result=result, logger=logger)
+        thread_manager = ThreadManager(manager_config=manager_config,
+                                       queue=queue,
+                                       result=result,
+                                       logger=logger,
+                                       config=config)
         thread_manager.start()
-        return DedocManager(tmp_dir=tmp_dir, thread_manager=thread_manager, queue=queue, result=result, logger=logger)
+        return DedocManager(tmp_dir=tmp_dir,
+                            thread_manager=thread_manager,
+                            queue=queue,
+                            result=result,
+                            logger=logger,
+                            config=config)
 
     def __init__(self,
                  tmp_dir: str,
                  thread_manager: ThreadManager,
                  queue: Queue,
                  result: dict,
-                 logger: logging.Logger
+                 logger: logging.Logger,
+                 *,
+                 config: dict
                  ):
         self.tmp_dir = tmp_dir
         self.queue = queue
         self.result = result
         self.thread_manager = thread_manager
         self.logger = logger
+        self.config = config
 
     def parse_file(self, file: FileStorage, parameters: Dict[str, str]) -> ParsedDocument:
         original_filename = file.filename.split("/")[-1]

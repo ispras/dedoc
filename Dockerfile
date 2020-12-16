@@ -18,4 +18,5 @@ RUN python3.5 -m pip install pip==20.1.1 --upgrade && pip3.5 install -r requirem
 
 RUN mkdir /dedoc
 ADD dedoc /dedoc
+ADD VERSION /
 ENV PYTHONPATH /

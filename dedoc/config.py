@@ -31,7 +31,7 @@ _config = dict(
     recursion_deep_subparagraphs=30,
     import_path_init_api_args="dedoc.api.api_args",
     #
-    version_file=os.path.join(os.path.dirname(__file__), ),
+    version_file=os.path.join(os.path.dirname(__file__), "..", "VERSION"),
     logger=logging.getLogger()
 
     # path to external static files (you may get file from this directory with url
