@@ -1,6 +1,8 @@
+import logging
 import os
 import importlib.util
 import argparse
+import sys
 
 parser_config = argparse.ArgumentParser()
 parser_config.add_argument("-c", "--config_path", help="path to configuration file")
@@ -8,6 +10,11 @@ parser_config.add_argument("-m", "--module", help="Only for tests")
 parser_config.add_argument("-f", "--test_files", metavar="VALUE", nargs='*', help="Only for tests")
 parser_config.add_argument('-v', "--unitest_verbose_mode", nargs='?', help="to enable verbose mode of unittest. Only for tests")
 args_config = parser_config.parse_args()
+
+logging.basicConfig(stream=sys.stdout,
+                    level=logging.INFO,
+                    format="%(asctime)s - %(pathname)s - %(levelname)s - %(message)s")
+
 
 _config = dict(
     # JOBLIB SETTINGS
@@ -22,13 +29,16 @@ _config = dict(
     static_files_dirs={},
     recursion_deep_attachments=10,
     recursion_deep_subparagraphs=30,
-    import_path_init_api_args="dedoc.api.api_args"
+    import_path_init_api_args="dedoc.api.api_args",
     #
+    version_file=os.path.join(os.path.dirname(__file__), ),
+    logger=logging.getLogger()
 
     # path to external static files (you may get file from this directory with url
     # host:port/xturnal_file?fname=<filename>
     # for example if you want send files from /tmp/dedoc directory uncomment the line below
     # external_static_files_path="/tmp/dedoc",
+
 
 )
 
