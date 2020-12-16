@@ -100,8 +100,20 @@ class AbstractNum:
             ilvl = lvl['w:ilvl']
             if ilvl not in self.levels:
                 self.levels[ilvl] = {}
-            if lvl.lvlText:
-                self.levels[ilvl]['lvlText'] = lvl.lvlText['w:val']
+
+            if lvl.lvlText and lvl.lvlText['w:val']:
+
+                if hex(ord(lvl.lvlText['w:val'][0])) == "0xf0b7":
+                    self.levels[ilvl]['lvlText'] = chr(int("0x2022", 0))
+                elif hex(ord(lvl.lvlText['w:val'][0])) == "0xf0a7":
+                    self.levels[ilvl]['lvlText'] = chr(int("0x2043", 0))
+                elif hex(ord(lvl.lvlText['w:val'][0])) == "0xf0be":
+                    self.levels[ilvl]['lvlText'] = chr(int("0x2014", 0))
+                elif hex(ord(lvl.lvlText['w:val'][0])) == "0xf02d":
+                    self.levels[ilvl]['lvlText'] = chr(int("0xfe58", 0))
+                else:
+                    self.levels[ilvl]['lvlText'] = lvl.lvlText['w:val']
+
             elif 'lvlText' not in self.levels[ilvl]:
                 self.levels[ilvl]['lvlText'] = ""
 
