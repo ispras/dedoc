@@ -14,13 +14,14 @@ from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.configuration_manager import get_manager_config
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.parsed_document import ParsedDocument
-from dedoc.utils import get_unique_name, read_version
+from dedoc.utils import get_unique_name
 
 
 class ThreadManager(Thread):
 
-    def __init__(self, manager_config: dict, queue: Queue, result: dict, logger: logging.Logger, *, config: dict):
+    def __init__(self, manager_config: dict, queue: Queue, result: dict, logger: logging.Logger, version: str):
         Thread.__init__(self)
+        self.version = version
         self.converter = manager_config["converter"]
         self.attachments_extractor = manager_config["attachments_extractor"]
         self.reader = manager_config["reader"]
@@ -29,7 +30,6 @@ class ThreadManager(Thread):
         self.queue = queue
         self.result = result
         self.logger = logger
-        self.config = config
 
     def run(self):
         while True:
@@ -91,7 +91,7 @@ class ThreadManager(Thread):
                                                              tmp_dir=tmp_dir)
             self.logger.info("get attachments {}".format(filename_convert))
             parsed_document.add_attachments(parsed_attachment_files)
-        parsed_document.version = read_version(config=self.config)
+        parsed_document.version = self.version
         return parsed_document
 
     def __parse_file_meta(self,
@@ -149,7 +149,7 @@ class ThreadManager(Thread):
 class DedocManager(object):
 
     @staticmethod
-    def from_config(tmp_dir: Optional[str] = None, *, config: dict) -> "DedocManager":
+    def from_config(version: str, tmp_dir: Optional[str] = None, *, config: dict) -> "DedocManager":
         manager_config = get_manager_config()
 
         if tmp_dir is not None and not os.path.exists(tmp_dir):
@@ -163,14 +163,15 @@ class DedocManager(object):
                                        queue=queue,
                                        result=result,
                                        logger=logger,
-                                       config=config)
+                                       version=version)
         thread_manager.start()
         return DedocManager(tmp_dir=tmp_dir,
                             thread_manager=thread_manager,
                             queue=queue,
                             result=result,
                             logger=logger,
-                            config=config)
+                            config=config,
+                            version=version)
 
     def __init__(self,
                  tmp_dir: str,
@@ -178,9 +179,11 @@ class DedocManager(object):
                  queue: Queue,
                  result: dict,
                  logger: logging.Logger,
+                 version: str,
                  *,
                  config: dict
                  ):
+        self.version = version
         self.tmp_dir = tmp_dir
         self.queue = queue
         self.result = result

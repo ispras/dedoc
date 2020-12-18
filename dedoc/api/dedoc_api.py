@@ -18,7 +18,6 @@ from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.manager.dedoc_manager import DedocManager
 
 from dedoc.api.init_api import app, config, static_files_dirs, PORT, static_path
-from dedoc.utils import read_version
 
 module_api_args = importlib.import_module(config['import_path_init_api_args'])
 
@@ -39,7 +38,7 @@ def get_info():
 
 @app.route('/version', methods=['GET'])
 def get_version():
-    return read_version(config=config)
+    return manager.version
 
 
 api = Api(app, doc='/swagger/', description=get_command_keep_models())
@@ -145,7 +144,8 @@ def handle_structure_extractor_exception(error):
     return {'message': error.msg_api}, error.code
 
 
-manager = DedocManager.from_config(config=config)
+version_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "VERSION"))
+manager = DedocManager.from_config(config=config, version=open(version_file_path).read())
 
 
 # ==================== Utils API functions =======================
