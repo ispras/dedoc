@@ -1,88 +1,57 @@
 import copy
+import logging
 import os
 import tempfile
+import uuid
+from queue import Queue
+from threading import Thread
+from time import sleep
 from typing import Optional, List, Dict
+
 from werkzeug.datastructures import FileStorage
 
-from dedoc.attachments_extractors.attachments_extractor_composition import AttachmentsExtractorComposition
-from dedoc.data_structures.document_content import DocumentContent
-from dedoc.configuration_manager import get_manager_config
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
-from dedoc.converters.file_converter import FileConverterComposition
+from dedoc.configuration_manager import get_manager_config
+from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.parsed_document import ParsedDocument
-from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.utils import get_unique_name
-from dedoc.metadata_extractor.metadata_extractor_composition import MetadataExtractorComposition
-from dedoc.structure_constructor.structure_constructor_composition import StructureConstructorComposition
 
 
-class DedocManager(object):
+class ThreadManager(Thread):
 
-    @staticmethod
-    def from_config(tmp_dir: Optional[str] = None) -> "DedocManager":
-        manager_config = get_manager_config()
+    def __init__(self, manager_config: dict, queue: Queue, result: dict, logger: logging.Logger, version: str):
+        Thread.__init__(self)
+        self.version = version
+        self.converter = manager_config["converter"]
+        self.attachments_extractor = manager_config["attachments_extractor"]
+        self.reader = manager_config["reader"]
+        self.structure_constructor = manager_config["structure_constructor"]
+        self.document_metadata_extractor = manager_config["document_metadata_extractor"]
+        self.queue = queue
+        self.result = result
+        self.logger = logger
 
-        if tmp_dir is not None and not os.path.exists(tmp_dir):
-            os.mkdir(tmp_dir)
+    def run(self):
+        while True:
+            if self.queue.empty():
+                self.logger.debug("nothing to do go to sleep")
+                sleep(0.3)
+            else:
+                self.logger.debug("{} files to handle".format(self.queue.qsize()))
+                uid, tmp_dir, filename, parameters, original_file_name = self.queue.get()
+                self.logger.info("start handle file {}".format(original_file_name))
+                try:
+                    result = self.__parse_file(tmp_dir=tmp_dir,
+                                               filename=filename,
+                                               parameters=parameters,
+                                               original_file_name=original_file_name)
+                    self.logger.info("finish handle file {}".format(original_file_name))
+                    self.result[uid] = result
+                except Exception as e:
+                    self.result[uid] = e
 
-        converter = manager_config["converter"]
-
-        attachments_extractor = manager_config["attachments_extractor"]
-        reader = manager_config["reader"]
-        structure_constructor = manager_config["structure_constructor"]
-        document_metadata_extractor = manager_config["document_metadata_extractor"]
-        return DedocManager(tmp_dir,
-                            converter,
-                            attachments_extractor,
-                            reader,
-                            structure_constructor,
-                            document_metadata_extractor)
-
-    def __init__(self,
-                 tmp_dir: str,
-                 converter: FileConverterComposition,
-                 attachments_extractor: AttachmentsExtractorComposition,
-                 reader: ReaderComposition,
-                 structure_constructor: StructureConstructorComposition,
-                 document_metadata_extractor: MetadataExtractorComposition
-                 ):
-        self.tmp_dir = tmp_dir
-        self.converter = converter
-        self.attachments_extractor = attachments_extractor
-        self.reader = reader
-        self.structure_constructor = structure_constructor
-        self.document_metadata_extractor = document_metadata_extractor
-
-    def parse_file(self, file: FileStorage, parameters: Dict[str, str]) -> ParsedDocument:
-        original_filename = file.filename.split("/")[-1]
-        filename = get_unique_name(original_filename)
-
-        if self.tmp_dir is None:
-            with tempfile.TemporaryDirectory() as tmp_dir:
-                tmp_path = os.path.join(tmp_dir, filename)
-                file.save(tmp_path)
-                return self.__parse_file(
-                    tmp_dir=tmp_dir,
-                    filename=filename,
-                    parameters=parameters,
-                    original_file_name=original_filename
-                )
-
-        tmp_path = os.path.join(self.tmp_dir, filename)
-        file.save(tmp_path)
-        return self.__parse_file(
-            tmp_dir=self.tmp_dir,
-            filename=filename,
-            parameters=parameters,
-            original_file_name=original_filename
-        )
-
-    def parse_existing_file(self, path: str, parameters: Dict[str, str]) -> ParsedDocument:
-        with open(path, 'rb') as fp:
-            file = FileStorage(fp, filename=path)
-            return self.parse_file(file=file, parameters=parameters)
-
-    def __parse_file(self, tmp_dir: str,
+    def __parse_file(self,
+                     tmp_dir: str,
                      filename: str,
                      parameters: Dict[str, str],
                      original_file_name: str) -> ParsedDocument:
@@ -91,17 +60,19 @@ class DedocManager(object):
         """
         # Step 1 - Converting
         filename_convert = self.converter.do_converting(tmp_dir, filename)
+        self.logger.info("finish conversion {} -> {}".format(filename, filename_convert))
         # Step 2 - Parsing content of converted file
         unstructured_document, contains_attachments = self.reader.parse_file(
             tmp_dir=tmp_dir,
             filename=filename_convert,
             parameters=parameters
         )
-
+        self.logger.info("parse file {}".format(filename_convert))
         document_content = self.structure_constructor.structure_document(document=unstructured_document,
-                                                                         structure_type=parameters.get("structure_type")
+                                                                         structure_type=parameters.get(
+                                                                             "structure_type")
                                                                          )
-
+        self.logger.info("get document content {}".format(filename_convert))
         # Step 3 - Adding meta-information
         parsed_document = self.__parse_file_meta(document_content=document_content,
                                                  directory=tmp_dir,
@@ -109,6 +80,7 @@ class DedocManager(object):
                                                  converted_filename=filename_convert,
                                                  original_file_name=original_file_name,
                                                  parameters=parameters)
+        self.logger.info("get structure and metadata {}".format(filename_convert))
 
         with_attachments = parameters.get("with_attachments", "False").lower() == "true"
 
@@ -117,8 +89,9 @@ class DedocManager(object):
                                                              need_analyze_attachments=contains_attachments,
                                                              parameters=parameters,
                                                              tmp_dir=tmp_dir)
+            self.logger.info("get attachments {}".format(filename_convert))
             parsed_document.add_attachments(parsed_attachment_files)
-
+        parsed_document.version = self.version
         return parsed_document
 
     def __parse_file_meta(self,
@@ -171,3 +144,90 @@ class DedocManager(object):
                                                parameters=parameters_copy))
 
         return parsed_attachment_files
+
+
+class DedocManager(object):
+
+    @staticmethod
+    def from_config(version: str, tmp_dir: Optional[str] = None, *, config: dict) -> "DedocManager":
+        manager_config = get_manager_config()
+
+        if tmp_dir is not None and not os.path.exists(tmp_dir):
+            os.mkdir(tmp_dir)
+
+        result = {}
+        queue = Queue()
+        logger = config.get("logger")
+        logger = logger if logger is not None else logging.getLogger(__name__)
+        thread_manager = ThreadManager(manager_config=manager_config,
+                                       queue=queue,
+                                       result=result,
+                                       logger=logger,
+                                       version=version)
+        thread_manager.start()
+        return DedocManager(tmp_dir=tmp_dir,
+                            thread_manager=thread_manager,
+                            queue=queue,
+                            result=result,
+                            logger=logger,
+                            config=config,
+                            version=version)
+
+    def __init__(self,
+                 tmp_dir: str,
+                 thread_manager: ThreadManager,
+                 queue: Queue,
+                 result: dict,
+                 logger: logging.Logger,
+                 version: str,
+                 *,
+                 config: dict
+                 ):
+        self.version = version
+        self.tmp_dir = tmp_dir
+        self.queue = queue
+        self.result = result
+        self.thread_manager = thread_manager
+        self.logger = logger
+        self.config = config
+
+    def parse_file(self, file: FileStorage, parameters: Dict[str, str]) -> ParsedDocument:
+        original_filename = file.filename.split("/")[-1]
+        self.logger.info("get file {}".format(original_filename))
+        filename = get_unique_name(original_filename)
+
+        if self.tmp_dir is None:
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                tmp_path = os.path.join(tmp_dir, filename)
+                file.save(tmp_path)
+                return self.__parse_file(
+                    tmp_dir=tmp_dir,
+                    filename=filename,
+                    parameters=parameters,
+                    original_file_name=original_filename
+                )
+
+        tmp_path = os.path.join(self.tmp_dir, filename)
+        file.save(tmp_path)
+        return self.__parse_file(
+            tmp_dir=self.tmp_dir,
+            filename=filename,
+            parameters=parameters,
+            original_file_name=original_filename
+        )
+
+    def parse_existing_file(self, path: str, parameters: Dict[str, str]) -> ParsedDocument:
+        self.logger.info("parse existing file {}".format(path))
+        with open(path, 'rb') as fp:
+            file = FileStorage(fp, filename=path)
+            return self.parse_file(file=file, parameters=parameters)
+
+    def __parse_file(self, tmp_dir: str, filename: str, parameters: dict, original_file_name: str) -> ParsedDocument:
+        uid = str(uuid.uuid1())
+        self.queue.put((uid, tmp_dir, filename, parameters, original_file_name))
+        while uid not in self.result:
+            sleep(0.3)
+        result = self.result.pop(uid)
+        if isinstance(result, Exception):
+            raise result
+        return result

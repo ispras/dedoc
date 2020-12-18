@@ -117,7 +117,6 @@ class TreeNode(Serializable):
         :param line: line with text to add
         :return:
         """
-        self.text = self.text + "\n"
         new_annotations = []
         text_length = len(self.text)
         for annotation in line.annotations:

@@ -12,11 +12,11 @@ class AbstractTestApiDocReader(unittest.TestCase):
         self.assertEqual(metainfo['file_type'], actual_type)
         self.assertEqual(metainfo['file_name'], actual_name)
 
-    def __get_host(self):
+    def _get_host(self):
         host = os.environ.get('DOC_READER_HOST', 'localhost')
         return host
 
-    def __get_port(self):
+    def _get_port(self):
         port = int(os.environ.get('DOCREADER_PORT', '1231'))
         return port
 
@@ -36,8 +36,8 @@ class AbstractTestApiDocReader(unittest.TestCase):
         if data is None:
             data = {}
 
-        host = self.__get_host()
-        port = self.__get_port()
+        host = self._get_host()
+        port = self._get_port()
         abs_path = self._get_abs_path(file_name)
 
         with open(abs_path, 'rb') as file:
@@ -52,8 +52,8 @@ class AbstractTestApiDocReader(unittest.TestCase):
                 return json.loads(r.content.decode())
 
     def _send_request_wo_file(self, data: dict = None, expected_code: int = 200):
-        host = self.__get_host()
-        port = self.__get_port()
+        host = self._get_host()
+        port = self._get_port()
 
         if data is None:
             data = {}

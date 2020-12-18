@@ -14,16 +14,22 @@ class ParsedDocument(Serializable):
     def __init__(self,
                  metadata: DocumentMetadata,
                  content: Optional[DocumentContent],
+                 version: Optional[str] = None,
+                 warnings: List[str] = None,
                  attachments: Optional[List["ParsedDocument"]] = None):
         """
         That class hold information about the document content, metadata and attachments.
         :param metadata: document metadata such as size, creation , creation date and so on
         :param content: text and tables
         :param attachments: result of analysis of attached files
+        :param version: the version of the program that parsed this document
+        :param warnings: list of warnings and possible errors, arising in the process of document parsing
         """
         self.metadata = metadata
         self.content = content
         self.attachments = attachments
+        self.version = version
+        self.warnings = warnings if warnings is not None else []
 
     def add_attachments(self, new_attachment: List["ParsedDocument"]):
         if self.attachments is None:
@@ -49,6 +55,10 @@ class ParsedDocument(Serializable):
                                       allow_null=False,
                                       skip_none=True,
                                       description='Document meta information'),
+            'version': fields.String(description='the version of the program that parsed this document',
+                                     example="2020.07.11"),
+            'warnings': fields.List(fields.String(description='list of warnings and possible errors',
+                                    example="DOCX: seems that document corrupted")),
             'attachments': fields.List(fields.Nested(api.model('others_ParsedDocument', {})),
                                        description='structure of attachments',
                                        required=False)

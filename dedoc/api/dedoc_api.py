@@ -36,6 +36,11 @@ def get_info():
         return send_file(info_path)
 
 
+@app.route('/version', methods=['GET'])
+def get_version():
+    return manager.version
+
+
 api = Api(app, doc='/swagger/', description=get_command_keep_models())
 
 
@@ -139,7 +144,8 @@ def handle_structure_extractor_exception(error):
     return {'message': error.msg_api}, error.code
 
 
-manager = DedocManager.from_config()
+version_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "VERSION"))
+manager = DedocManager.from_config(config=config, version=open(version_file_path).read())
 
 
 # ==================== Utils API functions =======================

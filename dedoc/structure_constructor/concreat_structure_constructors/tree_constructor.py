@@ -76,7 +76,7 @@ class TreeConstructor(AbstractStructureConstructor):
         return LineWithMeta(line="",
                             hierarchy_level=HierarchyLevel(
                                 level_1=line.hierarchy_level.level_1,
-                                level_2=line.hierarchy_level.level_2 - 0.5,
+                                level_2=line.hierarchy_level.level_2 - 0.5,  # noqa  it is intentionaly for lists
                                 paragraph_type="list",
                                 can_be_multiline=False
                             ),
