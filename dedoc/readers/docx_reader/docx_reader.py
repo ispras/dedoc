@@ -34,6 +34,8 @@ class DocxReader(BaseReader):
     def __init__(self):
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
         self.document_xml = None
+        self.document_bs_tree = None
+        self.paragraph_list = None
 
     def can_read(self,
                  path: str,
@@ -62,6 +64,14 @@ class DocxReader(BaseReader):
 
         return UnstructuredDocument(lines=lines, tables=tables), True
 
+    @property
+    def get_paragraph_list(self) -> List[BeautifulSoup]:
+        return self.paragraph_list
+
+    @property
+    def get_document_bs_tree(self) -> BeautifulSoup:
+        return self.document_bs_tree
+
     @staticmethod
     def _process_table(table: DocxTable) -> Table:
         cells = [[cell.text for cell in row.cells] for row in table.rows]
@@ -75,9 +85,10 @@ class DocxReader(BaseReader):
         :return: list of document lines with annotations
         """
         self.document_xml = zipfile.ZipFile(path)
-        document = self.__get_bs_tree('word/document.xml')
-        if document:
-            body = document.body
+        self.document_bs_tree = self.__get_bs_tree('word/document.xml')
+        self.paragraph_list = []
+        if self.document_bs_tree:
+            body = self.document_bs_tree.body
         else:
             return []
 
@@ -101,25 +112,28 @@ class DocxReader(BaseReader):
         endnotes = self.__get_bs_tree('word/endnotes.xml')
 
         # the list of paragraph with their properties
-        paragraph_list = []
         for header in headers:
-            paragraph_list += self.__get_paragraph_list(header, styles_extractor, None)
+            self.__add_to_paragraph_list(header)
 
         for paragraph in body:
             # ignore tables
             if paragraph.name == 'tbl':
                 continue
             if paragraph.name != 'p':
-                paragraph_list += self.__get_paragraph_list(paragraph, styles_extractor, numbering_extractor)
+                self.__add_to_paragraph_list(paragraph)
                 continue
-            paragraph_list.append(Paragraph(paragraph, styles_extractor, numbering_extractor))
+            self.paragraph_list.append(paragraph)
 
         if footnotes:
-            paragraph_list += self.__get_paragraph_list(footnotes, styles_extractor, None)
+            self.__add_to_paragraph_list(footnotes)
         if endnotes:
-            paragraph_list += self.__get_paragraph_list(endnotes, styles_extractor, None)
+            self.__add_to_paragraph_list(endnotes)
         for footer in footers:
-            paragraph_list += self.__get_paragraph_list(footer, styles_extractor, None)
+            self.__add_to_paragraph_list(footer)
+
+        paragraph_list = []
+        for paragraph in self.paragraph_list:
+            paragraph_list.append(Paragraph(paragraph, styles_extractor, numbering_extractor))
 
         return self._get_lines_with_meta(paragraph_list)
 
@@ -136,24 +150,8 @@ class DocxReader(BaseReader):
             tree = None
         return tree
 
-    @staticmethod
-    def __get_paragraph_list(tree: BeautifulSoup,
-                             styles_extractor: StylesExtractor,
-                             numbering_extractor: Optional[NumberingExtractor],
-                             ) -> List[Paragraph]:
-        """
-        extracts the list of paragraphs from the given tree
-        :param tree: BeautifulSoup tree for paragraphs extracting
-        :param styles_extractor: StylesExtractor for styles in paragraphs
-        :param numbering_extractor: NumberingExtractor for numbering in paragraphs
-        :return: list of extracted paragraphs
-        """
-        paragraph_list = []
-        tree_paragraphs = tree.find_all('w:p')
-        for paragraph in tree_paragraphs:
-            paragraph_list.append(Paragraph(paragraph,
-                                            styles_extractor, numbering_extractor))
-        return paragraph_list
+    def __add_to_paragraph_list(self, tree: BeautifulSoup) -> None:
+        self.paragraph_list += tree.find_all('w:p')
 
     def _get_lines_with_meta(self,
                              paragraph_list: List[Paragraph]) -> List[LineWithMeta]:
