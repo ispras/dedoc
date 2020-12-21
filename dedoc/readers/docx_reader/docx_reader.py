@@ -34,6 +34,8 @@ class DocxReader(BaseReader):
         self.document_bs_tree = None
         self.paragraph_list = None
         self.path_hash = None
+        self.document_bs_tree = None
+        self.paragraph_list = None
 
     def can_read(self,
                  path: str,
@@ -113,6 +115,7 @@ class DocxReader(BaseReader):
         endnotes = self.__get_bs_tree('word/endnotes.xml')
 
         # the list of paragraph with their properties
+        paragraph_list = []
         for header in headers:
             self.__add_to_paragraph_list(header)
 
