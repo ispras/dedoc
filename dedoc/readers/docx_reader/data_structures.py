@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import re
+import hashlib
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
 from typing import Dict, List, Union, Tuple, Optional
 
@@ -185,6 +186,7 @@ class ParagraphInfo:
         :param paragraph: Paragraph for extracting it's properties
         """
         self.text = ""
+        self.uid = hashlib.md5(paragraph.xml.encode()).hexdigest()
         self.list_level = paragraph.list_level
         self.style_level = paragraph.style_level
         self.style_name = paragraph.style_name
@@ -236,7 +238,8 @@ class ParagraphInfo:
         :return: dictionary {"text": "",
         "type": "" ("paragraph" ,"list_item", "raw_text", "style_header"),
         "level": (1,1) or None (hierarchy_level),
-        "annotations": [(name, start, end, value), ...] }
+        "uid": string with xml hash,
+        "annotations": [(name, start, end, value), ...] },
         name - annotation name
         start, end - character's positions begin with 0, end isn't included
         value - annotation value
@@ -245,6 +248,7 @@ class ParagraphInfo:
         result = dict()
         result['text'] = self.text
         result['level'] = hierarchy_level
+        result['uid'] = self.uid
 
         if not hierarchy_level:
             result['type'] = "raw_text"
