@@ -1,20 +1,17 @@
 import zipfile
 from bs4 import BeautifulSoup
+import hashlib
+from docx import Document
+from docx.opc.exceptions import PackageNotFoundError
+from docx.table import Table as DocxTable
+from typing import List, Tuple, Optional
 
+from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.data_structures import Paragraph, ParagraphInfo
-
-from docx import Document
-from docx.opc.exceptions import PackageNotFoundError
-from docx.table import Table as DocxTable
-
-from dedoc.extensions import recognized_extensions, recognized_mimes
-from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
-
-from typing import List, Tuple, Optional
-
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
@@ -36,6 +33,7 @@ class DocxReader(BaseReader):
         self.document_xml = None
         self.document_bs_tree = None
         self.paragraph_list = None
+        self.path_hash = None
 
     def can_read(self,
                  path: str,
@@ -59,6 +57,9 @@ class DocxReader(BaseReader):
         except PackageNotFoundError:
             tables = []
 
+        # get hash of document
+        with open(path, "rb") as f:
+            self.path_hash = hashlib.md5(f.read()).hexdigest()
         # extract text lines
         lines = self._process_lines(path)
 
@@ -173,6 +174,7 @@ class DocxReader(BaseReader):
             line_with_meta = paragraph_properties.get_info()
 
             text = line_with_meta["text"]
+            uid = '{}_{}'.format(self.path_hash, line_with_meta["uid"])
 
             paragraph_type = line_with_meta["type"]
             level = line_with_meta["level"]
@@ -203,6 +205,7 @@ class DocxReader(BaseReader):
             lines_with_meta.append(LineWithMeta(line=text,
                                                 hierarchy_level=hierarchy_level,
                                                 metadata=metadata,
-                                                annotations=annotations))
+                                                annotations=annotations,
+                                                uid=uid))
             lines_with_meta = self.hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
         return lines_with_meta
