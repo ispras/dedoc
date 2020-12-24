@@ -36,6 +36,7 @@ class DocxReader(BaseReader):
         self.path_hash = None
         self.document_bs_tree = None
         self.paragraph_list = None
+        self.path_hash = None
 
     def can_read(self,
                  path: str,
