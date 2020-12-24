@@ -174,7 +174,7 @@ class DocxReader(BaseReader):
             line_with_meta = paragraph_properties.get_info()
 
             text = line_with_meta["text"]
-            uid = self.path_hash + line_with_meta["uid"]
+            uid = '{}_{}'.format(self.path_hash, line_with_meta["uid"])
 
             paragraph_type = line_with_meta["type"]
             level = line_with_meta["level"]
