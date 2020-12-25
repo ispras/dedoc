@@ -1,5 +1,9 @@
 import json
 
+
+# this is mapping between codes of windows characters and unicode characters
+# key: Wingdings and Symbol hexadecimal codes, value: unicode equivalent
+# use https://gist.github.com/ptsefton/1ce30879e9cfef289356 to get more information
 mapping_str = '{"0xf021": "!", "0xf022": "\u2702", "0xf023": "\u2701", "0xf024": "\u2203", "0xf025": "%", "0xf026": ' \
               '"&", "0xf027": "\u220d", "0xf028": "\u260e", "0xf029": ")", "0xf02a": "\u2709", "0xf02b": "+", ' \
               '"0xf02c": ",", "0xf02d": "\u2212", "0xf02e": ".", "0xf02f": "/", "0xf030": "0", "0xf031": "1", ' \

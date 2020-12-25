@@ -104,7 +104,9 @@ class AbstractNum:
 
             if lvl.lvlText and lvl.lvlText['w:val']:
                 # some characters in bullets are displayed incorrectly
-                # replace them with the unicode version
+                # replace them with the unicode equivalent
+                # use mapping between hexadecimal code of windows characters and unicode characters
+                # if hexadecimal code was found in mapping dictionary use it's unicode equivalent
                 if hex(ord(lvl.lvlText['w:val'][0])) in mapping:
                     self.levels[ilvl]['lvlText'] = mapping[hex(ord(lvl.lvlText['w:val'][0]))]
                 else:
