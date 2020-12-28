@@ -4,6 +4,7 @@ from dedoc.readers.docx_reader.properties_extractor import change_paragraph_prop
 from dedoc.readers.docx_reader.data_structures import BaseProperties
 from typing import List, Dict, Union
 import re
+from dedoc.readers.docx_reader.windows_font_mapping import mapping
 
 numFmtList = {"decimal": "1",  # 1, 2, 3, ..., 10, 11, 12, ...
               "lowerLetter": "a",  # a, b, c, ..., y, z, aa, bb, cc, ..., yy, zz, aaa, bbb, ccc, ...
@@ -103,15 +104,11 @@ class AbstractNum:
 
             if lvl.lvlText and lvl.lvlText['w:val']:
                 # some characters in bullets are displayed incorrectly
-                # replace them with the unicode version
-                if hex(ord(lvl.lvlText['w:val'][0])) == "0xf0b7":
-                    self.levels[ilvl]['lvlText'] = chr(int("0x2022", 0))
-                elif hex(ord(lvl.lvlText['w:val'][0])) == "0xf0a7":
-                    self.levels[ilvl]['lvlText'] = chr(int("0x2043", 0))
-                elif hex(ord(lvl.lvlText['w:val'][0])) == "0xf0be":
-                    self.levels[ilvl]['lvlText'] = chr(int("0x2014", 0))
-                elif hex(ord(lvl.lvlText['w:val'][0])) == "0xf02d":
-                    self.levels[ilvl]['lvlText'] = chr(int("0xfe58", 0))
+                # replace them with the unicode equivalent
+                # use mapping between hexadecimal code of windows characters and unicode characters
+                # if hexadecimal code was found in mapping dictionary use it's unicode equivalent
+                if hex(ord(lvl.lvlText['w:val'][0])) in mapping:
+                    self.levels[ilvl]['lvlText'] = mapping[hex(ord(lvl.lvlText['w:val'][0]))]
                 else:
                     self.levels[ilvl]['lvlText'] = lvl.lvlText['w:val']
 

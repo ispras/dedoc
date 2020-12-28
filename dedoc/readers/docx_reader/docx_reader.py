@@ -1,20 +1,17 @@
 import zipfile
 from bs4 import BeautifulSoup
+import hashlib
+from docx import Document
+from docx.opc.exceptions import PackageNotFoundError
+from docx.table import Table as DocxTable
+from typing import List, Tuple, Optional
 
+from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.data_structures import Paragraph, ParagraphInfo
-
-from docx import Document
-from docx.opc.exceptions import PackageNotFoundError
-from docx.table import Table as DocxTable
-
-from dedoc.extensions import recognized_extensions, recognized_mimes
-from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
-
-from typing import List, Tuple, Optional
-
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
@@ -34,6 +31,9 @@ class DocxReader(BaseReader):
     def __init__(self):
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
         self.document_xml = None
+        self.document_bs_tree = None
+        self.paragraph_list = None
+        self.path_hash = None
 
     def can_read(self,
                  path: str,
@@ -57,10 +57,21 @@ class DocxReader(BaseReader):
         except PackageNotFoundError:
             tables = []
 
+        # get hash of document
+        with open(path, "rb") as f:
+            self.path_hash = hashlib.md5(f.read()).hexdigest()
         # extract text lines
         lines = self._process_lines(path)
 
         return UnstructuredDocument(lines=lines, tables=tables), True
+
+    @property
+    def get_paragraph_list(self) -> List[BeautifulSoup]:
+        return self.paragraph_list
+
+    @property
+    def get_document_bs_tree(self) -> BeautifulSoup:
+        return self.document_bs_tree
 
     @staticmethod
     def _process_table(table: DocxTable) -> Table:
@@ -75,9 +86,10 @@ class DocxReader(BaseReader):
         :return: list of document lines with annotations
         """
         self.document_xml = zipfile.ZipFile(path)
-        document = self.__get_bs_tree('word/document.xml')
-        if document:
-            body = document.body
+        self.document_bs_tree = self.__get_bs_tree('word/document.xml')
+        self.paragraph_list = []
+        if self.document_bs_tree:
+            body = self.document_bs_tree.body
         else:
             return []
 
@@ -101,25 +113,28 @@ class DocxReader(BaseReader):
         endnotes = self.__get_bs_tree('word/endnotes.xml')
 
         # the list of paragraph with their properties
-        paragraph_list = []
         for header in headers:
-            paragraph_list += self.__get_paragraph_list(header, styles_extractor, None)
+            self.__add_to_paragraph_list(header)
 
         for paragraph in body:
             # ignore tables
             if paragraph.name == 'tbl':
                 continue
             if paragraph.name != 'p':
-                paragraph_list += self.__get_paragraph_list(paragraph, styles_extractor, numbering_extractor)
+                self.__add_to_paragraph_list(paragraph)
                 continue
-            paragraph_list.append(Paragraph(paragraph, styles_extractor, numbering_extractor))
+            self.paragraph_list.append(paragraph)
 
         if footnotes:
-            paragraph_list += self.__get_paragraph_list(footnotes, styles_extractor, None)
+            self.__add_to_paragraph_list(footnotes)
         if endnotes:
-            paragraph_list += self.__get_paragraph_list(endnotes, styles_extractor, None)
+            self.__add_to_paragraph_list(endnotes)
         for footer in footers:
-            paragraph_list += self.__get_paragraph_list(footer, styles_extractor, None)
+            self.__add_to_paragraph_list(footer)
+
+        paragraph_list = []
+        for paragraph in self.paragraph_list:
+            paragraph_list.append(Paragraph(paragraph, styles_extractor, numbering_extractor))
 
         return self._get_lines_with_meta(paragraph_list)
 
@@ -136,24 +151,8 @@ class DocxReader(BaseReader):
             tree = None
         return tree
 
-    @staticmethod
-    def __get_paragraph_list(tree: BeautifulSoup,
-                             styles_extractor: StylesExtractor,
-                             numbering_extractor: Optional[NumberingExtractor],
-                             ) -> List[Paragraph]:
-        """
-        extracts the list of paragraphs from the given tree
-        :param tree: BeautifulSoup tree for paragraphs extracting
-        :param styles_extractor: StylesExtractor for styles in paragraphs
-        :param numbering_extractor: NumberingExtractor for numbering in paragraphs
-        :return: list of extracted paragraphs
-        """
-        paragraph_list = []
-        tree_paragraphs = tree.find_all('w:p')
-        for paragraph in tree_paragraphs:
-            paragraph_list.append(Paragraph(paragraph,
-                                            styles_extractor, numbering_extractor))
-        return paragraph_list
+    def __add_to_paragraph_list(self, tree: BeautifulSoup) -> None:
+        self.paragraph_list += tree.find_all('w:p')
 
     def _get_lines_with_meta(self,
                              paragraph_list: List[Paragraph]) -> List[LineWithMeta]:
@@ -175,6 +174,7 @@ class DocxReader(BaseReader):
             line_with_meta = paragraph_properties.get_info()
 
             text = line_with_meta["text"]
+            uid = '{}_{}'.format(self.path_hash, line_with_meta["uid"])
 
             paragraph_type = line_with_meta["type"]
             level = line_with_meta["level"]
@@ -205,6 +205,7 @@ class DocxReader(BaseReader):
             lines_with_meta.append(LineWithMeta(line=text,
                                                 hierarchy_level=hierarchy_level,
                                                 metadata=metadata,
-                                                annotations=annotations))
+                                                annotations=annotations,
+                                                uid=uid))
             lines_with_meta = self.hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
         return lines_with_meta

@@ -1,4 +1,5 @@
 from typing import Optional, List
+from uuid import uuid1
 
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
@@ -11,7 +12,8 @@ class LineWithMeta:
                  line: str,
                  hierarchy_level: Optional[HierarchyLevel],
                  metadata: ParagraphMetadata,
-                 annotations: List[Annotation]):
+                 annotations: List[Annotation],
+                 uid: str = None):
         """
         Structural unit of document - line (or paragraph) of text and its metadata. One LineWithMeta should not contain
         text from different logical parts of the document (for example document title and raw text of document should not
@@ -24,6 +26,7 @@ class LineWithMeta:
         the closer it is to the root.
         :param metadata: line metadata (related to the entire line, as type of the line or page number)
         :param annotations: metadata refers to some part of the text, for example font size of font type and so on.
+        :param uid: unique identifier of the line.
         """
 
         self.__check_hierarchy_level(hierarchy_level)
@@ -32,6 +35,7 @@ class LineWithMeta:
         assert isinstance(metadata, ParagraphMetadata)
         self._metadata = metadata
         self._annotations = annotations
+        self._uid = str(uuid1()) if uid is None else uid
 
     def __check_hierarchy_level(self, hierarchy_level: HierarchyLevel):
         if not (hierarchy_level is None or isinstance(hierarchy_level, HierarchyLevel)):
@@ -55,6 +59,10 @@ class LineWithMeta:
     @property
     def annotations(self) -> List[Annotation]:
         return self._annotations
+
+    @property
+    def uid(self) -> str:
+        return self._uid
 
     def set_hierarchy_level(self, hierarchy_level: Optional[HierarchyLevel]):
         self.__check_hierarchy_level(hierarchy_level)
