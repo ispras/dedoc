@@ -1,6 +1,6 @@
 # Dedoc
 
-![Dedoc](dedoc_logo.png | width=100)
+![Dedoc](dedoc_logo.png)
 
 ## About
 This project is called Dedoc and its purpose is:
