@@ -1,9 +1,29 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from dedoc.data_structures.table import Table
 
 
-def json2html(text: str, paragraph: 'TreeNode', tables: Optional[List[Table]], tabs: int = 0) -> str:
+def __ref2table(paragraph: "TreeNode", table2id: Dict[str, int]) -> str:
+    annotations = paragraph.annotations
+    table_id = None
+    for annotation in annotations:
+        if annotation.name == "table":
+            table_id = annotation.value
+    if table_id is None:
+        return ""
+    else:
+        return '<p> <sub>  <a href="#{uid}"> table_{table_num}</a> </sub> </p>'.format(
+            uid=table_id, table_num=table2id[table_id]
+        )
+
+
+def json2html(text: str,
+              paragraph: 'TreeNode',
+              tables: Optional[List[Table]],
+              tabs: int = 0,
+              table2id: Dict[str, int] = None) -> str:
+    if tables is None:
+        tables = []
     ptext = __annotations2html(paragraph)
 
     if paragraph.metadata.paragraph_type in ["header", "root"]:
@@ -13,20 +33,24 @@ def json2html(text: str, paragraph: 'TreeNode', tables: Optional[List[Table]], t
     else:
         ptext = ptext.strip()
 
+    if table2id is None:
+        table2id = {table.metadata.uid: table_id for table_id, table in enumerate(tables)}
+
     text += "<p> {tab} {text}     <sub> id = {id} ; type = {type} </sub></p>".format(
         tab="&nbsp;" * tabs,
         text=ptext,
         type=str(paragraph.metadata.paragraph_type),
         id=paragraph.node_id
     )
+    text += __ref2table(paragraph, table2id)
 
     for subparagraph in paragraph.subparagraphs:
-        text = json2html(text=text, paragraph=subparagraph, tables=None, tabs=tabs + 4)
+        text = json2html(text=text, paragraph=subparagraph, tables=None, tabs=tabs + 4, table2id=table2id)
 
     if tables is not None and len(tables) > 0:
-        text += "<h3>Таблицы:</h3>"
+        text += "<h3> Tables: </h3>"
         for table in tables:
-            text += __table2html(table.cells)
+            text += __table2html(table, table2id)
             text += "<p>&nbsp;</p>"
     return text
 
@@ -76,9 +100,13 @@ def __annotations2html(paragraph: 'TreeNode') -> str:
     return text.replace("\n", "<br>")
 
 
-def __table2html(table: List[List[str]]) -> str:
-    text = '<table border="1" style="border-collapse: collapse; width: 100%;">\n<tbody>\n'
-    for row in table:
+def __table2html(table: Table, table2id: Dict[str, int]) -> str:
+    uid = table.metadata.uid
+    text = "<h4> table {}:</h4>".format(table2id[uid])
+    text += '<table border="1" id={uid} style="border-collapse: collapse; width: 100%;">\n<tbody>\n'.format(
+        uid=uid
+    )
+    for row in table.cells:
         text += "<tr>\n"
         for col in row:
             text += "<td >{}</td>\n".format(col)
