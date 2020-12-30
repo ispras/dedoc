@@ -9,6 +9,5 @@ class TableAnnotation(Annotation):
     @staticmethod
     def get_api_dict(api: Api) -> Model:
         return api.model('TableAnnotation', {
-            'name': fields.String(description='ref to table', required=True, example="table fafffa145agh"),
             'value': fields.String(description='ref to table', required=True, example="table fafffa145agh")
         })
