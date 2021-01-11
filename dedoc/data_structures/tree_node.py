@@ -1,3 +1,4 @@
+import warnings
 from collections import OrderedDict, defaultdict
 from typing import List, Iterable, Optional, Dict
 from flask_restplus import fields, Api, Model
@@ -76,14 +77,36 @@ class TreeNode(Serializable):
         })
 
     @staticmethod
-    def create(texts: Iterable[str]) -> "TreeNode":
+    def create(lines: List[LineWithMeta] = None, texts: Iterable[str] = None) -> "TreeNode":
         """
         Creates a root node with given text
-        :param texts: this text should be the title of the document (or should be empty for documents without title)
+        :param lines: this lines should be the title of the document (or should be empty for documents without title)
+        :param texts: deprecated, use lines instead
         :return: root of the document tree
         """
-        text = "\n".join(texts)
-        metadata = ParagraphMetadata(paragraph_type="root", page_id=0, line_id=0, predicted_classes=None)
+        if texts is None and lines is None:
+            raise ValueError("You should specify lines")
+        elif texts is not None and lines is not None:
+            warnings.warn("specify only lines, texts ignored")
+        elif texts is not None and lines is None:
+            warnings.warn("texts is deprecated and would be removed soon, use lines")
+            lines = [LineWithMeta(line=text, metadata=ParagraphMetadata(
+                line_id=0,
+                paragraph_type="",
+                page_id=0,
+                predicted_classes=None
+            ), hierarchy_level=None, annotations=[]) for text in texts]
+
+        page_id = 0 if len(lines) == 0 else min((line.metadata.page_id for line in lines))
+        line_id = 0 if len(lines) == 0 else min((line.metadata.line_id for line in lines))
+
+        texts = (line.line for line in lines)
+        text = "".join(texts)
+        metadata = ParagraphMetadata(
+            paragraph_type="root",
+            page_id=page_id,
+            line_id=line_id,
+            predicted_classes=None)
         hierarchy_level = HierarchyLevel(0, 0, True, paragraph_type="root")
         return TreeNode("0",
                         text,
