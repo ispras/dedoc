@@ -15,7 +15,7 @@ class LinearConstructor(AbstractStructureConstructor):
                            document: UnstructuredDocument,
                            structure_type: Optional[str] = None) -> DocumentContent:
         lines = document.lines
-        tree = TreeNode.create(texts=[])
+        tree = TreeNode.create(lines=[])
         for line in lines:
             tree.add_child(line)
 
