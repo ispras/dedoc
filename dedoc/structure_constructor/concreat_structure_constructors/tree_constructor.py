@@ -22,7 +22,7 @@ class TreeConstructor(AbstractStructureConstructor):
         lines = document.lines
         document_name, not_document_name = self.__get_document_name(lines)
         not_document_name = self.__add_lists(not_document_name)
-        tree = TreeNode.create(texts=[line.line for line in document_name])
+        tree = TreeNode.create(lines=document_name)
         for line in not_document_name:
             # add raw text line
             if line.hierarchy_level.is_raw_text():
