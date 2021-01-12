@@ -72,7 +72,7 @@ Detected and parsed table in a document
         иерархии. <br/>For example node_id 0.2.1 means that this element is the second subhead of the third chapter. The first number is the root of the document. Numbering goes from 0.
     </li>
     <li><strong>text</strong>: string (required field) -&nbsp;element text;</li>
-    <li><strong>annotations</strong>: List[<a href="#Annotation"> Annotation </a>] (required field) - the field describes any properties of the text, for example, boldness, font size, etc. Currently empty.
+    <li><strong>annotations</strong>: List[<a href="#Annotation"> Annotation </a>] (required field) - the field describes any properties of the text, for example, boldness, font size, etc.
     </li>
     <li><strong>metadata</strong>: <a href="#ParagraphMetadata"> ParagraphMetadata </a> (required field) -
         meta-information relevant to the entire subparagraph, such as page number and position on this page.
@@ -87,10 +87,39 @@ Detected and parsed table in a document
 <p>Contains text annotations</p>
 <ol>
     <li><strong> start </strong> : integer (required field) - annotation start index.</li>
-    <li><strong> end </strong> : integer (required field) - annotation end index.</li>
+    <li><strong> end </strong> : integer (required field) - annotation end index.
+        The index of the last character (associated with this annotation) + 1.
+        For example, if the first character is annotated, then start = 0, end = 1;
+        if all line is annotated, then start = 0, end = length of s.</li>
     <li><strong> name </strong> : string (required field) - annotation type (size, italic etc).</li>
-    <li><strong> value </strong> : string (required field) - annotation value ('13' for font size etc).</li>
+    <li><strong> value </strong> : string (required field) - annotation value
+        (to learn more see <a href="#ConcreteAnnotations">Concrete types of annotations</a>).</li>
 </ol>
+
+<h4 id="ConcreteAnnotations"> Concrete types of annotations.</h4>
+<ul>
+    <li><strong> AlignmentAnnotation </strong> : text alignment. The value of "name" field = "alignment".
+        "value" field may be "left" (left alignment), "right" (right alignment),
+        "both" (alignment on both sides), "center" (center alignment). </li>
+    <li><strong> BoldAnnotation </strong> : bold text. The value of "name" field = "bold".
+        "value" may be "True", if the font is bold and "False" otherwise. </li>
+    <li><strong> IndentationAnnotation </strong> : indent from the left edge of the page.
+        For documents in docx format, we mean the indentation from the inner borders of the document
+        (margin is not taken into account). The value of "name" field = "indentation".
+        "value" may be any real number converted to a string.
+        For docx documents, the indent is measured in twentieths of a point (1/1440 of an inch). </li>
+    <li><strong> ItalicAnnotation </strong> : italic text. The value of "name" field = "italic".
+        "value" may be "True", if the text is in italics and "False" otherwise. </li>
+    <li><strong> SizeAnnotation </strong> : font size in points (1/72 of an inch). The value of "name" field = "size".
+         "value" may be any real number converted to a string. </li>
+    <li><strong> StyleAnnotation </strong> : the name of the style applied to the text, for example, "heading 1".
+        The value of "name" field = "style".
+        "value" may be any string. </li>
+    <li><strong> Table Annotation </strong> : table reference. The value of "name" field = "table".
+        "value" field = unique identifier of the table. </li>
+    <li><strong> UnderlinedAnnotation </strong> : underlined text. The value of "name" field = "underlined".
+        "value" may be "True", if the text is underlined and "False" otherwise. </li>
+</ul>
 
 <h4 id="ParagraphMetadata"> ParagraphMetadata</h4>
 <p>Contains paragraph meta information</p>
