@@ -33,11 +33,9 @@ class DocumentMetadata(Serializable):
         self.created_time = created_time
         self.access_time = access_time
         self.file_type = file_type
-        self.other_fields = other_fields
+        self.other_fields = {}
         if other_fields is not None and len(other_fields) > 0:
             self.extend_other_fields(other_fields)
-        else:
-            self.other_fields = {}
 
     def extend_other_fields(self, new_fields: dict):
         assert (new_fields is not None)
