@@ -3,20 +3,6 @@ from typing import Optional, List, Dict
 from dedoc.data_structures.table import Table
 
 
-def __ref2table(paragraph: "TreeNode", table2id: Dict[str, int]) -> str:
-    annotations = paragraph.annotations
-    table_id = None
-    for annotation in annotations:
-        if annotation.name == "table":
-            table_id = annotation.value
-    if table_id is None:
-        return ""
-    else:
-        return '<p> <sub>  <a href="#{uid}"> table_{table_num}</a> </sub> </p>'.format(
-            uid=table_id, table_num=table2id[table_id]
-        )
-
-
 def json2html(text: str,
               paragraph: 'TreeNode',
               tables: Optional[List[Table]],
@@ -24,7 +10,11 @@ def json2html(text: str,
               table2id: Dict[str, int] = None) -> str:
     if tables is None:
         tables = []
-    ptext = __annotations2html(paragraph)
+
+    if table2id is None:
+        table2id = {table.metadata.uid: table_id for table_id, table in enumerate(tables)}
+
+    ptext = __annotations2html(paragraph, table2id)
 
     if paragraph.metadata.paragraph_type in ["header", "root"]:
         ptext = "<strong>{}</strong>".format(ptext.strip())
@@ -33,16 +23,12 @@ def json2html(text: str,
     else:
         ptext = ptext.strip()
 
-    if table2id is None:
-        table2id = {table.metadata.uid: table_id for table_id, table in enumerate(tables)}
-
     text += "<p> {tab} {text}     <sub> id = {id} ; type = {type} </sub></p>".format(
         tab="&nbsp;" * tabs,
         text=ptext,
         type=str(paragraph.metadata.paragraph_type),
         id=paragraph.node_id
     )
-    text += __ref2table(paragraph, table2id)
 
     for subparagraph in paragraph.subparagraphs:
         text = json2html(text=text, paragraph=subparagraph, tables=None, tabs=tabs + 4, table2id=table2id)
@@ -72,24 +58,27 @@ def __value2tag(name: str, value: str) -> str:
     return value
 
 
-def __annotations2html(paragraph: 'TreeNode') -> str:
+def __annotations2html(paragraph: 'TreeNode', table2id: Dict[str, int]) -> str:
     indexes = dict()
 
     for annotation in paragraph.annotations:
         name = annotation.name
         value = annotation.value
 
-        if name not in ["bold", "italic", "underlined"] and not value.startswith("heading "):
+        if name not in ["bold", "italic", "underlined", "table"] and not value.startswith("heading "):
             continue
         elif name in ["bold", "italic", "underlined"] and annotation.value == "False":
             continue
 
         tag = __value2tag(name, value)
-
         indexes.setdefault(annotation.start, "")
         indexes.setdefault(annotation.end, "")
-        indexes[annotation.start] += "<" + tag + ">"
-        indexes[annotation.end] = "</" + tag + ">" + indexes[annotation.end]
+        if name == "table":
+            indexes[annotation.start] += '<p> <sub> <a href="#{uid}"> table#{index_table} </a> </sub> </p>'\
+                .format(uid=tag, index_table=table2id[tag])
+        else:
+            indexes[annotation.start] += "<" + tag + ">"
+            indexes[annotation.end] = "</" + tag + ">" + indexes[annotation.end]
 
     insert_tags = sorted([(index, tag) for index, tag in indexes.items()], reverse=True)
     text = paragraph.text
