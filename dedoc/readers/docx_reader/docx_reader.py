@@ -1,4 +1,6 @@
 import zipfile
+from collections import defaultdict
+
 from bs4 import BeautifulSoup
 import hashlib
 from docx import Document
@@ -6,6 +8,7 @@ from docx.opc.exceptions import PackageNotFoundError
 from docx.table import Table as DocxTable
 from typing import List, Tuple, Optional
 
+from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
@@ -33,6 +36,11 @@ class DocxReader(BaseReader):
         self.document_xml = None
         self.document_bs_tree = None
         self.paragraph_list = None
+
+        # dict {index in self.paragraph_list: [table uid]}
+        self.table_refs = None
+        # the list of table uids
+        self.table_uids = None
         self.path_hash = None
 
     def can_read(self,
@@ -47,21 +55,21 @@ class DocxReader(BaseReader):
              path: str,
              document_type: Optional[str] = None,
              parameters: Optional[dict] = None) -> Tuple[UnstructuredDocument, bool]:
+        # get hash of document
+        with open(path, "rb") as f:
+            self.path_hash = hashlib.md5(f.read()).hexdigest()
+
+        # extract text lines
+        lines = self._process_lines(path)
 
         # extract tables
         try:
             document = Document(path)
-            tables = [self._process_table(table) for table in document.tables]
+            tables = [self._process_table(i, table) for i, table in enumerate(document.tables)]
         except IndexError:
             tables = []
         except PackageNotFoundError:
             tables = []
-
-        # get hash of document
-        with open(path, "rb") as f:
-            self.path_hash = hashlib.md5(f.read()).hexdigest()
-        # extract text lines
-        lines = self._process_lines(path)
 
         return UnstructuredDocument(lines=lines, tables=tables), True
 
@@ -73,10 +81,13 @@ class DocxReader(BaseReader):
     def get_document_bs_tree(self) -> BeautifulSoup:
         return self.document_bs_tree
 
-    @staticmethod
-    def _process_table(table: DocxTable) -> Table:
+    def _process_table(self, i: int, table: DocxTable) -> Table:
         cells = [[cell.text for cell in row.cells] for row in table.rows]
-        metadata = TableMetadata(page_id=None)
+        if self.table_uids is not None and len(self.table_uids) > i:
+            uid = self.table_uids[i]
+        else:
+            uid = ""
+        metadata = TableMetadata(page_id=None, uid=uid)
         return Table(cells=cells, metadata=metadata)
 
     def _process_lines(self,
@@ -88,6 +99,9 @@ class DocxReader(BaseReader):
         self.document_xml = zipfile.ZipFile(path)
         self.document_bs_tree = self.__get_bs_tree('word/document.xml')
         self.paragraph_list = []
+        self.table_refs = defaultdict(list)
+        self.table_uids = []
+
         if self.document_bs_tree:
             body = self.document_bs_tree.body
         else:
@@ -117,9 +131,14 @@ class DocxReader(BaseReader):
             self.__add_to_paragraph_list(header)
 
         for paragraph in body:
-            # ignore tables
             if paragraph.name == 'tbl':
+                if not self.paragraph_list:
+                    self.paragraph_list.append(BeautifulSoup('<w:p></w:p>').body.contents[0])
+                uid = hashlib.md5(paragraph.encode()).hexdigest()
+                self.table_uids.append(uid)
+                self.table_refs[len(self.paragraph_list) - 1].append(uid)
                 continue
+
             if paragraph.name != 'p':
                 self.__add_to_paragraph_list(paragraph)
                 continue
@@ -163,7 +182,7 @@ class DocxReader(BaseReader):
         lines_with_meta = []
         paragraph_id = 0
 
-        for paragraph in paragraph_list:
+        for i, paragraph in enumerate(paragraph_list):
 
             # line with meta:
             # {"text": "",
@@ -190,11 +209,14 @@ class DocxReader(BaseReader):
                 "size": SizeAnnotation,
                 "indentation": IndentationAnnotation,
                 "alignment": AlignmentAnnotation,
-                "style": StyleAnnotation
+                "style": StyleAnnotation,
             }
             annotations = []
             for annotation in line_with_meta["annotations"]:
                 annotations.append(dict2annotations[annotation[0]](*annotation[1:]))
+            if i in self.table_refs:
+                for table_uid in self.table_refs[i]:
+                    annotations.append(TableAnnotation(name=table_uid))
 
             paragraph_id += 1
             metadata = ParagraphMetadata(paragraph_type=paragraph_type,
