@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from flask_restplus import fields, Api, Model
+from flask_restx import fields, Api, Model
 
 from dedoc.api.models.custom_fields import wild_any_fields, wild_forbid_fields
 from dedoc.data_structures.serializable import Serializable

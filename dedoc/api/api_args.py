@@ -1,6 +1,6 @@
 from typing import Any
 
-from flask_restplus import Api
+from flask_restx import Api
 from werkzeug.datastructures import FileStorage
 
 

@@ -1,7 +1,7 @@
 import warnings
 from collections import OrderedDict, defaultdict
 from typing import List, Iterable, Optional, Dict
-from flask_restplus import fields, Api, Model
+from flask_restx import fields, Api, Model
 
 from dedoc.config import get_config
 from dedoc.data_structures.annotation import Annotation
