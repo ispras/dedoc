@@ -1,7 +1,8 @@
 from bs4 import BeautifulSoup
+
+from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
-from dedoc.readers.docx_reader.data_structures import BaseProperties
 from typing import List, Dict, Union
 import re
 from dedoc.readers.docx_reader.windows_font_mapping import mapping

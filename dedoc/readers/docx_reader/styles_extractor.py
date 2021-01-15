@@ -1,8 +1,11 @@
-from bs4 import BeautifulSoup
-from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
-from dedoc.readers.docx_reader.data_structures import BaseProperties, Run
 from typing import Optional, List
 import re
+
+from bs4 import BeautifulSoup
+
+from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
+from dedoc.readers.docx_reader.data_structures.run import Run
+from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
 
 
 class StylesExtractor:
