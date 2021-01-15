@@ -1,5 +1,5 @@
 from dedoc.data_structures.annotation import Annotation
-from flask_restplus import Model, Api, fields
+from flask_restx import Model, Api, fields
 
 
 class TableAnnotation(Annotation):
