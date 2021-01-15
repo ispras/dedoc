@@ -1,7 +1,7 @@
 from typing import List, Optional
 from collections import OrderedDict
 
-from flask_restplus import fields, Api, Model
+from flask_restx import fields, Api, Model
 
 from dedoc.config import get_config
 from dedoc.data_structures.document_content import DocumentContent

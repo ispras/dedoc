@@ -5,7 +5,7 @@ from functools import wraps
 
 from flask import Flask, request
 from flask import send_file
-from flask_restplus import Resource, Api, Model
+from flask_restx import Resource, Api, Model
 from werkzeug.local import LocalProxy
 
 from dedoc.api.swagger_api_utils import get_command_keep_models
