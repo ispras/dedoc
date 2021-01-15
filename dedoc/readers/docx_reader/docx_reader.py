@@ -10,11 +10,12 @@ from typing import List, Tuple, Optional
 
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
+from dedoc.readers.docx_reader.data_structures.paragraph_info import ParagraphInfo
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
-from dedoc.readers.docx_reader.data_structures import Paragraph, ParagraphInfo
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
