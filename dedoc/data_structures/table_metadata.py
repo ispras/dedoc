@@ -1,6 +1,6 @@
 from collections import OrderedDict
 from typing import Optional
-from flask_restplus import fields, Api, Model
+from flask_restx import fields, Api, Model
 
 from dedoc.data_structures.serializable import Serializable
 
