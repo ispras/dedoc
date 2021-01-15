@@ -1,17 +1,19 @@
 import zipfile
+from collections import defaultdict
+
 from bs4 import BeautifulSoup
 import hashlib
-from docx import Document
-from docx.opc.exceptions import PackageNotFoundError
-from docx.table import Table as DocxTable
 from typing import List, Tuple, Optional
 
+from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
+from dedoc.readers.docx_reader.data_structures.paragraph_info import ParagraphInfo
+from dedoc.readers.docx_reader.data_structures.table import DocxTable
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
-from dedoc.readers.docx_reader.data_structures import Paragraph, ParagraphInfo
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
@@ -33,6 +35,10 @@ class DocxReader(BaseReader):
         self.document_xml = None
         self.document_bs_tree = None
         self.paragraph_list = None
+        self.styles_extractor = None
+
+        # dict {index in self.paragraph_list: [table uid]}
+        self.table_refs = None
         self.path_hash = None
         self.document_bs_tree = None
         self.paragraph_list = None
@@ -50,21 +56,15 @@ class DocxReader(BaseReader):
              path: str,
              document_type: Optional[str] = None,
              parameters: Optional[dict] = None) -> Tuple[UnstructuredDocument, bool]:
-
-        # extract tables
-        try:
-            document = Document(path)
-            tables = [self._process_table(table) for table in document.tables]
-        except IndexError:
-            tables = []
-        except PackageNotFoundError:
-            tables = []
-
         # get hash of document
         with open(path, "rb") as f:
             self.path_hash = hashlib.md5(f.read()).hexdigest()
+
         # extract text lines
         lines = self._process_lines(path)
+
+        # extract tables
+        tables = self._process_tables()
 
         return UnstructuredDocument(lines=lines, tables=tables), True
 
@@ -76,11 +76,15 @@ class DocxReader(BaseReader):
     def get_document_bs_tree(self) -> BeautifulSoup:
         return self.document_bs_tree
 
-    @staticmethod
-    def _process_table(table: DocxTable) -> Table:
-        cells = [[cell.text for cell in row.cells] for row in table.rows]
-        metadata = TableMetadata(page_id=None)
-        return Table(cells=cells, metadata=metadata)
+    def _process_tables(self) -> List[Table]:
+        tables = []
+        if self.document_bs_tree:
+            table_list = self.document_bs_tree.find_all("w:tbl")
+            for table_bs in table_list:
+                table = DocxTable(table_bs, self.styles_extractor)
+                metadata = TableMetadata(page_id=None, uid=table.uid)
+                tables.append(Table(cells=table.get_cells(), metadata=metadata))
+        return tables
 
     def _process_lines(self,
                        path: str) -> List[LineWithMeta]:
@@ -91,18 +95,21 @@ class DocxReader(BaseReader):
         self.document_xml = zipfile.ZipFile(path)
         self.document_bs_tree = self.__get_bs_tree('word/document.xml')
         self.paragraph_list = []
+        self.table_refs = defaultdict(list)
+        self.table_uids = []
+
         if self.document_bs_tree:
             body = self.document_bs_tree.body
         else:
             return []
 
-        styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'))
+        self.styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'))
         num_tree = self.__get_bs_tree('word/numbering.xml')
         if num_tree:
-            numbering_extractor = NumberingExtractor(num_tree, styles_extractor)
+            numbering_extractor = NumberingExtractor(num_tree, self.styles_extractor)
         else:
             numbering_extractor = None
-        styles_extractor.numbering_extractor = numbering_extractor
+        self.styles_extractor.numbering_extractor = numbering_extractor
 
         footers, headers = [], []
         for i in range(1, 4):
@@ -121,9 +128,13 @@ class DocxReader(BaseReader):
             self.__add_to_paragraph_list(header)
 
         for paragraph in body:
-            # ignore tables
             if paragraph.name == 'tbl':
+                if not self.paragraph_list:
+                    self.paragraph_list.append(BeautifulSoup('<w:p></w:p>').body.contents[0])
+                uid = hashlib.md5(paragraph.encode()).hexdigest()
+                self.table_refs[len(self.paragraph_list) - 1].append(uid)
                 continue
+
             if paragraph.name != 'p':
                 self.__add_to_paragraph_list(paragraph)
                 continue
@@ -138,7 +149,7 @@ class DocxReader(BaseReader):
 
         paragraph_list = []
         for paragraph in self.paragraph_list:
-            paragraph_list.append(Paragraph(paragraph, styles_extractor, numbering_extractor))
+            paragraph_list.append(Paragraph(paragraph, self.styles_extractor, numbering_extractor))
 
         return self._get_lines_with_meta(paragraph_list)
 
@@ -167,7 +178,7 @@ class DocxReader(BaseReader):
         lines_with_meta = []
         paragraph_id = 0
 
-        for paragraph in paragraph_list:
+        for i, paragraph in enumerate(paragraph_list):
 
             # line with meta:
             # {"text": "",
@@ -194,11 +205,14 @@ class DocxReader(BaseReader):
                 "size": SizeAnnotation,
                 "indentation": IndentationAnnotation,
                 "alignment": AlignmentAnnotation,
-                "style": StyleAnnotation
+                "style": StyleAnnotation,
             }
             annotations = []
             for annotation in line_with_meta["annotations"]:
                 annotations.append(dict2annotations[annotation[0]](*annotation[1:]))
+            if i in self.table_refs:
+                for table_uid in self.table_refs[i]:
+                    annotations.append(TableAnnotation(name=table_uid))
 
             paragraph_id += 1
             metadata = ParagraphMetadata(paragraph_type=paragraph_type,

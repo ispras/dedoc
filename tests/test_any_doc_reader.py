@@ -84,3 +84,25 @@ class TestAnyDocReader(unittest.TestCase):
         except AttributeError:
             result = None
         self.assertTrue(result is not None)
+
+    def test_docx_table_location(self):
+        any_doc_reader = DocxReader()
+        path = os.path.join(os.path.dirname(__file__), "data/example.docx")
+        result, _ = any_doc_reader.read(path)
+        lines, tables = result.lines, result.tables
+        found = False
+        for annotation in lines[12].annotations:
+            if annotation.name == "table":
+                found = True
+                self.assertEqual('0a668025582ff0cb4bd790759ae7ced3', annotation.value)
+                break
+        self.assertTrue(found)
+        found = False
+        for annotation in lines[14].annotations:
+            if annotation.name == "table":
+                found = True
+                self.assertEqual('d324e58fecdf03bbe1c9b517809655d4', annotation.value)
+                break
+        self.assertTrue(found)
+        self.assertEqual('0a668025582ff0cb4bd790759ae7ced3', tables[0].metadata.uid)
+        self.assertEqual('d324e58fecdf03bbe1c9b517809655d4', tables[1].metadata.uid)
