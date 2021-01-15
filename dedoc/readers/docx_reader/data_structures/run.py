@@ -1,3 +1,5 @@
+from typing import Optional
+
 from bs4 import BeautifulSoup
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
@@ -6,7 +8,7 @@ from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 class Run(BaseProperties):
 
     def __init__(self,
-                 properties: BaseProperties,
+                 properties: Optional[BaseProperties],
                  styles_extractor: "StylesExtractor"):
         """
         contains information about run properties
