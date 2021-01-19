@@ -16,7 +16,12 @@ class PptxReader(BaseReader):
     def __init__(self):
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: str) -> bool:
+    def can_read(self,
+                 path: str,
+                 mime: str,
+                 extension: str,
+                 document_type: str,
+                 parameters: Optional[dict] = None) -> bool:
         return extension in recognized_extensions.pptx_like_format or mime in recognized_mimes.pptx_like_format
 
     def read(self,

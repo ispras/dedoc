@@ -15,7 +15,12 @@ class ExcelReader(BaseReader):
     def __init__(self):
         pass
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str]) -> bool:
+    def can_read(self,
+                 path: str,
+                 mime: str,
+                 extension: str,
+                 document_type: Optional[str],
+                 parameters: Optional[dict] = None) -> bool:
         if document_type:
             return False
 

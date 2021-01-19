@@ -45,7 +45,8 @@ class DocxReader(BaseReader):
                  path: str,
                  mime: str,
                  extension: str,
-                 document_type: Optional[str]) -> bool:
+                 document_type: Optional[str],
+                 parameters: Optional[dict] = None) -> bool:
         return ((extension in recognized_extensions.docx_like_format or mime in recognized_mimes.docx_like_format) and
                 not document_type)
 
