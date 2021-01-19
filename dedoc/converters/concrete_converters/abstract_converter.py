@@ -1,6 +1,7 @@
 import os
 import time
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from dedoc.common.exceptions.conversion_exception import ConversionException
 
@@ -22,11 +23,12 @@ class AbstractConverter(ABC):
         pass
 
     @abstractmethod
-    def can_convert(self, extension: str, mime: str) -> bool:
+    def can_convert(self, extension: str, mime: str, parameters: Optional[dict] = None) -> bool:
         """
         check if this converter can convert file with given extension
         :param extension: file extension, for example .doc or .pdf
         :param mime: MIME type of a file
+        :param parameters: any additional parameters for given document
         :return:
         """
 

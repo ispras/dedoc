@@ -36,5 +36,10 @@ class RawTextReader(BaseReader):
         lines = self.hierarchy_level_extractor.get_hierarchy_level(lines)
         return UnstructuredDocument(lines=lines, tables=[]), False
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str]) -> bool:
+    def can_read(self,
+                 path: str,
+                 mime: str,
+                 extension: str,
+                 document_type: Optional[str],
+                 parameters: Optional[dict] = None) -> bool:
         return extension.endswith(".txt") and not document_type
