@@ -23,13 +23,20 @@ class BaseReader(ABC):
         pass
 
     @abstractmethod
-    def can_read(self, path: str, mime: str, extension: str, document_type: str) -> bool:
+    def can_read(self,
+                 path: str,
+                 mime: str,
+                 extension: str,
+                 document_type: str,
+                 parameters: Optional[dict] = None) -> bool:
         """
         check if this reader can handle given file. This method should work fast, so do not read whole file
         :param path:  path to the file in file system
         :param mime: MIME type of a file
         :param extension: file extension, for example .doc or .pdf
         :param document_type:  type of file, for example law, technical specification, scientific article and so on
+        :param parameters: dicts with additional parameters for document reader (as language for scans or delimeter for
+        csv reader)
         :return: True if this Reader can handle file, false otherwise
         """
         pass
