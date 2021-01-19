@@ -1,7 +1,7 @@
 import os
 import zipfile
 import olefile
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Optional
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.extensions import recognized_mimes
@@ -52,11 +52,12 @@ class DocxAttachmentsExtractor(AbstractAttachmentsExtractor):
         contents = stream[:size]  # contents
         return filename, contents
 
-    def can_extract(self, mime: str, filename: str) -> bool:
+    def can_extract(self, mime: str, filename: str, parameters: Optional[dict] = None) -> bool:
         """
         Check if this Extractor can handle given file.
         :param mime: mime type of the file.
         :param filename: name of the file with extension.
+        :param parameters: dict with different parameters for extracting
         :return: True if this extractor can handle given file, False otherwise
         """
 
