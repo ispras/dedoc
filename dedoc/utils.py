@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import random
 import mimetypes
@@ -68,3 +69,11 @@ def get_extensions_by_mimes(mimes: List[str]):
     for mime in mimes:
         exts.extend(get_extensions_by_mime(mime))
     return exts
+
+
+def special_match(strg: str, regular_pattern: str = r'[^.?!,:;"\'\n\r ]') -> bool:
+    """
+    checks if a string only contains certain characters
+    """
+    search = re.compile(regular_pattern).search
+    return not bool(search(strg))
