@@ -45,5 +45,3 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertEqual(list["subparagraphs"][1]["text"], "6.3.2.2.")
         self.assertEqual(list["subparagraphs"][2]["text"], "6.3.2.3 list item 6.3.2.3")
         self.assertEqual(list["subparagraphs"][3]["text"], "6.3.2.4. list item 6.3.2.4")
-
-
