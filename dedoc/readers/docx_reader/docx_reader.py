@@ -3,7 +3,7 @@ from collections import defaultdict, namedtuple
 
 from bs4 import BeautifulSoup
 import hashlib
-from typing import List, Tuple, Optional, Dict, Union
+from typing import List, Tuple, Optional
 
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.extensions import recognized_extensions, recognized_mimes
