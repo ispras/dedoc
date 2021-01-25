@@ -1,5 +1,5 @@
 import zipfile
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 
 from bs4 import BeautifulSoup
 import hashlib
@@ -28,13 +28,15 @@ from dedoc.data_structures.concrete_annotations.alignment_annotation import Alig
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
 
+TypedParagraph = namedtuple('TypedParagraph', 'xml type')
+
 
 class DocxReader(BaseReader):
     def __init__(self):
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
         self.document_xml = None
         self.document_bs_tree = None
-        # list of dicts {"xml": bs_tree for paragraph, "type": type of paragraph}
+        # list of TypedParagraph
         self.paragraph_list = None
         self.styles_extractor = None
 
@@ -68,7 +70,7 @@ class DocxReader(BaseReader):
         return UnstructuredDocument(lines=lines, tables=tables), True
 
     @property
-    def get_paragraph_list(self) -> List[Dict[str, Union[BeautifulSoup, str]]]:
+    def get_paragraph_list(self) -> List[TypedParagraph]:
         return self.paragraph_list
 
     @property
@@ -128,8 +130,8 @@ class DocxReader(BaseReader):
         for paragraph in body:
             if paragraph.name == 'tbl':
                 if not self.paragraph_list:
-                    self.paragraph_list.append({"xml": BeautifulSoup('<w:p></w:p>').body.contents[0],
-                                                "type": "paragraph"})
+                    self.paragraph_list.append(TypedParagraph(xml=BeautifulSoup('<w:p></w:p>').body.contents[0],
+                                                              type="paragraph"))
                 uid = hashlib.md5(paragraph.encode()).hexdigest()
                 self.table_refs[len(self.paragraph_list) - 1].append(uid)
                 continue
@@ -137,7 +139,7 @@ class DocxReader(BaseReader):
             if paragraph.name != 'p':
                 self.__add_to_paragraph_list(paragraph, "paragraph")
                 continue
-            self.paragraph_list.append({"xml": paragraph, "type": "paragraph"})
+            self.paragraph_list.append(TypedParagraph(xml=paragraph, type="paragraph"))
 
         if footnotes:
             self.__add_to_paragraph_list(footnotes, "footnote")
@@ -148,7 +150,7 @@ class DocxReader(BaseReader):
 
         paragraph_list = []
         for paragraph in self.paragraph_list:
-            paragraph_list.append(Paragraph(paragraph["xml"], self.styles_extractor, numbering_extractor))
+            paragraph_list.append(Paragraph(paragraph.xml, self.styles_extractor, numbering_extractor))
 
         return self._get_lines_with_meta(paragraph_list)
 
@@ -169,7 +171,7 @@ class DocxReader(BaseReader):
                                 tree: BeautifulSoup,
                                 _type: str) -> None:
         for paragraph in tree.find_all('w:p'):
-            self.paragraph_list.append({"xml": paragraph, "type": _type})
+            self.paragraph_list.append(TypedParagraph(xml=paragraph, type=_type))
 
     def _get_lines_with_meta(self,
                              paragraph_list: List[Paragraph]) -> List[LineWithMeta]:
@@ -193,10 +195,10 @@ class DocxReader(BaseReader):
             text = line_with_meta["text"]
             uid = '{}_{}'.format(self.path_hash, line_with_meta["uid"])
 
-            if self.paragraph_list[i]["type"] == "paragraph":
+            if self.paragraph_list[i].type == "paragraph":
                 paragraph_type = line_with_meta["type"]
             else:
-                paragraph_type = self.paragraph_list[i]["type"]
+                paragraph_type = self.paragraph_list[i].type
             level = line_with_meta["level"]
             if level:
                 hierarchy_level = HierarchyLevel(level[0], level[1], False, paragraph_type)
