@@ -9,6 +9,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_constructor.concreat_structure_constructors.abstract_structure_constructor import AbstractStructureConstructor
+from dedoc.structure_constructor.concreat_structure_constructors.list_patcher import ListPatcher
 
 
 class TreeConstructor(AbstractStructureConstructor):
@@ -19,10 +20,11 @@ class TreeConstructor(AbstractStructureConstructor):
     def structure_document(self,
                            document: UnstructuredDocument,
                            structure_type: Optional[str] = None) -> DocumentContent:
-        lines = document.lines
+        list_patcher = ListPatcher()
+        lines = list_patcher.patch(document.lines)
         document_name, not_document_name = self.__get_document_name(lines)
         not_document_name = self.__add_lists(not_document_name)
-        tree = TreeNode.create(texts=[line.line for line in document_name])
+        tree = TreeNode.create(lines=document_name)
         for line in not_document_name:
             # add raw text line
             if line.hierarchy_level.is_raw_text():

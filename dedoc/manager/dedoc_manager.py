@@ -59,7 +59,7 @@ class ThreadManager(Thread):
         Function of complete parsing document with 'filename' with attachment files analyze
         """
         # Step 1 - Converting
-        filename_convert = self.converter.do_converting(tmp_dir, filename)
+        filename_convert = self.converter.do_converting(tmp_dir, filename, parameters=parameters)
         self.logger.info("finish conversion {} -> {}".format(filename, filename_convert))
         # Step 2 - Parsing content of converted file
         unstructured_document, contains_attachments = self.reader.parse_file(

@@ -1,6 +1,6 @@
 import os
 import zipfile
-from typing import List, Union
+from typing import List, Union, Optional
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.extensions import recognized_mimes
@@ -12,7 +12,7 @@ class ExcelAttachmentsExtractor(AbstractAttachmentsExtractor):
     Extracts attachments from excel files
     """
 
-    def can_extract(self, mime: str, filename: str) -> bool:
+    def can_extract(self, mime: str, filename: str, parameters: Optional[dict] = None) -> bool:
         if mime in recognized_mimes.excel_like_format:
             name, ext = splitext_(filename)
             return ext == '.xlsx'

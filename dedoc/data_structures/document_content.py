@@ -1,7 +1,7 @@
 from typing import List
 from collections import OrderedDict
 
-from flask_restplus import fields, Api, Model
+from flask_restx import fields, Api, Model
 
 from dedoc.data_structures.serializable import Serializable
 from dedoc.data_structures.table import Table

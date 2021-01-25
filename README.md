@@ -1,5 +1,7 @@
 # Dedoc
 
+![Dedoc](dedoc_logo.png)
+
 ## About
 This project is called Dedoc and its purpose is:
 * Extract text and its metadata from various types of documents (what and how was written in the document)  

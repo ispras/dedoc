@@ -1,6 +1,7 @@
+import warnings
 from collections import OrderedDict, defaultdict
 from typing import List, Iterable, Optional, Dict
-from flask_restplus import fields, Api, Model
+from flask_restx import fields, Api, Model
 
 from dedoc.config import get_config
 from dedoc.data_structures.annotation import Annotation
@@ -8,6 +9,7 @@ from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.serializable import Serializable
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.utils import special_match
 
 
 class TreeNode(Serializable):
@@ -76,14 +78,36 @@ class TreeNode(Serializable):
         })
 
     @staticmethod
-    def create(texts: Iterable[str]) -> "TreeNode":
+    def create(lines: List[LineWithMeta] = None, texts: Iterable[str] = None) -> "TreeNode":
         """
         Creates a root node with given text
-        :param texts: this text should be the title of the document (or should be empty for documents without title)
+        :param lines: this lines should be the title of the document (or should be empty for documents without title)
+        :param texts: deprecated, use lines instead
         :return: root of the document tree
         """
-        text = "\n".join(texts)
-        metadata = ParagraphMetadata(paragraph_type="root", page_id=0, line_id=0, predicted_classes=None)
+        if texts is None and lines is None:
+            raise ValueError("You should specify lines")
+        elif texts is not None and lines is not None:
+            warnings.warn("specify only lines, texts ignored")
+        elif texts is not None and lines is None:
+            warnings.warn("texts is deprecated and would be removed soon, use lines")
+            lines = [LineWithMeta(line=text, metadata=ParagraphMetadata(
+                line_id=0,
+                paragraph_type="",
+                page_id=0,
+                predicted_classes=None
+            ), hierarchy_level=None, annotations=[]) for text in texts]
+
+        page_id = 0 if len(lines) == 0 else min((line.metadata.page_id for line in lines))
+        line_id = 0 if len(lines) == 0 else min((line.metadata.line_id for line in lines))
+
+        texts = (line.line for line in lines)
+        text = "".join(texts)
+        metadata = ParagraphMetadata(
+            paragraph_type="root",
+            page_id=page_id,
+            line_id=line_id,
+            predicted_classes=None)
         hierarchy_level = HierarchyLevel(0, 0, True, paragraph_type="root")
         return TreeNode("0",
                         text,
@@ -127,7 +151,7 @@ class TreeNode(Serializable):
             new_annotations.append(new_annotation)
         self.text += line.line
         self.annotations.extend(new_annotations)
-        self.annotations = self._merge_annotations(self.annotations)
+        self.annotations = self._merge_annotations(self.annotations, self.text)
 
     def get_root(self):
         """
@@ -146,28 +170,68 @@ class TreeNode(Serializable):
         return annotations_group_by_value
 
     @staticmethod
-    def _merge_annotations(annotations: List[Annotation]) -> List[Annotation]:
+    def _merge_annotations(annotations: List[Annotation], text: str) -> List[Annotation]:
+        has_merged = False
+        deep = 1
+        while not has_merged:
+            annotations, has_merged = TreeNode._merge_annotations_on_one_level(annotations, text)
+            deep += 1
+
+        return annotations
+
+    @staticmethod
+    def delete_previous_merged(merged: List[Annotation], new_annotations: Annotation) -> List[Annotation]:
+        """
+            Deleting previous merged annotations which have become unactual with the new merged annotation
+        """
+        deleted_list = []
+        for annotation in merged:
+            if annotation.start == new_annotations.start and \
+                    annotation.name == new_annotations.name and \
+                    annotation.value == new_annotations.value and \
+                    annotation.end <= new_annotations.end:
+                deleted_list.append(annotation)
+
+        for annotation in deleted_list:
+            merged.remove(annotation)
+
+        return merged
+
+    @staticmethod
+    def _merge_annotations_on_one_level(annotations: List[Annotation], text: str) -> [List[Annotation], bool]:
         """
         Merge annotations when end of the firs annotation and start of the second match and has same value.
         Used with add_text
         """
-        annotations_group_by_name_value = TreeNode._group_annotations(annotations)
+        annotations_group_by_name_value = TreeNode._group_annotations(annotations).values()
 
         merged_set = set()
         merged = []
-        for annotation_group in annotations_group_by_name_value.values():
-            for firs_annotation in annotation_group:
-                for second_annotation in annotation_group:
-                    if firs_annotation.end == second_annotation.start:
-                        merged_annotation = Annotation(start=firs_annotation.start,
-                                                       end=second_annotation.end,
-                                                       name=firs_annotation.name,
-                                                       value=firs_annotation.value)
+        for annotation_group in annotations_group_by_name_value:
+            for num_first, first_annotation in enumerate(annotation_group):
+                for num_second, second_annotation in enumerate(annotation_group):
+
+                    if num_first >= num_second:
+                        continue
+
+                    if first_annotation.end >= second_annotation.start \
+                            and first_annotation.start < second_annotation.end or \
+                            (first_annotation.end < second_annotation.start and
+                             special_match(text[first_annotation.end: second_annotation.start], r'[^.?!,:;"\'\n\r ]')):
+                        merged_annotation = Annotation(start=min(first_annotation.start, second_annotation.start),
+                                                       end=max(first_annotation.end, second_annotation.end),
+                                                       name=first_annotation.name,
+                                                       value=first_annotation.value)
+
+                        merged = TreeNode.delete_previous_merged(merged, merged_annotation)
                         merged.append(merged_annotation)
-                        merged_set.add((firs_annotation.end, firs_annotation.start,
-                                        firs_annotation.name, firs_annotation.value))
+
+                        merged_set.add((first_annotation.end, first_annotation.start,
+                                        first_annotation.name, first_annotation.value))
                         merged_set.add((second_annotation.end, second_annotation.start,
                                         second_annotation.name, second_annotation.value))
+
         other_annotations = [annotation for annotation in annotations
                              if (annotation.end, annotation.start, annotation.name, annotation.value) not in merged_set]
-        return sorted(other_annotations + merged, key=lambda a: a.start)
+
+        return sorted(other_annotations + merged, key=lambda a: a.start), len(merged) == 0

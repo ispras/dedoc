@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from flask_restplus import fields, Api, Model
+from flask_restx import fields, Api, Model
 
 from dedoc.api.models.custom_fields import wild_any_fields, wild_forbid_fields
 from dedoc.data_structures.serializable import Serializable
@@ -33,6 +33,7 @@ class DocumentMetadata(Serializable):
         self.created_time = created_time
         self.access_time = access_time
         self.file_type = file_type
+        self.other_fields = {}
         if other_fields is not None and len(other_fields) > 0:
             self.extend_other_fields(other_fields)
 
@@ -46,6 +47,7 @@ class DocumentMetadata(Serializable):
             self.other_fields[key] = value'''
         for key, value in new_fields.items():
             setattr(self, key, value)
+            self.other_fields[key] = value
 
     def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()

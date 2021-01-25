@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List, Union, Optional
 
 
 class AbstractAttachmentsExtractor(ABC):
@@ -8,12 +8,13 @@ class AbstractAttachmentsExtractor(ABC):
     """
 
     @abstractmethod
-    def can_extract(self, mime: str, filename: str) -> bool:
+    def can_extract(self, mime: str, filename: str, parameters: Optional[dict] = None) -> bool:
         """
         Checks if this Extractor can handle given file.
         :param mime: mime type of the file.
         :param filename: name of the file with extension. You can be sure that the file name consists only of letters
         numbers and dots.
+        :param parameters: dict with different parameters for extracting
         :return: True if this extractor can handle given file, False otherwise
         """
         pass

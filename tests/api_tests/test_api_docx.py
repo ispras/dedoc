@@ -52,7 +52,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertTrue(metadata["modified_time"] is not None)
         self.assertTrue(metadata["created_time"] is not None)
         self.assertTrue(metadata["access_time"] is not None)
-        self.assertIn("modified_date", metadata)
+        self.assertIn("modified_date", metadata["other_fields"])
 
     def test_odt(self):
         file_name = "example.odt"
