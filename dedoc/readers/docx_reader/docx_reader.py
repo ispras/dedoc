@@ -112,22 +112,6 @@ class DocxReader(BaseReader):
             numbering_extractor = None
         self.styles_extractor.numbering_extractor = numbering_extractor
 
-        footers, headers = [], []
-        for i in range(1, 4):
-            footer = self.__get_bs_tree('word/footer' + str(i) + '.xml')
-            if footer:
-                footers.append(footer)
-            header = self.__get_bs_tree('word/header' + str(i) + '.xml')
-            if header:
-                headers.append(header)
-        footnotes = self.__get_bs_tree('word/footnotes.xml')
-        endnotes = self.__get_bs_tree('word/endnotes.xml')
-
-        # the list of paragraph with their properties
-        paragraph_list = []
-        for header in headers:
-            self.__add_to_paragraph_list(header)
-
         for paragraph in body:
             if paragraph.name == 'tbl':
                 if not self.paragraph_list:
@@ -140,13 +124,6 @@ class DocxReader(BaseReader):
                 self.__add_to_paragraph_list(paragraph)
                 continue
             self.paragraph_list.append(paragraph)
-
-        if footnotes:
-            self.__add_to_paragraph_list(footnotes)
-        if endnotes:
-            self.__add_to_paragraph_list(endnotes)
-        for footer in footers:
-            self.__add_to_paragraph_list(footer)
 
         paragraph_list = []
         for paragraph in self.paragraph_list:

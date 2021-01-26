@@ -6,24 +6,25 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
     def test_example_1(self):
         result = self._send_request("annotation_docx/example_1.docx")['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in result]
+
         # bold, italic, underlined
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'style', 'value': 'body'} in annotations[1])
-        self.assertTrue({'start': 0, 'end': 11, 'name': 'italic', 'value': 'True'} in annotations[2])
-        self.assertTrue({'start': 0, 'end': 9, 'name': 'bold', 'value': 'True'} in annotations[3])
-        self.assertTrue({'start': 0, 'end': 15, 'name': 'underlined', 'value': 'True'} in annotations[4])
-        self.assertTrue({'start': 0, 'end': 6, 'name': 'italic', 'value': 'True'} in annotations[5])
-        self.assertTrue({'start': 8, 'end': 12, 'name': 'bold', 'value': 'True'} in annotations[6])
-        self.assertTrue({'start': 0, 'end': 19, 'name': 'bold', 'value': 'True'} in annotations[7] and
-                        {'start': 5, 'end': 19, 'name': 'underlined', 'value': 'True'} in annotations[7])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'style', 'value': 'body'} in annotations[0])
+        self.assertTrue({'start': 0, 'end': 11, 'name': 'italic', 'value': 'True'} in annotations[1])
+        self.assertTrue({'start': 0, 'end': 9, 'name': 'bold', 'value': 'True'} in annotations[2])
+        self.assertTrue({'start': 0, 'end': 15, 'name': 'underlined', 'value': 'True'} in annotations[3])
+        self.assertTrue({'start': 0, 'end': 6, 'name': 'italic', 'value': 'True'} in annotations[4])
+        self.assertTrue({'start': 8, 'end': 12, 'name': 'bold', 'value': 'True'} in annotations[5])
+        self.assertTrue({'start': 0, 'end': 19, 'name': 'bold', 'value': 'True'} in annotations[6] and
+                        {'start': 5, 'end': 19, 'name': 'underlined', 'value': 'True'} in annotations[6])
         # alignment
-        self.assertTrue({'start': 0, 'end': 9, 'name': 'alignment', 'value': 'left'} in annotations[9])
-        self.assertTrue({'start': 0, 'end': 13, 'name': 'alignment', 'value': 'center'} in annotations[10])
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'alignment', 'value': 'right'} in annotations[11])
-        self.assertTrue({'start': 0, 'end': 28, 'name': 'alignment', 'value': 'both'} in annotations[12])
+        self.assertTrue({'start': 0, 'end': 9, 'name': 'alignment', 'value': 'left'} in annotations[8])
+        self.assertTrue({'start': 0, 'end': 13, 'name': 'alignment', 'value': 'center'} in annotations[9])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'alignment', 'value': 'right'} in annotations[10])
+        self.assertTrue({'start': 0, 'end': 28, 'name': 'alignment', 'value': 'both'} in annotations[11])
         # indent
-        self.assertTrue({'start': 0, 'end': 11, 'name': 'indentation', 'value': '0'} in annotations[13])
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'indentation', 'value': '720'} in annotations[14])
-        self.assertTrue({'start': 0, 'end': 11, 'name': 'indentation', 'value': '1440'} in annotations[15])
+        self.assertTrue({'start': 0, 'end': 11, 'name': 'indentation', 'value': '0'} in annotations[12])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'indentation', 'value': '720'} in annotations[13])
+        self.assertTrue({'start': 0, 'end': 11, 'name': 'indentation', 'value': '1440'} in annotations[14])
 
     def test_example_2(self):
         result = self._send_request("annotation_docx/example_2.docx")['content']['structure']['subparagraphs']
