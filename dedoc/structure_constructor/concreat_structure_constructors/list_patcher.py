@@ -66,13 +66,14 @@ class ListPatcher:
         while inserting:
             last = inserting.pop()
             item_str = "".join(['{}.'.format(item) for item in last])
-            hierarcy_level = HierarchyLevel(level_1=levels[-1].level_1,
-                                            level_2=len(last),
-                                            paragraph_type=HierarchyLevel.list_item,
-                                            can_be_multiline=False)
+            paragraph_type = HierarchyLevel.raw_text if levels[-1].level_1 is None else HierarchyLevel.list_item
+            hierarchy_level = HierarchyLevel(level_1=levels[-1].level_1,
+                                             level_2=len(last),
+                                             paragraph_type=paragraph_type,
+                                             can_be_multiline=False)
 
             patched_lines.append(LineWithMeta(line=item_str,
-                                              hierarchy_level=hierarcy_level,
+                                              hierarchy_level=hierarchy_level,
                                               metadata=ParagraphMetadata(paragraph_type="list",
                                                                          page_id=line.metadata.page_id,
                                                                          line_id=line.metadata.line_id,
