@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Structure of additional metadata</title>
+    <link rel="stylesheet" href="static_file?fname=styles.css" />
+</head>
+<body>
+<h1>Structure of additional metadata for different file types</h1>
+
+<h2 id="cloud"> Для всех файлов помещенных или загруженных в/из облака</h2>
+<ol>
+    <li><strong>bucket_name</strong>: <a> str </a> (required field) -  bucket name in which the file is located.
+         Included when analyzing a file from a cloud storage <em> (example: "dedoc") </em></li>
+    <li><strong>cloud_file_path</strong>: <a> str </a> (required field) absolute path in the "bucket_name" on the cloud.</li>
+</ol>
+
+
+<h2 id="docx"> Docx/doc/odt files</h2>
+<ol>
+    <li><strong>document_subject</strong>: <a> str </a> (optional field) - the topic of the content of the document.</li>
+    <li><strong>keywords</strong>: <a> str </a> (optional field) - a delimited set of keywords to support searching and indexing.</li>
+    <li><strong>category</strong>: <a> str </a> (optional field) - a categorization of the content of this document. Example values for this property might include: Resume, Letter, Financial Forecast, Proposal, Technical Presentation, and so on. </li>
+    <li><strong>author</strong>: <a> str </a> (optional field) -  an entity primarily responsible for making the content of the document.</li>
+    <li><strong>last_modified_by</strong>: <a> str </a> (optional field) - the user who performed the last modification. The identification is environment-specific. Examples include a name, email address, or employee ID.</li>
+    <li><strong>created_date</strong>: <a> str </a> (optional field) - date of creation of the resource. </li>
+    <li><strong>modified_date</strong>: <a> str </a> (optional field) - date on which the resource was changed. </li>
+    <li><strong>last_printed_date</strong>: <a> str </a> (optional field) - the date and time of the last printing. </li>
+</ol>
+</body>
+</html>

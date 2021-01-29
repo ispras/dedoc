@@ -159,7 +159,7 @@ manager = DedocManager.from_config(config=config, version=open(version_file_path
 def _get_static_file_path():
     file = request.values["fname"]
     directory_name = request.values.get("directory")
-    directory = static_files_dirs[directory_name] if directory_name is not None else static_path
+    directory = static_files_dirs[directory_name] if directory_name is not None and directory_name in static_files_dirs else static_path
     return os.path.abspath(os.path.join(directory, file))
 
 
