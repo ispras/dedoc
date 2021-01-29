@@ -25,26 +25,28 @@ from dedoc.structure_constructor.structure_constructor_composition import Struct
 
 concrete_attachments_extractors = [ExcelAttachmentsExtractor(), DocxAttachmentsExtractor()]
 
-_config = dict(
-    converter=FileConverterComposition(converters=[DocxConverter(), ExcelConverter(), PptxConverter()]),
 
-    reader=ReaderComposition(readers=[DocxReader(),
-                                      ExcelReader(),
-                                      PptxReader(),
-                                      CSVReader(),
-                                      RawTextReader(),
-                                      JsonReader(),
-                                      ]),
+def get_manager_config(config: dict):
+    return dict(
+        converter=FileConverterComposition(converters=[DocxConverter(), ExcelConverter(), PptxConverter()]),
 
-    structure_constructor=StructureConstructorComposition(
-        extractors={"linear": LinearConstructor(), "tree": TreeConstructor()},
-        default_extractor=LinearConstructor()
-    ),
+        reader=ReaderComposition(readers=[DocxReader(),
+                                          ExcelReader(),
+                                          PptxReader(),
+                                          CSVReader(),
+                                          RawTextReader(),
+                                          JsonReader(),
+                                          ]),
 
-    document_metadata_extractor=MetadataExtractorComposition(extractors=[
-        DocxMetadataExtractor(),
-        BaseMetadataExtractor()
-    ]),
+        structure_constructor=StructureConstructorComposition(
+            extractors={"linear": LinearConstructor(), "tree": TreeConstructor()},
+            default_extractor=LinearConstructor()
+        ),
 
-    attachments_extractor=AttachmentsExtractorComposition(extractors=concrete_attachments_extractors)
-)
+        document_metadata_extractor=MetadataExtractorComposition(extractors=[
+            DocxMetadataExtractor(),
+            BaseMetadataExtractor()
+        ]),
+
+        attachments_extractor=AttachmentsExtractorComposition(extractors=concrete_attachments_extractors, config=config)
+    )
