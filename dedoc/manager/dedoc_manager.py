@@ -1,6 +1,7 @@
 import copy
 import logging
 import os
+import shutil
 import tempfile
 import uuid
 from queue import Queue
@@ -34,21 +35,25 @@ class ThreadManager(Thread):
     def run(self):
         while True:
             if self.queue.empty():
-                self.logger.debug("nothing to do go to sleep")
                 sleep(0.3)
             else:
                 self.logger.debug("{} files to handle".format(self.queue.qsize()))
-                uid, tmp_dir, filename, parameters, original_file_name = self.queue.get()
-                self.logger.info("start handle file {}".format(original_file_name))
-                try:
-                    result = self.__parse_file(tmp_dir=tmp_dir,
-                                               filename=filename,
-                                               parameters=parameters,
-                                               original_file_name=original_file_name)
-                    self.logger.info("finish handle file {}".format(original_file_name))
-                    self.result[uid] = result
-                except Exception as e:
-                    self.result[uid] = e
+                uid, directory, filename, parameters, original_file_name = self.queue.get()
+                self.logger.info("start handle file {}".format(filename))
+                with tempfile.TemporaryDirectory() as tmp_dir:
+                    file_original = os.path.join(directory, filename)
+                    file_new_location = os.path.join(tmp_dir, filename)
+                    self.logger.debug("move file from {} to {}".format(file_original, file_new_location))
+                    shutil.move(file_original, file_new_location)
+                    try:
+                        result = self.__parse_file(tmp_dir=tmp_dir,
+                                                   filename=filename,
+                                                   parameters=parameters,
+                                                   original_file_name=original_file_name)
+                        self.logger.info("finish handle file {}".format(original_file_name))
+                        self.result[uid] = result
+                    except Exception as e:
+                        self.result[uid] = e
 
     def __parse_file(self,
                      tmp_dir: str,
@@ -58,6 +63,7 @@ class ThreadManager(Thread):
         """
         Function of complete parsing document with 'filename' with attachment files analyze
         """
+        self.logger.info("start handle {}".format(filename))
         # Step 1 - Converting
         filename_convert = self.converter.do_converting(tmp_dir, filename, parameters=parameters)
         self.logger.info("finish conversion {} -> {}".format(filename, filename_convert))
@@ -85,6 +91,7 @@ class ThreadManager(Thread):
         with_attachments = parameters.get("with_attachments", "False").lower() == "true"
 
         if with_attachments:
+            self.logger.info("start handle attachments")
             parsed_attachment_files = self.__get_attachments(filename=filename_convert,
                                                              need_analyze_attachments=contains_attachments,
                                                              parameters=parameters,
@@ -92,6 +99,7 @@ class ThreadManager(Thread):
             self.logger.info("get attachments {}".format(filename_convert))
             parsed_document.add_attachments(parsed_attachment_files)
         parsed_document.version = self.version
+        self.logger.info("finish handle {}".format(filename))
         return parsed_document
 
     def __parse_file_meta(self,
@@ -139,7 +147,7 @@ class ThreadManager(Thread):
                         self.__parse_file_meta(document_content=None,
                                                directory=tmp_dir,
                                                filename=attachment.get_filename_in_path(),
-                                               converted_filename=attachment.get_original_filename(),
+                                               converted_filename=attachment.get_filename_in_path(),
                                                original_file_name=attachment.get_original_filename(),
                                                parameters=parameters_copy))
 
@@ -150,7 +158,7 @@ class DedocManager(object):
 
     @staticmethod
     def from_config(version: str, tmp_dir: Optional[str] = None, *, config: dict) -> "DedocManager":
-        manager_config = get_manager_config()
+        manager_config = get_manager_config(config=config)
 
         if tmp_dir is not None and not os.path.exists(tmp_dir):
             os.mkdir(tmp_dir)
@@ -195,6 +203,7 @@ class DedocManager(object):
         original_filename = file.filename.split("/")[-1]
         self.logger.info("get file {}".format(original_filename))
         filename = get_unique_name(original_filename)
+        self.logger.info("rename file {} to {}".format(original_filename, filename))
 
         if self.tmp_dir is None:
             with tempfile.TemporaryDirectory() as tmp_dir:
@@ -224,6 +233,7 @@ class DedocManager(object):
 
     def __parse_file(self, tmp_dir: str, filename: str, parameters: dict, original_file_name: str) -> ParsedDocument:
         uid = str(uuid.uuid1())
+        self.logger.info("put file in queue {}".format(filename))
         self.queue.put((uid, tmp_dir, filename, parameters, original_file_name))
         while uid not in self.result:
             sleep(0.3)

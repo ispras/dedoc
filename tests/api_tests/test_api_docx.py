@@ -64,6 +64,9 @@ class TestApiDocReader(AbstractTestApiDocReader):
     def test_bin_file(self):
         self._send_request("file.bin", expected_code=415)
 
+    def test_broken_docx(self):
+        self._send_request("broken.docx", expected_code=415)
+
     def test_send_wo_file(self):
         self._send_request_wo_file(expected_code=400)
 

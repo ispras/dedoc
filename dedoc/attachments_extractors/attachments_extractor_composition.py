@@ -10,8 +10,10 @@ from dedoc.utils import get_file_mime_type, save_data_to_unique_file
 
 class AttachmentsExtractorComposition:
 
-    def __init__(self, extractors: List[AbstractAttachmentsExtractor]):
+    def __init__(self, extractors: List[AbstractAttachmentsExtractor], *, config: dict):
         self.extractors = extractors
+        self.logger = config["logger"]
+        self.config = config
 
     def get_attachments(self, tmp_dir: str, filename: str, parameters: dict) -> List[AttachedFile]:
         """
@@ -31,6 +33,7 @@ class AttachmentsExtractorComposition:
                 can_extract = extractor.can_extract(mime=mime, filename=filename)
             if can_extract:
                 attachment_binary_data = extractor.get_attachments(tmp_dir, filename, parameters)
+                self.logger.debug("Save attachments in {}".format(tmp_dir))
                 attachment_files = [
                     AttachedFile(original_name, save_data_to_unique_file(tmp_dir, original_name, binary_data))
                     for original_name, binary_data in attachment_binary_data
