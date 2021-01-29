@@ -21,7 +21,7 @@ class ListPatcher:
 
     def __have_parent(self, items: List[ListItem], parent: ListItem) -> int:
         for item in items[::-1]:
-            if parent.is_equal(item):
+            if parent == item:
                 return True
 
         return False
@@ -35,7 +35,7 @@ class ListPatcher:
 
     def __get_inserting_parents(self, parent: ListItem, items: List[ListItem], levels: List[HierarchyLevel]) -> List[ListItem]:
         if self.__have_parent(items, parent):
-            while not items[-1].is_equal(parent):
+            while items[-1] != parent:
                 levels.pop()
                 items.pop()
 
@@ -46,7 +46,7 @@ class ListPatcher:
 
         inserting = []
 
-        while not parent.is_equal(items[-1]) and items[-1].is_less(parent):
+        while parent != items[-1] and items[-1] < parent:
             inserting.append(parent)
             parent = parent.get_parent()
 

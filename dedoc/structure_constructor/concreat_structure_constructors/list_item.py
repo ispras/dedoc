@@ -19,7 +19,7 @@ class ListItem:
 
         return ListItem(parent_item, self.end_type)
 
-    def is_less(self, item: "ListItem") -> bool:
+    def __lt__(self, item: "ListItem") -> bool:
         if self.end_type != item.end_type:
             return False
 
@@ -34,8 +34,11 @@ class ListItem:
 
         return False
 
-    def is_equal(self, item: "ListItem") -> bool:
+    def __eq__(self, item: "ListItem") -> bool:
         return self.item == item.item and self.end_type == item.end_type
+
+    def __ne__(self, item: "ListItem") -> bool:
+        return self.item != item.item or self.end_type != item.end_type
 
     def is_first_item(self) -> bool:
         return self.item == [1]
