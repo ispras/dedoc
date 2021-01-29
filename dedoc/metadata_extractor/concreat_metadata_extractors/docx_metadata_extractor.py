@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 import docx
+from docx.opc.exceptions import PackageNotFoundError
 
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.document_metadata import DocumentMetadata
@@ -54,17 +55,21 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
         return None
 
     def _get_docx_fields(self, file_path: str) -> dict:
-        doc = docx.Document(file_path)
-        properties = doc.core_properties
-        parameters = {
-            "document_subject": properties.subject,
-            "keywords": properties.keywords,
-            "category": properties.category,
-            "comments": properties.comments,
-            "author": properties.author,
-            "last_modified_by": properties.last_modified_by,
-            "created_date": self.__convert_date(properties.created),
-            "modified_date": self.__convert_date(properties.modified),
-            "last_printed_date": self.__convert_date(properties.last_printed),
-        }
-        return parameters
+        assert os.path.isfile(file_path)
+        try:
+            doc = docx.Document(file_path)
+            properties = doc.core_properties
+            parameters = {
+                "document_subject": properties.subject,
+                "keywords": properties.keywords,
+                "category": properties.category,
+                "comments": properties.comments,
+                "author": properties.author,
+                "last_modified_by": properties.last_modified_by,
+                "created_date": self.__convert_date(properties.created),
+                "modified_date": self.__convert_date(properties.modified),
+                "last_printed_date": self.__convert_date(properties.last_printed),
+            }
+            return parameters
+        except PackageNotFoundError:
+            return {"broken_docx": True}
