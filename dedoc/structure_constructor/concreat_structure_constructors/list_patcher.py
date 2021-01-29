@@ -84,7 +84,6 @@ class ListPatcher:
             level_2 = list_item_line.hierarchy_level.level_2
             can_be_multiline = line.hierarchy_level.can_be_multiline
             paragraph_type = line.hierarchy_level.paragraph_type
-
             level = HierarchyLevel(level_1, 1 if level_2 is None else level_2 + 1, can_be_multiline, paragraph_type)
             line.set_hierarchy_level(level)
 
@@ -102,9 +101,11 @@ class ListPatcher:
             item = self.__get_list_item(line.line)
             parent = item.get_parent()
 
-            if not item.is_first_item() and items and parent != items[-1]:
+            if not item.is_first_item() and items:
                 self.__update_line_levels(content, line)
-                patched_lines.extend(self.__patch_list(line, items, levels, parent))
+
+                if parent != items[-1]:
+                    patched_lines.extend(self.__patch_list(line, items, levels, parent))
 
             patched_lines.extend(content)
             content = []
