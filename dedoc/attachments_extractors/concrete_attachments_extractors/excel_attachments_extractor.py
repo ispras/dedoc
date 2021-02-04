@@ -19,7 +19,7 @@ class ExcelAttachmentsExtractor(AbstractAttachmentsExtractor):
         return False
 
     def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[List[Union[str, bytes]]]:
-        attachments = []
+        attached_files = []
         name, ext = splitext_(filename)
         if ext == '.xlsx':
 
@@ -31,6 +31,6 @@ class ExcelAttachmentsExtractor(AbstractAttachmentsExtractor):
 
                 for media in medias:
                     namefile = os.path.split(media)[-1]
-                    attachments.append([namefile, zfile.read(media)])
+                    attached_files.append([namefile, zfile.read(media)])
 
-        return attachments
+        return attached_files

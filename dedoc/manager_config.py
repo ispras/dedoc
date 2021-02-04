@@ -9,10 +9,12 @@ from dedoc.converters.concrete_converters.pptx_converter import PptxConverter
 from dedoc.converters.file_converter import FileConverterComposition
 from dedoc.metadata_extractor.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.metadata_extractor.concreat_metadata_extractors.docx_metadata_extractor import DocxMetadataExtractor
+from dedoc.metadata_extractor.concreat_metadata_extractors.note_metadata_extarctor import NoteMetadataExtractor
 from dedoc.metadata_extractor.metadata_extractor_composition import MetadataExtractorComposition
 from dedoc.readers.csv_reader.csv_reader import CSVReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.readers.excel_reader.excel_reader import ExcelReader
+from dedoc.readers.note_reader.note_reader import NoteReader
 from dedoc.readers.pptx_reader.pptx_reader import PptxReader
 from dedoc.readers.json_reader.json_reader import JsonReader
 from dedoc.readers.reader_composition import ReaderComposition
@@ -36,6 +38,7 @@ def get_manager_config(config: dict):
                                           CSVReader(),
                                           RawTextReader(),
                                           JsonReader(),
+                                          NoteReader()
                                           ]),
 
         structure_constructor=StructureConstructorComposition(
@@ -45,6 +48,7 @@ def get_manager_config(config: dict):
 
         document_metadata_extractor=MetadataExtractorComposition(extractors=[
             DocxMetadataExtractor(),
+            NoteMetadataExtractor(),
             BaseMetadataExtractor()
         ]),
 

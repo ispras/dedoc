@@ -73,7 +73,7 @@ class DocxAttachmentsExtractor(AbstractAttachmentsExtractor):
         :param parameters: dict with different parameters for extracting
         :return: list of lists (name of original file and binary file content)
         """
-        result = []
+        attached_files = []
         name, ext = splitext_(filename)
 
         if ext == '.docx':
@@ -86,7 +86,7 @@ class DocxAttachmentsExtractor(AbstractAttachmentsExtractor):
                     for attachment in attachments:
                         namefile = os.path.split(attachment)[-1]
                         if not namefile.endswith('.emf') and not namefile.endswith('.bin'):
-                            result.append([namefile, zfile.read(attachment)])
+                            attached_files.append([namefile, zfile.read(attachment)])
 
                         elif namefile.endswith('.bin'):
                             # extracting PDF-files
@@ -95,12 +95,12 @@ class DocxAttachmentsExtractor(AbstractAttachmentsExtractor):
                             if ole.exists("CONTENTS"):
                                 data = ole.openstream('CONTENTS').read()
                                 if data[0:5] == b'%PDF-':
-                                    result.append([os.path.splitext(namefile)[-2] + '.pdf', data])
+                                    attached_files.append([os.path.splitext(namefile)[-2] + '.pdf', data])
                             # extracting files in other formats
                             elif ole.exists("\x01Ole10Native"):
                                 data = ole.openstream("\x01Ole10Native").read()
                                 namefile, contents = self.__parse_ole_contents(data)
-                                result.append([namefile, contents])
+                                attached_files.append([namefile, contents])
                 except Exception as error:
                     print(error)
-        return result
+        return attached_files
