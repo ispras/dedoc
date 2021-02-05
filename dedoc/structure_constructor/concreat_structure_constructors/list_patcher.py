@@ -24,7 +24,10 @@ class ListPatcher:
             level_2 = list_item_line.hierarchy_level.level_2
             can_be_multiline = line.hierarchy_level.can_be_multiline
             paragraph_type = line.hierarchy_level.paragraph_type
-            level = HierarchyLevel(level_1, 1 if level_2 is None else level_2 + 1, can_be_multiline, paragraph_type)
+            if level_1 is not None:
+                level = HierarchyLevel(level_1, 1 if level_2 is None else level_2 + 1, can_be_multiline, paragraph_type)
+            else:
+                level = HierarchyLevel.create_raw_text()
             line.set_hierarchy_level(level)
 
     def patch(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:
