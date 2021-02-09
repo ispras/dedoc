@@ -1,3 +1,4 @@
+import os
 import zipfile
 from collections import defaultdict
 
@@ -5,6 +6,7 @@ from bs4 import BeautifulSoup
 import hashlib
 from typing import List, Tuple, Optional
 
+from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
@@ -62,7 +64,12 @@ class DocxReader(BaseReader):
             self.path_hash = hashlib.md5(f.read()).hexdigest()
 
         # extract text lines
-        lines = self._process_lines(path)
+        try:
+            lines = self._process_lines(path)
+        except zipfile.BadZipFile as exception:
+            raise BadFileFormatException("Bad docx file:\n file_name = {}. Seems docx is broken".format(
+                os.path.basename(path)
+            ))
 
         # extract tables
         tables = self._process_tables()

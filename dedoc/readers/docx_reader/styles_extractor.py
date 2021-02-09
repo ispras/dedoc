@@ -119,6 +119,8 @@ class StylesExtractor:
                 change_paragraph_properties(old_properties, current_style.pPr)
             if current_style.rPr:
                 change_run_properties(old_properties, current_style.rPr)
+                if current_style.rPr.caps:
+                    old_properties.caps = True
 
     def _get_styles_hierarchy(self,
                               style: BeautifulSoup,

@@ -29,8 +29,6 @@
 <h2 id="DocumentMetadata"> DocumentMetadata. Метаинформация документа </h2>
 <ol>
     <li><strong>file_name</strong>: <a> str </a> (обязательное поле) - имя файла <em> (пример: "example.pdf") </em></li>
-    <li><strong>bucket_name</strong>: <a> str </a> (необязательное поле) - имя bucket-а в котором лежит файл.
-        Включено при анализе файла из облачной хранилки <em> (пример: "dedoc") </em></li>
     <li><strong>size</strong>: <a> int </a> (обязательное поле) - размер файла в байтах <em> (пример: 20060) </em></li>
     <li><strong>modified_time</strong>: <a> int </a> (обязательное поле) - дата модификации документа в формате <a
             href="https://en.wikipedia.org/wiki/Unix_time">UnixTime </a> <em> (пример: 1590579805) </em></li>
@@ -40,6 +38,8 @@
             href="https://en.wikipedia.org/wiki/Unix_time">UnixTime</a> <em> (пример: 1590579805) </em></li>
     <li><strong>file_type</strong>: <a> str </a> (необязательное поле) - mime-тип файла <em> (пример:
         "application/pdf") </em></li>
+    <li><strong>other_fields</strong>: <a> dict </a> (необязательное поле) - у каждого типа файла свой набор метаинформации,
+        <a href="static_file?fname=html_rus/metadata_description.html&directory=online_docs" target="_blank" rel="noopener"> здесь представлено подробное описание поля other_fields</a></li>
 </ol>
 
 

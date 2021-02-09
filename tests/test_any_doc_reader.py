@@ -84,3 +84,10 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertTrue(found)
         self.assertEqual('0a668025582ff0cb4bd790759ae7ced3', tables[0].metadata.uid)
         self.assertEqual('d324e58fecdf03bbe1c9b517809655d4', tables[1].metadata.uid)
+
+    def test_caps_letters(self):
+        any_doc_reader = DocxReader()
+        path = os.path.join(os.path.dirname(__file__), "data/pochelamut.docx")
+        result, _ = any_doc_reader.read(path)
+        self.assertEqual('ШИЖМАШ МОГАЙ ЛИЕШ ГЫН?	', result.lines[2].line)
+        self.assertEqual('АНАСТАСИЯ АЙГУЗИНА', result.lines[3].line)

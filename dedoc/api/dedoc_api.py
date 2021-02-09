@@ -20,12 +20,14 @@ from dedoc.manager.dedoc_manager import DedocManager
 from dedoc.api.init_api import app, config, static_files_dirs, PORT, static_path
 
 module_api_args = importlib.import_module(config['import_path_init_api_args'])
+logger = config["logger"]
 
 
 @app.route('/', methods=['GET'])
 def get_info():
     """
-    Root URL '/' is need start with simple Flask before rest-plus.API otherwise you will get 404 Error. It is bug of rest-plus lib.
+    Root URL '/' is need start with simple Flask before rest-plus.API otherwise you will get 404 Error.
+    It is bug of rest-plus lib.
     """
     key = "start_page_path"
     if key not in config:
@@ -80,8 +82,11 @@ class UploadFile(Resource):
                 raise MissingFileException("Error: Missing content in request_post file parameter")
             # check if the post request_post has the file part
             parameters = {k: v for k, v in request.values.items()}
-            document_tree = manager.parse_file(request.files['file'], parameters=parameters)
+            file = request.files['file']
+            logger.info("Get file {} with parameters {}".format(file.name, parameters))
+            document_tree = manager.parse_file(file, parameters=parameters)
             if request.values.get("return_html", "False").lower() == "false":
+                logger.info("Send result. File {} with parameters {}".format(file.filename, parameters))
                 return document_tree
             else:
                 return json2html(text="", paragraph=document_tree.content.structure,
@@ -154,7 +159,7 @@ manager = DedocManager.from_config(config=config, version=open(version_file_path
 def _get_static_file_path():
     file = request.values["fname"]
     directory_name = request.values.get("directory")
-    directory = static_files_dirs[directory_name] if directory_name is not None else static_path
+    directory = static_files_dirs[directory_name] if directory_name is not None and directory_name in static_files_dirs else static_path
     return os.path.abspath(os.path.join(directory, file))
 
 
