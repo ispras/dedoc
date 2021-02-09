@@ -39,6 +39,8 @@ class Run(BaseProperties):
                     self.text += chr(int("0x" + tag['w:char'], 16))
                 except KeyError:
                     pass
+        if xml.caps:
+            self.text = self.text.upper()
 
     def __eq__(self,
                other: "Run") -> bool:

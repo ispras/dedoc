@@ -38,6 +38,8 @@ class ParagraphInfo:
             properties['italic'] = run.italic
             properties['underlined'] = run.underlined
             self.properties.append([start, end, properties])
+        if hasattr(paragraph, "caps") and paragraph.caps:
+            self.text = self.text.upper()
         # dict for saving last annotations
         # it is used to unite annotations with same values
         self.last_properties = {}
