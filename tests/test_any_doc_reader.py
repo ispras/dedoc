@@ -95,4 +95,3 @@ class TestAnyDocReader(unittest.TestCase):
         result, _ = any_doc_reader.read(path)
         self.assertEqual('И. Одар "Таргылтыш"', result.lines[0].line)
         self.assertEqual('I глава', result.lines[2].line)
-
