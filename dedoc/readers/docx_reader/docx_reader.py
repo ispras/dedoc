@@ -29,6 +29,7 @@ from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnot
 from dedoc.data_structures.concrete_annotations.alignment_annotation import AlignmentAnnotation
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
+from dedoc.utils import calculate_file_hash
 
 
 class DocxReader(BaseReader):
@@ -60,8 +61,8 @@ class DocxReader(BaseReader):
              document_type: Optional[str] = None,
              parameters: Optional[dict] = None) -> Tuple[UnstructuredDocument, bool]:
         # get hash of document
-        with open(path, "rb") as f:
-            self.path_hash = hashlib.md5(f.read()).hexdigest()
+
+        self.path_hash = calculate_file_hash(path=path)
 
         # extract text lines
         try:
