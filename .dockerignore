@@ -1,6 +1,1 @@
-.idea
-.git
-bin
-lib
-pyvenv.cfg
-.gitlab-ci.yml
+/home/padre/rojects/xturnal/dedoc/.dockerignore

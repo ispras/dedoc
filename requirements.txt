@@ -1,13 +1,1 @@
-python-docx==0.8.10
-python-pptx==0.6.18
-Flask==1.1.2
-requests==2.24.0
-xlrd==1.2.0
-ujson==3.2.0
-beautifulsoup4==4.9.3
-docx==0.2.4
-olefile~=0.46
-Werkzeug==0.16.0
-flask_cors==3.0.9
-flask-restx==0.2.0
-pycodestyle==2.6.0
+/home/padre/rojects/xturnal/dedoc/requirements.txt
