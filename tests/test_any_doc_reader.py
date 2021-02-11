@@ -87,7 +87,11 @@ class TestAnyDocReader(unittest.TestCase):
 
     def test_caps_letters(self):
         any_doc_reader = DocxReader()
-        path = os.path.join(os.path.dirname(__file__), "data/pochelamut.docx")
+        path = os.path.join(os.path.dirname(__file__), "data/caps_1.docx")
         result, _ = any_doc_reader.read(path)
         self.assertEqual('ШИЖМАШ МОГАЙ ЛИЕШ ГЫН?	', result.lines[2].line)
         self.assertEqual('АНАСТАСИЯ АЙГУЗИНА', result.lines[3].line)
+        path = os.path.join(os.path.dirname(__file__), "data/caps_2.docx")
+        result, _ = any_doc_reader.read(path)
+        self.assertEqual('И. Одар "Таргылтыш"', result.lines[0].line)
+        self.assertEqual('I глава', result.lines[2].line)
