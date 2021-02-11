@@ -21,6 +21,7 @@ def change_run_properties(old_properties: "BaseProperties",
     :param tree: BeautifulSoup tree with properties
     """
     change_size(old_properties, tree)
+    change_caps(old_properties, tree)
     # bold
     if tree.b:
         try:
@@ -85,7 +86,7 @@ def change_size(old_properties: "BaseProperties",
 def change_jc(old_properties: "BaseProperties",
               tree: BeautifulSoup):
     """
-    changes old_properties: ic (alignment) if tag jc was found in tree
+    changes old_properties: jc (alignment) if tag jc was found in tree
     :param old_properties: Paragraph
     :param tree: BeautifulSoup tree with properties
     """
@@ -110,3 +111,21 @@ def change_jc(old_properties: "BaseProperties",
             old_properties.jc = 'right'
     except KeyError:
         pass
+
+
+def change_caps(old_properties: "BaseProperties",
+                tree: BeautifulSoup):
+    """
+    changes old_properties: caps if tag caps was found in tree
+    :param old_properties: Paragraph or Run
+    :param tree: BeautifulSoup tree with properties
+    """
+    if not tree.caps:
+        return
+    try:
+        if tree.caps['w:val'] == '1' or tree.caps['w:val'] == 'True' or tree.caps['w:val'] == 'true':
+            old_properties.caps = True
+        else:
+            old_properties.caps = False
+    except KeyError:
+        old_properties.caps = True
