@@ -1,8 +1,8 @@
 from werkzeug.datastructures import FileStorage
 
-from dedoc.manager.dedoc_manager import DedocManager
+from dedoc.manager.dedoc_manager import DedocThreadedManager
 
-manager = DedocManager()
+manager = DedocThreadedManager()
 
 filename = "example.docx"
 with open(filename, 'rb') as fp:
