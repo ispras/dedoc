@@ -28,59 +28,6 @@ class TestListPatcher(unittest.TestCase):
         result = self.patcher.patch(lines)
         self.assertListEqual(self.__get_text(lines), self.__get_text(result))
 
-    def test_miss_in_the_middle_list1(self):
-        line1 = self.__get_line("1 item", 1, 0)
-        line3 = self.__get_line("2.1  item", 1, 1)
-        line4 = self.__get_line("2.2  item", 1, 0)
-        line5 = self.__get_line("3  item", 1, 0)
-        lines = [line1, line3, line4, line5]
-        result = self.patcher.patch(lines)
-        self.assertListEqual(["1 item", "2.", "2.1  item", "2.2  item", "3  item"], self.__get_text(result))
-
-    def test_miss_in_the_middle_list2(self):
-        line1 = self.__get_line("1 item", 1, 0)
-        line3 = self.__get_line("2.1.2.1.2  item", 1, 1)
-        line4 = self.__get_line("2.2  item", 1, 0)
-        line5 = self.__get_line("3  item", 1, 0)
-        lines = [line1, line3, line4, line5]
-        result = self.patcher.patch(lines)
-        expected = ["1 item", "2.", "2.1.", "2.1.1.", "2.1.2.", "2.1.2.1.", "2.1.2.1.1.", "2.1.2.1.2  item",
-                    "2.2  item", "3  item"]
-        self.assertListEqual(expected, self.__get_text(result))
-
-    def test_hl_raw_text(self):
-        line1 = self.__get_line("1 item", None, None, HierarchyLevel.raw_text)
-        line3 = self.__get_line("2.1.2.1.2  item", 1, 1)
-        line4 = self.__get_line("2.2  item", 1, 0)
-        line5 = self.__get_line("3  item", 1, 0)
-        lines = [line1, line3, line4, line5]
-        result = self.patcher.patch(lines)
-        expected = ["1 item", "2.", "2.1.", "2.1.1.", "2.1.2.", "2.1.2.1.", "2.1.2.1.1.", "2.1.2.1.2  item",
-                    "2.2  item", "3  item"]
-        self.assertListEqual(expected, self.__get_text(result))
-
-    def test_hl_raw_text2(self):
-        line1 = self.__get_line("1 item", None, None, HierarchyLevel.raw_text)
-        line3 = self.__get_line("2.1.2.1.2  item", None, None, HierarchyLevel.raw_text)
-        line4 = self.__get_line("2.2  item", None, None, HierarchyLevel.raw_text)
-        line5 = self.__get_line("3  item", None, None, HierarchyLevel.raw_text)
-        lines = [line1, line3, line4, line5]
-        result = self.patcher.patch(lines)
-        expected = ["1 item", "2.", "2.1.", "2.1.1.", "2.1.2.", "2.1.2.1.", "2.1.2.1.1.", "2.1.2.1.2  item",
-                    "2.2  item", "3  item"]
-        self.assertListEqual(expected, self.__get_text(result))
-
-    def test_hl_raw_text3(self):
-        line1 = self.__get_line("2. item", None, None, HierarchyLevel.raw_text)
-        line3 = self.__get_line("2.1.2.1.2  item", None, None, HierarchyLevel.raw_text)
-        line4 = self.__get_line("2.2  item", None, None, HierarchyLevel.raw_text)
-        line5 = self.__get_line("3  item", None, None, HierarchyLevel.raw_text)
-        lines = [line1, line3, line4, line5]
-        result = self.patcher.patch(lines)
-        expected = ["2. item", "2.1.", "2.1.1.", "2.1.2.", "2.1.2.1.", "2.1.2.1.1.", "2.1.2.1.2  item",
-                    "2.2  item", "3  item"]
-        self.assertListEqual(expected, self.__get_text(result))
-
     def test_hl_raw_text4(self):
         line1 = self.__get_line("2 item", None, None, HierarchyLevel.raw_text)
         line2 = self.__get_line("some item", None, None, HierarchyLevel.raw_text)
@@ -89,16 +36,6 @@ class TestListPatcher(unittest.TestCase):
         lines = [line1, line2, line3]
         result = self.patcher.patch(lines)
         expected = ["2 item", "some item", "2 item"]
-        self.assertListEqual(expected, self.__get_text(result))
-
-    def test_hl_raw_text5(self):
-        line1 = self.__get_line("1 item", None, 1, HierarchyLevel.raw_text)
-        line3 = self.__get_line("1.1  item", 1, 5)
-        line4 = self.__get_line("2.2  item", 1, 2)
-        line5 = self.__get_line("3  item", 1, 0)
-        lines = [line1, line3, line4, line5]
-        result = self.patcher.patch(lines)
-        expected = ["1 item", "1.1  item", "2.", "2.1.", "2.2  item", "3  item"]
         self.assertListEqual(expected, self.__get_text(result))
 
     def test_empty_list(self):
