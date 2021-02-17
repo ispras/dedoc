@@ -54,7 +54,7 @@ def marshal_with_wrapper(model: Model, request_post: LocalProxy, **other):
         @wraps(func)
         def wrapper(*args, **kwargs):
 
-            if request_post.values.get("return_html", "False").lower() == "false":
+            if str(request_post.values.get("return_html", "False")).lower() == "false":
                 func2 = api.marshal_with(model, **other)(func)
                 ob = func2(*args, **kwargs)
                 return app.response_class(
@@ -85,7 +85,7 @@ class UploadFile(Resource):
             file = request.files['file']
             logger.info("Get file {} with parameters {}".format(file.name, parameters))
             document_tree = manager.parse_file(file, parameters=parameters)
-            if request.values.get("return_html", "False").lower() == "false":
+            if str(request.values.get("return_html", "False")).lower() == "false":
                 logger.info("Send result. File {} with parameters {}".format(file.filename, parameters))
                 return document_tree
             else:
