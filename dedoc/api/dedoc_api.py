@@ -15,7 +15,7 @@ from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.common.exceptions.missing_file_exception import MissingFileException
 from dedoc.data_structures.parsed_document import ParsedDocument
-from dedoc.manager.dedoc_manager import DedocManager
+from dedoc.manager.dedoc_thread_manager import DedocThreadedManager
 
 from dedoc.api.init_api import app, config, static_files_dirs, PORT, static_path
 
@@ -150,7 +150,7 @@ def handle_structure_extractor_exception(error):
 
 
 version_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "VERSION"))
-manager = DedocManager.from_config(config=config, version=open(version_file_path).read())
+manager = DedocThreadedManager.from_config(config=config, version=open(version_file_path).read())
 
 
 # ==================== Utils API functions =======================
