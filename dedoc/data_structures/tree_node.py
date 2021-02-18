@@ -7,6 +7,7 @@ from dedoc.config import get_config
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.serializable import Serializable
+from dedoc.structure_constructor.annotation_merger import AnnotationMerger
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.utils import special_match
@@ -163,75 +164,6 @@ class TreeNode(Serializable):
         return node
 
     @staticmethod
-    def _group_annotations(annotations: List[Annotation]) -> Dict[str, List[Annotation]]:
-        annotations_group_by_value = defaultdict(list)
-        for annotation in annotations:
-            annotations_group_by_value[(annotation.name, annotation.value)].append(annotation)
-        return annotations_group_by_value
-
-    @staticmethod
     def _merge_annotations(annotations: List[Annotation], text: str) -> List[Annotation]:
-        has_merged = False
-        deep = 1
-        while not has_merged:
-            annotations, has_merged = TreeNode._merge_annotations_on_one_level(annotations, text)
-            deep += 1
-
-        return annotations
-
-    @staticmethod
-    def delete_previous_merged(merged: List[Annotation], new_annotations: Annotation) -> List[Annotation]:
-        """
-            Deleting previous merged annotations which have become unactual with the new merged annotation
-        """
-        deleted_list = []
-        for annotation in merged:
-            if annotation.start == new_annotations.start and \
-                    annotation.name == new_annotations.name and \
-                    annotation.value == new_annotations.value and \
-                    annotation.end <= new_annotations.end:
-                deleted_list.append(annotation)
-
-        for annotation in deleted_list:
-            merged.remove(annotation)
-
-        return merged
-
-    @staticmethod
-    def _merge_annotations_on_one_level(annotations: List[Annotation], text: str) -> [List[Annotation], bool]:
-        """
-        Merge annotations when end of the firs annotation and start of the second match and has same value.
-        Used with add_text
-        """
-        annotations_group_by_name_value = TreeNode._group_annotations(annotations).values()
-
-        merged_set = set()
-        merged = []
-        for annotation_group in annotations_group_by_name_value:
-            for num_first, first_annotation in enumerate(annotation_group):
-                for num_second, second_annotation in enumerate(annotation_group):
-
-                    if num_first >= num_second:
-                        continue
-
-                    if first_annotation.end >= second_annotation.start \
-                            and first_annotation.start < second_annotation.end or \
-                            (first_annotation.end < second_annotation.start and
-                             special_match(text[first_annotation.end: second_annotation.start], r'[^.?!,:;"\'\n\r ]')):
-                        merged_annotation = Annotation(start=min(first_annotation.start, second_annotation.start),
-                                                       end=max(first_annotation.end, second_annotation.end),
-                                                       name=first_annotation.name,
-                                                       value=first_annotation.value)
-
-                        merged = TreeNode.delete_previous_merged(merged, merged_annotation)
-                        merged.append(merged_annotation)
-
-                        merged_set.add((first_annotation.end, first_annotation.start,
-                                        first_annotation.name, first_annotation.value))
-                        merged_set.add((second_annotation.end, second_annotation.start,
-                                        second_annotation.name, second_annotation.value))
-
-        other_annotations = [annotation for annotation in annotations
-                             if (annotation.end, annotation.start, annotation.name, annotation.value) not in merged_set]
-
-        return sorted(other_annotations + merged, key=lambda a: a.start), len(merged) == 0
+        merger = AnnotationMerger()
+        return merger.merge_annotations(annotations=annotations, text=text)
