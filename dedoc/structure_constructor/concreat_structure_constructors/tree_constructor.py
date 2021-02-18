@@ -44,6 +44,7 @@ class TreeConstructor(AbstractStructureConstructor):
                     tree = tree.parent
                 tree = tree.add_child(line=line)
         tree = tree.get_root()
+        tree.merge_annotations()
         return DocumentContent(tables=document.tables, structure=tree)
 
     @deprecated("use structurize_document instead")
