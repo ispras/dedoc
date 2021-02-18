@@ -152,7 +152,6 @@ class TreeNode(Serializable):
             new_annotations.append(new_annotation)
         self.text += line.line
         self.annotations.extend(new_annotations)
-        self.annotations = self._merge_annotations(self.annotations, self.text)
 
     def get_root(self):
         """
@@ -163,7 +162,12 @@ class TreeNode(Serializable):
             node = node.parent
         return node
 
-    @staticmethod
-    def _merge_annotations(annotations: List[Annotation], text: str) -> List[Annotation]:
+    def merge_annotations(self):
+        root = self.get_root()
+        stack = [root]
         merger = AnnotationMerger()
-        return merger.merge_annotations(annotations=annotations, text=text)
+        while len(stack) > 0:
+            node = stack.pop()
+            node.annotations = merger.merge_annotations(node.annotations, node.text)
+            for sub_node in node.subparagraphs:
+                stack.append(sub_node)
