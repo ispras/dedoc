@@ -1,3 +1,4 @@
+import hashlib
 import os
 import re
 import time
@@ -77,3 +78,13 @@ def special_match(strg: str, regular_pattern: str = r'[^.?!,:;"\'\n\r ]') -> boo
     """
     search = re.compile(regular_pattern).search
     return not bool(search(strg))
+
+
+def calculate_file_hash(path: str) -> str:
+    with open(path, "rb") as file:
+        file_hash = hashlib.md5()
+        chunk = file.read(8192)
+        while chunk:
+            file_hash.update(chunk)
+            chunk = file.read(8192)
+    return str(file_hash.hexdigest())

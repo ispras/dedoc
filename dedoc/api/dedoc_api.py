@@ -15,7 +15,7 @@ from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.common.exceptions.missing_file_exception import MissingFileException
 from dedoc.data_structures.parsed_document import ParsedDocument
-from dedoc.manager.dedoc_manager import DedocManager
+from dedoc.manager.dedoc_thread_manager import DedocThreadedManager
 
 from dedoc.api.init_api import app, config, static_files_dirs, PORT, static_path
 
@@ -54,7 +54,7 @@ def marshal_with_wrapper(model: Model, request_post: LocalProxy, **other):
         @wraps(func)
         def wrapper(*args, **kwargs):
 
-            if request_post.values.get("return_html", "False").lower() == "false":
+            if str(request_post.values.get("return_html", "False")).lower() == "false":
                 func2 = api.marshal_with(model, **other)(func)
                 ob = func2(*args, **kwargs)
                 return app.response_class(
@@ -85,7 +85,7 @@ class UploadFile(Resource):
             file = request.files['file']
             logger.info("Get file {} with parameters {}".format(file.name, parameters))
             document_tree = manager.parse_file(file, parameters=parameters)
-            if request.values.get("return_html", "False").lower() == "false":
+            if str(request.values.get("return_html", "False")).lower() == "false":
                 logger.info("Send result. File {} with parameters {}".format(file.filename, parameters))
                 return document_tree
             else:
@@ -150,7 +150,7 @@ def handle_structure_extractor_exception(error):
 
 
 version_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "VERSION"))
-manager = DedocManager.from_config(config=config, version=open(version_file_path).read())
+manager = DedocThreadedManager.from_config(config=config, version=open(version_file_path).read())
 
 
 # ==================== Utils API functions =======================

@@ -18,5 +18,5 @@ class LinearConstructor(AbstractStructureConstructor):
         tree = TreeNode.create(lines=[])
         for line in lines:
             tree.add_child(line)
-
+        tree.merge_annotations()
         return DocumentContent(tables=document.tables, structure=tree)

@@ -3,6 +3,7 @@ from typing import Optional
 from bs4 import BeautifulSoup
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
+from dedoc.readers.docx_reader.properties_extractor import change_caps
 
 
 class Run(BaseProperties):
@@ -39,7 +40,8 @@ class Run(BaseProperties):
                     self.text += chr(int("0x" + tag['w:char'], 16))
                 except KeyError:
                     pass
-        if xml.caps:
+        change_caps(self, xml)
+        if hasattr(self, "caps") and xml.caps:
             self.text = self.text.upper()
 
     def __eq__(self,

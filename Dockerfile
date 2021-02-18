@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:bionic-20210118
 
 RUN apt-get update && apt-get install -y locales && locale-gen en_US.UTF-8
 RUN locale-gen ru_RU.UTF-8
