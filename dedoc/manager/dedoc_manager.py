@@ -102,7 +102,7 @@ class DedocManager:
                                                      parameters=parameters)
             self.logger.info("get structure and metadata {}".format(filename_convert))
 
-            with_attachments = parameters.get("with_attachments", "False").lower() == "true"
+            with_attachments = str(parameters.get("with_attachments", "False")).lower() == "true"
 
             if with_attachments:
                 self.logger.info("start handle attachments")
