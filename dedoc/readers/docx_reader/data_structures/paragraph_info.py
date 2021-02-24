@@ -14,7 +14,6 @@ class ParagraphInfo:
         :param paragraph: Paragraph for extracting it's properties
         """
         self.text = ""
-        self.uid = hashlib.md5(paragraph.xml.encode()).hexdigest()
         self.list_level = paragraph.list_level
         self.style_level = paragraph.style_level
         self.style_name = paragraph.style_name
@@ -78,7 +77,6 @@ class ParagraphInfo:
         result = dict()
         result['text'] = self.text
         result['level'] = hierarchy_level
-        result['uid'] = self.uid
 
         if not hierarchy_level:
             result['type'] = "raw_text"
