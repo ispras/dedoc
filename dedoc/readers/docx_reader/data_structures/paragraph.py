@@ -11,12 +11,14 @@ class Paragraph(BaseProperties):
     def __init__(self,
                  xml: BeautifulSoup,
                  styles_extractor: "StylesExtractor",
-                 numbering_extractor: "NumberingExtractor"):
+                 numbering_extractor: "NumberingExtractor",
+                 uid: str):
         """
         contains information about paragraph properties
         :param xml: BeautifulSoup tree with paragraph properties
         :param styles_extractor: StylesExtractor
         :param numbering_extractor: NumberingExtractor
+        :param uid: unique paragraph id based on file hash and paragraph xml
         """
         self.numbering_extractor = numbering_extractor
         self.runs = []
@@ -28,6 +30,7 @@ class Paragraph(BaseProperties):
         self.xml = xml
         super().__init__(styles_extractor)
         self.parse()
+        self.uid = uid
 
     def parse(self) -> None:
         """
