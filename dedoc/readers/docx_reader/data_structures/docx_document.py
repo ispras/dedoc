@@ -35,17 +35,11 @@ class DocxDocument:
         self.path_hash = calculate_file_hash(path=path)
 
         self.document_bs_tree = self.__get_bs_tree('word/document.xml')
-        if self.document_bs_tree:
-            self.body = self.document_bs_tree.body
-        else:
-            self.body = None
+        self.body = self.document_bs_tree.body if self.document_bs_tree else None
 
         self.styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'))
         num_tree = self.__get_bs_tree('word/numbering.xml')
-        if num_tree:
-            self.numbering_extractor = NumberingExtractor(num_tree, self.styles_extractor)
-        else:
-            self.numbering_extractor = None
+        self.numbering_extractor = NumberingExtractor(num_tree, self.styles_extractor) if num_tree else None
         self.styles_extractor.numbering_extractor = self.numbering_extractor
 
         self.paragraph_list = []
@@ -99,7 +93,6 @@ class DocxDocument:
         paragraph_id = 0
 
         for i, paragraph in enumerate(self.paragraph_list):
-
             # line with meta:
             # {"text": "",
             #  "type": ""("paragraph" ,"list_item", "raw_text", "style_header"),
@@ -115,7 +108,7 @@ class DocxDocument:
             if level:
                 hierarchy_level = HierarchyLevel(level[0], level[1], False, paragraph_type)
             else:
-                hierarchy_level = HierarchyLevel(None, None, False, "raw_text")
+                hierarchy_level = HierarchyLevel.create_raw_text()
 
             dict2annotations = {
                 "bold": BoldAnnotation,
@@ -160,16 +153,7 @@ class DocxDocument:
 
         for paragraph_xml in self.body:
             if paragraph_xml.name == 'tbl':
-                table = DocxTable(paragraph_xml, self.styles_extractor)
-                metadata = TableMetadata(page_id=None, uid=table.uid)
-                self.tables.append(Table(cells=table.get_cells(), metadata=metadata))
-                table_uid = table.uid
-                if not self.paragraph_list:
-                    empty_paragraph_xml = BeautifulSoup('<w:p></w:p>').body.contents[0]
-                    empty_paragraph = self.__xml2paragraph(empty_paragraph_xml)
-                    self.paragraph_list.append(empty_paragraph)
-
-                self.table_refs[len(self.paragraph_list) - 1].append(table_uid)
+                self._handle_table_xml(paragraph_xml)
                 continue
 
             if paragraph_xml.name != 'p':
@@ -180,3 +164,14 @@ class DocxDocument:
             self.paragraph_list.append(paragraph)
 
         return self._get_lines_with_meta(hierarchy_level_extractor=hierarchy_level_extractor)
+
+    def _handle_table_xml(self, paragraph_xml: BeautifulSoup):
+        table = DocxTable(paragraph_xml, self.styles_extractor)
+        metadata = TableMetadata(page_id=None, uid=table.uid)
+        self.tables.append(Table(cells=table.get_cells(), metadata=metadata))
+        table_uid = table.uid
+        if not self.paragraph_list:
+            empty_paragraph_xml = BeautifulSoup('<w:p></w:p>').body.contents[0]
+            empty_paragraph = self.__xml2paragraph(empty_paragraph_xml)
+            self.paragraph_list.append(empty_paragraph)
+        self.table_refs[len(self.paragraph_list) - 1].append(table_uid)
