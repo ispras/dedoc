@@ -95,3 +95,13 @@ class TestAnyDocReader(unittest.TestCase):
         result, _ = any_doc_reader.read(path)
         self.assertEqual('И. Одар "Таргылтыш"', result.lines[0].line)
         self.assertEqual('I глава', result.lines[2].line)
+
+    def test_justification(self):
+        any_doc_reader = DocxReader()
+        path = os.path.join(os.path.dirname(__file__), "data/justification.docx")
+        result, _ = any_doc_reader.read(path)
+        answers = [(15, "left"), (16, "center"), (17, "both"), (18, "right")]
+        for answer in answers:
+            for annotation in result.lines[answer[0]].annotations:
+                if annotation.name == "alignment":
+                    self.assertEqual(answer[1], annotation.value)
