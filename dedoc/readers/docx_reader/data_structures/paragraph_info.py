@@ -3,6 +3,7 @@ import hashlib
 from typing import Dict, List, Union, Tuple, Optional
 
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
+from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 
 
 class ParagraphInfo:
@@ -14,7 +15,6 @@ class ParagraphInfo:
         :param paragraph: Paragraph for extracting it's properties
         """
         self.text = ""
-        self.uid = hashlib.md5(paragraph.xml.encode()).hexdigest()
         self.list_level = paragraph.list_level
         self.style_level = paragraph.style_level
         self.style_name = paragraph.style_name
@@ -78,10 +78,9 @@ class ParagraphInfo:
         result = dict()
         result['text'] = self.text
         result['level'] = hierarchy_level
-        result['uid'] = self.uid
 
         if not hierarchy_level:
-            result['type'] = "raw_text"
+            result['type'] = HierarchyLevel.raw_text
         elif self.style_level is not None:
             result['type'] = "style_header"
         elif hierarchy_level[0] == 0 or hierarchy_level[0] == 1:
@@ -89,7 +88,7 @@ class ParagraphInfo:
         elif hierarchy_level[0] == 2:
             result['type'] = "list_item"
         else:
-            result['type'] = "raw_text"
+            result['type'] = HierarchyLevel.raw_text
 
         result['annotations'] = []
         if self.properties:

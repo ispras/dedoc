@@ -95,7 +95,13 @@ def change_jc(old_properties: "BaseProperties",
     if not tree.jc:
         return
     if tree.bidi:
-        right_to_left = True
+        try:
+            if tree.bidi['w:val'] == '1' or tree.bidi['w:val'] == 'True':
+                right_to_left = True
+            else:
+                right_to_left = False
+        except KeyError:
+            right_to_left = True
     else:
         right_to_left = False
     try:
