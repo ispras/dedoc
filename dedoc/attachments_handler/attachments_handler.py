@@ -1,15 +1,11 @@
 import logging
-from typing import List
 
-from dedoc.attachment_extractors.abstract_attachment_extractor import \
-    AbstractAttachmentsExtractor
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 
 
 class AttachmentsHandler:
 
-    def __init__(self, extractors: List[AbstractAttachmentsExtractor], *, config: dict):
-        self.extractors = extractors
+    def __init__(self, *, config: dict):
         self.config = config
         self.logger = self.config.get("logger", logging.getLogger())
 

@@ -9,7 +9,6 @@ from dedoc.attachment_extractors.abstract_attachment_extractor import AbstractAt
 from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
 from dedoc.converters.file_converter import FileConverterComposition
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
-from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
