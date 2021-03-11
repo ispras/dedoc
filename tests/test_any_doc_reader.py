@@ -9,7 +9,7 @@ class TestAnyDocReader(unittest.TestCase):
     def test_docx(self):
         any_doc_reader = DocxReader()
         path = os.path.join(os.path.dirname(__file__), "data/example.docx")
-        result, _ = any_doc_reader.read(path)
+        result = any_doc_reader.read(path)
         lines = result.lines
 
         self.assertEqual("Пример документа", lines[0].line)
@@ -28,7 +28,7 @@ class TestAnyDocReader(unittest.TestCase):
     def test_structure_docx(self):
         any_doc_reader = DocxReader()
         path = os.path.join(os.path.dirname(__file__), "data/header_test.docx")
-        result, _ = any_doc_reader.read(path)
+        result = any_doc_reader.read(path)
         lines = result.lines
 
         self.assertEqual("Глава 543", lines[0].line)
@@ -49,7 +49,7 @@ class TestAnyDocReader(unittest.TestCase):
     def test_tz_file(self):
         any_doc_reader = DocxReader()
         path = os.path.join(os.path.dirname(__file__), "data/tz.docx")
-        result, _ = any_doc_reader.read(path)
+        result = any_doc_reader.read(path)
         lines = result.lines
 
         self.assertEqual("Техническое задание\nна оказание услуг по созданию системы защиты персональных данных ", lines[0].line)
@@ -58,7 +58,7 @@ class TestAnyDocReader(unittest.TestCase):
         any_doc_reader = DocxReader()
         path = os.path.join(os.path.dirname(__file__), "data/without_numbering.docx")
         try:
-            result, _ = any_doc_reader.read(path)
+            result = any_doc_reader.read(path)
         except AttributeError:
             result = None
         self.assertTrue(result is not None)
@@ -66,7 +66,7 @@ class TestAnyDocReader(unittest.TestCase):
     def test_docx_table_location(self):
         any_doc_reader = DocxReader()
         path = os.path.join(os.path.dirname(__file__), "data/example.docx")
-        result, _ = any_doc_reader.read(path)
+        result = any_doc_reader.read(path)
         lines, tables = result.lines, result.tables
         found = False
         for annotation in lines[12].annotations:
@@ -88,18 +88,18 @@ class TestAnyDocReader(unittest.TestCase):
     def test_caps_letters(self):
         any_doc_reader = DocxReader()
         path = os.path.join(os.path.dirname(__file__), "data/caps_1.docx")
-        result, _ = any_doc_reader.read(path)
+        result = any_doc_reader.read(path)
         self.assertEqual('ШИЖМАШ МОГАЙ ЛИЕШ ГЫН?	', result.lines[2].line)
         self.assertEqual('АНАСТАСИЯ АЙГУЗИНА', result.lines[3].line)
         path = os.path.join(os.path.dirname(__file__), "data/caps_2.docx")
-        result, _ = any_doc_reader.read(path)
+        result = any_doc_reader.read(path)
         self.assertEqual('И. Одар "Таргылтыш"', result.lines[0].line)
         self.assertEqual('I глава', result.lines[2].line)
 
     def test_justification(self):
         any_doc_reader = DocxReader()
         path = os.path.join(os.path.dirname(__file__), "data/justification.docx")
-        result, _ = any_doc_reader.read(path)
+        result = any_doc_reader.read(path)
         answers = [(15, "left"), (16, "center"), (17, "both"), (18, "right")]
         for answer in answers:
             for annotation in result.lines[answer[0]].annotations:

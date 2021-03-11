@@ -15,7 +15,7 @@ class ReaderComposition(object):
     def __init__(self, readers: List[BaseReader]):
         self.readers = readers
 
-    def parse_file(self, tmp_dir: str, filename: str, parameters: Dict[str, str]) -> [UnstructuredDocument, bool]:
+    def parse_file(self, tmp_dir: str, filename: str, parameters: Dict[str, str]) -> UnstructuredDocument:
 
         name, extension = splitext_(filename)
         file_path = os.path.join(tmp_dir, filename)
@@ -38,13 +38,10 @@ class ReaderComposition(object):
                                            extension=extension,
                                            document_type=document_type)
             if can_read:
-                unstructured_document, need_analyze_attachments = reader.read(path=file_path,
-                                                                              document_type=document_type,
-                                                                              parameters=parameters
-                                                                              )
+                unstructured_document = reader.read(path=file_path, document_type=document_type, parameters=parameters)
                 assert len(unstructured_document.lines) == 0 or isinstance(unstructured_document.lines[0], LineWithMeta)
                 assert isinstance(unstructured_document, UnstructuredDocument)  # TODO remove
-                return unstructured_document, need_analyze_attachments
+                return unstructured_document
 
         raise BadFileFormatException(
             msg="no one can read file: name = {}, extension = {}, mime = {}, document type = {}".format(

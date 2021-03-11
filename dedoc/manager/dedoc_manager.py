@@ -5,11 +5,14 @@ import shutil
 import tempfile
 from typing import Optional, List, Dict
 
-from dedoc.attachments_extractors.attachments_extractor_composition import AttachmentsExtractorComposition
+from dedoc.attachment_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
+from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
 from dedoc.converters.file_converter import FileConverterComposition
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
+from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.parsed_document import ParsedDocument
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractor.metadata_extractor_composition import MetadataExtractorComposition
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.structure_constructor.structure_constructor_composition import StructureConstructorComposition
@@ -20,7 +23,7 @@ class DedocManager:
 
     def __init__(self,
                  converter: FileConverterComposition,
-                 attachments_extractor: AttachmentsExtractorComposition,
+                 attachments_handler: AttachmentsHandler,
                  reader: ReaderComposition,
                  structure_constructor: StructureConstructorComposition,
                  document_metadata_extractor: MetadataExtractorComposition,
@@ -28,7 +31,7 @@ class DedocManager:
                  version: str):
         self.version = version
         self.converter = converter
-        self.attachments_extractor = attachments_extractor
+        self.attachments_handler = attachments_handler
         self.reader = reader
         self.structure_constructor = structure_constructor
         self.document_metadata_extractor = document_metadata_extractor
@@ -48,7 +51,7 @@ class DedocManager:
         logger = logger if logger is not None else logging.getLogger(__name__)
         manager = DedocManager(
             converter=manager_config["converter"],
-            attachments_extractor=manager_config["attachments_extractor"],
+            attachments_handler=manager_config["attachments_extractor"],
             reader=manager_config["reader"],
             structure_constructor=manager_config["structure_constructor"],
             document_metadata_extractor=manager_config["document_metadata_extractor"],
@@ -82,7 +85,7 @@ class DedocManager:
             filename_convert = self.converter.do_converting(tmp_dir, filename, parameters=parameters)
             self.logger.info("finish conversion {} -> {}".format(filename, filename_convert))
             # Step 2 - Parsing content of converted file
-            unstructured_document, contains_attachments = self.reader.parse_file(
+            unstructured_document = self.reader.parse_file(
                 tmp_dir=tmp_dir,
                 filename=filename_convert,
                 parameters=parameters
@@ -102,16 +105,14 @@ class DedocManager:
                                                      parameters=parameters)
             self.logger.info("get structure and metadata {}".format(filename_convert))
 
-            with_attachments = str(parameters.get("with_attachments", "False")).lower() == "true"
-
-            if with_attachments:
+            if AbstractAttachmentsExtractor.with_attachments(parameters):
                 self.logger.info("start handle attachments")
-                parsed_attachment_files = self.__get_attachments(filename=filename_convert,
-                                                                 need_analyze_attachments=contains_attachments,
-                                                                 parameters=parameters,
-                                                                 tmp_dir=tmp_dir)
+                parsed_attachment_files = self.__handle_attachments(document=unstructured_document,
+                                                                    parameters=parameters,
+                                                                    tmp_dir=tmp_dir)
                 self.logger.info("get attachments {}".format(filename_convert))
                 parsed_document.add_attachments(parsed_attachment_files)
+
             parsed_document.version = self.version
             self.logger.info("finish handle {}".format(filename))
         return parsed_document
@@ -135,34 +136,31 @@ class DedocManager:
                                                                         parameters=parameters)
         return parsed_document
 
-    def __get_attachments(self,
-                          filename: str,
-                          need_analyze_attachments: bool,
-                          parameters: dict,
-                          tmp_dir: str) -> List[ParsedDocument]:
+    def __handle_attachments(self,
+                             document: UnstructuredDocument,
+                             parameters: dict,
+                             tmp_dir: str) -> List[ParsedDocument]:
         parsed_attachment_files = []
-        if need_analyze_attachments:
-            attachment_files = self.attachments_extractor.get_attachments(tmp_dir=tmp_dir,
-                                                                          filename=filename,
-                                                                          parameters=parameters)
-            for attachment in attachment_files:
-                parameters_copy = copy.deepcopy(parameters)
-                parameters_copy["is_attached"] = True
-                parameters_copy["attachment"] = attachment
-                try:
-                    file_path = os.path.join(tmp_dir, attachment.get_filename_in_path())
-                    parsed_attachment_files.append(self.parse_file(file_path,
-                                                                   parameters=parameters_copy,
-                                                                   original_file_name=attachment.get_original_filename()
-                                                                   ))
-                except BadFileFormatException:
-                    # return empty ParsedDocument with Meta information
-                    parsed_attachment_files.append(
-                        self.__parse_file_meta(document_content=None,
-                                               directory=tmp_dir,
-                                               filename=attachment.get_filename_in_path(),
-                                               converted_filename=attachment.get_filename_in_path(),
-                                               original_file_name=attachment.get_original_filename(),
-                                               parameters=parameters_copy))
-
+        self.attachments_handler.handle_attachments(document=document, parameters=parameters)
+        for i, attachment in enumerate(document.attachments):
+            self.logger.info("Handle attachment {} of {}".format(i, len(document.attachments)))
+            parameters_copy = copy.deepcopy(parameters)
+            parameters_copy["is_attached"] = True
+            parameters_copy["attachment"] = attachment
+            try:
+                file_path = os.path.join(tmp_dir, attachment.get_filename_in_path())
+                parsed_file = self.parse_file(file_path,
+                                              parameters=parameters_copy,
+                                              original_file_name=attachment.get_original_filename()
+                                              )
+            except BadFileFormatException:
+                # return empty ParsedDocument with Meta information
+                parsed_file = self.__parse_file_meta(document_content=None,
+                                                     directory=tmp_dir,
+                                                     filename=attachment.get_filename_in_path(),
+                                                     converted_filename=attachment.get_filename_in_path(),
+                                                     original_file_name=attachment.get_original_filename(),
+                                                     parameters=parameters_copy)
+            parsed_file.metadata.set_uid(attachment.uid)
+            parsed_attachment_files.append(parsed_file)
         return parsed_attachment_files

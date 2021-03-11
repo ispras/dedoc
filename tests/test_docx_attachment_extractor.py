@@ -1,7 +1,7 @@
 import unittest
 import os
 import hashlib
-from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
+from dedoc.attachment_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
 from dedoc.utils import get_file_mime_type
 
 
@@ -27,10 +27,10 @@ class TestDocxAttachmentsExtractor(unittest.TestCase):
         extracted = 0
         for i in range(1, 4):
             filename = 'with_attachments_{}.docx'.format(i)
-            mime = get_file_mime_type(os.path.join(tmp_dir, filename))
-            self.assertTrue(docx_attachment_extractor.can_extract(mime, filename))
             attachments = docx_attachment_extractor.get_attachments(tmp_dir, filename, {})
-            for i, (attachment_name, attachment_data) in enumerate(attachments):
-                self.assertEqual(right_hash[attachment_name], hashlib.md5(attachment_data).hexdigest())
+            for i, file in enumerate(attachments):
+                with open(file.get_filename_in_path(), "rb") as file_content:
+                    self.assertEqual(right_hash[file.get_original_filename()],
+                                     hashlib.md5(file_content.read()).hexdigest())
                 extracted += 1
         self.assertEqual(extracted, 12)
