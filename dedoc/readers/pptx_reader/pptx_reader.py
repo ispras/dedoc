@@ -27,7 +27,7 @@ class PptxReader(BaseReader):
     def read(self,
              path: str,
              document_type: Optional[str] = None,
-             parameters: Optional[dict] = None) -> Tuple[UnstructuredDocument, bool]:
+             parameters: Optional[dict] = None) -> UnstructuredDocument:
         prs = Presentation(path)
         lines, tables = [], []
 
@@ -47,4 +47,4 @@ class PptxReader(BaseReader):
                     tables.append(Table(cells=cells, metadata=metadata))
 
         lines = self.hierarchy_level_extractor.get_hierarchy_level(lines)
-        return UnstructuredDocument(lines=lines, tables=tables), True
+        return UnstructuredDocument(lines=lines, tables=tables, attachments=[])

@@ -1,8 +1,10 @@
+import os
 from typing import Optional, Tuple
 
 import xlrd
 from xlrd.sheet import Sheet
 
+from dedoc.attachment_extractors.excel_attachments_extractor import ExcelAttachmentsExtractor
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
@@ -13,7 +15,7 @@ from dedoc.readers.base_reader import BaseReader
 class ExcelReader(BaseReader):
 
     def __init__(self):
-        pass
+        self.attachment_extractor = ExcelAttachmentsExtractor()
 
     def can_read(self,
                  path: str,
@@ -25,6 +27,24 @@ class ExcelReader(BaseReader):
             return False
 
         return extension in recognized_extensions.excel_like_format or mime in recognized_mimes.excel_like_format
+
+    def read(self,
+             path: str,
+             document_type: Optional[str] = None,
+             parameters: Optional[dict] = None) -> UnstructuredDocument:
+        with xlrd.open_workbook(path) as book:
+            sheets_num = book.nsheets
+            tables = []
+            for sheet_num in range(sheets_num):
+                sheet = book.sheet_by_index(sheet_num)
+                tables.append(self.__parse_sheet(sheet_num, sheet))
+            if self.attachment_extractor.with_attachments(parameters=parameters):
+                attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path),
+                                                                        filename=os.path.basename(path),
+                                                                        parameters=parameters)
+            else:
+                attachments = []
+            return UnstructuredDocument(lines=[], tables=tables, attachments=attachments)
 
     def __parse_sheet(self, sheet_id: int, sheet: Sheet) -> Table:
         n_rows = sheet.nrows
@@ -38,15 +58,3 @@ class ExcelReader(BaseReader):
             res.append(row)
         metadata = TableMetadata(page_id=sheet_id)
         return Table(cells=res, metadata=metadata)
-
-    def read(self,
-             path: str,
-             document_type: Optional[str] = None,
-             parameters: Optional[dict] = None) -> Tuple[UnstructuredDocument, bool]:
-        with xlrd.open_workbook(path) as book:
-            sheets_num = book.nsheets
-            tables = []
-            for sheet_num in range(sheets_num):
-                sheet = book.sheet_by_index(sheet_num)
-                tables.append(self.__parse_sheet(sheet_num, sheet))
-            return UnstructuredDocument(lines=[], tables=tables), True

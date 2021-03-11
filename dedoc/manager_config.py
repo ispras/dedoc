@@ -1,8 +1,4 @@
-from dedoc.attachments_extractors.attachments_extractor_composition import AttachmentsExtractorComposition
-from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import \
-    DocxAttachmentsExtractor
-from dedoc.attachments_extractors.concrete_attachments_extractors.excel_attachments_extractor import \
-    ExcelAttachmentsExtractor
+from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
 from dedoc.converters.concrete_converters.docx_converter import DocxConverter
 from dedoc.converters.concrete_converters.excel_converter import ExcelConverter
 from dedoc.converters.concrete_converters.pptx_converter import PptxConverter
@@ -22,8 +18,6 @@ from dedoc.structure_constructor.concreat_structure_constructors.tree_constructo
 from dedoc.structure_constructor.structure_constructor_composition import StructureConstructorComposition
 
 """MANAGER SETTINGS"""
-
-concrete_attachments_extractors = [ExcelAttachmentsExtractor(), DocxAttachmentsExtractor()]
 
 
 def get_manager_config(config: dict):
@@ -48,5 +42,5 @@ def get_manager_config(config: dict):
             BaseMetadataExtractor()
         ]),
 
-        attachments_extractor=AttachmentsExtractorComposition(extractors=concrete_attachments_extractors, config=config)
+        attachments_extractor=AttachmentsHandler(config=config)
     )

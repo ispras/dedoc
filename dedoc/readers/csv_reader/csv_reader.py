@@ -24,7 +24,7 @@ class CSVReader(BaseReader):
     def read(self,
              path: str,
              document_type: Optional[str] = None,
-             parameters: Optional[dict] = None) -> Tuple[UnstructuredDocument, bool]:
+             parameters: Optional[dict] = None) -> UnstructuredDocument:
         delimiter = parameters.get("delimiter")
         if delimiter is None:
             delimiter = "\t" if path.endswith(".tsv") else self.default_separator
@@ -33,4 +33,4 @@ class CSVReader(BaseReader):
             data = list(csv_reader)
         table_metadata = TableMetadata(page_id=0)
         tables = [Table(cells=data, metadata=table_metadata)]
-        return UnstructuredDocument(lines=[], tables=tables), False
+        return UnstructuredDocument(lines=[], tables=tables, attachments=[])

@@ -1,10 +1,11 @@
 import os
 import zipfile
-import olefile
-from typing import List, Tuple, Union, Optional
+from typing import List, Tuple
 
-from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
-from dedoc.extensions import recognized_mimes
+import olefile
+
+from dedoc.attachment_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
+from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.utils import splitext_
 
 
@@ -52,21 +53,7 @@ class DocxAttachmentsExtractor(AbstractAttachmentsExtractor):
         contents = stream[:size]  # contents
         return filename, contents
 
-    def can_extract(self, mime: str, filename: str, parameters: Optional[dict] = None) -> bool:
-        """
-        Check if this Extractor can handle given file.
-        :param mime: mime type of the file.
-        :param filename: name of the file with extension.
-        :param parameters: dict with different parameters for extracting
-        :return: True if this extractor can handle given file, False otherwise
-        """
-
-        if mime in recognized_mimes.docx_like_format:
-            name, ext = splitext_(filename)
-            return ext == '.docx'
-        return False
-
-    def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[List[Union[str, bytes]]]:
+    def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[AttachedFile]:
         """
         :param tmpdir: directory where file is located
         :param filename: Name of the file from which you should extract attachments
@@ -84,23 +71,26 @@ class DocxAttachmentsExtractor(AbstractAttachmentsExtractor):
                 attachments += [file for file in files if file.startswith("word/embeddings/")]
                 try:
                     for attachment in attachments:
-                        namefile = os.path.split(attachment)[-1]
-                        if not namefile.endswith('.emf') and not namefile.endswith('.bin'):
-                            result.append([namefile, zfile.read(attachment)])
+                        original_name = os.path.split(attachment)[-1]
+                        if not original_name.endswith('.emf') and not original_name.endswith('.bin'):
+                            result.append((original_name, zfile.read(attachment)))
 
-                        elif namefile.endswith('.bin'):
+                        elif original_name.endswith('.bin'):
                             # extracting PDF-files
                             with zfile.open(attachment) as f:
                                 ole = olefile.OleFileIO(f.read())
                             if ole.exists("CONTENTS"):
                                 data = ole.openstream('CONTENTS').read()
                                 if data[0:5] == b'%PDF-':
-                                    result.append([os.path.splitext(namefile)[-2] + '.pdf', data])
+                                    result.append((os.path.splitext(original_name)[-2] + '.pdf', data))
                             # extracting files in other formats
                             elif ole.exists("\x01Ole10Native"):
                                 data = ole.openstream("\x01Ole10Native").read()
-                                namefile, contents = self.__parse_ole_contents(data)
-                                result.append([namefile, contents])
+                                original_name, contents = self.__parse_ole_contents(data)
+                                result.append((original_name, contents))
+                    attachments = self._content2attach_file(content=result, tmpdir=tmpdir)
+                    assert len(attachments) == 0 or isinstance(attachments[0], AttachedFile)
+                    return attachments
                 except Exception as error:
                     print(error)
-        return result
+                    return []

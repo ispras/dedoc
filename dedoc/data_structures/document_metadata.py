@@ -9,6 +9,7 @@ from dedoc.data_structures.serializable import Serializable
 class DocumentMetadata(Serializable):
     """
         holds information about document metadata.
+        :param uid: document unique identifier (useful for attached files)
         :param file_name: original document name (before rename and conversion, so it can contain non-ascii symbols,
         spaces and so on)
         :param size: size of the original file in bytes
@@ -36,6 +37,9 @@ class DocumentMetadata(Serializable):
         self.other_fields = {}
         if other_fields is not None and len(other_fields) > 0:
             self.extend_other_fields(other_fields)
+
+    def set_uid(self, uid: str):
+        self.uid = uid  # noqa
 
     def extend_other_fields(self, new_fields: dict):
         assert (new_fields is not None)
