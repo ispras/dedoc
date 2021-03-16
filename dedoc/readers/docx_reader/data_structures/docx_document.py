@@ -2,7 +2,7 @@ import hashlib
 import os
 import zipfile
 from collections import defaultdict
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from bs4 import BeautifulSoup
 
@@ -14,6 +14,7 @@ from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicA
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
+from dedoc.data_structures.concrete_annotations.image_annotation import ImageAnnotation
 from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
@@ -42,15 +43,18 @@ class DocxDocument:
         self.numbering_extractor = NumberingExtractor(num_tree, self.styles_extractor) if num_tree else None
         self.styles_extractor.numbering_extractor = self.numbering_extractor
 
+        rels = self.__get_bs_tree('word/_rels/document.xml.rels')
+        self.images_rels = self.__get_images_rels(rels)
+
         self.paragraph_list = []
         self.table_refs = defaultdict(list)
+        self.image_refs = defaultdict(list)
         self.table_uids = []
         self._uids_set = set()
         self.tables = []
         self.lines = self._process_lines(hierarchy_level_extractor=hierarchy_level_extractor)
 
-    def __get_bs_tree(self,
-                      filename: str) -> Optional[BeautifulSoup]:
+    def __get_bs_tree(self, filename: str) -> Optional[BeautifulSoup]:
         """
         gets xml bs tree from the given file inside the self.path
         :param filename: name of file to extract the tree
@@ -83,6 +87,14 @@ class DocxDocument:
                          styles_extractor=self.styles_extractor,
                          numbering_extractor=self.numbering_extractor,
                          uid=uid)
+
+    def __get_images_rels(self, rels: BeautifulSoup) -> Dict[str, str]:
+        media_ids = dict()
+        for rel in rels.find_all('Relationship'):
+            if rel["Target"].startswith('media/'):
+                media_ids[rel["Id"]] = rel["Target"][6:]
+
+        return media_ids
 
     def _get_lines_with_meta(self, hierarchy_level_extractor: HierarchyLevelExtractor) -> List[LineWithMeta]:
         """
@@ -119,12 +131,18 @@ class DocxDocument:
                 "alignment": AlignmentAnnotation,
                 "style": StyleAnnotation,
             }
+
             annotations = []
             for annotation in line_with_meta["annotations"]:
                 annotations.append(dict2annotations[annotation[0]](*annotation[1:]))
+
             if i in self.table_refs:
                 for table_uid in self.table_refs[i]:
                     annotations.append(TableAnnotation(name=table_uid))
+
+            if i in self.image_refs:
+                for image_uid in self.image_refs[i]:
+                    annotations.append(ImageAnnotation(name=image_uid))
 
             paragraph_id += 1
             metadata = ParagraphMetadata(paragraph_type=paragraph_type,
@@ -160,8 +178,13 @@ class DocxDocument:
                 # TODO check what to add
                 self.paragraph_list += map(self.__xml2paragraph, paragraph_xml.find_all('w:p'))
                 continue
+
             paragraph = self.__xml2paragraph(paragraph_xml)
             self.paragraph_list.append(paragraph)
+
+            images = paragraph_xml.find_all('pic:pic')
+            if images:
+                self._handle_images_xml(images)
 
         return self._get_lines_with_meta(hierarchy_level_extractor=hierarchy_level_extractor)
 
@@ -175,3 +198,9 @@ class DocxDocument:
             empty_paragraph = self.__xml2paragraph(empty_paragraph_xml)
             self.paragraph_list.append(empty_paragraph)
         self.table_refs[len(self.paragraph_list) - 1].append(table_uid)
+
+    def _handle_images_xml(self, images_xml: BeautifulSoup):
+        for image_xml in images_xml:
+            blips = image_xml.find_all("a:blip")
+            image_uid = self.images_rels[blips[0]["r:embed"]]
+            self.image_refs[len(self.paragraph_list) - 1].append(image_uid)
