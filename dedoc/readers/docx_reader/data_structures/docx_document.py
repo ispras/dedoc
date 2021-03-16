@@ -14,7 +14,7 @@ from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicA
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
-from dedoc.data_structures.concrete_annotations.image_annotation import ImageAnnotation
+from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
@@ -142,7 +142,7 @@ class DocxDocument:
 
             if i in self.image_refs:
                 for image_uid in self.image_refs[i]:
-                    annotations.append(ImageAnnotation(name=image_uid))
+                    annotations.append(AttachAnnotation(attach_uid=image_uid))
 
             paragraph_id += 1
             metadata = ParagraphMetadata(paragraph_type=paragraph_type,
