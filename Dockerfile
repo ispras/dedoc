@@ -10,11 +10,11 @@ RUN apt-get update && apt-get install software-properties-common -y \
     && add-apt-repository ppa:deadsnakes/ppa \
     && apt-get install software-properties-common -y \
     && apt update \
-    && apt-get install -y build-essential python3.5 python3.5-dev python3-pip \
+    && apt-get install -y build-essential python3.5 python3.5-dev python3-pip libxml2-dev libxslt-dev python-dev \
     && apt-get install -y libreoffice
 
 ADD requirements.txt .
-RUN python3.5 -m pip install pip==20.1.1 --upgrade && pip3.5 install -r requirements.txt
+RUN python3.5 -m pip install pip==20.3.4 --upgrade && pip3.5 install -r requirements.txt
 
 RUN mkdir /dedoc
 ADD dedoc /dedoc
