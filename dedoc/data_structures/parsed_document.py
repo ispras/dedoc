@@ -27,7 +27,7 @@ class ParsedDocument(Serializable):
         """
         self.metadata = metadata
         self.content = content
-        self.attachments = attachments
+        self.attachments = [] if attachments is None else attachments
         self.version = version
         self.warnings = warnings if warnings is not None else []
 
