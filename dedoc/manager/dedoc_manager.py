@@ -111,7 +111,8 @@ class DedocManager:
                                                                     tmp_dir=tmp_dir)
                 self.logger.info("get attachments {}".format(filename_convert))
                 parsed_document.add_attachments(parsed_attachment_files)
-
+            else:
+                parsed_document.attachments = None
             parsed_document.version = self.version
             self.logger.info("finish handle {}".format(filename))
         return parsed_document
