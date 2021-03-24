@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple
+from typing import Optional
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 
@@ -10,7 +10,7 @@ class BaseReader(ABC):
     def read(self,
              path: str,
              document_type: Optional[str],
-             parameters: Optional[dict]) -> Tuple[UnstructuredDocument, bool]:
+             parameters: Optional[dict]) -> UnstructuredDocument:
         """
         read file from disc and extract text from it. File should have appropriate extension and type
 
@@ -18,7 +18,7 @@ class BaseReader(ABC):
         :param document_type: type of file, for example law, technical specification, scientific article and so on
         :param parameters: dicts with additional parameters for document reader (as language for scans or delimeter for
         csv reader)
-        :return: Tuple: 1)  parsed document and 2) flag if file can contain attachments
+        :return:  parsed document (with lines, tables and attachments)
         """
         pass
 

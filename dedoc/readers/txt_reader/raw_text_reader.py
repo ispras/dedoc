@@ -27,10 +27,10 @@ class RawTextReader(BaseReader):
     def read(self,
              path: str,
              document_type: Optional[str] = None,
-             parameters: Optional[dict] = None) -> Tuple[UnstructuredDocument, bool]:
+             parameters: Optional[dict] = None) -> UnstructuredDocument:
         lines = self._get_lines_with_meta(path)
         lines = self.hierarchy_level_extractor.get_hierarchy_level(lines)
-        return UnstructuredDocument(lines=lines, tables=[]), False
+        return UnstructuredDocument(lines=lines, tables=[], attachments=[])
 
     def _get_lines_with_meta(self, path: str) -> List[LineWithMeta]:
         lines = []

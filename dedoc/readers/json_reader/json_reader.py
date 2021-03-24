@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional
 
 import ujson as json
 
@@ -22,7 +22,7 @@ class JsonReader(BaseReader):
     def read(self,
              path: str,
              document_type: Optional[str] = None,
-             parameters: Optional[dict] = None) -> Tuple[UnstructuredDocument, bool]:
+             parameters: Optional[dict] = None) -> UnstructuredDocument:
         with open(path) as file:
             json_data = json.load(file)
         stack = [(json_data, 1)]
@@ -41,7 +41,7 @@ class JsonReader(BaseReader):
                                                  paragraph_type_meta=HierarchyLevel.raw_text)
                 result.append(line)
 
-        return UnstructuredDocument(tables=[], lines=result), False
+        return UnstructuredDocument(tables=[], lines=result, attachments=[])
 
     def __handle_list(self, depth: int, element: list, result: list, stack: list):
         for _ in range(len(element)):
