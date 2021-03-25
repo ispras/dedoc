@@ -3,8 +3,10 @@ from flask_restx import Model, Api, fields
 
 
 class TableAnnotation(Annotation):
+    name = "table"
+
     def __init__(self, name: str, start: int = -1, end: int = -1):
-        super().__init__(start=start, end=end, name='table', value=name)
+        super().__init__(start=start, end=end, name=TableAnnotation.name, value=name)
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:

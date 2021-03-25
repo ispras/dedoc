@@ -4,12 +4,14 @@ from dedoc.data_structures.annotation import Annotation
 
 
 class IndentationAnnotation(Annotation):
+    name = "indentation"
+
     def __init__(self, start: int, end: int, value: str):
         try:
             float(value)
         except ValueError:
             raise ValueError("the value of indentation annotation should be a number")
-        super().__init__(start=start, end=end, name="indentation", value=value)
+        super().__init__(start=start, end=end, name=IndentationAnnotation.name, value=value)
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
