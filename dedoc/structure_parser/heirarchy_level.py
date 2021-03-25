@@ -8,6 +8,7 @@ class HierarchyLevel:
     paragraph = "paragraph"
     raw_text = "raw_text"
     list_item = "list_item"
+    root = "root"
 
     def __init__(self, level_1: Optional[int], level_2: Optional[int], can_be_multiline: bool, paragraph_type: str):
         assert level_1 is None or level_1 >= 0
@@ -56,3 +57,7 @@ class HierarchyLevel:
                               level_2=None,
                               can_be_multiline=False,
                               paragraph_type=HierarchyLevel.raw_text)
+
+    @staticmethod
+    def create_root() -> "HierarchyLevel":
+        return HierarchyLevel(level_1=0, level_2=0, can_be_multiline=True, paragraph_type=HierarchyLevel.root)

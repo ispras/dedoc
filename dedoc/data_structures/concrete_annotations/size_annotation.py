@@ -4,12 +4,14 @@ from dedoc.data_structures.annotation import Annotation
 
 
 class SizeAnnotation(Annotation):
+    name = "size"
+
     def __init__(self, start: int, end: int, value: str):
         try:
             float(value)
         except ValueError:
             raise ValueError("the value of size annotation should be a number")
-        super().__init__(start=start, end=end, name="size", value=value)
+        super().__init__(start=start, end=end, name=SizeAnnotation.name, value=value)
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
