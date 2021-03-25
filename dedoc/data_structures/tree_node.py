@@ -133,7 +133,6 @@ class TreeNode(Serializable):
         """
         text_length = len(self.text)
         new_annotations = self.__shift_annotations(line, text_length)
-
         self.text += line.line
         self.annotations.extend(new_annotations)
 
