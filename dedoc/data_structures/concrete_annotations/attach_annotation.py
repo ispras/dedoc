@@ -9,7 +9,7 @@ class AttachAnnotation(Annotation):
     """
     name = "attachment"
 
-    def __init__(self, attach_uid: str, start: int = -1, end: int = -1):
+    def __init__(self, attach_uid: str, start: int, end: int):
         super().__init__(start=start, end=end, name=AttachAnnotation.name, value=attach_uid)
 
     @staticmethod

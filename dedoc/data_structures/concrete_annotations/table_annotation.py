@@ -5,7 +5,7 @@ from flask_restx import Model, Api, fields
 class TableAnnotation(Annotation):
     name = "table"
 
-    def __init__(self, name: str, start: int = -1, end: int = -1):
+    def __init__(self, name: str, start: int, end: int):
         super().__init__(start=start, end=end, name=TableAnnotation.name, value=name)
 
     @staticmethod
