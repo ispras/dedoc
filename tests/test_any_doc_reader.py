@@ -105,3 +105,19 @@ class TestAnyDocReader(unittest.TestCase):
             for annotation in result.lines[answer[0]].annotations:
                 if annotation.name == "alignment":
                     self.assertEqual(answer[1], annotation.value)
+
+    def test_numeration(self):
+        any_doc_reader = DocxReader()
+        path = os.path.join(os.path.dirname(__file__), "data/numeration.docx")
+        result = any_doc_reader.read(path)
+        lines = result.lines
+        self.assertEqual("5. Test numeration", lines[1].line)
+        self.assertEqual("5.1 text", lines[2].line)
+        self.assertEqual("5.2 text. ", lines[3].line)
+        self.assertEqual("5.2.1.\tlist. ", lines[4].line)
+        self.assertEqual("5.2.2.\tlist", lines[5].line)
+        self.assertEqual("5.3.\tlist.", lines[7].line)
+        self.assertEqual("5.3.1\t list.", lines[8].line)
+        self.assertEqual("5.3.2\t list", lines[9].line)
+        self.assertEqual("5.4.\tlist", lines[11].line)
+        self.assertEqual("5.5.\tlist", lines[13].line)
