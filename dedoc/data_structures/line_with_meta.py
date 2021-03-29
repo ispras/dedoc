@@ -68,5 +68,8 @@ class LineWithMeta:
         self.__check_hierarchy_level(hierarchy_level)
         self._hierarchy_level = hierarchy_level
 
+    def set_line(self, line: str):
+        self._line = line
+
     def __repr__(self) -> str:
         return "LineWithMeta({})".format(self.line[:65])

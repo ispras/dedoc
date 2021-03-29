@@ -52,7 +52,7 @@ class TestAnyDocReader(unittest.TestCase):
         result = any_doc_reader.read(path)
         lines = result.lines
 
-        self.assertEqual("Техническое задание\nна оказание услуг по созданию системы защиты персональных данных ", lines[0].line)
+        self.assertEqual("Техническое задание\nна оказание услуг по созданию системы защиты персональных данных \n", lines[0].line)
 
     def test_docx_without_numbering(self):
         any_doc_reader = DocxReader()
@@ -93,8 +93,8 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual('АНАСТАСИЯ АЙГУЗИНА', result.lines[3].line)
         path = os.path.join(os.path.dirname(__file__), "data/caps_2.docx")
         result = any_doc_reader.read(path)
-        self.assertEqual('И. Одар "Таргылтыш"', result.lines[0].line)
-        self.assertEqual('I глава', result.lines[2].line)
+        self.assertEqual('И. Одар "Таргылтыш"\n', result.lines[0].line)
+        self.assertEqual('I глава\n', result.lines[2].line)
 
     def test_justification(self):
         any_doc_reader = DocxReader()

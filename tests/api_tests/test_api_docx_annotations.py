@@ -8,22 +8,22 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         annotations = [subparagraph['annotations'] for subparagraph in result]
 
         # bold, italic, underlined
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'style', 'value': 'body'} in annotations[0])
-        self.assertTrue({'start': 0, 'end': 11, 'name': 'italic', 'value': 'True'} in annotations[1])
-        self.assertTrue({'start': 0, 'end': 9, 'name': 'bold', 'value': 'True'} in annotations[2])
-        self.assertTrue({'start': 0, 'end': 15, 'name': 'underlined', 'value': 'True'} in annotations[3])
+        self.assertTrue({'start': 0, 'end': 11, 'name': 'style', 'value': 'body'} in annotations[0])
+        self.assertTrue({'start': 0, 'end': 12, 'name': 'italic', 'value': 'True'} in annotations[1])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'bold', 'value': 'True'} in annotations[2])
+        self.assertTrue({'start': 0, 'end': 16, 'name': 'underlined', 'value': 'True'} in annotations[3])
         self.assertTrue({'start': 0, 'end': 6, 'name': 'italic', 'value': 'True'} in annotations[4])
-        self.assertTrue({'start': 8, 'end': 12, 'name': 'bold', 'value': 'True'} in annotations[5])
-        self.assertTrue({'start': 0, 'end': 19, 'name': 'bold', 'value': 'True'} in annotations[6] and
-                        {'start': 5, 'end': 19, 'name': 'underlined', 'value': 'True'} in annotations[6])
+        self.assertTrue({'start': 8, 'end': 13, 'name': 'bold', 'value': 'True'} in annotations[5])
+        self.assertTrue({'start': 0, 'end': 20, 'name': 'bold', 'value': 'True'} in annotations[6] and
+                        {'start': 5, 'end': 20, 'name': 'underlined', 'value': 'True'} in annotations[6])
         # alignment
-        self.assertTrue({'start': 0, 'end': 9, 'name': 'alignment', 'value': 'left'} in annotations[8])
-        self.assertTrue({'start': 0, 'end': 13, 'name': 'alignment', 'value': 'center'} in annotations[9])
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'alignment', 'value': 'right'} in annotations[10])
-        self.assertTrue({'start': 0, 'end': 28, 'name': 'alignment', 'value': 'both'} in annotations[11])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'alignment', 'value': 'left'} in annotations[8])
+        self.assertTrue({'start': 0, 'end': 14, 'name': 'alignment', 'value': 'center'} in annotations[9])
+        self.assertTrue({'start': 0, 'end': 11, 'name': 'alignment', 'value': 'right'} in annotations[10])
+        self.assertTrue({'start': 0, 'end': 29, 'name': 'alignment', 'value': 'both'} in annotations[11])
         # indent
-        self.assertTrue({'start': 0, 'end': 11, 'name': 'indentation', 'value': '0'} in annotations[12])
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'indentation', 'value': '720'} in annotations[13])
+        self.assertTrue({'start': 0, 'end': 12, 'name': 'indentation', 'value': '0'} in annotations[12])
+        self.assertTrue({'start': 0, 'end': 11, 'name': 'indentation', 'value': '720'} in annotations[13])
         self.assertTrue({'start': 0, 'end': 11, 'name': 'indentation', 'value': '1440'} in annotations[14])
 
     def test_example_2(self):
@@ -42,15 +42,15 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
                         {'start': 153, 'end': 175, 'name': 'size', 'value': '20.0'} in annotations[35] and
                         {'start': 183, 'end': 199, 'name': 'size', 'value': '11.0'} in annotations[35])
         # alignment
-        self.assertTrue({'start': 0, 'end': 45, 'name': 'alignment', 'value': 'right'} in annotations[43])
-        self.assertTrue({'start': 0, 'end': 39, 'name': 'alignment', 'value': 'center'} in annotations[44])
+        self.assertTrue({'start': 0, 'end': 46, 'name': 'alignment', 'value': 'right'} in annotations[43])
+        self.assertTrue({'start': 0, 'end': 40, 'name': 'alignment', 'value': 'center'} in annotations[44])
         self.assertTrue({'start': 0, 'end': 159, 'name': 'alignment', 'value': 'both'})
         # bold, italic, underlined
-        self.assertTrue({'start': 0, 'end': 25, 'name': 'bold', 'value': 'True'} in annotations[47])
-        self.assertTrue({'start': 0, 'end': 28, 'name': 'italic', 'value': 'True'} in annotations[48])
-        self.assertTrue({'start': 0, 'end': 31, 'name': 'underlined', 'value': 'True'} in annotations[49])
-        self.assertTrue({'start': 0, 'end': 34, 'name': 'bold', 'value': 'True'} in annotations[50] and
-                        {'start': 0, 'end': 34, 'name': 'italic', 'value': 'True'} in annotations[50])
-        self.assertTrue({'start': 0, 'end': 50, 'name': 'bold', 'value': 'True'} in annotations[51] and
-                        {'start': 0, 'end': 50, 'name': 'underlined', 'value': 'True'} in annotations[51] and
-                        {'start': 0, 'end': 50, 'name': 'italic', 'value': 'True'} in annotations[51])
+        self.assertTrue({'start': 0, 'end': 26, 'name': 'bold', 'value': 'True'} in annotations[47])
+        self.assertTrue({'start': 0, 'end': 29, 'name': 'italic', 'value': 'True'} in annotations[48])
+        self.assertTrue({'start': 0, 'end': 32, 'name': 'underlined', 'value': 'True'} in annotations[49])
+        self.assertTrue({'start': 0, 'end': 35, 'name': 'bold', 'value': 'True'} in annotations[50] and
+                        {'start': 0, 'end': 35, 'name': 'italic', 'value': 'True'} in annotations[50])
+        self.assertTrue({'start': 0, 'end': 51, 'name': 'bold', 'value': 'True'} in annotations[51] and
+                        {'start': 0, 'end': 51, 'name': 'underlined', 'value': 'True'} in annotations[51] and
+                        {'start': 0, 'end': 51, 'name': 'italic', 'value': 'True'} in annotations[51])
