@@ -134,9 +134,6 @@ class TreeNode(Serializable):
         text_length = len(self.text)
         new_annotations = self.__shift_annotations(line, text_length)
 
-        if self.text:
-            self.text += '\n'
-
         self.text += line.line
         self.annotations.extend(new_annotations)
 
