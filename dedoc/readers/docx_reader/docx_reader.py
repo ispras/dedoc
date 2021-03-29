@@ -34,11 +34,7 @@ class DocxReader(BaseReader):
                                                                 filename=os.path.basename(path),
                                                                 parameters=parameters)
 
-        lines = docx_document.lines
-
-        if parameters and parameters.get("structure_type", "linear") == "tree":
-            lines = self.__fix_lines(lines)
-
+        lines = self.__fix_lines(docx_document.lines)
         return UnstructuredDocument(lines=lines, tables=docx_document.tables, attachments=attachments)
 
     def __fix_lines(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:
@@ -53,6 +49,10 @@ class DocxReader(BaseReader):
                 continue
 
             lines[i].set_line(lines[i].line + '\n')
+
+            for annotation in lines[i].annotations:
+                if annotation.end == len(lines[i].line) - 1:
+                    annotation.end += 1
 
         return lines
 
