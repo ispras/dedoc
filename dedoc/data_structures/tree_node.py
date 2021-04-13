@@ -10,7 +10,6 @@ from dedoc.data_structures.serializable import Serializable
 from dedoc.structure_constructor.annotation_merger import AnnotationMerger
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.utils import special_match
 
 
 class TreeNode(Serializable):
@@ -79,43 +78,33 @@ class TreeNode(Serializable):
         })
 
     @staticmethod
-    def create(lines: List[LineWithMeta] = None, texts: Iterable[str] = None) -> "TreeNode":
+    def create(lines: List[LineWithMeta] = None) -> "TreeNode":
         """
         Creates a root node with given text
         :param lines: this lines should be the title of the document (or should be empty for documents without title)
-        :param texts: deprecated, use lines instead
         :return: root of the document tree
         """
-        if texts is None and lines is None:
-            raise ValueError("You should specify lines")
-        elif texts is not None and lines is not None:
-            warnings.warn("specify only lines, texts ignored")
-        elif texts is not None and lines is None:
-            warnings.warn("texts is deprecated and would be removed soon, use lines")
-            lines = [LineWithMeta(line=text, metadata=ParagraphMetadata(
-                line_id=0,
-                paragraph_type="",
-                page_id=0,
-                predicted_classes=None
-            ), hierarchy_level=None, annotations=[]) for text in texts]
-
         page_id = 0 if len(lines) == 0 else min((line.metadata.page_id for line in lines))
         line_id = 0 if len(lines) == 0 else min((line.metadata.line_id for line in lines))
 
         texts = (line.line for line in lines)
+        annotations = []
+        text_length = 0
+        for line in lines:
+            annotations.extend(TreeNode.__shift_annotations(line=line, text_length=text_length))
+            text_length += len(line.line)
         text = "".join(texts)
         metadata = ParagraphMetadata(
             paragraph_type="root",
             page_id=page_id,
             line_id=line_id,
             predicted_classes=None)
-        hierarchy_level = HierarchyLevel(0, 0, True, paragraph_type="root")
         return TreeNode("0",
                         text,
-                        annotations=[],
+                        annotations=annotations,
                         metadata=metadata,
                         subparagraphs=[],
-                        hierarchy_level=hierarchy_level,
+                        hierarchy_level=HierarchyLevel.create_root(),
                         parent=None)
 
     def add_child(self, line: LineWithMeta) -> "TreeNode":
@@ -142,16 +131,22 @@ class TreeNode(Serializable):
         :param line: line with text to add
         :return:
         """
-        new_annotations = []
         text_length = len(self.text)
+        new_annotations = self.__shift_annotations(line, text_length)
+
+        self.text += line.line
+        self.annotations.extend(new_annotations)
+
+    @staticmethod
+    def __shift_annotations(line: LineWithMeta, text_length: int) -> List[Annotation]:
+        new_annotations = []
         for annotation in line.annotations:
-            new_annotation = Annotation(start=annotation.start + text_length - 1,
+            new_annotation = Annotation(start=annotation.start + text_length,
                                         end=annotation.end + text_length,
                                         name=annotation.name,
                                         value=annotation.value)
             new_annotations.append(new_annotation)
-        self.text += line.line
-        self.annotations.extend(new_annotations)
+        return new_annotations
 
     def get_root(self):
         """

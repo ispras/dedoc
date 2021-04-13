@@ -4,8 +4,10 @@ from dedoc.data_structures.annotation import Annotation
 
 
 class StyleAnnotation(Annotation):
+    name = "style"
+
     def __init__(self, start: int, end: int, value: str):
-        super().__init__(start=start, end=end, name="style", value=value)
+        super().__init__(start=start, end=end, name=StyleAnnotation.name, value=value)
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:

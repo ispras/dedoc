@@ -52,7 +52,7 @@ class TestAnyDocReader(unittest.TestCase):
         result = any_doc_reader.read(path)
         lines = result.lines
 
-        self.assertEqual("Техническое задание\nна оказание услуг по созданию системы защиты персональных данных ", lines[0].line)
+        self.assertEqual("Техническое задание\nна оказание услуг по созданию системы защиты персональных данных \n", lines[0].line)
 
     def test_docx_without_numbering(self):
         any_doc_reader = DocxReader()
@@ -93,8 +93,8 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual('АНАСТАСИЯ АЙГУЗИНА', result.lines[3].line)
         path = os.path.join(os.path.dirname(__file__), "data/caps_2.docx")
         result = any_doc_reader.read(path)
-        self.assertEqual('И. Одар "Таргылтыш"', result.lines[0].line)
-        self.assertEqual('I глава', result.lines[2].line)
+        self.assertEqual('И. Одар "Таргылтыш"\n', result.lines[0].line)
+        self.assertEqual('I глава\n', result.lines[2].line)
 
     def test_justification(self):
         any_doc_reader = DocxReader()
@@ -105,3 +105,60 @@ class TestAnyDocReader(unittest.TestCase):
             for annotation in result.lines[answer[0]].annotations:
                 if annotation.name == "alignment":
                     self.assertEqual(answer[1], annotation.value)
+
+    def test_numeration(self):
+        any_doc_reader = DocxReader()
+        path = os.path.join(os.path.dirname(__file__), "data/numeration.docx")
+        result = any_doc_reader.read(path)
+        lines = result.lines
+        self.assertEqual("5. Test numeration", lines[1].line)
+        self.assertEqual("5.1 text", lines[2].line)
+        self.assertEqual("5.2 text. ", lines[3].line)
+        self.assertEqual("5.2.1.\tlist. ", lines[4].line)
+        self.assertEqual("5.2.2.\tlist", lines[5].line)
+        self.assertEqual("5.3.\tlist.", lines[7].line)
+        self.assertEqual("5.3.1\t list.", lines[8].line)
+        self.assertEqual("5.3.2\t list", lines[9].line)
+        self.assertEqual("5.4.\tlist", lines[11].line)
+        self.assertEqual("5.5.\tlist", lines[13].line)
+
+    def test_tables(self):
+        any_doc_reader = DocxReader()
+        path = os.path.join(os.path.dirname(__file__), "data/merged_cells.docx")
+        result = any_doc_reader.read(path)
+
+        self.assertEqual("Merged sells", result.tables[0].cells[0][0])
+        self.assertEqual("Merged sells", result.tables[0].cells[0][1])
+        self.assertEqual("Some text", result.tables[0].cells[0][2])
+        self.assertEqual("Some text", result.tables[0].cells[0][3])
+        self.assertEqual("Cell 1", result.tables[0].cells[1][0])
+        self.assertEqual("Cell 2", result.tables[0].cells[1][1])
+        self.assertEqual("Vertically split cells 1", result.tables[0].cells[1][2])
+        self.assertEqual("Vertically split cells 2", result.tables[0].cells[1][3])
+        self.assertEqual("Cell 3", result.tables[0].cells[2][0])
+        self.assertEqual("Cell 4", result.tables[0].cells[2][1])
+        self.assertEqual("Horizontally split cells 1", result.tables[0].cells[2][2])
+        self.assertEqual("Horizontally split cells 1", result.tables[0].cells[2][3])
+        self.assertEqual("Cell 3", result.tables[0].cells[3][0])
+        self.assertEqual("Cell 4", result.tables[0].cells[3][1])
+        self.assertEqual("Horizontally split cells 2", result.tables[0].cells[3][2])
+        self.assertEqual("Horizontally split cells 2", result.tables[0].cells[3][3])
+
+        self.assertEqual("cell1", result.tables[1].cells[0][0])
+        self.assertEqual("cell2", result.tables[1].cells[0][1])
+        self.assertEqual("Horizontally merged", result.tables[1].cells[0][2])
+        self.assertEqual("Horizontally merged", result.tables[1].cells[0][3])
+        self.assertEqual("Horizontally merged", result.tables[1].cells[0][4])
+        self.assertEqual("Horizontally merged", result.tables[1].cells[0][5])
+        self.assertEqual("Vertically and horizontally merged cells", result.tables[1].cells[1][0])
+        self.assertEqual("Vertically and horizontally merged cells", result.tables[1].cells[1][1])
+        self.assertEqual("cell3", result.tables[1].cells[1][2])
+        self.assertEqual("Vertically merged", result.tables[1].cells[1][3])
+        self.assertEqual("cell4", result.tables[1].cells[1][4])
+        self.assertEqual("cell4", result.tables[1].cells[1][5])
+        self.assertEqual("Vertically and horizontally merged cells", result.tables[1].cells[2][0])
+        self.assertEqual("Vertically and horizontally merged cells", result.tables[1].cells[2][1])
+        self.assertEqual("cell5", result.tables[1].cells[2][2])
+        self.assertEqual("Vertically merged", result.tables[1].cells[2][3])
+        self.assertEqual("v1", result.tables[1].cells[2][4])
+        self.assertEqual("v2", result.tables[1].cells[2][5])

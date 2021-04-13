@@ -7,9 +7,10 @@ class AttachAnnotation(Annotation):
     This annotation indicate the place of the attachment in the original document (for example the place where image
     was placed in the docx document)
     """
+    name = "attachment"
 
-    def __init__(self, attach_uid: str, start: int = -1, end: int = -1):
-        super().__init__(start=start, end=end, name='attachment', value=attach_uid)
+    def __init__(self, attach_uid: str, start: int, end: int):
+        super().__init__(start=start, end=end, name=AttachAnnotation.name, value=attach_uid)
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:

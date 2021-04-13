@@ -257,26 +257,6 @@ class NumberingExtractor:
             return ""
         abstract_num_id = self.num_list[num_id].abstract_num_id
 
-        # checking the correctness of the list numeration
-        if (abstract_num_id, ilvl) in self.shifts:
-            ilvl = str(int(ilvl) - self.shifts[(abstract_num_id, ilvl)])
-        else:
-            correct_ilvl = int(ilvl)
-            correct = False
-            while correct_ilvl > 0 and not correct:
-                lvl_info = self.num_list[num_id].get_level_info(str(correct_ilvl))
-                levels = re.findall(r'%\d+', lvl_info['lvlText'])
-                try:
-                    for level in levels:
-                        if int(level[1:]) - 1 == correct_ilvl:
-                            continue
-                        self._get_next_number(num_id, level[1:])
-                except KeyError:
-                    correct_ilvl -= 1
-                correct = True
-            self.shifts[(abstract_num_id, ilvl)] = int(ilvl) - correct_ilvl
-            ilvl = str(correct_ilvl)
-
         lvl_info = self.num_list[num_id].get_level_info(ilvl)
         # there is the other list
         if self.prev_abstract_num_id and self.prev_num_id and self.prev_abstract_num_id != abstract_num_id \
@@ -313,13 +293,7 @@ class NumberingExtractor:
         for level in levels:
             # level = '%level'
             level = level[1:]
-            try:
-                next_number = self._get_next_number(num_id, level)
-            except KeyError as err:
-                # TODO handle very strange list behaviour
-                # if we haven't found given abstractNumId we set counter = 1
-                self.numerations[tuple(err.args[0])] = 1
-                next_number = self._get_next_number(num_id, level)
+            next_number = self._get_next_number(num_id, level)
             text = re.sub(r'%\d+', next_number, text, count=1)
         text += lvl_info['suff']
         return text
@@ -340,8 +314,12 @@ class NumberingExtractor:
         if lvl_info['numFmt'] == "bullet":
             return lvl_info['lvlText']
 
-        shift = self.numerations[(abstract_num_id, ilvl)] - 1
-        num_fmt = get_next_item(lvl_info['numFmt'], shift)
+        try:
+            shift = self.numerations[(abstract_num_id, ilvl)]
+        except KeyError:
+            shift = lvl_info["start"]
+            self.numerations[(abstract_num_id, ilvl)] = shift
+        num_fmt = get_next_item(lvl_info['numFmt'], shift - 1)
         return num_fmt
 
     def parse(self,

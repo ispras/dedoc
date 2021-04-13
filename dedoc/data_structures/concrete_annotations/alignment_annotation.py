@@ -4,10 +4,12 @@ from dedoc.data_structures.annotation import Annotation
 
 
 class AlignmentAnnotation(Annotation):
+    name = "alignment"
+
     def __init__(self, start: int, end: int, value: str):
         if value not in ["left", "right", "both", "center"]:
             raise ValueError("the value of alignment annotation should be left, right, both, or center")
-        super().__init__(start=start, end=end, name="alignment", value=value)
+        super().__init__(start=start, end=end, name=AlignmentAnnotation.name, value=value)
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:

@@ -138,11 +138,13 @@ class DocxDocument:
 
             if i in self.table_refs:
                 for table_uid in self.table_refs[i]:
-                    annotations.append(TableAnnotation(name=table_uid))
+                    annotation = TableAnnotation(name=table_uid, start=0, end=len(text))
+                    annotations.append(annotation)
 
             if i in self.image_refs:
                 for image_uid in self.image_refs[i]:
-                    annotations.append(AttachAnnotation(attach_uid=image_uid))
+                    annotation = AttachAnnotation(attach_uid=image_uid, start=0, end=len(text))
+                    annotations.append(annotation)
 
             paragraph_id += 1
             metadata = ParagraphMetadata(paragraph_type=paragraph_type,

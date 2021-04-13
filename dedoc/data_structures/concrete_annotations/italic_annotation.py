@@ -4,12 +4,15 @@ from dedoc.data_structures.annotation import Annotation
 
 
 class ItalicAnnotation(Annotation):
+
+    name = "italic"
+
     def __init__(self, start: int, end: int, value: str):
         try:
             bool(value)
         except ValueError:
             raise ValueError("the value of italic annotation should be True or False")
-        super().__init__(start=start, end=end, name="italic", value=value)
+        super().__init__(start=start, end=end, name=ItalicAnnotation.name, value=value)
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
