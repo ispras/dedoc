@@ -28,7 +28,7 @@ class CSVReader(BaseReader):
         delimiter = parameters.get("delimiter")
         if delimiter is None:
             delimiter = "\t" if path.endswith(".tsv") else self.default_separator
-        with open(path) as file:
+        with open(path, errors="ignore") as file:
             csv_reader = csv.reader(file, delimiter=delimiter)
             data = list(csv_reader)
         table_metadata = TableMetadata(page_id=0)
