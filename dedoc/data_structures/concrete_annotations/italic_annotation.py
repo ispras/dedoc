@@ -6,6 +6,7 @@ from dedoc.data_structures.annotation import Annotation
 class ItalicAnnotation(Annotation):
 
     name = "italic"
+    valid_values = ["True", "False"]
 
     def __init__(self, start: int, end: int, value: str):
         try:
@@ -22,5 +23,5 @@ class ItalicAnnotation(Annotation):
             'value': fields.String(description='indicator if the text is italic or not',
                                    required=True,
                                    example="True",
-                                   enum=["True", "False"])
+                                   enum=ItalicAnnotation.valid_values)
         })
