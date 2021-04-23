@@ -5,6 +5,7 @@ from dedoc.data_structures.annotation import Annotation
 
 class UnderlinedAnnotation(Annotation):
     name = "underlined"
+    valid_values = ["True", "False"]
 
     def __init__(self, start: int, end: int, value: str):
         try:
@@ -21,5 +22,5 @@ class UnderlinedAnnotation(Annotation):
             'value': fields.String(description='indicator if the text is underlined or not',
                                    required=True,
                                    example="True",
-                                   enum=["True", "False"])
+                                   enum=UnderlinedAnnotation.valid_values)
         })
