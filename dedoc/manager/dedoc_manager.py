@@ -145,8 +145,9 @@ class DedocManager:
         self.attachments_handler.handle_attachments(document=document, parameters=parameters)
         previous_log_time = time.time()
         for i, attachment in enumerate(document.attachments):
-            if time.time() - previous_log_time > 3:
-                previous_log_time = time.time()  # not log too often
+            current_time = time.time()
+            if current_time - previous_log_time > 3:
+                previous_log_time = current_time  # not log too often
                 self.logger.info("Handle attachment {} of {}".format(i, len(document.attachments)))
             parameters_copy = copy.deepcopy(parameters)
             parameters_copy["is_attached"] = True
