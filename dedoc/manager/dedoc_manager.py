@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import tempfile
+import time
 from typing import Optional, List, Dict
 
 from dedoc.attachment_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
@@ -142,17 +143,28 @@ class DedocManager:
                              tmp_dir: str) -> List[ParsedDocument]:
         parsed_attachment_files = []
         self.attachments_handler.handle_attachments(document=document, parameters=parameters)
+        previous_log_time = time.time()
         for i, attachment in enumerate(document.attachments):
-            self.logger.info("Handle attachment {} of {}".format(i, len(document.attachments)))
+            if time.time() - previous_log_time > 3:
+                previous_log_time = time.time()  # not log too often
+                self.logger.info("Handle attachment {} of {}".format(i, len(document.attachments)))
             parameters_copy = copy.deepcopy(parameters)
             parameters_copy["is_attached"] = True
             parameters_copy["attachment"] = attachment
             try:
-                file_path = os.path.join(tmp_dir, attachment.get_filename_in_path())
-                parsed_file = self.parse_file(file_path,
-                                              parameters=parameters_copy,
-                                              original_file_name=attachment.get_original_filename()
-                                              )
+                if attachment.need_content_analysis:
+                    file_path = os.path.join(tmp_dir, attachment.get_filename_in_path())
+                    parsed_file = self.parse_file(file_path,
+                                                  parameters=parameters_copy,
+                                                  original_file_name=attachment.get_original_filename()
+                                                  )
+                else:
+                    parsed_file = self.__parse_file_meta(document_content=None,
+                                                         directory=tmp_dir,
+                                                         filename=attachment.get_filename_in_path(),
+                                                         converted_filename=attachment.get_filename_in_path(),
+                                                         original_file_name=attachment.get_original_filename(),
+                                                         parameters=parameters_copy)
             except BadFileFormatException:
                 # return empty ParsedDocument with Meta information
                 parsed_file = self.__parse_file_meta(document_content=None,
