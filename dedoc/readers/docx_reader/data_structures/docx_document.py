@@ -36,6 +36,7 @@ class DocxDocument:
         self.path_hash = calculate_file_hash(path=path)
 
         self.document_bs_tree = self.__get_bs_tree('word/document.xml')
+        self.document_bs_tree = self.__remove_shapes(self.document_bs_tree)
         self.body = self.document_bs_tree.body if self.document_bs_tree else None
 
         self.styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'))
@@ -53,6 +54,12 @@ class DocxDocument:
         self._uids_set = set()
         self.tables = []
         self.lines = self._process_lines(hierarchy_level_extractor=hierarchy_level_extractor)
+
+    def __remove_shapes(self, bs_tree: BeautifulSoup) -> BeautifulSoup:
+        for pict in bs_tree.find_all('w:pict'):
+            pict.extract()
+
+        return bs_tree
 
     def __get_bs_tree(self, filename: str) -> Optional[BeautifulSoup]:
         """

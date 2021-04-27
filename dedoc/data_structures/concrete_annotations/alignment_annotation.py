@@ -5,6 +5,7 @@ from dedoc.data_structures.annotation import Annotation
 
 class AlignmentAnnotation(Annotation):
     name = "alignment"
+    valid_values = ["left", "right", "both", "center"]
 
     def __init__(self, start: int, end: int, value: str):
         if value not in ["left", "right", "both", "center"]:
@@ -19,5 +20,5 @@ class AlignmentAnnotation(Annotation):
             'value': fields.String(description='alignment of the text',
                                    required=True,
                                    example="left",
-                                   enum=["left", "right", "both", "center"])
+                                   enum=AlignmentAnnotation.valid_values)
         })

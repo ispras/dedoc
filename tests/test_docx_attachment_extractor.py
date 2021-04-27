@@ -1,6 +1,8 @@
+import tempfile
 import unittest
 import os
 import hashlib
+from shutil import copyfile
 from dedoc.attachment_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
 from dedoc.utils import get_file_mime_type
 
@@ -23,14 +25,16 @@ class TestDocxAttachmentsExtractor(unittest.TestCase):
             'test.py': 'd41d8cd98f00b204e9800998ecf8427e'
         }
         docx_attachment_extractor = DocxAttachmentsExtractor()
-        tmp_dir = os.path.join(os.path.dirname(__file__), 'data/with_attachments_docx/')
+        src_dir = os.path.join(os.path.dirname(__file__), 'data/with_attachments_docx/')
         extracted = 0
-        for i in range(1, 4):
-            filename = 'with_attachments_{}.docx'.format(i)
-            attachments = docx_attachment_extractor.get_attachments(tmp_dir, filename, {})
-            for i, file in enumerate(attachments):
-                with open(file.get_filename_in_path(), "rb") as file_content:
-                    self.assertEqual(right_hash[file.get_original_filename()],
-                                     hashlib.md5(file_content.read()).hexdigest())
-                extracted += 1
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            for i in range(1, 4):
+                filename = 'with_attachments_{}.docx'.format(i)
+                copyfile(src=os.path.join(src_dir, filename), dst=os.path.join(tmp_dir, filename))
+                attachments = docx_attachment_extractor.get_attachments(tmp_dir, filename, {})
+                for i, file in enumerate(attachments):
+                    with open(file.get_filename_in_path(), "rb") as file_content:
+                        self.assertEqual(right_hash[file.get_original_filename()],
+                                         hashlib.md5(file_content.read()).hexdigest())
+                    extracted += 1
         self.assertEqual(extracted, 12)
