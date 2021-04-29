@@ -185,7 +185,7 @@ class DocxDocument:
                 continue
 
             # diagrams are saved using docx_attachments_extractor
-            if paragraph_xml.pict:
+            if paragraph_xml.pict or paragraph_xml.drawing:
                 self._handle_diagrams_xml(paragraph_xml)
                 continue
 
