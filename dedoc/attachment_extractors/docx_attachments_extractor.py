@@ -67,7 +67,7 @@ class DocxAttachmentsExtractor(AbstractAttachmentsExtractor):
         diagram_paragraphs = []
         for paragraph in paragraphs:
             extracted = paragraph.extract()
-            if extracted.pict or extracted.drawing:
+            if extracted.pict:
                 diagram_paragraphs.append(extracted)
         if not diagram_paragraphs:
             return result

@@ -175,9 +175,8 @@ class TestAnyDocReader(unittest.TestCase):
 
         self.assertEqual("attachment", result.lines[0].annotations[0].name)
         self.assertEqual("206d1ebae25697d107e895ec8fbce720", result.lines[0].annotations[0].value)
-        for line_num in [22, 23]:
-            annotation_found = False
-            for annotation in result.lines[line_num].annotations:
-                if annotation.name == "attachment":
-                    annotation_found = True
-            self.assertTrue(annotation_found)
+        annotation_found = False
+        for annotation in result.lines[24].annotations:
+            if annotation.name == "attachment":
+                annotation_found = True
+        self.assertTrue(annotation_found)
