@@ -36,7 +36,6 @@ class DocxDocument:
         self.path_hash = calculate_file_hash(path=path)
 
         self.document_bs_tree = self.__get_bs_tree('word/document.xml')
-        self.document_bs_tree = self.__remove_shapes(self.document_bs_tree)
         self.body = self.document_bs_tree.body if self.document_bs_tree else None
 
         self.styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'))
@@ -48,18 +47,14 @@ class DocxDocument:
         self.images_rels = self.__get_images_rels(rels)
 
         self.paragraph_list = []
+        # { paragraph number in self.paragraph_list : list of uids }
         self.table_refs = defaultdict(list)
         self.image_refs = defaultdict(list)
+        self.diagram_refs = defaultdict(list)
         self.table_uids = []
         self._uids_set = set()
         self.tables = []
         self.lines = self._process_lines(hierarchy_level_extractor=hierarchy_level_extractor)
-
-    def __remove_shapes(self, bs_tree: BeautifulSoup) -> BeautifulSoup:
-        for pict in bs_tree.find_all('w:pict'):
-            pict.extract()
-
-        return bs_tree
 
     def __get_bs_tree(self, filename: str) -> Optional[BeautifulSoup]:
         """
@@ -143,14 +138,15 @@ class DocxDocument:
             for annotation in line_with_meta["annotations"]:
                 annotations.append(dict2annotations[annotation[0]](*annotation[1:]))
 
+            for object_dict in [self.image_refs, self.diagram_refs]:
+                if i in object_dict:
+                    for object_uid in object_dict[i]:
+                        annotation = AttachAnnotation(attach_uid=object_uid, start=0, end=len(text))
+                        annotations.append(annotation)
+
             if i in self.table_refs:
                 for table_uid in self.table_refs[i]:
                     annotation = TableAnnotation(name=table_uid, start=0, end=len(text))
-                    annotations.append(annotation)
-
-            if i in self.image_refs:
-                for image_uid in self.image_refs[i]:
-                    annotation = AttachAnnotation(attach_uid=image_uid, start=0, end=len(text))
                     annotations.append(annotation)
 
             paragraph_id += 1
@@ -188,6 +184,11 @@ class DocxDocument:
                 self.paragraph_list += map(self.__xml2paragraph, paragraph_xml.find_all('w:p'))
                 continue
 
+            # diagrams are saved using docx_attachments_extractor
+            if paragraph_xml.pict:
+                self._handle_diagrams_xml(paragraph_xml)
+                continue
+
             paragraph = self.__xml2paragraph(paragraph_xml)
             self.paragraph_list.append(paragraph)
 
@@ -208,8 +209,16 @@ class DocxDocument:
             self.paragraph_list.append(empty_paragraph)
         self.table_refs[len(self.paragraph_list) - 1].append(table_uid)
 
-    def _handle_images_xml(self, images_xml: BeautifulSoup):
+    def _handle_images_xml(self, images_xml: List[BeautifulSoup]):
         for image_xml in images_xml:
             blips = image_xml.find_all("a:blip")
             image_uid = self.images_rels[blips[0]["r:embed"]]
             self.image_refs[len(self.paragraph_list) - 1].append(image_uid)
+
+    def _handle_diagrams_xml(self, diagram_xml: BeautifulSoup):
+        diagram_uid = hashlib.md5(diagram_xml.encode()).hexdigest()
+        if not self.paragraph_list:
+            empty_paragraph_xml = BeautifulSoup('<w:p></w:p>').body.contents[0]
+            empty_paragraph = self.__xml2paragraph(empty_paragraph_xml)
+            self.paragraph_list.append(empty_paragraph)
+        self.diagram_refs[len(self.paragraph_list) - 1].append(diagram_uid)

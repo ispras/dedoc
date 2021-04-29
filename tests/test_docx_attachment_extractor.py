@@ -4,7 +4,6 @@ import os
 import hashlib
 from shutil import copyfile
 from dedoc.attachment_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
-from dedoc.utils import get_file_mime_type
 
 
 class TestDocxAttachmentsExtractor(unittest.TestCase):
@@ -38,3 +37,12 @@ class TestDocxAttachmentsExtractor(unittest.TestCase):
                                          hashlib.md5(file_content.read()).hexdigest())
                     extracted += 1
         self.assertEqual(extracted, 12)
+
+    def test_diagrams_extraction(self):
+        docx_attachment_extractor = DocxAttachmentsExtractor()
+        src_dir = os.path.join(os.path.dirname(__file__), 'data')
+        files = [('diagram_1.docx', 1), ('diagram_2.docx', 5)]
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            for file, num_attachments in files:
+                attachments = docx_attachment_extractor.get_attachments(tmp_dir, os.path.join(src_dir, file), {})
+                self.assertEqual(num_attachments, len(attachments))
