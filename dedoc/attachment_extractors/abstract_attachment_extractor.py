@@ -33,7 +33,7 @@ class AbstractAttachmentsExtractor(ABC):
     def with_attachments(parameters: dict) -> bool:
         return str(parameters.get("with_attachments", "false")).lower() == "true"
 
-    def _content2attach_file(self, content: List[Tuple[str, bytes]], tmpdir: str):
+    def _content2attach_file(self, content: List[Tuple[str, bytes]], tmpdir: str, need_content_analysis: bool = True):
         attachments = []
         for original_name, contents in content:
             tmp_file_name = save_data_to_unique_file(directory=tmpdir,
@@ -43,6 +43,6 @@ class AbstractAttachmentsExtractor(ABC):
             file = AttachedFile(original_name=original_name,
                                 tmp_file_path=tmp_file_path,
                                 uid="attach_{}".format(uuid.uuid1()),
-                                need_content_analysis=True)
+                                need_content_analysis=need_content_analysis)
             attachments.append(file)
         return attachments
