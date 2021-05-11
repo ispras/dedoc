@@ -22,9 +22,9 @@ class TestApi(AbstractTestApiDocReader):
     def test_version(self):
         version = self.__get_version()
         r = requests.get("http://{host}:{port}/version".format(host=self._get_host(), port=self._get_port()))
-        self.assertEqual(version, r.text)
+        self.assertEqual(version, r.text.strip())
 
     def test_version_parsed_file(self):
         version = self.__get_version()
         result = self._send_request("books.csv")
-        self.assertEqual(version, result["version"])
+        self.assertEqual(version, result["version"].strip())
