@@ -29,12 +29,21 @@
             <form class="box" method="post" style="margin: 10px" enctype=multipart/form-data action="/upload">
                 <p>
                     <label>
-                    <input type="checkbox" name="return_html" value="return_html">
-                    </label> return_html</p>
-                <p>
+                        <select name="return_format">
+                            <option value="html" selected>html</option>
+                            <option value="json">json</option>
+                            <option value="tree">tree</option>
+                        </select>
+                    </label> return_format
+                </p>
                     <label>
                     <input type="checkbox" name="with_attachments" value=true>
                     </label> with_attachments</p>
+                <p>
+                <p>
+                    <label>
+                    <input type="checkbox" name="insert_table" value=true>
+                    </label> insert_table </p>
                 <p>
                     <label>
                     <select name="document_type" >
