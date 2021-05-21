@@ -3,14 +3,14 @@ import json
 import os
 from functools import wraps
 
-from flask import Flask, request
+from flask import Flask, request, Request
 from flask import send_file
 from flask_restx import Resource, Api, Model
 from werkzeug.local import LocalProxy
 
 from dedoc.api.swagger_api_utils import get_command_keep_models
 from dedoc.common.exceptions.structure_extractor_exception import StructureExtractorException
-from dedoc.api.api_utils import json2html
+from dedoc.api.api_utils import json2html, json2tree
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.common.exceptions.missing_file_exception import MissingFileException
@@ -50,11 +50,12 @@ def marshal_with_wrapper(model: Model, request_post: LocalProxy, **other):
     """
     Response marshalling with json indent=2 for json and outputs html for return_html==True
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
 
-            if str(request_post.values.get("return_html", "False")).lower() == "false":
+            if str(request_post.values.get("return_format", "json")).lower() == "json":
                 func2 = api.marshal_with(model, **other)(func)
                 ob = func2(*args, **kwargs)
                 return app.response_class(
@@ -68,7 +69,12 @@ def marshal_with_wrapper(model: Model, request_post: LocalProxy, **other):
                     mimetype='text/html;charset=utf-8')
 
         return wrapper
+
     return decorator
+
+
+def _get_parameters(request: Request):
+    return {k: v for k, v in request.values.items()}
 
 
 @api.route('/upload')
@@ -81,17 +87,19 @@ class UploadFile(Resource):
             if 'file' not in request.files or request.files['file'] is None or request.files['file'].filename == "":
                 raise MissingFileException("Error: Missing content in request_post file parameter")
             # check if the post request_post has the file part
-            parameters = {k: v for k, v in request.values.items()}
+            parameters = _get_parameters(request)
             file = request.files['file']
             logger.info("Get file {} with parameters {}".format(file.name, parameters))
             document_tree = manager.parse_file(file, parameters=parameters)
-            if str(request.values.get("return_html", "False")).lower() == "false":
-                logger.info("Send result. File {} with parameters {}".format(file.filename, parameters))
-                return document_tree
-            else:
+            if str(parameters.get("return_format", "json")).lower() == "html":
                 return json2html(text="", paragraph=document_tree.content.structure,
                                  tables=document_tree.content.tables,
                                  tabs=0)
+            elif str(parameters.get("return_format", "json")).lower() == "tree":
+                return json2tree(paragraph=document_tree.content.structure)
+            else:
+                logger.info("Send result. File {} with parameters {}".format(file.filename, parameters))
+                return document_tree
 
 
 @api.route('/static_file')
@@ -159,12 +167,14 @@ manager = DedocThreadedManager.from_config(config=config, version=open(version_f
 def _get_static_file_path():
     file = request.values["fname"]
     directory_name = request.values.get("directory")
-    directory = static_files_dirs[directory_name] if directory_name is not None and directory_name in static_files_dirs else static_path
+    directory = static_files_dirs[
+        directory_name] if directory_name is not None and directory_name in static_files_dirs else static_path
     return os.path.abspath(os.path.join(directory, file))
 
 
 def _handle_request(path: str):
-    document_tree = manager.parse_existing_file(path=path, parameters=request.values)
+    parameters = _get_parameters(request)
+    document_tree = manager.parse_existing_file(path=path, parameters=parameters)
     return document_tree
 
 
