@@ -7,6 +7,11 @@ import mimetypes
 from os.path import splitext
 from typing import List, Tuple
 
+from dedoc.data_structures.document_content import DocumentContent
+from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.tree_node import TreeNode
+from dedoc.structure_parser.heirarchy_level import HierarchyLevel
+
 
 def splitext_(path: str) -> Tuple[str, str]:
     """
@@ -88,3 +93,21 @@ def calculate_file_hash(path: str) -> str:
             file_hash.update(chunk)
             chunk = file.read(8192)
     return str(file_hash.hexdigest())
+
+
+def get_empty_content() -> DocumentContent:
+    return DocumentContent(
+        tables=[],
+        structure=TreeNode(node_id="0",
+                           text="",
+                           annotations=[],
+                           metadata=ParagraphMetadata(
+                               paragraph_type=HierarchyLevel.root,
+                               predicted_classes=None,
+                               page_id=0,
+                               line_id=0,
+                           ),
+                           subparagraphs=[],
+                           hierarchy_level=HierarchyLevel.create_root(),
+                           parent=None)
+    )

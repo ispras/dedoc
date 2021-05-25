@@ -11,15 +11,12 @@ from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
 from dedoc.converters.file_converter import FileConverterComposition
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.document_content import DocumentContent
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.parsed_document import ParsedDocument
-from dedoc.data_structures.tree_node import TreeNode
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractor.metadata_extractor_composition import MetadataExtractorComposition
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.structure_constructor.structure_constructor_composition import StructureConstructorComposition
-from dedoc.structure_parser.heirarchy_level import HierarchyLevel
-from dedoc.utils import get_unique_name
+from dedoc.utils import get_unique_name, get_empty_content
 
 
 class DedocManager:
@@ -94,10 +91,10 @@ class DedocManager:
                 parameters=parameters
             )
             self.logger.info("parse file {}".format(filename_convert))
+            structure_type = parameters.get("structure_type")
             document_content = self.structure_constructor.structure_document(document=unstructured_document,
-                                                                             structure_type=parameters.get(
-                                                                                 "structure_type")
-                                                                             )
+                                                                             structure_type=structure_type,
+                                                                             parameters=parameters)
             self.logger.info("get document content {}".format(filename_convert))
             # Step 3 - Adding meta-information
             parsed_document = self.__parse_file_meta(document_content=document_content,
@@ -140,23 +137,6 @@ class DedocManager:
                                                                         parameters=parameters)
         return parsed_document
 
-    def __get_empty_content(self) -> DocumentContent:
-        return DocumentContent(
-            tables=[],
-            structure=TreeNode(node_id="0",
-                               text="",
-                               annotations=[],
-                               metadata=ParagraphMetadata(
-                                   paragraph_type=HierarchyLevel.root,
-                                   predicted_classes=None,
-                                   page_id=0,
-                                   line_id=0,
-                               ),
-                               subparagraphs=[],
-                               hierarchy_level=HierarchyLevel.create_root(),
-                               parent=None)
-        )
-
     def __handle_attachments(self,
                              document: UnstructuredDocument,
                              parameters: dict,
@@ -180,7 +160,7 @@ class DedocManager:
                                                   original_file_name=attachment.get_original_filename()
                                                   )
                 else:
-                    parsed_file = self.__parse_file_meta(document_content=self.__get_empty_content(),
+                    parsed_file = self.__parse_file_meta(document_content=get_empty_content(),
                                                          directory=tmp_dir,
                                                          filename=attachment.get_filename_in_path(),
                                                          converted_filename=attachment.get_filename_in_path(),
@@ -188,7 +168,7 @@ class DedocManager:
                                                          parameters=parameters_copy)
             except BadFileFormatException:
                 # return empty ParsedDocument with Meta information
-                parsed_file = self.__parse_file_meta(document_content=self.__get_empty_content(),
+                parsed_file = self.__parse_file_meta(document_content=get_empty_content(),
                                                      directory=tmp_dir,
                                                      filename=attachment.get_filename_in_path(),
                                                      converted_filename=attachment.get_filename_in_path(),
