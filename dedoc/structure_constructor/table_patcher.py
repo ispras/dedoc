@@ -9,6 +9,10 @@ from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 
 
 class TablePatcher:
+    """
+    this class copy table information from table to the structure (document tree),
+    it is not copy table if it marked as already in the document tree.
+    """
 
     def insert_table(self, document: UnstructuredDocument) -> UnstructuredDocument:
         """
