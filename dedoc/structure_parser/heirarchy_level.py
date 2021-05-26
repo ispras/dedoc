@@ -4,7 +4,6 @@ from typing import Optional
 
 @total_ordering
 class HierarchyLevel:
-
     paragraph = "paragraph"
     raw_text = "raw_text"
     list_item = "list_item"
@@ -21,14 +20,18 @@ class HierarchyLevel:
         assert paragraph_type == HierarchyLevel.raw_text or (level_1 is not None and level_2 is not None)
 
     def __eq__(self, other: "HierarchyLevel") -> bool:
+        if (self.level_1 is not None and
+                self.level_2 is not None and
+                other.level_1 is not None and
+                other.level_2 is not None and
+                (self.level_1, self.level_2) == (other.level_1, other.level_2)):
+            return True
         if self.paragraph_type == HierarchyLevel.raw_text and other.paragraph_type == HierarchyLevel.raw_text:
             return True
         if self.paragraph_type == HierarchyLevel.raw_text and other.paragraph_type != HierarchyLevel.raw_text:
             return False
         if self.paragraph_type != HierarchyLevel.raw_text and other.paragraph_type == HierarchyLevel.raw_text:
             return False
-        if (self.level_1, self.level_2) == (other.level_1, other.level_2):
-            return True
         return False
 
     def __lt__(self, other: "HierarchyLevel") -> bool:

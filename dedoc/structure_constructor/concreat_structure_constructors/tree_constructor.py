@@ -20,9 +20,7 @@ class TreeConstructor(AbstractStructureConstructor):
     def structure_document(self,
                            document: UnstructuredDocument,
                            structure_type: Optional[str] = None) -> DocumentContent:
-        list_patcher = ListPatcher()
-        lines = list_patcher.patch(document.lines)
-        document_name, not_document_name = self.__get_document_name(lines)
+        document_name, not_document_name = self.__get_document_name(document.lines)
         not_document_name = self.__add_lists(not_document_name)
         tree = TreeNode.create(lines=document_name)
         for line in not_document_name:

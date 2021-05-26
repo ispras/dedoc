@@ -1,6 +1,56 @@
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Iterator, Set
 
 from dedoc.data_structures.table import Table
+
+
+def __prettify_text(text: str) -> Iterator[str]:
+    res = []
+    for word in text.split():
+        if len(word) == 0:
+            continue
+        res.append(word)
+        if sum(map(len, res)) >= 60:
+            yield " ".join(res)
+            res = []
+    if len(res) > 0:
+        yield " ".join(res)
+
+
+def json2tree(paragraph: 'TreeNode') -> str:
+    stack = [paragraph]
+    nodes = []
+    while len(stack) > 0:
+        element = stack.pop()
+        nodes.append(element)
+        stack.extend(element.subparagraphs)
+        # stack.reverse()
+    nodes.sort(key=lambda node: tuple(map(int, node.node_id.split("."))))
+    root, *nodes = nodes
+    result = []
+    space_symbol = "&nbsp"
+    depths = set()
+    for node in reversed(nodes):
+        node_result = []
+        depth = len(node.node_id.split(".")) - 1
+        depths.add(depth)
+        depths = {d for d in depths if d <= depth}
+        space = [space_symbol] * 4 * (depth - 1) + 4 * ["-"]
+        space = __add_vertical_line(depths, space)
+        node_result.append("<p> <tt> <em>  {} {} </em> </tt> </p>".format(
+            space, node.metadata.paragraph_type + "&nbsp" + node.node_id))
+        for text in __prettify_text(node.text):
+            space = [space_symbol] * 4 * (depth - 1) + 4 * [space_symbol]
+            space = __add_vertical_line(depths, space)
+            node_result.append("<p> <tt> {} {} </tt> </p>".format(space, text))
+        result.extend(reversed(node_result))
+    result.append("<h3>{}</h3>".format(root.text))
+    return "".join(reversed(result))
+
+
+def __add_vertical_line(depths: Set[int], space: List[str]):
+    for d in depths:
+        space[(d - 1) * 4] = "|"
+    return "".join(space)
 
 
 def json2html(text: str,
