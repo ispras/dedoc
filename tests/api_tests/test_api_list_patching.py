@@ -8,8 +8,10 @@ class TestApiDocReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]
 
-        lst = content["subparagraphs"][2]
-        self.assertEqual(len(lst["subparagraphs"][0]["subparagraphs"]), 5)
+        lst = content["subparagraphs"][9]
+        self.assertEqual(len(lst["subparagraphs"]), 2)
+        lst = content["subparagraphs"][10]
+        self.assertEqual(len(lst["subparagraphs"]), 11)
 
     def test_list_patching_2(self):
         file_name = "list_tests/missed_list.docx"

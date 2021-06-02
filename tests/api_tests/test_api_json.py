@@ -39,33 +39,35 @@ class TestApiCSVReader(AbstractTestApiDocReader):
         file_name = "dict_with_list.json"
         result = self._send_request(file_name, data=dict(structure_type="tree"))["content"]["structure"]
         nodes = result["subparagraphs"]
-        self.assertEqual("days", nodes[0]["metadata"]["paragraph_type"])
-        first_list_items = nodes[1]["subparagraphs"][0]["subparagraphs"]
+        days = [node for node in nodes if node["metadata"]["paragraph_type"] == "days"][0]
+        months = [node for node in nodes if node["metadata"]["paragraph_type"] == "month"][0]
+        self.assertEqual("days", days["metadata"]["paragraph_type"])
+        first_list_items = months["subparagraphs"][0]["subparagraphs"]
 
         self.assertEqual(3, len(first_list_items))
         self.assertEqual("июнь", first_list_items[0]["text"])
         self.assertEqual("июль", first_list_items[1]["text"])
         self.assertEqual("август", first_list_items[2]["text"])
 
-        second_list_items = nodes[0]["subparagraphs"][0]["subparagraphs"]
+        second_list_items = days["subparagraphs"][0]["subparagraphs"]
         self.assertEqual(2, len(second_list_items))
         self.assertEqual("понедельник", second_list_items[0]["text"])
         self.assertEqual("вторник", second_list_items[1]["text"])
 
     def test_list_with_dict(self):
         file_name = "list_with_dict.json"
-        result = self._send_request(file_name, data=dict(structure_type="tree"))["content"]["structure"]
-        nodes = result["subparagraphs"][0]
-        self.assertEqual("list", nodes["metadata"]["paragraph_type"])
+        nodes = self._send_request(file_name, data=dict(structure_type="tree"))["content"]["structure"]
+        self.assertEqual("list", nodes["subparagraphs"][0]["metadata"]["paragraph_type"])
 
-        first_list_items = nodes["subparagraphs"][0]["subparagraphs"][0]["subparagraphs"][0]["subparagraphs"]
-
+        first_list_items = nodes["subparagraphs"][0]["subparagraphs"][0]["subparagraphs"][0]["subparagraphs"][0][
+            "subparagraphs"]
         self.assertEqual(3, len(first_list_items))
         self.assertEqual("июнь", first_list_items[0]["text"])
         self.assertEqual("июль", first_list_items[1]["text"])
         self.assertEqual("август", first_list_items[2]["text"])
 
-        second_list_items = nodes["subparagraphs"][1]["subparagraphs"][0]["subparagraphs"][0]["subparagraphs"]
+        second_list_items = nodes["subparagraphs"][1]["subparagraphs"][0]["subparagraphs"][0]["subparagraphs"][0][
+            "subparagraphs"]
         self.assertEqual(2, len(second_list_items))
         self.assertEqual("понедельник", second_list_items[0]["text"])
         self.assertEqual("вторник", second_list_items[1]["text"])

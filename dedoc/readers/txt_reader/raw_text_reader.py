@@ -30,7 +30,8 @@ class RawTextReader(BaseReader):
              parameters: Optional[dict] = None) -> UnstructuredDocument:
         lines = self._get_lines_with_meta(path)
         lines = self.hierarchy_level_extractor.get_hierarchy_level(lines)
-        return UnstructuredDocument(lines=lines, tables=[], attachments=[])
+        result = UnstructuredDocument(lines=lines, tables=[], attachments=[])
+        return self._postprocess(result)
 
     def _get_lines_with_meta(self, path: str) -> List[LineWithMeta]:
         lines = []
@@ -50,3 +51,12 @@ class RawTextReader(BaseReader):
             for line_id, line in enumerate(file):
                 line = normalize('NFC', line).replace("й", "й")  # й replace matter
                 yield line_id, line
+
+    def __is_paragraph(self, line: LineWithMeta) -> bool:
+        return line.hierarchy_level.is_raw_text() and (line.line.isspace() or not line.line.startswith((" " * 2, "\t")))
+
+    def _postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:
+        for line in document.lines:
+            if self.__is_paragraph(line):
+                line.hierarchy_level.can_be_multiline = True
+        return document
