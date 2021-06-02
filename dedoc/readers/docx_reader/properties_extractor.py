@@ -1,16 +1,23 @@
 from bs4 import BeautifulSoup
 
 
+def check_if_true(value: str):
+    if value == '1' or value == 'True' or value == 'true':
+        return True
+    return False
+
+
 def change_paragraph_properties(old_properties: "BaseProperties",
                                 tree: BeautifulSoup):
     """
-    changes old properties indent, size, jc if they were found in tree
+    changes old properties indent, size, jc, spacing_before, spacing_after if they were found in tree
     :param old_properties: Paragraph
     :param tree: BeautifulSoup tree with properties
     """
     change_indent(old_properties, tree)
     change_size(old_properties, tree)
     change_jc(old_properties, tree)
+    change_spacing(old_properties, tree)
 
 
 def change_run_properties(old_properties: "BaseProperties",
@@ -135,3 +142,49 @@ def change_caps(old_properties: "BaseProperties",
             old_properties.caps = False
     except KeyError:
         old_properties.caps = True
+
+
+def change_spacing(old_properties: "BaseProperties",
+                   tree: BeautifulSoup):
+    """
+    changes old_properties: spacing_before, spacing_after if tag spacing was found in tree
+    :param old_properties: Paragraph
+    :param tree: BeautifulSoup tree with properties
+    """
+    # tag <spacing> may have the following attributes for spacing between paragraphs:
+    # after / before (measured in twentieths of a point), ignored if afterLines or afterAutospacing are specified
+    # afterAutospacing / beforeAutospacing (we set 0 if specified) if is specified, other attributes are ignored
+    # afterLines / beforeLines (measured in one hundredths of a line)
+
+    # if we have spacing after value for the previous paragraph and spacing before value for the next paragraph
+    # we choose maximum between these two values
+    if not tree.spacing:
+        return
+
+    before, after = 0, 0
+    before_autospacing = tree.spacing.get("w:beforeAutospacing", False)
+    before_autospacing = check_if_true(before_autospacing) if before_autospacing else before_autospacing
+
+    after_autospacing = tree.spacing.get("w:afterAutospacing", False)
+    after_autospacing = check_if_true(after_autospacing) if after_autospacing else after_autospacing
+
+    if not before_autospacing:
+        before_lines = tree.spacing.get("w:beforeLines", False)
+        before_lines = int(before_lines) if before_lines else before_lines
+        if not before_lines:
+            before_tag = tree.spacing.get("w:before", False)
+            before = int(before_tag) if before_tag else before
+        else:
+            before = before_lines
+
+    if not after_autospacing:
+        after_lines = tree.spacing.get("w:afterLines", False)
+        after_lines = int(after_lines) if after_lines else after_lines
+        if not after_lines:
+            after_tag = tree.spacing.get("w:after", False)
+            after = int(after_tag) if after_tag else after
+        else:
+            after = after_lines
+
+    old_properties.spacing_before = before
+    old_properties.spacing_after = after
