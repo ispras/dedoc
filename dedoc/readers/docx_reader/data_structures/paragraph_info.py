@@ -1,5 +1,4 @@
 import re
-import hashlib
 from typing import Dict, List, Union, Tuple, Optional
 
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
