@@ -4,6 +4,10 @@ from dedoc.data_structures.annotation import Annotation
 
 
 class SpacingAnnotation(Annotation):
+    """
+    Integer value means spacing between the current line and the previous one.
+    For docx documents it's measured in twentieths of a point or one hundredths of a line
+    """
     name = "spacing"
 
     def __init__(self, start: int, end: int, value: str):
