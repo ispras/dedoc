@@ -3,6 +3,7 @@ from typing import Optional, Tuple, Iterable, List
 
 from unicodedata import normalize
 
+from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
@@ -36,14 +37,26 @@ class RawTextReader(BaseReader):
     def _get_lines_with_meta(self, path: str) -> List[LineWithMeta]:
         lines = []
         file_hash = calculate_file_hash(path=path)
+        number_of_empty_lines = 0
         for line_id, line in self._get_lines(path):
             metadata = ParagraphMetadata(page_id=0,
                                          line_id=line_id,
                                          predicted_classes=None,
                                          paragraph_type="raw_text")
             uid = "txt_{}_{}".format(file_hash, line_id)
-            line_with_meta = LineWithMeta(line=line, hierarchy_level=None, metadata=metadata, annotations=[], uid=uid)
+            spacing_annotation_value = str(int(100 * (0.5 if number_of_empty_lines == 0 else number_of_empty_lines)))
+            spacing_annotation = SpacingAnnotation(start=0, end=len(line), value=spacing_annotation_value)
+            line_with_meta = LineWithMeta(line=line,
+                                          hierarchy_level=None,
+                                          metadata=metadata,
+                                          annotations=[spacing_annotation],
+                                          uid=uid)
             lines.append(line_with_meta)
+            if line.isspace():
+                number_of_empty_lines += 1
+            else:
+                number_of_empty_lines = 0
+
         return lines
 
     def _get_lines(self, path: str) -> Iterable[Tuple[int, str]]:
