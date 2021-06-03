@@ -58,7 +58,7 @@ class HierarchyLevel:
     def create_raw_text() -> "HierarchyLevel":
         return HierarchyLevel(level_1=None,
                               level_2=None,
-                              can_be_multiline=False,
+                              can_be_multiline=True,
                               paragraph_type=HierarchyLevel.raw_text)
 
     @staticmethod

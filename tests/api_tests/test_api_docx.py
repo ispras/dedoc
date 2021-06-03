@@ -89,4 +89,4 @@ class TestApiDocReader(AbstractTestApiDocReader):
         file_name = "inspector.docx"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]
-        self.assertTrue(content["subparagraphs"][0]["text"].startswith("КАКОЕ-ТО ЗАДАНИЕ\nНА ЧТО-ТО ТАМ ПОЛЕЗНОЕ\n\n"))
+        self.assertTrue(content["subparagraphs"][0]["text"].startswith("КАКОЕ-ТО ЗАДАНИЕ"))

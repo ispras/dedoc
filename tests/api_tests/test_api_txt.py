@@ -22,3 +22,20 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         content = result["content"]["structure"]
         res = str(content)
         self.assertFalse("ufeff" in res)
+
+    def test_paragraphs(self):
+        file_name = "football.txt"
+        result = self._send_request(file_name, data={"structure_type": "tree"})
+        content = result["content"]["structure"]["subparagraphs"]
+        self.assertEqual(4, len(content))
+        self.assertTrue(content[0]["text"].startswith("    Association football, more commonly known as simply"))
+        self.assertTrue(content[0]["text"].endswith("The team with the higher number of goals wins the game.\n\n"))
+
+        self.assertTrue(content[1]["text"].startswith("  Football is played in accordance with a set of rules known"))
+        self.assertTrue(content[1]["text"].endswith("the coin toss prior to kick-off or penalty kicks.\n\n"))
+
+        self.assertTrue(content[2]["text"].startswith("    Football is governed internationally by the International"))
+        self.assertTrue(content[2]["text"].endswith("the 2019 FIFA Women's World Cup in France.\n\n"))
+
+        self.assertTrue(content[3]["text"].startswith("    The most prestigious competitions in European club"))
+        self.assertTrue(content[3]["text"].endswith("cost in excess of £600 million/€763 million/US$1.185 billion.\n"))
