@@ -167,16 +167,18 @@ class TestAnyDocReader(unittest.TestCase):
         any_doc_reader = DocxReader()
         path = os.path.join(os.path.dirname(__file__), "data/diagram_1.docx")
         result = any_doc_reader.read(path)
-        self.assertEqual("attachment", result.lines[0].annotations[0].name)
-        self.assertEqual("dee352a576cf5ffd27ee1574d4dc4431", result.lines[0].annotations[0].value)
+
+        for annotation in result.lines[0].annotations:
+            if annotation.name == "attachment":
+                self.assertEqual("dee352a576cf5ffd27ee1574d4dc4431", annotation.value)
+            break
 
         path = os.path.join(os.path.dirname(__file__), "data/diagram_2.docx")
         result = any_doc_reader.read(path)
 
-        self.assertEqual("attachment", result.lines[0].annotations[0].name)
-        self.assertEqual("206d1ebae25697d107e895ec8fbce720", result.lines[0].annotations[0].value)
-        annotation_found = False
-        for annotation in result.lines[24].annotations:
-            if annotation.name == "attachment":
-                annotation_found = True
-        self.assertTrue(annotation_found)
+        for i in [0, 24]:
+            annotation_found = False
+            for annotation in result.lines[i].annotations:
+                if annotation.name == "attachment":
+                    annotation_found = True
+            self.assertTrue(annotation_found)
