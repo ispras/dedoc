@@ -19,35 +19,62 @@ class ParagraphInfo:
 
         # common properties for all runs in one paragraph
         # TODO more complex information about indent
-        self.paragraph_properties = {"indentation": paragraph.indent['left'], "alignment": paragraph.jc,
-                                     "spacing": paragraph.spacing}
+        self.paragraph_properties = {"indentation": str(paragraph.indent['left']), "alignment": paragraph.jc,
+                                     "spacing": str(paragraph.spacing)}
         if paragraph.style_name is not None:
             self.paragraph_properties["style"] = paragraph.style_name
 
-        # list of run's properties
-        self.properties = []
+        # dict with lists of unified run's properties
+        # {"size": [[start, end, value], ...], ...}
+        self.properties = {"size": [], "bold": [], "italic": [], "underlined": []}
         for run in paragraph.runs:
-            start, end = len(self.text), len(self.text) + len(run.text)
-            if start == end:
+            if len(run.text) == 0:
                 continue
-            if not self.text:
-                self.text = run.text
-            else:
-                self.text += run.text
-            properties = dict()
-            if run.size:
-                properties['size'] = run.size
-            else:
-                properties['size'] = paragraph.size
-            properties['bold'] = run.bold
-            properties['italic'] = run.italic
-            properties['underlined'] = run.underlined
-            self.properties.append([start, end, properties])
+            self.text = run.text if not self.text else self.text + run.text
+
+            new_properties = dict()
+            new_properties['size'] = run.size if run.size else paragraph.size
+            new_properties['bold'] = run.bold
+            new_properties['italic'] = run.italic
+            new_properties['underlined'] = run.underlined
+            new_properties['text'] = run.text
+            self.__extend_properties(new_properties)
+
         if hasattr(paragraph, "caps") and paragraph.caps:
             self.text = self.text.upper()
-        # dict for saving last annotations
-        # it is used to unite annotations with same values
-        self.last_properties = {}
+
+    def __extend_properties(self, new_properties: dict) -> None:
+        self.__extend_size_property(new_properties)
+        for property_name in ['bold', 'italic', 'underlined']:
+            self.__extend_font_property(property_name, new_properties)
+
+    def __extend_size_property(self, new_properties: dict) -> None:
+        text_len = len(self.text)
+        new_size = str(new_properties['size'] / 2)
+        if self.properties["size"]:
+            if self.__is_space(new_properties) or self.properties["size"][-1][2] == new_size:
+                # change end boarder of the annotation
+                self.properties["size"][-1][1] = text_len
+                return
+
+        self.properties["size"].append([text_len - len(new_properties["text"]), text_len, new_size])
+
+    def __extend_font_property(self, property_name: str, new_properties: dict) -> None:
+        if not new_properties[property_name] and not self.__is_space(new_properties):
+            return
+
+        text_len = len(self.text)
+        if self.properties[property_name]:
+            if self.properties[property_name][-1][1] == text_len - len(new_properties["text"]):
+                self.properties[property_name][-1][1] = text_len
+                return
+            if self.__is_space(new_properties):
+                return
+
+        self.properties[property_name].append([text_len - len(new_properties["text"]), text_len, "True"])
+
+    def __is_space(self, new_properties: dict) -> bool:
+        return re.fullmatch(r"\s+", new_properties["text"]) is not None
 
     def _get_hierarchy_level(self) -> Optional[Tuple[int, int]]:
         """
@@ -73,7 +100,6 @@ class ParagraphInfo:
         :return: dictionary {"text": "",
         "type": "" ("paragraph" ,"list_item", "raw_text", "style_header"),
         "level": (1,1) or None (hierarchy_level),
-        "uid": string with xml hash,
         "annotations": [(name, start, end, value), ...] },
         name - annotation name
         start, end - character's positions begin with 0, end isn't included
@@ -101,77 +127,12 @@ class ParagraphInfo:
         for annotation_name, value in self.paragraph_properties.items():
             result['annotations'].append((annotation_name, 0, text_len, value))
 
-        self.last_properties = {"bold": [], "italic": [], "underlined": [], "size": []}
-        for prop in self.properties:
-            # add annotation if some new properties were found
-            for annotation_name in ["bold", "italic", "underlined"]:
-                annotation = self.make_annotation(prop, annotation_name)
-                if annotation:
-                    result['annotations'].append(annotation)
-            annotation = self.make_annotation(prop, "size")
-            if annotation:
-                result['annotations'].append(annotation)
-        for annotation_name, prop in self.last_properties.items():
-            # add last properties, which were not added during previous step
-            if prop:
-                if annotation_name != "size":
-                    annotation = (annotation_name, prop[0], prop[1], "True")
-                    result['annotations'].append(annotation)
-                else:
-                    annotation = ("size", prop[0], prop[1], str(prop[2] / 2))
-                    result['annotations'].append(annotation)
+        for annotation_name, annotation_list in self.properties.items():
+            for annotation in annotation_list:
+                result['annotations'].append((annotation_name, annotation[0], annotation[1], annotation[2]))
 
         return result
 
-    def make_annotation(self,
-                        prop: List[Union[int, Dict[str, Union[str, int, bool, Dict[str, int]]]]],
-                        annotation_name: str) -> Optional[Tuple[str, int, int, str]]:
-        """
-        makes new annotation if some new properties were found
-        else saves annotation in last_properties and returns None
-        :param prop: list with properties and it's positions in the text
-        :param annotation_name: "bold", "italic", "underlined" or size
-        :return: annotation or None
-        """
-        if type(prop[2]) != dict or annotation_name not in prop[2]:
-            return None
-
-        if annotation_name == 'size':
-            if not self.last_properties[annotation_name]:
-                # for size save start, end, value
-                self.last_properties[annotation_name] = [prop[0], prop[1], prop[2][annotation_name]]
-                return None
-            # if size value wasn't changed or text consists of spaces extend current annotation
-            if prop[2][annotation_name] == self.last_properties[annotation_name][2] or \
-                    re.fullmatch(r" +", self.text[prop[0]:prop[1]]):
-                self.last_properties[annotation_name][1] = prop[1]
-                return None
-            # else save current annotation and return previous annotation
-            annotation = ('size',
-                          self.last_properties[annotation_name][0],
-                          self.last_properties[annotation_name][1],
-                          str(self.last_properties[annotation_name][2] / 2))
-            self.last_properties[annotation_name] = [prop[0], prop[1], prop[2][annotation_name]]
-            return annotation
-
-        # the same as size but without value
-        if prop[2][annotation_name] or \
-                self.last_properties[annotation_name] and re.fullmatch(r"\s+", self.text[prop[0]:prop[1]]):
-            if self.last_properties[annotation_name]:
-                self.last_properties[annotation_name][1] = prop[1]
-            else:
-                self.last_properties[annotation_name] = [prop[0], prop[1]]  # start, end
-            return None
-        else:
-            if self.last_properties[annotation_name]:
-                annotation = (annotation_name,
-                              self.last_properties[annotation_name][0],
-                              self.last_properties[annotation_name][1], "True")
-                self.last_properties[annotation_name] = []
-                return annotation
-            return None
-
-    @property
     def get_text(self) -> str:
         """
         :return: text of the paragraph
