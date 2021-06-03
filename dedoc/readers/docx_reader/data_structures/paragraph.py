@@ -26,9 +26,13 @@ class Paragraph(BaseProperties):
         self.list_level = None
         self.style_level = None
         self.style_name = None
+
         # spacing before and after paragraph
         self.spacing_before = 0
         self.spacing_after = 0
+
+        # the maximum spacing: after value for the previous paragraph or before value for the current paragraph
+        self.spacing = 0
 
         self.xml = xml
         super().__init__(styles_extractor)

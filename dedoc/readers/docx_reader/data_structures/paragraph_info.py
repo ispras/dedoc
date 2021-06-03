@@ -16,7 +16,15 @@ class ParagraphInfo:
         self.text = ""
         self.list_level = paragraph.list_level
         self.style_level = paragraph.style_level
-        self.style_name = paragraph.style_name
+
+        # common properties for all runs in one paragraph
+        # TODO more complex information about indent
+        self.paragraph_properties = {"indentation": paragraph.indent['left'], "alignment": paragraph.jc,
+                                     "spacing": paragraph.spacing}
+        if paragraph.style_name is not None:
+            self.paragraph_properties["style"] = paragraph.style_name
+
+        # list of run's properties
         self.properties = []
         for run in paragraph.runs:
             start, end = len(self.text), len(self.text) + len(run.text)
@@ -27,8 +35,6 @@ class ParagraphInfo:
             else:
                 self.text += run.text
             properties = dict()
-            properties['indent'] = paragraph.indent.copy()
-            properties['alignment'] = paragraph.jc
             if run.size:
                 properties['size'] = run.size
             else:
@@ -90,11 +96,10 @@ class ParagraphInfo:
             result['type'] = HierarchyLevel.raw_text
 
         result['annotations'] = []
-        if self.properties:
-            # TODO more complex information about indent
-            result['annotations'].append(("indentation", 0, len(self.text),
-                                          str(self.properties[0][2]['indent']['left'])))
-            result['annotations'].append(("alignment", 0, len(self.text), self.properties[0][2]['alignment']))
+        # add annotations common for all paragraph
+        text_len = len(self.text)
+        for annotation_name, value in self.paragraph_properties.items():
+            result['annotations'].append((annotation_name, 0, text_len, value))
 
         self.last_properties = {"bold": [], "italic": [], "underlined": [], "size": []}
         for prop in self.properties:
@@ -115,8 +120,7 @@ class ParagraphInfo:
                 else:
                     annotation = ("size", prop[0], prop[1], str(prop[2] / 2))
                     result['annotations'].append(annotation)
-        if self.style_name:
-            result['annotations'].append(("style", 0, len(self.text), self.style_name))
+
         return result
 
     def make_annotation(self,
