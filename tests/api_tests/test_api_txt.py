@@ -28,14 +28,24 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]["subparagraphs"]
         self.assertEqual(4, len(content))
-        self.assertTrue(content[0]["text"].startswith("    Association football, more commonly known as simply"))
-        self.assertTrue(content[0]["text"].endswith("The team with the higher number of goals wins the game.\n\n"))
+        node = content[0]
+        self.assertTrue(node["text"].startswith("    Association football, more commonly known as simply"))
+        self.assertTrue(node["text"].endswith("The team with the higher number of goals wins the game.\n\n"))
+        annotations = node["annotations"]
+        self.assertIn({'name': 'spacing', 'value': '50', 'start': 0, 'end': 546}, annotations)
 
-        self.assertTrue(content[1]["text"].startswith("  Football is played in accordance with a set of rules known"))
-        self.assertTrue(content[1]["text"].endswith("the coin toss prior to kick-off or penalty kicks.\n\n"))
+        node = content[1]
+        self.assertTrue(node["text"].startswith("  Football is played in accordance with a set of rules known"))
+        self.assertTrue(node["text"].strip().endswith("the coin toss prior to kick-off or penalty kicks."))
+        annotations = node["annotations"]
+        self.assertIn({'name': 'spacing', 'value': '100', 'start': 0, 'end': 163}, annotations)
 
-        self.assertTrue(content[2]["text"].startswith("    Football is governed internationally by the International"))
-        self.assertTrue(content[2]["text"].endswith("the 2019 FIFA Women's World Cup in France.\n\n"))
+        node = content[2]
+        self.assertTrue(node["text"].startswith("    Football is governed internationally by the International"))
+        self.assertTrue(node["text"].endswith("the 2019 FIFA Women's World Cup in France.\n\n"))
+        annotations = node["annotations"]
+        self.assertIn({'name': 'spacing', 'value': '400', 'start': 0, 'end': 164}, annotations)
+        self.assertIn({'name': 'spacing', 'value': '50', 'start': 164, 'end': 1068}, annotations)
 
         self.assertTrue(content[3]["text"].startswith("    The most prestigious competitions in European club"))
         self.assertTrue(content[3]["text"].endswith("cost in excess of £600 million/€763 million/US$1.185 billion.\n"))

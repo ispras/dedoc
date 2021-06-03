@@ -14,7 +14,7 @@ class SpacingAnnotation(Annotation):
         try:
             int(value)
         except ValueError:
-            raise ValueError("the value of spacing annotation should be a number")
+            raise ValueError("the value of spacing annotation should be a number, get {}".format(value))
         super().__init__(start=start, end=end, name=SpacingAnnotation.name, value=value)
 
     @staticmethod
