@@ -57,6 +57,6 @@ class RawTextReader(BaseReader):
 
     def _postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:
         for line in document.lines:
-            if self.__is_paragraph(line):
-                line.hierarchy_level.can_be_multiline = True
+            if not self.__is_paragraph(line):
+                line.hierarchy_level.can_be_multiline = False
         return document
