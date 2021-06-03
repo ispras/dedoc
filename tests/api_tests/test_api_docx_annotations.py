@@ -54,3 +54,31 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertTrue({'start': 0, 'end': 51, 'name': 'bold', 'value': 'True'} in annotations[51] and
                         {'start': 0, 'end': 51, 'name': 'underlined', 'value': 'True'} in annotations[51] and
                         {'start': 0, 'end': 51, 'name': 'italic', 'value': 'True'} in annotations[51])
+
+    def test_spacing_1(self):
+        result = self._send_request("annotation_docx/spacing_libreoffice.docx")['content']['structure']['subparagraphs']
+        annotations = [subparagraph['annotations'] for subparagraph in result]
+
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'} in annotations[0])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'} in annotations[1])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '57'} in annotations[2])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '114'} in annotations[3])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '114'} in annotations[4])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '114'} in annotations[5])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '114'} in annotations[6])
+        self.assertTrue({'start': 0, 'end': 9, 'name': 'spacing', 'value': '0'} in annotations[7])
+
+    def test_spacing_2(self):
+        result = self._send_request("annotation_docx/"
+                                    "spacing_microsoft_word.docx")['content']['structure']['subparagraphs']
+        annotations = [subparagraph['annotations'] for subparagraph in result]
+
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'} in annotations[0])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'} in annotations[1])
+        self.assertTrue({'start': 0, 'end': 31, 'name': 'spacing', 'value': '200'} in annotations[2])
+        self.assertTrue({'start': 0, 'end': 31, 'name': 'spacing', 'value': '200'} in annotations[3])
+        self.assertTrue({'start': 0, 'end': 32, 'name': 'spacing', 'value': '400'} in annotations[4])
+        self.assertTrue({'start': 0, 'end': 31, 'name': 'spacing', 'value': '400'} in annotations[5])
+        self.assertTrue({'start': 0, 'end': 31, 'name': 'spacing', 'value': '600'} in annotations[6])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '400'} in annotations[7])
+        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'} in annotations[8])

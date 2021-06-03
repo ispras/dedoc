@@ -37,6 +37,10 @@ class DocxDocument:
         self.path_hash = calculate_file_hash(path=path)
 
         self.document_bs_tree = self.__get_bs_tree('word/document.xml')
+        if self.document_bs_tree is None:
+            # for some of microsoft word documents
+            self.document_bs_tree = self.__get_bs_tree('word/document2.xml')
+
         self.body = self.document_bs_tree.body if self.document_bs_tree else None
 
         self.styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'))
@@ -45,6 +49,8 @@ class DocxDocument:
         self.styles_extractor.numbering_extractor = self.numbering_extractor
 
         rels = self.__get_bs_tree('word/_rels/document.xml.rels')
+        if rels is None:
+            rels = self.__get_bs_tree('word/_rels/document2.xml.rels')
         self.images_rels = self.__get_images_rels(rels)
 
         self.paragraph_list = []
@@ -57,7 +63,6 @@ class DocxDocument:
         self.tables = []
         # the previous paragraph for spacing calculation
         self.prev_paragraph = None
-        
         self.lines = self._process_lines(hierarchy_level_extractor=hierarchy_level_extractor)
 
     def __get_bs_tree(self, filename: str) -> Optional[BeautifulSoup]:
