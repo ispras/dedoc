@@ -55,10 +55,10 @@ class DocxDocument:
         self.table_uids = []
         self._uids_set = set()
         self.tables = []
-        self.lines = self._process_lines(hierarchy_level_extractor=hierarchy_level_extractor)
-
         # the previous paragraph for spacing calculation
         self.prev_paragraph = None
+        
+        self.lines = self._process_lines(hierarchy_level_extractor=hierarchy_level_extractor)
 
     def __get_bs_tree(self, filename: str) -> Optional[BeautifulSoup]:
         """
