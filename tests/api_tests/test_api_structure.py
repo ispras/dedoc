@@ -7,7 +7,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         file_name = "example.docx"
         result = self._send_request(file_name, data={"structure_type": "linear"})
         nodes = result["content"]["structure"]["subparagraphs"]
-        self.assertEqual(len(nodes), 16)
+        self.assertEqual(len(nodes), 13)
         for node in nodes:
             self.assertListEqual([], node["subparagraphs"])
 
@@ -15,7 +15,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         file_name = "example.docx"
         result = self._send_request(file_name)
         nodes = result["content"]["structure"]["subparagraphs"]
-        self.assertEqual(len(nodes), 16)
+        self.assertEqual(len(nodes), 13)
         for node in nodes:
             self.assertListEqual([], node["subparagraphs"])
 
