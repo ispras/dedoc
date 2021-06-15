@@ -1,16 +1,23 @@
 from bs4 import BeautifulSoup
 
 
+def check_if_true(value: str):
+    if value == '1' or value == 'True' or value == 'true':
+        return True
+    return False
+
+
 def change_paragraph_properties(old_properties: "BaseProperties",
                                 tree: BeautifulSoup):
     """
-    changes old properties indent, size, jc if they were found in tree
+    changes old properties indent, size, jc, spacing_before, spacing_after if they were found in tree
     :param old_properties: Paragraph
     :param tree: BeautifulSoup tree with properties
     """
     change_indent(old_properties, tree)
     change_size(old_properties, tree)
     change_jc(old_properties, tree)
+    change_spacing(old_properties, tree)
 
 
 def change_run_properties(old_properties: "BaseProperties",
@@ -24,33 +31,21 @@ def change_run_properties(old_properties: "BaseProperties",
     change_caps(old_properties, tree)
     # bold
     if tree.b:
-        try:
-            if tree.b['w:val'] == '1' or tree.b['w:val'] == 'True':
-                old_properties.bold = True
-            else:
-                old_properties.bold = False
-        except KeyError:
-            old_properties.bold = True
+        b_tag = tree.b.get("w:val", True)
+        old_properties.bold = check_if_true(b_tag) if isinstance(b_tag, str) else b_tag
 
     # italic
     if tree.i:
-        try:
-            if tree.i['w:val'] == '1' or tree.i['w:val'] == 'True':
-                old_properties.italic = True
-            else:
-                old_properties.italic = False
-        except KeyError:
-            old_properties.italic = True
+        i_tag = tree.i.get("w:val", True)
+        old_properties.italic = check_if_true(i_tag) if isinstance(i_tag, str) else i_tag
 
     # underlined
     if tree.u:
-        try:
-            if tree.u['w:val'] == 'none':
-                old_properties.underlined = False
-            else:
-                old_properties.underlined = True
-        except KeyError:
-            pass
+        u_tag = tree.u.get("w:val", False)
+        if u_tag == 'none':
+            old_properties.underlined = False
+        elif isinstance(u_tag, str):
+            old_properties.underlined = True
 
 
 def change_indent(old_properties: "BaseProperties",
@@ -63,10 +58,7 @@ def change_indent(old_properties: "BaseProperties",
     if tree.ind:
         indent_properties = ['firstLine', 'hanging', 'start', 'left']
         for indent_property in indent_properties:
-            try:
-                old_properties.indent[indent_property] = int(tree.ind['w:' + indent_property])
-            except KeyError:
-                pass
+            old_properties.indent[indent_property] = int(tree.ind.get("w:{}".format(indent_property), 0))
 
 
 def change_size(old_properties: "BaseProperties",
@@ -77,10 +69,7 @@ def change_size(old_properties: "BaseProperties",
     :param tree: BeautifulSoup tree with properties
     """
     if tree.sz:
-        try:
-            old_properties.size = int(tree.sz['w:val'])
-        except KeyError:
-            pass
+        old_properties.size = int(tree.sz.get('w:val', old_properties.size))
 
 
 def change_jc(old_properties: "BaseProperties",
@@ -95,28 +84,23 @@ def change_jc(old_properties: "BaseProperties",
     if not tree.jc:
         return
     if tree.bidi:
-        try:
-            if tree.bidi['w:val'] == '1' or tree.bidi['w:val'] == 'True':
-                right_to_left = True
-            else:
-                right_to_left = False
-        except KeyError:
-            right_to_left = True
+        bidi_tag = tree.bidi.get('w:val', True)
+        right_to_left = check_if_true(bidi_tag) if isinstance(bidi_tag, str) else bidi_tag
     else:
         right_to_left = False
-    try:
-        if tree.jc['w:val'] == 'both':
-            old_properties.jc = 'both'
-        elif tree.jc['w:val'] == 'center':
-            old_properties.jc = 'center'
-        elif tree.jc['w:val'] == 'right':
-            old_properties.jc = 'right'
-        elif tree.jc['w:val'] == 'end' and not right_to_left:
-            old_properties.jc = 'right'
-        elif tree.jc['w:val'] == 'start' and right_to_left:
-            old_properties.jc = 'right'
-    except KeyError:
-        pass
+
+    jc_tag = tree.jc.get('w:val', old_properties.jc)
+
+    if jc_tag == 'both':
+        old_properties.jc = 'both'
+    elif jc_tag == 'center':
+        old_properties.jc = 'center'
+    elif jc_tag == 'right':
+        old_properties.jc = 'right'
+    elif jc_tag == 'end' and not right_to_left:
+        old_properties.jc = 'right'
+    elif jc_tag == 'start' and right_to_left:
+        old_properties.jc = 'right'
 
 
 def change_caps(old_properties: "BaseProperties",
@@ -128,10 +112,52 @@ def change_caps(old_properties: "BaseProperties",
     """
     if not tree.caps:
         return
-    try:
-        if tree.caps['w:val'] == '1' or tree.caps['w:val'] == 'True' or tree.caps['w:val'] == 'true':
-            old_properties.caps = True
+
+    caps_tag = tree.caps.get('w:val', True)
+    old_properties.caps = check_if_true(caps_tag) if isinstance(caps_tag, str) else caps_tag
+
+
+def change_spacing(old_properties: "BaseProperties",
+                   tree: BeautifulSoup):
+    """
+    changes old_properties: spacing_before, spacing_after if tag spacing was found in tree
+    :param old_properties: Paragraph
+    :param tree: BeautifulSoup tree with properties
+    """
+    # tag <spacing> may have the following attributes for spacing between paragraphs:
+    # after / before (measured in twentieths of a point), ignored if afterLines or afterAutospacing are specified
+    # afterAutospacing / beforeAutospacing (we set 0 if specified) if is specified, other attributes are ignored
+    # afterLines / beforeLines (measured in one hundredths of a line)
+
+    # if we have spacing after value for the previous paragraph and spacing before value for the next paragraph
+    # we choose maximum between these two values
+    if not tree.spacing:
+        return
+
+    before, after = 0, 0
+    before_autospacing = tree.spacing.get("w:beforeAutospacing", False)
+    before_autospacing = check_if_true(before_autospacing) if before_autospacing else before_autospacing
+
+    after_autospacing = tree.spacing.get("w:afterAutospacing", False)
+    after_autospacing = check_if_true(after_autospacing) if after_autospacing else after_autospacing
+
+    if not before_autospacing:
+        before_lines = tree.spacing.get("w:beforeLines", False)
+        before_lines = int(before_lines) if before_lines else before_lines
+        if not before_lines:
+            before_tag = tree.spacing.get("w:before", False)
+            before = int(before_tag) if before_tag else before
         else:
-            old_properties.caps = False
-    except KeyError:
-        old_properties.caps = True
+            before = before_lines
+
+    if not after_autospacing:
+        after_lines = tree.spacing.get("w:afterLines", False)
+        after_lines = int(after_lines) if after_lines else after_lines
+        if not after_lines:
+            after_tag = tree.spacing.get("w:after", False)
+            after = int(after_tag) if after_tag else after
+        else:
+            after = after_lines
+
+    old_properties.spacing_before = before
+    old_properties.spacing_after = after

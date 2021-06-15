@@ -1,10 +1,19 @@
 import os
 import signal
+from typing import Union, List
 
 
 def get_full_path(path, file=__file__):
     dir_path = os.path.dirname(file)
     return os.path.join(dir_path, path)
+
+
+def get_by_tree_path(tree: dict, path: Union[List[int], str]) -> dict:
+    if isinstance(path, str):
+        path = [int(i) for i in path.split(".")][1:]
+    for child_id in path:
+        tree = tree["subparagraphs"][child_id]
+    return tree
 
 
 class TestTimeout:

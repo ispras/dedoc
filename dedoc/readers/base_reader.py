@@ -40,3 +40,9 @@ class BaseReader(ABC):
         :return: True if this Reader can handle file, false otherwise
         """
         pass
+
+    def _postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:
+        """
+        perform document postprocessing
+        """
+        return document

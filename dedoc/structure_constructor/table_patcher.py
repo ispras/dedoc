@@ -23,12 +23,12 @@ class TablePatcher:
         paragraphs = []
         hierarchy_level = max((line.hierarchy_level.level_1 for line in document.lines
                                if not line.hierarchy_level.is_raw_text()), default=0)
-        hierarchy_level_raw_text = HierarchyLevel(level_1=hierarchy_level + 1,
-                                                  level_2=0,
-                                                  can_be_multiline=True,
-                                                  paragraph_type=HierarchyLevel.raw_text)
         for line in document.lines:
             if line.hierarchy_level.is_raw_text():
+                hierarchy_level_raw_text = HierarchyLevel(level_1=hierarchy_level + 1,
+                                                          level_2=0,
+                                                          can_be_multiline=line.hierarchy_level.can_be_multiline,
+                                                          paragraph_type=HierarchyLevel.raw_text)
                 line.set_hierarchy_level(hierarchy_level_raw_text)
             paragraphs.append(line)
             for annotation in line.annotations:
@@ -58,7 +58,7 @@ class TablePatcher:
     @staticmethod
     def _create_table_line(table: Table, hierarchy_level: int) -> LineWithMeta:
         hierarchy_level_new = HierarchyLevel(
-            level_1=hierarchy_level + 1,
+            level_1=hierarchy_level + 2,  # table hierarchy is lower than raw text
             level_2=0,
             can_be_multiline=False,
             paragraph_type="table"
@@ -76,7 +76,7 @@ class TablePatcher:
     @staticmethod
     def _create_row_line(table: Table, hierarchy_level: int) -> LineWithMeta:
         hierarchy_level_new = HierarchyLevel(
-            level_1=hierarchy_level + 2,
+            level_1=hierarchy_level + 3,
             level_2=0,
             can_be_multiline=False,
             paragraph_type="table_row"
@@ -93,7 +93,7 @@ class TablePatcher:
     @staticmethod
     def _create_cell_line(table: Table, hierarchy_level: int, cell: str) -> LineWithMeta:
         hierarchy_level_new = HierarchyLevel(
-            level_1=hierarchy_level + 3,
+            level_1=hierarchy_level + 4,
             level_2=0,
             can_be_multiline=False,
             paragraph_type="table_cell"

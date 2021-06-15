@@ -8,7 +8,8 @@ from dedoc.data_structures.tree_node import TreeNode
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.structure_constructor.concreat_structure_constructors.abstract_structure_constructor import AbstractStructureConstructor
+from dedoc.structure_constructor.concreat_structure_constructors.abstract_structure_constructor import \
+    AbstractStructureConstructor
 from dedoc.structure_constructor.concreat_structure_constructors.list_patcher import ListPatcher
 
 
@@ -25,15 +26,10 @@ class TreeConstructor(AbstractStructureConstructor):
         tree = TreeNode.create(lines=document_name)
         for line in not_document_name:
             # add raw text line
-            if line.hierarchy_level.is_raw_text():
-                if tree.hierarchy_level.is_raw_text():
-                    tree.add_text(line)
-                else:
-                    tree = tree.add_child(line)
             # multiline header
-            elif (line.hierarchy_level.can_be_multiline and
-                  line.hierarchy_level == tree.hierarchy_level and
-                  line.hierarchy_level.paragraph_type == tree.hierarchy_level.paragraph_type):
+            if (line.hierarchy_level.can_be_multiline and
+                    line.hierarchy_level == tree.hierarchy_level and
+                    line.hierarchy_level.paragraph_type == tree.hierarchy_level.paragraph_type):
                 tree.add_text(line)
             # move up and add child
 
@@ -60,15 +56,18 @@ class TreeConstructor(AbstractStructureConstructor):
         return document_name, other_lines
 
     def __add_lists(self, not_document_name: List[LineWithMeta]):
-        previous_hierarchy_level = None
+        previous_hierarchy_levels = []
         res = []
         for line in not_document_name:
             if line.hierarchy_level.is_list_item():
-                if previous_hierarchy_level is None or previous_hierarchy_level < line.hierarchy_level:
+                while len(previous_hierarchy_levels) > 0 and previous_hierarchy_levels[-1] > line.hierarchy_level:
+                    previous_hierarchy_levels.pop()
+                if previous_hierarchy_levels == [] or previous_hierarchy_levels[-1] < line.hierarchy_level:
                     list_line = self.__create_list_line(line)
                     res.append(list_line)
-            if not line.hierarchy_level.is_raw_text():
-                previous_hierarchy_level = line.hierarchy_level
+                    previous_hierarchy_levels.append(line.hierarchy_level)
+            elif not line.hierarchy_level.is_raw_text():
+                previous_hierarchy_levels = []
             res.append(line)
         return res
 

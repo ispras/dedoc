@@ -11,12 +11,11 @@ class TestAnyDocReader(unittest.TestCase):
         path = os.path.join(os.path.dirname(__file__), "data/example.docx")
         result = any_doc_reader.read(path)
         lines = result.lines
-
         self.assertEqual("Пример документа", lines[0].line)
         self.assertEqual("Глава 1", lines[1].line)
         self.assertEqual("Статья 1", lines[3].line)
         self.assertEqual("Статья 2", lines[5].line)
-        self.assertEqual("Дадим пояснения", lines[6].line)
+        self.assertEqual("Дадим пояснения", lines[6].line.strip())
 
         self.assertEqual("1.2.1. Поясним за непонятное", lines[7].line)
         self.assertEqual("1.2.2. Поясним за понятное", lines[8].line)
@@ -68,22 +67,22 @@ class TestAnyDocReader(unittest.TestCase):
         path = os.path.join(os.path.dirname(__file__), "data/example.docx")
         result = any_doc_reader.read(path)
         lines, tables = result.lines, result.tables
+        first_table_uid = tables[0].metadata.uid
+        second_table_uid = tables[1].metadata.uid
         found = False
-        for annotation in lines[12].annotations:
+        for annotation in lines[6].annotations:
             if annotation.name == "table":
                 found = True
-                self.assertEqual('0a668025582ff0cb4bd790759ae7ced3', annotation.value)
+                self.assertEqual(first_table_uid, annotation.value)
                 break
         self.assertTrue(found)
         found = False
-        for annotation in lines[14].annotations:
+        for annotation in lines[-2].annotations:
             if annotation.name == "table":
                 found = True
-                self.assertEqual('d324e58fecdf03bbe1c9b517809655d4', annotation.value)
+                self.assertEqual(second_table_uid, annotation.value)
                 break
         self.assertTrue(found)
-        self.assertEqual('0a668025582ff0cb4bd790759ae7ced3', tables[0].metadata.uid)
-        self.assertEqual('d324e58fecdf03bbe1c9b517809655d4', tables[1].metadata.uid)
 
     def test_caps_letters(self):
         any_doc_reader = DocxReader()
@@ -167,16 +166,18 @@ class TestAnyDocReader(unittest.TestCase):
         any_doc_reader = DocxReader()
         path = os.path.join(os.path.dirname(__file__), "data/diagram_1.docx")
         result = any_doc_reader.read(path)
-        self.assertEqual("attachment", result.lines[0].annotations[0].name)
-        self.assertEqual("dee352a576cf5ffd27ee1574d4dc4431", result.lines[0].annotations[0].value)
+
+        for annotation in result.lines[0].annotations:
+            if annotation.name == "attachment":
+                self.assertEqual("dee352a576cf5ffd27ee1574d4dc4431", annotation.value)
+            break
 
         path = os.path.join(os.path.dirname(__file__), "data/diagram_2.docx")
         result = any_doc_reader.read(path)
 
-        self.assertEqual("attachment", result.lines[0].annotations[0].name)
-        self.assertEqual("206d1ebae25697d107e895ec8fbce720", result.lines[0].annotations[0].value)
-        annotation_found = False
-        for annotation in result.lines[24].annotations:
-            if annotation.name == "attachment":
-                annotation_found = True
-        self.assertTrue(annotation_found)
+        for i in [0, 24]:
+            annotation_found = False
+            for annotation in result.lines[i].annotations:
+                if annotation.name == "attachment":
+                    annotation_found = True
+            self.assertTrue(annotation_found)

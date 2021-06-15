@@ -19,12 +19,14 @@ class HierarchyLevel:
 
         assert paragraph_type == HierarchyLevel.raw_text or (level_1 is not None and level_2 is not None)
 
-    def __eq__(self, other: "HierarchyLevel") -> bool:
-        if (self.level_1 is not None and
+    def __is_defined(self, other: "HierarchyLevel") -> bool:
+        return (self.level_1 is not None and
                 self.level_2 is not None and
                 other.level_1 is not None and
-                other.level_2 is not None and
-                (self.level_1, self.level_2) == (other.level_1, other.level_2)):
+                other.level_2 is not None)
+
+    def __eq__(self, other: "HierarchyLevel") -> bool:
+        if self.__is_defined(other) and (self.level_1, self.level_2) == (other.level_1, other.level_2):
             return True
         if self.paragraph_type == HierarchyLevel.raw_text and other.paragraph_type == HierarchyLevel.raw_text:
             return True
@@ -35,6 +37,8 @@ class HierarchyLevel:
         return False
 
     def __lt__(self, other: "HierarchyLevel") -> bool:
+        if self.__is_defined(other):
+            return (self.level_1, self.level_2) < (other.level_1, other.level_2)
         if self.paragraph_type == HierarchyLevel.raw_text and other.paragraph_type == HierarchyLevel.raw_text:
             return False
         if self.paragraph_type == HierarchyLevel.raw_text and other.paragraph_type != HierarchyLevel.raw_text:
@@ -58,7 +62,7 @@ class HierarchyLevel:
     def create_raw_text() -> "HierarchyLevel":
         return HierarchyLevel(level_1=None,
                               level_2=None,
-                              can_be_multiline=False,
+                              can_be_multiline=True,
                               paragraph_type=HierarchyLevel.raw_text)
 
     @staticmethod

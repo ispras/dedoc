@@ -12,6 +12,7 @@ from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnot
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
+from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
@@ -36,6 +37,10 @@ class DocxDocument:
         self.path_hash = calculate_file_hash(path=path)
 
         self.document_bs_tree = self.__get_bs_tree('word/document.xml')
+        if self.document_bs_tree is None:
+            # for some of microsoft word documents
+            self.document_bs_tree = self.__get_bs_tree('word/document2.xml')
+
         self.body = self.document_bs_tree.body if self.document_bs_tree else None
 
         self.styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'))
@@ -44,6 +49,8 @@ class DocxDocument:
         self.styles_extractor.numbering_extractor = self.numbering_extractor
 
         rels = self.__get_bs_tree('word/_rels/document.xml.rels')
+        if rels is None:
+            rels = self.__get_bs_tree('word/_rels/document2.xml.rels')
         self.images_rels = self.__get_images_rels(rels)
 
         self.paragraph_list = []
@@ -54,6 +61,8 @@ class DocxDocument:
         self.table_uids = []
         self._uids_set = set()
         self.tables = []
+        # the previous paragraph for spacing calculation
+        self.prev_paragraph = None
         self.lines = self._process_lines(hierarchy_level_extractor=hierarchy_level_extractor)
 
     def __get_bs_tree(self, filename: str) -> Optional[BeautifulSoup]:
@@ -85,10 +94,16 @@ class DocxDocument:
 
     def __xml2paragraph(self, paragraph_xml: BeautifulSoup) -> Paragraph:
         uid = self.__get_paragraph_uid(paragraph_xml=paragraph_xml)
-        return Paragraph(xml=paragraph_xml,
-                         styles_extractor=self.styles_extractor,
-                         numbering_extractor=self.numbering_extractor,
-                         uid=uid)
+        paragraph = Paragraph(xml=paragraph_xml,
+                              styles_extractor=self.styles_extractor,
+                              numbering_extractor=self.numbering_extractor,
+                              uid=uid)
+        if self.prev_paragraph is None:
+            paragraph.spacing = paragraph.spacing_before
+        else:
+            paragraph.spacing = max(self.prev_paragraph.spacing_after, paragraph.spacing_before)
+        self.prev_paragraph = paragraph
+        return paragraph
 
     def __get_images_rels(self, rels: BeautifulSoup) -> Dict[str, str]:
         media_ids = dict()
@@ -130,6 +145,7 @@ class DocxDocument:
                 "underlined": UnderlinedAnnotation,
                 "size": SizeAnnotation,
                 "indentation": IndentationAnnotation,
+                "spacing": SpacingAnnotation,
                 "alignment": AlignmentAnnotation,
                 "style": StyleAnnotation,
             }
