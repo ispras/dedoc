@@ -176,7 +176,8 @@ class DocxDocument:
                                                 metadata=metadata,
                                                 annotations=annotations,
                                                 uid=paragraph.uid))
-            lines_with_meta = hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
+
+        lines_with_meta = hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
         return lines_with_meta
 
     def get_paragraph_xml_list(self) -> List[Paragraph]:
