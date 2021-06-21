@@ -82,3 +82,13 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertTrue({'start': 0, 'end': 31, 'name': 'spacing', 'value': '600'} in annotations[6])
         self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '400'} in annotations[7])
         self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'} in annotations[8])
+
+    def test_identation(self):
+        result = self._send_request("annotation_docx/"
+                                    "indentation_libreoffice.docx")['content']['structure']['subparagraphs']
+        annotations = [subparagraph['annotations'] for subparagraph in result]
+        self.assertTrue({'start': 0, 'end': 188, 'name': 'indentation', 'value': '360'} in annotations[5])
+        self.assertTrue({'start': 0, 'end': 152, 'name': 'indentation', 'value': '708'} in annotations[10])
+        self.assertTrue({'start': 0, 'end': 0, 'name': 'indentation', 'value': '1429'} in annotations[12])
+        self.assertTrue({'start': 0, 'end': 21, 'name': 'indentation', 'value': '709'} in annotations[16])
+        self.assertTrue({'start': 0, 'end': 65, 'name': 'indentation', 'value': '786'} in annotations[20])

@@ -14,10 +14,7 @@ class BaseProperties:
         """
         if properties:
             self.jc = properties.jc
-            if properties.indent:
-                self.indent = properties.indent.copy()
-            else:
-                self.indent = {'firstLine': 0, 'hanging': 0, 'start': 0, 'left': 0}
+            self.indentation = properties.indentation if properties.indentation else 0
             self.size = properties.size
             self.bold = properties.bold
             self.italic = properties.italic
@@ -25,7 +22,7 @@ class BaseProperties:
             properties.underlined = properties.underlined
         else:
             self.jc = 'left'
-            self.indent = {'firstLine': 0, 'hanging': 0, 'start': 0, 'left': 0}
+            self.indentation = 0
             self.size = 0
             self.bold = False
             self.italic = False
