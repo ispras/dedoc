@@ -66,10 +66,12 @@ class RawTextReader(BaseReader):
                 yield line_id, line
 
     def __is_paragraph(self, line: LineWithMeta) -> bool:
-        return line.hierarchy_level.is_raw_text() and (line.line.isspace() or not line.line.startswith((" " * 2, "\t")))
+        return line.hierarchy_level.is_raw_text() and not line.line.isspace() and line.line.startswith((" " * 2, "\t"))
 
     def _postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:
         for line in document.lines:
-            if not self.__is_paragraph(line):
+            if self.__is_paragraph(line):
                 line.hierarchy_level.can_be_multiline = False
+            else:
+                line.hierarchy_level.can_be_multiline = True
         return document
