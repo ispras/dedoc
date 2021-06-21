@@ -10,7 +10,6 @@ from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_constructor.concreat_structure_constructors.abstract_structure_constructor import \
     AbstractStructureConstructor
-from dedoc.structure_constructor.concreat_structure_constructors.list_patcher import ListPatcher
 
 
 class TreeConstructor(AbstractStructureConstructor):
