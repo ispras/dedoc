@@ -33,7 +33,7 @@ class RawTextReader(BaseReader):
              parameters: Optional[dict] = None) -> UnstructuredDocument:
         lines = self._get_lines_with_meta(path)
         lines = self.hierarchy_level_extractor.get_hierarchy_level(lines)
-        result = UnstructuredDocument(lines=lines, tables=[], attachments=[])
+        result = UnstructuredDocument(lines=lines, tables=[], attachments=[], warnings=[])
         return self._postprocess(result)
 
     def _get_lines_with_meta(self, path: str) -> List[LineWithMeta]:

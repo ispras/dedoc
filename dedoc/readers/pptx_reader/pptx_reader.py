@@ -9,7 +9,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 
-from typing import Optional, Tuple
+from typing import Optional
 
 
 class PptxReader(BaseReader):
@@ -47,4 +47,4 @@ class PptxReader(BaseReader):
                     tables.append(Table(cells=cells, metadata=metadata))
 
         lines = self.hierarchy_level_extractor.get_hierarchy_level(lines)
-        return UnstructuredDocument(lines=lines, tables=tables, attachments=[])
+        return UnstructuredDocument(lines=lines, tables=tables, attachments=[], warnings=[])

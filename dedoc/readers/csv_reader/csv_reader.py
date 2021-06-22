@@ -33,4 +33,5 @@ class CSVReader(BaseReader):
             data = list(csv_reader)
         table_metadata = TableMetadata(page_id=0)
         tables = [Table(cells=data, metadata=table_metadata)]
-        return UnstructuredDocument(lines=[], tables=tables, attachments=[])
+        warnings = ["delimiter is '{}'".format(delimiter)]
+        return UnstructuredDocument(lines=[], tables=tables, attachments=[], warnings=warnings)

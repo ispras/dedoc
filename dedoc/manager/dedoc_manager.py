@@ -72,6 +72,7 @@ class DedocManager:
         :param original_file_name: name of original file (None if file was not ranamed)
         :return:
         """
+        warnings = []
         if not os.path.isfile(path=file_path):
             raise FileNotFoundError()
         self.logger.info("start handle {}".format(file_path))
@@ -90,11 +91,13 @@ class DedocManager:
                 filename=filename_convert,
                 parameters=parameters
             )
+            warnings.extend(unstructured_document.warnings)
             self.logger.info("parse file {}".format(filename_convert))
             structure_type = parameters.get("structure_type")
             document_content = self.structure_constructor.structure_document(document=unstructured_document,
                                                                              structure_type=structure_type,
                                                                              parameters=parameters)
+            warnings.extend(document_content.warnings)
             self.logger.info("get document content {}".format(filename_convert))
             # Step 3 - Adding meta-information
             parsed_document = self.__parse_file_meta(document_content=document_content,
@@ -103,6 +106,7 @@ class DedocManager:
                                                      converted_filename=filename_convert,
                                                      original_file_name=original_file_name,
                                                      parameters=parameters)
+            warnings.extend(parsed_document.warnings)
             self.logger.info("get structure and metadata {}".format(filename_convert))
 
             if AbstractAttachmentsExtractor.with_attachments(parameters):
@@ -115,6 +119,7 @@ class DedocManager:
             else:
                 parsed_document.attachments = None
             parsed_document.version = self.version
+            parsed_document.warnings.extend(warnings)
             self.logger.info("finish handle {}".format(filename))
         return parsed_document
 
