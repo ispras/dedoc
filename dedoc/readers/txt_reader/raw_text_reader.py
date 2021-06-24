@@ -1,4 +1,5 @@
 import codecs
+import re
 from typing import Optional, Tuple, Iterable, List
 
 from unicodedata import normalize
@@ -16,6 +17,7 @@ class RawTextReader(BaseReader):
 
     def __init__(self):
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
+        self.space_regexp = re.compile(r"^\s+")
 
     def can_read(self,
                  path: str,
@@ -31,7 +33,7 @@ class RawTextReader(BaseReader):
              parameters: Optional[dict] = None) -> UnstructuredDocument:
         lines = self._get_lines_with_meta(path)
         lines = self.hierarchy_level_extractor.get_hierarchy_level(lines)
-        result = UnstructuredDocument(lines=lines, tables=[], attachments=[])
+        result = UnstructuredDocument(lines=lines, tables=[], attachments=[], warnings=[])
         return self._postprocess(result)
 
     def _get_lines_with_meta(self, path: str) -> List[LineWithMeta]:
@@ -65,11 +67,25 @@ class RawTextReader(BaseReader):
                 line = normalize('NFC', line).replace("й", "й")  # й replace matter
                 yield line_id, line
 
-    def __is_paragraph(self, line: LineWithMeta) -> bool:
-        return line.hierarchy_level.is_raw_text() and (line.line.isspace() or not line.line.startswith((" " * 2, "\t")))
+    def __get_starting_spacing(self, line: Optional[LineWithMeta]) -> int:
+        if line is None or line.line.isspace():
+            return 0
+        space_this = self.space_regexp.match(line.line.replace("\t", " " * 4))
+        if space_this is None:
+            return 0
+        return space_this.end() - space_this.start()
+
+    def __is_paragraph(self, line: LineWithMeta, previous_line: Optional[LineWithMeta]) -> bool:
+        space_this = self.__get_starting_spacing(line)
+        space_prev = self.__get_starting_spacing(previous_line)
+        return (line.hierarchy_level.is_raw_text() and
+                not line.line.isspace() and
+                space_this - space_prev >= 2)
 
     def _postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:
+        previous_line = None
         for line in document.lines:
-            if not self.__is_paragraph(line):
-                line.hierarchy_level.can_be_multiline = False
+            is_paragraph = self.__is_paragraph(line=line, previous_line=previous_line)
+            line.hierarchy_level.can_be_multiline = not is_paragraph
+            previous_line = line
         return document

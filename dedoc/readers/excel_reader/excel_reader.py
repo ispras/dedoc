@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Tuple
+from typing import Optional
 
 import xlrd
 from xlrd.sheet import Sheet
@@ -44,7 +44,7 @@ class ExcelReader(BaseReader):
                                                                         parameters=parameters)
             else:
                 attachments = []
-            return UnstructuredDocument(lines=[], tables=tables, attachments=attachments)
+            return UnstructuredDocument(lines=[], tables=tables, attachments=attachments, warnings=[])
 
     def __parse_sheet(self, sheet_id: int, sheet: Sheet) -> Table:
         n_rows = sheet.nrows

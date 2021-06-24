@@ -55,10 +55,41 @@ def change_indent(old_properties: "BaseProperties",
     :param old_properties: Paragraph
     :param tree: BeautifulSoup tree with properties
     """
+    # firstLine describes additional indentation to current indentation, if hanging is present firstLine is ignored
+    # firstLineChars differs from firstLine only in measurement (one hundredths of a character unit)
+    # hanging removes indentation from current indentation (analogous hangingChars)
+    # start describes classical indentation (startChars)
+    # left isn't specified in the documentation, F
+    # main measurement 1/1440 of an inch
+    # 1 inch is 12 char units, 1/100 char unit = 1/1200 inch = 1.2 * (1/1440 of an inch)
+
+    attributes = {"firstLine": 0, "firstLineChars": 0, "hanging": 0, "hangingChars": 0,
+                  "start": 0, "startChars": 0, "left": 0}
     if tree.ind:
-        indent_properties = ['firstLine', 'hanging', 'start', 'left']
-        for indent_property in indent_properties:
-            old_properties.indent[indent_property] = int(tree.ind.get("w:{}".format(indent_property), 0))
+        for attribute in attributes:
+            attributes[attribute] = int(tree.ind.get("w:{}".format(attribute), 0))
+    else:
+        return
+    indentation = 0
+    if attributes["left"] != 0:
+        indentation = attributes["left"]
+    elif attributes["start"] != 0:
+        indentation = attributes["start"]
+    elif attributes["startChars"] != 0:
+        indentation = attributes["startChars"] / 1.2
+
+    if attributes["firstLine"] != 0 and attributes["hanging"] == 0:
+        indentation += attributes["firstLine"]
+
+    if attributes["firstLineChars"] != 0 and attributes["hangingChars"] == 0:
+        indentation += attributes["firstLineChars"] / 1.2
+
+    if attributes["hanging"] != 0:
+        indentation -= attributes["hanging"]
+    elif attributes["hangingChars"] != 0:
+        indentation -= attributes["hangingChars"] / 1.2
+
+    old_properties.indentation = indentation
 
 
 def change_size(old_properties: "BaseProperties",

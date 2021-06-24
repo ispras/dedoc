@@ -40,7 +40,10 @@ class TablePatcher:
                         tables_dict.pop(table_id)
         for table in tables_dict.values():
             paragraphs += self._create_paragraphs_from_table(table=table, hierarchy_level=hierarchy_level)
-        return UnstructuredDocument(lines=paragraphs, tables=document.tables, attachments=document.attachments)
+        return UnstructuredDocument(lines=paragraphs,
+                                    tables=document.tables,
+                                    attachments=document.attachments,
+                                    warnings=document.warnings)
 
     def _create_paragraphs_from_table(self, table: Table, hierarchy_level: int) -> List[LineWithMeta]:
         """

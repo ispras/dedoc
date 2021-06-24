@@ -35,7 +35,7 @@ class DocxReader(BaseReader):
                                                                 parameters=parameters)
 
         lines = self.__fix_lines(docx_document.lines)
-        return UnstructuredDocument(lines=lines, tables=docx_document.tables, attachments=attachments)
+        return UnstructuredDocument(lines=lines, tables=docx_document.tables, attachments=attachments, warnings=[])
 
     def __fix_lines(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:
         for i, line in enumerate(lines[1:]):

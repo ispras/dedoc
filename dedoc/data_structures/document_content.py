@@ -10,14 +10,16 @@ from dedoc.data_structures.tree_node import TreeNode
 
 class DocumentContent(Serializable):
 
-    def __init__(self, tables: List[Table], structure: 'TreeNode'):
+    def __init__(self, tables: List[Table], structure: 'TreeNode', warnings: List[str] = None):
         """
         That class holds the document content - structured text and tables
         :param tables: list of document tables
         :param structure: Tree structure in which content of the document is organized
+        :param warnings: list of warnings, obtained in the process of the document structure constructing
         """
         self.tables = tables
         self.structure = structure
+        self.warnings = warnings if warnings is not None else []
 
     def to_dict(self, old_version) -> dict:
         res = OrderedDict()

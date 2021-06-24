@@ -18,8 +18,7 @@ class ParagraphInfo:
         self.style_level = paragraph.style_level
 
         # common properties for all runs in one paragraph
-        # TODO more complex information about indent
-        self.paragraph_properties = {"indentation": str(paragraph.indent['left']), "alignment": paragraph.jc,
+        self.paragraph_properties = {"indentation": str(paragraph.indentation), "alignment": paragraph.jc,
                                      "spacing": str(paragraph.spacing)}
         if paragraph.style_name is not None:
             self.paragraph_properties["style"] = paragraph.style_name

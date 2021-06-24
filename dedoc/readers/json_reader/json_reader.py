@@ -41,7 +41,7 @@ class JsonReader(BaseReader):
                                                  paragraph_type_meta=HierarchyLevel.raw_text)
                 result.append(line)
 
-        return UnstructuredDocument(tables=[], lines=result, attachments=[])
+        return UnstructuredDocument(tables=[], lines=result, attachments=[], warnings=[])
 
     def __handle_list(self, depth: int, element: list, result: list, stack: list):
         for _ in range(len(element)):
