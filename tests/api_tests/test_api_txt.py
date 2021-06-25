@@ -1,4 +1,5 @@
 from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
+from tests.test_utils import get_by_tree_path
 
 
 class TestApiTxtReader(AbstractTestApiDocReader):
@@ -20,8 +21,9 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         file_name = "pr_17.txt"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]
-        res = str(content)
-        self.assertFalse("ufeff" in res)
+        self.assertIn("УТВЕРЖДЕНЫ", get_by_tree_path(content, "0.0")["text"])
+        self.assertIn("1. Настоящие Требования разработаны в соответствии с Федеральным законом",
+                      get_by_tree_path(content, "0.1.0")["text"])
 
     def test_paragraphs(self):
         file_name = "football.txt"
