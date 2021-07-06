@@ -10,4 +10,4 @@ olefile~=0.46
 Werkzeug==0.16.0
 flask_cors==3.0.9
 flask-restx==0.2.0
-pycodestyle==2.6.0
+pycodestyle==2.5.0
