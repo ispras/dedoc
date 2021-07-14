@@ -3,6 +3,7 @@ import re
 from typing import Optional, Tuple, Iterable, List
 
 from unicodedata import normalize
+from bs4 import UnicodeDammit
 
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
@@ -31,16 +32,27 @@ class RawTextReader(BaseReader):
              path: str,
              document_type: Optional[str] = None,
              parameters: Optional[dict] = None) -> UnstructuredDocument:
-        lines = self._get_lines_with_meta(path)
+        encoding = self.__get_encoding(path=path, parameters=parameters)
+        lines = self._get_lines_with_meta(path=path, encoding=encoding)
         lines = self.hierarchy_level_extractor.get_hierarchy_level(lines)
-        result = UnstructuredDocument(lines=lines, tables=[], attachments=[], warnings=[])
+        encoding_warning = "encoding is {}".format(encoding)
+        result = UnstructuredDocument(lines=lines, tables=[], attachments=[], warnings=[encoding_warning])
         return self._postprocess(result)
 
-    def _get_lines_with_meta(self, path: str) -> List[LineWithMeta]:
+    def __get_encoding(self, path: str, parameters: dict) -> str:
+        if "encoding" in parameters:
+            return parameters["encoding"]
+        else:
+            with open(path, "rb") as file:
+                blob = file.read()
+                dammit = UnicodeDammit(blob)
+                return dammit.original_encoding
+
+    def _get_lines_with_meta(self, path: str, encoding: str) -> List[LineWithMeta]:
         lines = []
         file_hash = calculate_file_hash(path=path)
         number_of_empty_lines = 0
-        for line_id, line in self._get_lines(path):
+        for line_id, line in self._get_lines(path=path, encoding=encoding):
             metadata = ParagraphMetadata(page_id=0,
                                          line_id=line_id,
                                          predicted_classes=None,
@@ -61,8 +73,8 @@ class RawTextReader(BaseReader):
 
         return lines
 
-    def _get_lines(self, path: str) -> Iterable[Tuple[int, str]]:
-        with codecs.open(path, errors="ignore", encoding="utf-8-sig") as file:
+    def _get_lines(self, path: str, encoding: str) -> Iterable[Tuple[int, str]]:
+        with codecs.open(path, errors="ignore", encoding=encoding) as file:
             for line_id, line in enumerate(file):
                 line = normalize('NFC', line).replace("й", "й")  # й replace matter
                 yield line_id, line

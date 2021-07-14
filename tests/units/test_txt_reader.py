@@ -10,6 +10,6 @@ class TestTxtReader(TestCase):
     def test__get_lines_with_meta(self):
         file = os.path.join(self.path, "pr_17.txt")
         reader = RawTextReader()
-        for line in reader._get_lines_with_meta(path=file):
+        for line in reader._get_lines_with_meta(path=file, encoding="utf-8"):
             expected_uid = "txt_1a3cd561910506d56a65db1d1dcb5049_{}".format(line.metadata.line_id)
             self.assertEqual(expected_uid, line.uid)
