@@ -11,6 +11,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.utils import calculate_file_hash
 
 
@@ -88,6 +89,8 @@ class RawTextReader(BaseReader):
         return space_this.end() - space_this.start()
 
     def __is_paragraph(self, line: LineWithMeta, previous_line: Optional[LineWithMeta]) -> bool:
+        if not line.hierarchy_level.can_be_multiline and line.hierarchy_level.paragraph_type != HierarchyLevel.raw_text:
+            return True
         space_this = self.__get_starting_spacing(line)
         space_prev = self.__get_starting_spacing(previous_line)
         return (line.hierarchy_level.is_raw_text() and
