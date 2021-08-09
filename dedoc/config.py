@@ -19,7 +19,7 @@ logging.basicConfig(stream=sys.stdout,
 _config = dict(
     # JOBLIB SETTINGS
     # number of parallel jobs in some tasks as OCR
-    n_jobs=4,
+    n_jobs=1,
 
     # API SETTINGS
     # max file size in bytes
