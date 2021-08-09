@@ -1,22 +1,26 @@
+import logging
 import os
+import subprocess
 import time
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, List
 
 from dedoc.common.exceptions.conversion_exception import ConversionException
 
 
 class AbstractConverter(ABC):
-    def __init__(self):
+    def __init__(self, *, config: dict):
         self.timeout = 10
         self.period_checking = 0.05
+        self.config = config
+        self.logger = config.get("logger", logging.getLogger())
 
     @abstractmethod
-    def do_convert(self, tmp_dir: str, name: str, extension: str) -> str:
+    def do_convert(self, tmp_dir: str, filename: str, extension: str) -> str:
         """
         take into input some file and convert it to other format (if necessary)
         :param tmp_dir: directory where lay original file and where result will be saved
-        :param name: name of the original file
+        :param filename: name of the original file
         :param extension: extension of the original file
         :return: name of the converted file
         """
@@ -31,6 +35,27 @@ class AbstractConverter(ABC):
         :param parameters: any additional parameters for given document
         :return:
         """
+
+    def _run_subprocess(self, command: List[str], filename: str, expected_path: str) -> None:
+        try:
+            conversion_results = subprocess.run(command,
+                                                stdout=subprocess.PIPE,
+                                                stderr=subprocess.PIPE,
+                                                timeout=self.timeout)
+            error_message = conversion_results.stderr.decode().strip()
+            if len(error_message) > 0:
+                if os.path.isfile(expected_path):
+                    error_message = "Warning on file {} \n".format(filename) + error_message
+                    self.logger.warning(error_message)
+                else:
+                    error_message = "Could not convert file {} \n".format(filename) + error_message
+                    self.logger.error(error_message)
+                    raise ConversionException(msg=error_message)
+
+        except subprocess.TimeoutExpired:
+            message = "Conversion of the {} hadn't terminated after {} seconds".format(filename, self.timeout)
+            self.logger.error(message)
+            raise ConversionException(msg=message)
 
     def _await_for_conversion(self, filename: str, tmp_dir: str):
         t = 0

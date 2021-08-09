@@ -4,6 +4,10 @@ from tests.test_utils import get_by_tree_path
 
 class TestApiDocReader(AbstractTestApiDocReader):
 
+    def test_broken_conversion(self):
+        file_name = "broken.odt"
+        result = self._send_request(file_name, expected_code=415)
+
     def test_doc(self):
         file_name = "example.doc"
         result = self._send_request(file_name, data={"structure_type": "tree"})
