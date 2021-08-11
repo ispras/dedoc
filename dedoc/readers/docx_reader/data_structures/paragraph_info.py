@@ -13,10 +13,9 @@ class ParagraphInfo:
         extracts information from paragraph properties
         :param paragraph: Paragraph for extracting it's properties
         """
-        self.text = ""
         self.list_level = paragraph.list_level
         self.style_level = paragraph.style_level
-
+        self.text = ""
         # common properties for all runs in one paragraph
         self.paragraph_properties = {"indentation": str(paragraph.indentation), "alignment": paragraph.jc,
                                      "spacing": str(paragraph.spacing)}
@@ -30,7 +29,6 @@ class ParagraphInfo:
             if len(run.text) == 0:
                 continue
             self.text = run.text if not self.text else self.text + run.text
-
             new_properties = dict()
             new_properties['size'] = run.size if run.size else paragraph.size
             new_properties['bold'] = run.bold
