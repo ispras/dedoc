@@ -31,64 +31,76 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         annotations = [subparagraph['annotations'] for subparagraph in result]
 
         # heading, italic, bold, underlined
-        self.assertTrue({'start': 0, 'end': 31, 'name': 'italic', 'value': 'True'} in annotations[3] and
-                        {'start': 0, 'end': 31, 'name': 'style', 'value': 'heading 4'} in annotations[3])
-        self.assertTrue({'start': 0, 'end': 29, 'name': 'italic', 'value': 'True'} in annotations[8] and
-                        {'start': 0, 'end': 29, 'name': 'style', 'value': 'heading 9'} in annotations[8])
-        self.assertTrue({'start': 66, 'end': 73, 'name': 'italic', 'value': 'True'} in annotations[35] and
-                        {'start': 75, 'end': 89, 'name': 'bold', 'value': 'True'} in annotations[35] and
-                        {'start': 91, 'end': 111, 'name': 'underlined', 'value': 'True'} in annotations[35] and
-                        {'start': 0, 'end': 153, 'name': 'size', 'value': '14.0'} in annotations[35] and
-                        {'start': 153, 'end': 175, 'name': 'size', 'value': '20.0'} in annotations[35] and
-                        {'start': 183, 'end': 199, 'name': 'size', 'value': '11.0'} in annotations[35])
+        self.assertIn({'start': 0, 'end': 31, 'name': 'italic', 'value': 'True'}, annotations[3])
+        self.assertIn({'start': 0, 'end': 31, 'name': 'style', 'value': 'heading 4'}, annotations[3])
+        self.assertIn({'start': 0, 'end': 29, 'name': 'italic', 'value': 'True'}, annotations[8])
+        self.assertIn({'start': 0, 'end': 29, 'name': 'style', 'value': 'heading 9'}, annotations[8])
+        self.assertIn({'start': 66, 'end': 73, 'name': 'italic', 'value': 'True'}, annotations[35])
+        self.assertIn({'start': 75, 'end': 89, 'name': 'bold', 'value': 'True'}, annotations[35])
+        self.assertIn({'start': 91, 'end': 111, 'name': 'underlined', 'value': 'True'}, annotations[35])
+        self.assertIn({'start': 0, 'end': 153, 'name': 'size', 'value': '14.0'}, annotations[35])
+        self.assertIn({'start': 153, 'end': 175, 'name': 'size', 'value': '20.0'}, annotations[35])
+        self.assertIn({'start': 183, 'end': 199, 'name': 'size', 'value': '11.0'}, annotations[35])
         # alignment
-        self.assertTrue({'start': 0, 'end': 46, 'name': 'alignment', 'value': 'right'} in annotations[43])
-        self.assertTrue({'start': 0, 'end': 40, 'name': 'alignment', 'value': 'center'} in annotations[44])
-        self.assertTrue({'start': 0, 'end': 159, 'name': 'alignment', 'value': 'both'})
+        self.assertIn({'start': 0, 'end': 46, 'name': 'alignment', 'value': 'right'}, annotations[43])
+        self.assertIn({'start': 0, 'end': 40, 'name': 'alignment', 'value': 'center'}, annotations[44])
+        self.assertIn({'start': 0, 'end': 160, 'name': 'alignment', 'value': 'both'}, annotations[45])
         # bold, italic, underlined
-        self.assertTrue({'start': 0, 'end': 26, 'name': 'bold', 'value': 'True'} in annotations[47])
-        self.assertTrue({'start': 0, 'end': 29, 'name': 'italic', 'value': 'True'} in annotations[48])
-        self.assertTrue({'start': 0, 'end': 32, 'name': 'underlined', 'value': 'True'} in annotations[49])
-        self.assertTrue({'start': 0, 'end': 35, 'name': 'bold', 'value': 'True'} in annotations[50] and
-                        {'start': 0, 'end': 35, 'name': 'italic', 'value': 'True'} in annotations[50])
-        self.assertTrue({'start': 0, 'end': 51, 'name': 'bold', 'value': 'True'} in annotations[51] and
-                        {'start': 0, 'end': 51, 'name': 'underlined', 'value': 'True'} in annotations[51] and
-                        {'start': 0, 'end': 51, 'name': 'italic', 'value': 'True'} in annotations[51])
+        self.assertIn({'start': 0, 'end': 26, 'name': 'bold', 'value': 'True'}, annotations[47])
+        self.assertIn({'start': 0, 'end': 29, 'name': 'italic', 'value': 'True'}, annotations[48])
+        self.assertIn({'start': 0, 'end': 32, 'name': 'underlined', 'value': 'True'}, annotations[49])
+        self.assertIn({'start': 0, 'end': 35, 'name': 'bold', 'value': 'True'}, annotations[50])
+        self.assertIn({'start': 0, 'end': 35, 'name': 'italic', 'value': 'True'}, annotations[50])
+        self.assertIn({'start': 0, 'end': 51, 'name': 'bold', 'value': 'True'}, annotations[51])
+        self.assertIn({'start': 0, 'end': 51, 'name': 'underlined', 'value': 'True'}, annotations[51])
+        self.assertIn({'start': 0, 'end': 51, 'name': 'italic', 'value': 'True'}, annotations[51])
 
     def test_spacing_1(self):
         result = self._send_request("annotation_docx/spacing_libreoffice.docx")['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in result]
 
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'} in annotations[0])
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'} in annotations[1])
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '57'} in annotations[2])
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '114'} in annotations[3])
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '114'} in annotations[4])
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '114'} in annotations[5])
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '114'} in annotations[6])
-        self.assertTrue({'start': 0, 'end': 9, 'name': 'spacing', 'value': '0'} in annotations[7])
+        self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'}, annotations[0])
+        self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'}, annotations[1])
+        self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '57'}, annotations[2])
+        self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '114'}, annotations[3])
+        self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '114'}, annotations[4])
+        self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '114'}, annotations[5])
+        self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '114'}, annotations[6])
+        self.assertIn({'start': 0, 'end': 9, 'name': 'spacing', 'value': '0'}, annotations[7])
 
     def test_spacing_2(self):
         result = self._send_request("annotation_docx/"
                                     "spacing_microsoft_word.docx")['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in result]
 
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'} in annotations[0])
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'} in annotations[1])
-        self.assertTrue({'start': 0, 'end': 31, 'name': 'spacing', 'value': '200'} in annotations[2])
-        self.assertTrue({'start': 0, 'end': 31, 'name': 'spacing', 'value': '200'} in annotations[3])
-        self.assertTrue({'start': 0, 'end': 32, 'name': 'spacing', 'value': '400'} in annotations[4])
-        self.assertTrue({'start': 0, 'end': 31, 'name': 'spacing', 'value': '400'} in annotations[5])
-        self.assertTrue({'start': 0, 'end': 31, 'name': 'spacing', 'value': '600'} in annotations[6])
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '400'} in annotations[7])
-        self.assertTrue({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'} in annotations[8])
+        self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'}, annotations[0])
+        self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'}, annotations[1])
+        self.assertIn({'start': 0, 'end': 31, 'name': 'spacing', 'value': '200'}, annotations[2])
+        self.assertIn({'start': 0, 'end': 31, 'name': 'spacing', 'value': '200'}, annotations[3])
+        self.assertIn({'start': 0, 'end': 32, 'name': 'spacing', 'value': '400'}, annotations[4])
+        self.assertIn({'start': 0, 'end': 31, 'name': 'spacing', 'value': '400'}, annotations[5])
+        self.assertIn({'start': 0, 'end': 31, 'name': 'spacing', 'value': '600'}, annotations[6])
+        self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '400'}, annotations[7])
+        self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'}, annotations[8])
 
     def test_identation(self):
         result = self._send_request("annotation_docx/"
                                     "indentation_libreoffice.docx")['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in result]
-        self.assertTrue({'start': 0, 'end': 188, 'name': 'indentation', 'value': '360'} in annotations[5])
-        self.assertTrue({'start': 0, 'end': 152, 'name': 'indentation', 'value': '708'} in annotations[10])
-        self.assertTrue({'start': 0, 'end': 0, 'name': 'indentation', 'value': '1429'} in annotations[12])
-        self.assertTrue({'start': 0, 'end': 21, 'name': 'indentation', 'value': '709'} in annotations[16])
-        self.assertTrue({'start': 0, 'end': 65, 'name': 'indentation', 'value': '786'} in annotations[20])
+        self.assertIn({'start': 0, 'end': 188, 'name': 'indentation', 'value': '360'}, annotations[5])
+        self.assertIn({'start': 0, 'end': 152, 'name': 'indentation', 'value': '708'}, annotations[10])
+        self.assertIn({'start': 0, 'end': 0, 'name': 'indentation', 'value': '1429'}, annotations[12])
+        self.assertIn({'start': 0, 'end': 21, 'name': 'indentation', 'value': '709'}, annotations[16])
+        self.assertIn({'start': 0, 'end': 65, 'name': 'indentation', 'value': '786'}, annotations[20])
+
+    def test_table_refs(self):
+        result = self._send_request("annotation_docx/"
+                                    "table_refs.docx")['content']['structure']['subparagraphs']
+        for i in [0, 2, 4, 6, 9]:
+            annotations = result[i]['annotations']
+            found = False
+            for annotation in annotations:
+                if annotation["name"] == "table":
+                    found = True
+                    break
+            self.assertTrue(found)

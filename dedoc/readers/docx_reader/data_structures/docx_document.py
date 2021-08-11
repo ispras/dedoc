@@ -222,12 +222,16 @@ class DocxDocument:
         metadata = TableMetadata(page_id=None, uid=table.uid)
         self.tables.append(Table(cells=table.get_cells(), metadata=metadata))
         table_uid = table.uid
+        while len(self.paragraph_list) > 0:
+            if self.paragraph_list[-1].text.strip() == "":
+                self.paragraph_list.pop()
+            else:
+                break
         if not self.paragraph_list:
             empty_paragraph_xml = BeautifulSoup('<w:p></w:p>').body.contents[0]
             empty_paragraph = self.__xml2paragraph(empty_paragraph_xml)
             self.paragraph_list.append(empty_paragraph)
-        if len(self.paragraph_list) >= 2 and self.paragraph_list[-1].text.strip() == "" \
-                and self.table_ref_reg.match(self.paragraph_list[-2].text):
+        if len(self.paragraph_list) >= 2 and self.table_ref_reg.match(self.paragraph_list[-2].text):
             self.table_refs[len(self.paragraph_list) - 2].append(table_uid)
         else:
             self.table_refs[len(self.paragraph_list) - 1].append(table_uid)
