@@ -22,6 +22,7 @@ class Paragraph(BaseProperties):
         """
         self.numbering_extractor = numbering_extractor
         self.runs = []
+        self.text = ""
         # level of list of the paragraph is a list item
         self.list_level = None
         self.style_level = None
@@ -74,6 +75,8 @@ class Paragraph(BaseProperties):
 
         # 8) character direct formatting
         self._make_run_list()
+        for run in self.runs:
+            self.text = run.text if not self.text else self.text + run.text
 
     def _get_numbering_formatting(self) -> Optional[Run]:
         """

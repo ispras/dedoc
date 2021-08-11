@@ -13,7 +13,7 @@ class ParagraphInfo:
         extracts information from paragraph properties
         :param paragraph: Paragraph for extracting it's properties
         """
-        self.text = ""
+        self.text = paragraph.text
         self.list_level = paragraph.list_level
         self.style_level = paragraph.style_level
 
@@ -29,7 +29,6 @@ class ParagraphInfo:
         for run in paragraph.runs:
             if len(run.text) == 0:
                 continue
-            self.text = run.text if not self.text else self.text + run.text
 
             new_properties = dict()
             new_properties['size'] = run.size if run.size else paragraph.size
