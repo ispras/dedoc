@@ -84,8 +84,11 @@ class TestApiCSVReader(AbstractTestApiDocReader):
 
     def test_csv_books(self):
         file_name = "books.csv"
-        result = self._send_request(file_name)
+        result = self._send_request(file_name, dict(different_param="some value"))
+
         self.assertIn("delimiter is ','", result["warnings"])
+        self.assertIn("parameter \"different_param\" is not supported", result["warnings"])
+
         tables = result["content"]["tables"]
         table = tables[0]["cells"]
         self.assertListEqual(["id", "cat", "name", "price", "inStock", "author", "series_t", "sequence_i", "genre_s"],

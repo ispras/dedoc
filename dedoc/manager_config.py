@@ -22,7 +22,9 @@ from dedoc.structure_constructor.structure_constructor_composition import Struct
 
 def get_manager_config(config: dict):
     return dict(
-        converter=FileConverterComposition(converters=[DocxConverter(), ExcelConverter(), PptxConverter()]),
+        converter=FileConverterComposition(converters=[DocxConverter(config=config),
+                                                       ExcelConverter(config=config),
+                                                       PptxConverter(config=config)]),
 
         reader=ReaderComposition(readers=[DocxReader(),
                                           ExcelReader(),
