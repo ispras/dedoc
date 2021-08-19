@@ -10,6 +10,11 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+
+with open(path.join(here, "VERSION")) as file:
+    version = file.read().strip()
+
+
 with pathlib.Path('requirements.txt').open() as requirements_txt:
     install_requires = [
         str(requirement)
@@ -21,7 +26,7 @@ setup(
 
     name='dedoc',
 
-    version='0.0.1',
+    version=version,
 
     description='Convert different document in tree structure',
 
@@ -30,11 +35,11 @@ setup(
     long_description_content_type='text/markdown',
 
 
-    # url='https://github.com/pypa/sampleproject',  # Optional
+    url='https://github.com/ispras/dedoc',
 
     author='ISP RAS',
 
-    author_email='kozlov-ilya@ispras.ru',  # Optional
+    author_email='kozlov-ilya@ispras.ru',
 
     install_requires=install_requires,
 
@@ -53,8 +58,7 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
     ],
 
-    # keywords='sample setuptools development',  # Optional
-    package_dir={'dedoc': 'dedoc'},  # Optional
+    package_dir={'dedoc': 'dedoc'},
 
     python_requires='>=3.5, <4',
 
