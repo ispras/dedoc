@@ -2,6 +2,7 @@ import importlib
 import json
 import os
 from functools import wraps
+from typing import List
 
 from flask import Flask, request, Request
 from flask import send_file
@@ -77,8 +78,22 @@ def _get_parameters(request: Request):
     return {k: v for k, v in request.values.items()}
 
 
+params_parser = module_api_args.init_args(api)
+
+
+def check_on_unnecessary(request: Request, from_parser: dict) -> List[str]:
+    params = _get_parameters(request)
+    warning = []
+    for param in params.keys():
+        if param not in from_parser.keys():
+            warning.append("parameter \"{}\" is not supported".format(param))
+            logger.warning("parameter \"{}\" is not supported".format(param))
+
+    return warning
+
+
 @api.route('/upload')
-@api.expect(module_api_args.init_args(api))
+@api.expect(params_parser)
 class UploadFile(Resource):
     @api.doc('parsed document', model=ParsedDocument.get_api_dict(api))
     @marshal_with_wrapper(ParsedDocument.get_api_dict(api), request, skip_none=True)
@@ -87,10 +102,14 @@ class UploadFile(Resource):
             if 'file' not in request.files or request.files['file'] is None or request.files['file'].filename == "":
                 raise MissingFileException("Error: Missing content in request_post file parameter")
             # check if the post request_post has the file part
-            parameters = _get_parameters(request)
-            file = request.files['file']
-            logger.info("Get file {} with parameters {}".format(file.name, parameters))
-            document_tree = manager.parse_file(file, parameters=parameters)
+            parameters = params_parser.parse_args()
+            file = parameters['file']
+            del parameters['file']
+
+            logger.info("Get file {} with parameters {}".format(file.filename, parameters))
+            warnings = check_on_unnecessary(request, dict(parameters))
+            document_tree = manager.parse_file(file, parameters=dict(parameters))
+            document_tree.warnings.extend(warnings)
             if str(parameters.get("return_format", "json")).lower() == "html":
                 return json2html(text="", paragraph=document_tree.content.structure,
                                  tables=document_tree.content.tables,
