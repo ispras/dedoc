@@ -1,6 +1,8 @@
 import hashlib
+import logging
 import os
 import re
+import time
 import zipfile
 from collections import defaultdict
 from typing import Optional, List, Dict
@@ -33,7 +35,7 @@ from dedoc.utils import calculate_file_hash
 
 
 class DocxDocument:
-    def __init__(self, path: str, hierarchy_level_extractor: HierarchyLevelExtractor):
+    def __init__(self, path: str, hierarchy_level_extractor: HierarchyLevelExtractor, logger: logging.Logger):
         self.path = path
         self.path_hash = calculate_file_hash(path=path)
 
@@ -43,6 +45,14 @@ class DocxDocument:
             self.document_bs_tree = self.__get_bs_tree('word/document2.xml')
 
         self.body = self.document_bs_tree.body if self.document_bs_tree else None
+
+        # information for logging
+        self.logger = logger
+        self.total_paragraph_number = sum([len(p.find_all('w:p')
+                                               ) for p in self.body if p.name != 'p' and p.name != "tbl"])
+        self.total_paragraph_number += len([p for p in self.body if p.name == 'p'])
+        self.current_paragraph_number = 0
+        self.checkpoint_time = time.time()
 
         self.styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'))
         num_tree = self.__get_bs_tree('word/numbering.xml')
@@ -105,6 +115,13 @@ class DocxDocument:
         else:
             paragraph.spacing = max(self.prev_paragraph.spacing_after, paragraph.spacing_before)
         self.prev_paragraph = paragraph
+
+        self.current_paragraph_number += 1
+        current_time = time.time()
+        if current_time - self.checkpoint_time > 3:
+            self.logger.info("Processed {} paragraphs from {}".format(self.current_paragraph_number,
+                                                                      self.total_paragraph_number))
+            self.checkpoint_time = current_time
         return paragraph
 
     def __get_images_rels(self, rels: BeautifulSoup) -> Dict[str, str]:
