@@ -1,13 +1,14 @@
 import os
 import unittest
 
+from dedoc.config import get_config
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 
 
 class TestAnyDocReader(unittest.TestCase):
 
     def test_docx(self):
-        any_doc_reader = DocxReader()
+        any_doc_reader = DocxReader(config=get_config())
         path = os.path.join(os.path.dirname(__file__), "data/example.docx")
         result = any_doc_reader.read(path)
         lines = result.lines
@@ -25,7 +26,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual("1.2.3.", lines[11].line)
 
     def test_structure_docx(self):
-        any_doc_reader = DocxReader()
+        any_doc_reader = DocxReader(config=get_config())
         path = os.path.join(os.path.dirname(__file__), "data/header_test.docx")
         result = any_doc_reader.read(path)
         lines = result.lines
@@ -46,7 +47,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual("4.6. п", lines[11].line)
 
     def test_tz_file(self):
-        any_doc_reader = DocxReader()
+        any_doc_reader = DocxReader(config=get_config())
         path = os.path.join(os.path.dirname(__file__), "data/tz.docx")
         result = any_doc_reader.read(path)
         lines = result.lines
@@ -54,7 +55,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual("Техническое задание\nна оказание услуг по созданию системы защиты персональных данных \n", lines[0].line)
 
     def test_docx_without_numbering(self):
-        any_doc_reader = DocxReader()
+        any_doc_reader = DocxReader(config=get_config())
         path = os.path.join(os.path.dirname(__file__), "data/without_numbering.docx")
         try:
             result = any_doc_reader.read(path)
@@ -63,7 +64,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertTrue(result is not None)
 
     def test_docx_table_location(self):
-        any_doc_reader = DocxReader()
+        any_doc_reader = DocxReader(config=get_config())
         path = os.path.join(os.path.dirname(__file__), "data/example.docx")
         result = any_doc_reader.read(path)
         lines, tables = result.lines, result.tables
@@ -85,7 +86,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertTrue(found)
 
     def test_caps_letters(self):
-        any_doc_reader = DocxReader()
+        any_doc_reader = DocxReader(config=get_config())
         path = os.path.join(os.path.dirname(__file__), "data/caps_1.docx")
         result = any_doc_reader.read(path)
         self.assertEqual('ШИЖМАШ МОГАЙ ЛИЕШ ГЫН?	', result.lines[2].line)
@@ -96,7 +97,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual('I глава\n', result.lines[2].line)
 
     def test_justification(self):
-        any_doc_reader = DocxReader()
+        any_doc_reader = DocxReader(config=get_config())
         path = os.path.join(os.path.dirname(__file__), "data/justification.docx")
         result = any_doc_reader.read(path)
         answers = [(15, "left"), (16, "center"), (17, "both"), (18, "right")]
@@ -106,7 +107,7 @@ class TestAnyDocReader(unittest.TestCase):
                     self.assertEqual(answer[1], annotation.value)
 
     def test_numeration(self):
-        any_doc_reader = DocxReader()
+        any_doc_reader = DocxReader(config=get_config())
         path = os.path.join(os.path.dirname(__file__), "data/numeration.docx")
         result = any_doc_reader.read(path)
         lines = result.lines
@@ -122,7 +123,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual("5.5.\tlist", lines[13].line)
 
     def test_tables(self):
-        any_doc_reader = DocxReader()
+        any_doc_reader = DocxReader(config=get_config())
         path = os.path.join(os.path.dirname(__file__), "data/merged_cells.docx")
         result = any_doc_reader.read(path)
 
@@ -163,7 +164,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual("v2", result.tables[1].cells[2][5])
 
     def test_diagram_annotation(self):
-        any_doc_reader = DocxReader()
+        any_doc_reader = DocxReader(config=get_config())
         path = os.path.join(os.path.dirname(__file__), "data/diagram_1.docx")
         result = any_doc_reader.read(path)
 
