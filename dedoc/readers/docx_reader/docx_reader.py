@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Optional, List
 
@@ -12,9 +13,10 @@ from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 
 
 class DocxReader(BaseReader):
-    def __init__(self):
+    def __init__(self, *, config: dict):
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
         self.attachment_extractor = DocxAttachmentsExtractor()
+        self.logger = config.get("logger", logging.getLogger())
 
     def can_read(self,
                  path: str,
@@ -57,5 +59,7 @@ class DocxReader(BaseReader):
         return lines
 
     def _parse_document(self, path: str) -> DocxDocument:
-        docx_document = DocxDocument(path=path, hierarchy_level_extractor=self.hierarchy_level_extractor)
+        docx_document = DocxDocument(path=path,
+                                     hierarchy_level_extractor=self.hierarchy_level_extractor,
+                                     logger=self.logger)
         return docx_document

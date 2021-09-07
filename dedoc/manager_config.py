@@ -26,7 +26,7 @@ def get_manager_config(config: dict):
                                                        ExcelConverter(config=config),
                                                        PptxConverter(config=config)]),
 
-        reader=ReaderComposition(readers=[DocxReader(),
+        reader=ReaderComposition(readers=[DocxReader(config=config),
                                           ExcelReader(),
                                           PptxReader(),
                                           CSVReader(),

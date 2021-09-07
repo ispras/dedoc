@@ -1,7 +1,8 @@
+from dedoc.config import get_config
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 
 # create docx reader
-docx_reader = DocxReader()
+docx_reader = DocxReader(config=get_config())
 # and read file example.docx
 file_name = "example.docx"
 

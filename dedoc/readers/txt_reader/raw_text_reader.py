@@ -5,6 +5,7 @@ from typing import Optional, Tuple, Iterable, List
 from unicodedata import normalize
 from bs4 import UnicodeDammit
 
+from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
@@ -61,10 +62,11 @@ class RawTextReader(BaseReader):
             uid = "txt_{}_{}".format(file_hash, line_id)
             spacing_annotation_value = str(int(100 * (0.5 if number_of_empty_lines == 0 else number_of_empty_lines)))
             spacing_annotation = SpacingAnnotation(start=0, end=len(line), value=spacing_annotation_value)
+            indent_annotation = self._get_indent_annotation(line)
             line_with_meta = LineWithMeta(line=line,
                                           hierarchy_level=None,
                                           metadata=metadata,
-                                          annotations=[spacing_annotation],
+                                          annotations=[spacing_annotation, indent_annotation],
                                           uid=uid)
             lines.append(line_with_meta)
             if line.isspace():
@@ -104,3 +106,12 @@ class RawTextReader(BaseReader):
             line.hierarchy_level.can_be_multiline = not is_paragraph
             previous_line = line
         return document
+
+    def _get_indent_annotation(self, line: str) -> IndentationAnnotation:
+        space_group = self.space_regexp.match(line)
+        if space_group is None:
+            return IndentationAnnotation(start=0, end=len(line), value="0")
+        space_cnt = 0
+        for char in space_group.group():
+            space_cnt += 3 if char == "\t" else 1
+        return IndentationAnnotation(start=0, end=len(line), value=str(211 * space_cnt))
