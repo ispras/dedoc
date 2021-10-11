@@ -15,6 +15,9 @@ tree structure dedoc tries to reconstruct logical structure of the document as t
     <li><strong>metadata</strong>: <a href="#DocumentMetadata"> DocumentMetadata </a> (required field) -
         document meta-information
     </li>
+    <li><strong>warnings</strong>: List[str]  (required field) -
+        any warning, occur in the process of document processing
+    </li>
     <li><strong>content</strong>: <a href="#DocumentContent"> DocumentContent </a> (required field) - parsed document structure
     </li>
     <li><strong>attachments</strong>: List[<a href="#ParsedDocument"> ParsedDocument </a> ] (optional field) -
@@ -62,7 +65,7 @@ Detected and parsed table in a document
 <h4 id="TableMetadata"> TableMetadata</h4>
 <p>Contains table meta information</p>
 <ol>
-    <li><strong>uid</strong>: <a> str </a> - unique identifier. </li>
+    <li><strong>uid</strong>: <a> str (required field) </a> - unique identifier. </li>
     <li><strong>page_id</strong>: <a> integer </a> (optional field) - page number on which the table begins. Can be null.</li>
 </ol>
 
