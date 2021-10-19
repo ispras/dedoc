@@ -10,6 +10,7 @@ from flask_restx import Resource, Api, Model
 from werkzeug.local import LocalProxy
 
 from dedoc.api.swagger_api_utils import get_command_keep_models
+from dedoc.common.exceptions.dedoc_exception import DedocException
 from dedoc.common.exceptions.structure_extractor_exception import StructureExtractorException
 from dedoc.api.api_utils import json2html, json2tree
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
@@ -156,23 +157,8 @@ class SendHtml(Resource):
 
 # ==================== Declare API exceptions =======================
 
-@api.errorhandler(MissingFileException)
+@api.errorhandler(DedocException)
 def handle_missing_file_exception(error):
-    return {'message': error.msg_api}, error.code
-
-
-@api.errorhandler(BadFileFormatException)
-def handle_bad_file_format_exception(error):
-    return {'message': error.msg_api}, error.code
-
-
-@api.errorhandler(ConversionException)
-def handle_conversion_exception(error):
-    return {'message': error.msg_api}, error.code
-
-
-@api.errorhandler(StructureExtractorException)
-def handle_structure_extractor_exception(error):
     return {'message': error.msg_api}, error.code
 
 

@@ -8,8 +8,8 @@ from typing import Optional, List, Dict
 
 from dedoc.attachment_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
+from dedoc.common.exceptions.dedoc_exception import DedocException
 from dedoc.converters.file_converter import FileConverterComposition
-from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
@@ -171,7 +171,7 @@ class DedocManager:
                                                          converted_filename=attachment.get_filename_in_path(),
                                                          original_file_name=attachment.get_original_filename(),
                                                          parameters=parameters_copy)
-            except BadFileFormatException:
+            except DedocException:
                 # return empty ParsedDocument with Meta information
                 parsed_file = self.__parse_file_meta(document_content=get_empty_content(),
                                                      directory=tmp_dir,

@@ -17,6 +17,9 @@
     <li><strong>metadata</strong>: <a href="#DocumentMetadata"> DocumentMetadata </a> (обязательное поле) -
         метаинформация документа
     </li>
+    <li><strong>warnings</strong>: List[str]  (обязательное поле) -
+        любые ворнинги, возникшие в процессе обработки документа
+    </li>
     <li><strong>content</strong>: <a href="#DocumentContent"> DocumentContent </a> (обязательное поле) - разобранная
         структура документа
     </li>
@@ -63,7 +66,7 @@
 
 <h4 id="TableMetadata"> TableMetadata. Метаинформация таблицы.</h4>
 <ol>
-    <li><strong>uid</strong>: <a> str </a> - уникальный идентификатор таблицы.</li>
+    <li><strong>uid</strong>: <a> str (обязательное поле) </a> - уникальный идентификатор таблицы.</li>
     <li><strong>page_id</strong>: <a> int </a> (необязательное поле) - номер страницы на которой начинается таблица.</li>
 </ol>
 
