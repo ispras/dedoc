@@ -14,11 +14,14 @@
 
 <h2 id="ParsedDocument"> ParsedDocument </h2>
 <ol>
-    <li><strong>metadata</strong>: <a href="#DocumentMetadata"> DocumentMetadata </a> (обязательное поле) -
-        метаинформация документа
+    <li><strong>version</strong>: str  (обязательное поле) -
+        версия Dedoc
     </li>
     <li><strong>warnings</strong>: List[str]  (обязательное поле) -
         любые ворнинги, возникшие в процессе обработки документа
+    </li>
+    <li><strong>metadata</strong>: <a href="#DocumentMetadata"> DocumentMetadata </a> (обязательное поле) -
+        метаинформация документа
     </li>
     <li><strong>content</strong>: <a href="#DocumentContent"> DocumentContent </a> (обязательное поле) - разобранная
         структура документа
@@ -31,6 +34,7 @@
 
 <h2 id="DocumentMetadata"> DocumentMetadata. Метаинформация документа </h2>
 <ol>
+    <li><strong>uid</strong>: <a> str </a> (обязательное поле) - уникальный идентификатор документа <em> (пример: "doc_uid_auto_ba73d76a-326a-11ec-8092-417272234cb0") </em></li>
     <li><strong>file_name</strong>: <a> str </a> (обязательное поле) - имя файла <em> (пример: "example.pdf") </em></li>
     <li><strong>size</strong>: <a> int </a> (обязательное поле) - размер файла в байтах <em> (пример: 20060) </em></li>
     <li><strong>modified_time</strong>: <a> int </a> (обязательное поле) - дата модификации документа в формате <a
@@ -68,6 +72,7 @@
 <ol>
     <li><strong>uid</strong>: <a> str (обязательное поле) </a> - уникальный идентификатор таблицы.</li>
     <li><strong>page_id</strong>: <a> int </a> (необязательное поле) - номер страницы на которой начинается таблица.</li>
+    <li><strong>is_inserted</strong>: <a> bool </a> (необязательное поле) - была ли таблица встроена в тело документа.</li>
 </ol>
 
 <h3 id="TreeNode"> TreeNode. Древовидная структура документа.</h3>

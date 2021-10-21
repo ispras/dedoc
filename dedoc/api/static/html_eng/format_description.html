@@ -12,11 +12,14 @@ tree structure dedoc tries to reconstruct logical structure of the document as t
 
 <h2 id="ParsedDocument"> ParsedDocument </h2>
 <ol>
-    <li><strong>metadata</strong>: <a href="#DocumentMetadata"> DocumentMetadata </a> (required field) -
-        document meta-information
+    <li><strong>version</strong>: <a> str </a> (required field) -
+        Dedoc version
     </li>
     <li><strong>warnings</strong>: List[str]  (required field) -
         any warning, occur in the process of document processing
+    </li>
+    <li><strong>metadata</strong>: <a href="#DocumentMetadata"> DocumentMetadata </a> (required field) -
+        document meta-information
     </li>
     <li><strong>content</strong>: <a href="#DocumentContent"> DocumentContent </a> (required field) - parsed document structure
     </li>
@@ -28,6 +31,7 @@ tree structure dedoc tries to reconstruct logical structure of the document as t
 <h2 id="DocumentMetadata"> DocumentMetadata</h2>
 <p>Contains document meta-information (for example file name, size, access time).</p>
 <ol>
+    <li><strong>uid</strong>: <a> str </a> (required field) - unique document identifier <em> (example: "doc_uid_auto_ba73d76a-326a-11ec-8092-417272234cb0") </em></li>
     <li><strong>file_name</strong>: <a> string </a> (required field) - file name<em> (example: "example.odt") </em></li>
     <li><strong>bucket_name</strong>: <a> str </a> (optional field) -  bucket name in which the file is located.
          Included when analyzing a file from a cloud storage <em> (example: "dedoc") </em></li>
@@ -67,6 +71,7 @@ Detected and parsed table in a document
 <ol>
     <li><strong>uid</strong>: <a> str (required field) </a> - unique identifier. </li>
     <li><strong>page_id</strong>: <a> integer </a> (optional field) - page number on which the table begins. Can be null.</li>
+    <li><strong>is_inserted</strong>: <a> bool </a> (optional field) - was table inserted into document.</li>
 </ol>
 
 <h3 id="TreeNode"> TreeNode</h3>
