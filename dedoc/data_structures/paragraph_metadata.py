@@ -29,6 +29,7 @@ class ParagraphMetadata(Serializable):
         self.line_id = line_id
         if other_fields is not None and len(other_fields) > 0:
             self.extend_other_fields(other_fields)
+        self.__other_fields = {}
 
     def extend_other_fields(self, new_fields: dict):
         assert (new_fields is not None)
@@ -36,6 +37,7 @@ class ParagraphMetadata(Serializable):
 
         for key, value in new_fields.items():
             setattr(self, key, value)
+            self.__other_fields[key] = value
 
     def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()
@@ -44,7 +46,8 @@ class ParagraphMetadata(Serializable):
             res["predicted_classes"] = self.predicted_classes
         res["page_id"] = self.page_id
         res["line_id"] = self.line_id
-
+        for key, value in self.__other_fields.items():
+            res[key] = value
         return res
 
     @staticmethod

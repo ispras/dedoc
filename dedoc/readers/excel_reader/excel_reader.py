@@ -53,7 +53,7 @@ class ExcelReader(BaseReader):
         for row_id in range(n_rows):
             row = []
             for col_id in range(n_cols):
-                value = sheet.cell_value(rowx=row_id, colx=col_id)
+                value = str(sheet.cell_value(rowx=row_id, colx=col_id))
                 row.append(value)
             res.append(row)
         metadata = TableMetadata(page_id=sheet_id)

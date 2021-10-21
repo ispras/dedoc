@@ -41,6 +41,8 @@ class ParsedDocument(Serializable):
 
     def to_dict(self, old_version: bool):
         res = OrderedDict()
+        res["version"] = self.version
+        res["warnings"] = self.warnings
         res["content"] = self.content.to_dict(old_version) if self.content is not None else []
         res["metadata"] = self.metadata.to_dict(old_version)
         if self.attachments is not None:

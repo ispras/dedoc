@@ -20,13 +20,15 @@ class TableMetadata(Serializable):
 
     def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()
-        res["page_id"] = self.page_id
         res["uid"] = self.uid
+        res["page_id"] = self.page_id
+        res["is_inserted"] = self.is_inserted
         return res
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
         return api.model('TableMetadata', {
             'page_id': fields.Integer(readonly=False, description='table start page number'),
-            'uid': fields.String(description="table unique id")
+            'uid': fields.String(description="table unique id"),
+            'is_inserted': fields.Boolean(description="was the table inserted into document body"),
         })
