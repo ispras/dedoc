@@ -115,7 +115,7 @@ class UploadFile(Resource):
                                  tabs=0)
             elif return_format == "tree":
                 return json2tree(paragraph=document_tree.content.structure)
-            elif return_format == "ujson":
+            elif return_format == "json":
                 return ujson.dumps(document_tree.to_dict(old_version=False))
             else:
                 logger.info("Send result. File {} with parameters {}".format(file.filename, parameters))
