@@ -1,7 +1,26 @@
+import os
+
 from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
 
 
 class TestApiExcelReader(AbstractTestApiDocReader):
+
+    data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "pptx")
+
+    def test_pptx(self):
+        file_name = "example.pptx"
+        result = self._send_request(file_name)
+        self.__check_content(result['content'])
+
+    def test_ppt(self):
+        file_name = "example.ppt"
+        result = self._send_request(file_name)
+        self.__check_content(result['content'])
+
+    def test_odp(self):
+        file_name = "example.odp"
+        result = self._send_request(file_name)
+        self.__check_content(result['content'])
 
     def __check_content(self, content):
         subparagraphs = content['structure']['subparagraphs']
@@ -19,18 +38,3 @@ class TestApiExcelReader(AbstractTestApiDocReader):
         self.assertEqual('A', table[1][1])
         self.assertEqual('B', table[1][2])
         self.assertEqual('C', table[1][3])
-
-    def test_pptx(self):
-        file_name = "example.pptx"
-        result = self._send_request(file_name)
-        self.__check_content(result['content'])
-
-    def test_ppt(self):
-        file_name = "example.ppt"
-        result = self._send_request(file_name)
-        self.__check_content(result['content'])
-
-    def test_odp(self):
-        file_name = "example.odp"
-        result = self._send_request(file_name)
-        self.__check_content(result['content'])

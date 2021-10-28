@@ -1,3 +1,5 @@
+import os
+
 from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.converters.concrete_converters.pptx_converter import PptxConverter
 from tests.units.abstract_converter_test import AbstractConverterTest
@@ -5,6 +7,7 @@ from tests.units.abstract_converter_test import AbstractConverterTest
 
 class TestDocxConverter(AbstractConverterTest):
 
+    path = os.path.join(AbstractConverterTest.path, "pptx")
     converter = PptxConverter(config={})
 
     def test_convert_broken(self):

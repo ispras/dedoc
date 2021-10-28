@@ -1,24 +1,11 @@
+import os
+
 from tests.abstrac_api_test import AbstractTestApiDocReader
 
 
 class TestApiDocReader(AbstractTestApiDocReader):
 
-    def __check_content(self, tables):
-        self.assertEqual(1, len(tables))
-        table1 = tables[0]
-        rows1 = table1["cells"]
-
-        self.assertEqual("1", rows1[0][0])
-        self.assertEqual("2", rows1[0][1])
-        self.assertEqual('3', rows1[0][2])
-
-        self.assertEqual("2", rows1[1][0])
-        self.assertEqual("1", rows1[1][1])
-        self.assertEqual("5", rows1[1][2])
-
-        self.assertEqual("5", rows1[2][0])
-        self.assertEqual("3", rows1[2][1])
-        self.assertEqual("1", rows1[2][2])
+    data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "csvs")
 
     def test_csv_books2(self):
         file_name = "books_2.csv"
@@ -43,3 +30,20 @@ class TestApiDocReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, dict(delimiter=";"))
         tables = result["content"]["tables"]
         self.__check_content(tables)
+
+    def __check_content(self, tables):
+        self.assertEqual(1, len(tables))
+        table1 = tables[0]
+        rows1 = table1["cells"]
+
+        self.assertEqual("1", rows1[0][0])
+        self.assertEqual("2", rows1[0][1])
+        self.assertEqual('3', rows1[0][2])
+
+        self.assertEqual("2", rows1[1][0])
+        self.assertEqual("1", rows1[1][1])
+        self.assertEqual("5", rows1[1][2])
+
+        self.assertEqual("5", rows1[2][0])
+        self.assertEqual("3", rows1[2][1])
+        self.assertEqual("1", rows1[2][2])

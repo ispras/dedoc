@@ -1,8 +1,12 @@
+import os
+
 from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
 from tests.test_utils import get_by_tree_path
 
 
 class TestApiDocReader(AbstractTestApiDocReader):
+
+    data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "docx")
 
     def test_broken_conversion(self):
         file_name = "broken.odt"
@@ -67,8 +71,9 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertTrue(metadata["access_time"] is not None)
         self.assertIn("modified_date", metadata["other_fields"])
 
-    def test_bin_file(self):
-        self._send_request("file.bin", expected_code=415)
+    def test_tricky_doc(self):
+        file_name = "doc.docx"
+        result = self._send_request(file_name)
 
     def test_broken_docx(self):
         self._send_request("broken.docx", expected_code=415)

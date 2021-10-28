@@ -1,5 +1,8 @@
 import codecs
+import gzip
+import logging
 import re
+import time
 from typing import Optional, Tuple, Iterable, List
 
 from unicodedata import normalize
@@ -18,9 +21,11 @@ from dedoc.utils import calculate_file_hash
 
 class RawTextReader(BaseReader):
 
-    def __init__(self):
+    def __init__(self, *, config: dict):
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
         self.space_regexp = re.compile(r"^\s+")
+        self.config = config
+        self.logger = config.get("logger", logging.getLogger())
 
     def can_read(self,
                  path: str,
@@ -28,7 +33,7 @@ class RawTextReader(BaseReader):
                  extension: str,
                  document_type: Optional[str],
                  parameters: Optional[dict] = None) -> bool:
-        return extension.endswith(".txt") and not document_type
+        return extension.endswith((".txt", "txt.gz")) and not document_type
 
     def read(self,
              path: str,
@@ -44,17 +49,24 @@ class RawTextReader(BaseReader):
     def __get_encoding(self, path: str, parameters: dict) -> str:
         if "encoding" in parameters:
             return parameters["encoding"]
-        else:
+        elif path.endswith("txt"):
             with open(path, "rb") as file:
                 blob = file.read()
-                dammit = UnicodeDammit(blob)
-                return dammit.original_encoding
+        else:
+            with gzip.open(path, "r") as file:
+                blob = file.read()
+        dammit = UnicodeDammit(blob)
+        return dammit.original_encoding
 
     def _get_lines_with_meta(self, path: str, encoding: str) -> List[LineWithMeta]:
         lines = []
         file_hash = calculate_file_hash(path=path)
         number_of_empty_lines = 0
+        previous_log_time = time.time()
         for line_id, line in self._get_lines(path=path, encoding=encoding):
+            if time.time() - previous_log_time > 5:
+                self.logger.info("done {} lines".format(line_id))
+                previous_log_time = time.time()
             metadata = ParagraphMetadata(page_id=0,
                                          line_id=line_id,
                                          predicted_classes=None,
@@ -77,10 +89,17 @@ class RawTextReader(BaseReader):
         return lines
 
     def _get_lines(self, path: str, encoding: str) -> Iterable[Tuple[int, str]]:
-        with codecs.open(path, errors="ignore", encoding=encoding) as file:
-            for line_id, line in enumerate(file):
-                line = normalize('NFC', line).replace("й", "й")  # й replace matter
-                yield line_id, line
+        if path.endswith("txt"):
+            with codecs.open(path, errors="ignore", encoding=encoding) as file:
+                for line_id, line in enumerate(file):
+                    line = normalize('NFC', line).replace("й", "й")  # й replace matter
+                    yield line_id, line
+        else:
+            with gzip.open(path) as file:
+                for line_id, line in enumerate(file):
+                    line = line.decode(encoding)
+                    line = normalize('NFC', line).replace("й", "й")
+                    yield line_id, line
 
     def __get_starting_spacing(self, line: Optional[LineWithMeta]) -> int:
         if line is None or line.line.isspace():

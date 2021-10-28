@@ -1,7 +1,11 @@
+import os
+
 from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
 
 
 class TestApiDocReader(AbstractTestApiDocReader):
+
+    data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "docx")
 
     def test_linear_structure(self):
         file_name = "example.docx"

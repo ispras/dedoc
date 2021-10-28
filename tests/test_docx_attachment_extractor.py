@@ -40,7 +40,7 @@ class TestDocxAttachmentsExtractor(unittest.TestCase):
 
     def test_diagrams_extraction(self):
         docx_attachment_extractor = DocxAttachmentsExtractor()
-        src_dir = os.path.join(os.path.dirname(__file__), 'data')
+        src_dir = os.path.join(os.path.dirname(__file__), "data", "docx")
         files = [('diagram_1.docx', 1), ('diagram_2.docx', 5)]
         with tempfile.TemporaryDirectory() as tmp_dir:
             for file, num_attachments in files:

@@ -4,7 +4,7 @@ from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
 class TestApiDocReader(AbstractTestApiDocReader):
 
     def test_list_patching(self):
-        file_name = "13_moloko_1_polug.docx"
+        file_name = "docx/13_moloko_1_polug.docx"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]
 
