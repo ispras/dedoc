@@ -16,7 +16,10 @@ def init_args(api: Api, file_required: bool = True) -> Any:
     upload_parser.add_argument("insert_table", type=str, required=False,
                                help="option to enable analysis of attached files.", default="false")
     upload_parser.add_argument("return_format", type=str, required=False,
-                               help="an option to return the response in html form, json or tree.", default="json")
+                               help="an option to return the response in html form, json, pretty_json or tree. "
+                                    "Assume that one should use json in all cases, all other formats are used for debug"
+                                    " porpoises only",
+                               default="json")
     upload_parser.add_argument("document_type", type=str, required=False,
                                help="document type", choices=["", "law", "article", "tz"])
     upload_parser.add_argument("structure_type", type=str, required=False,

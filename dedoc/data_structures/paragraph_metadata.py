@@ -46,6 +46,7 @@ class ParagraphMetadata(Serializable):
             res["predicted_classes"] = self.predicted_classes
         res["page_id"] = self.page_id
         res["line_id"] = self.line_id
+        res["other_fields"] = self.__other_fields
         for key, value in self.__other_fields.items():
             res[key] = value
         return res

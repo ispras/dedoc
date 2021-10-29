@@ -1,3 +1,5 @@
+import os
+
 from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.converters.concrete_converters.docx_converter import DocxConverter
 from tests.units.abstract_converter_test import AbstractConverterTest
@@ -6,6 +8,7 @@ from tests.units.abstract_converter_test import AbstractConverterTest
 class TestDocxConverter(AbstractConverterTest):
 
     converter = DocxConverter(config={})
+    path = os.path.join(AbstractConverterTest.path, "docx")
 
     def test_convert_broken(self):
         extension = ".odt"

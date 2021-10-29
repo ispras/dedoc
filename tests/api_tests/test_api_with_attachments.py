@@ -1,9 +1,12 @@
+import os
 from typing import List
 
 from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
 
 
 class TestApiAttachmentsReader(AbstractTestApiDocReader):
+
+    data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "xlsx")
 
     def _check_attachments(self, attachments: List[dict]):
         for attachment in attachments:
