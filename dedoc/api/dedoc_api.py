@@ -8,18 +8,15 @@ from flask import Flask, request, Request
 from flask import send_file
 from flask_restx import Resource, Api, Model
 from werkzeug.local import LocalProxy
+import ujson
 
+from dedoc.api.api_utils import json2html, json2tree
+from dedoc.api.init_api import app, config, static_files_dirs, PORT, static_path
 from dedoc.api.swagger_api_utils import get_command_keep_models
 from dedoc.common.exceptions.dedoc_exception import DedocException
-from dedoc.common.exceptions.structure_extractor_exception import StructureExtractorException
-from dedoc.api.api_utils import json2html, json2tree
-from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
-from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.common.exceptions.missing_file_exception import MissingFileException
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.manager.dedoc_thread_manager import DedocThreadedManager
-
-from dedoc.api.init_api import app, config, static_files_dirs, PORT, static_path
 
 module_api_args = importlib.import_module(config['import_path_init_api_args'])
 logger = config["logger"]
@@ -48,7 +45,7 @@ def get_version():
 api = Api(app, doc='/swagger/', description=get_command_keep_models())
 
 
-def marshal_with_wrapper(model: Model, request_post: LocalProxy, **other):
+def marshal_with_wrapper(model: Model, request_post: LocalProxy, default_serializer: str = "json", **other):
     """
     Response marshalling with json indent=2 for json and outputs html for return_html==True
     """
@@ -57,18 +54,24 @@ def marshal_with_wrapper(model: Model, request_post: LocalProxy, **other):
         @wraps(func)
         def wrapper(*args, **kwargs):
 
-            if str(request_post.values.get("return_format", "json")).lower() == "json":
+            serializer = str(request_post.values.get("return_format", default_serializer)).lower()
+            if serializer in ("html", "tree"):
+                return app.response_class(
+                    response=func(*args, **kwargs),
+                    status=200,
+                    mimetype='text/html;charset=utf-8')
+            elif serializer in ("json", "ujson"):
+                return app.response_class(
+                    response=func(*args, **kwargs),
+                    status=200,
+                    mimetype='application/json')
+            else:
                 func2 = api.marshal_with(model, **other)(func)
                 ob = func2(*args, **kwargs)
                 return app.response_class(
                     response=json.dumps(obj=ob, ensure_ascii=False, indent=2),
                     status=200,
                     mimetype='application/json')
-            else:
-                return app.response_class(
-                    response=func(*args, **kwargs),
-                    status=200,
-                    mimetype='text/html;charset=utf-8')
 
         return wrapper
 
@@ -111,12 +114,15 @@ class UploadFile(Resource):
             warnings = check_on_unnecessary(request, dict(parameters))
             document_tree = manager.parse_file(file, parameters=dict(parameters))
             document_tree.warnings.extend(warnings)
-            if str(parameters.get("return_format", "json")).lower() == "html":
+            return_format = str(parameters.get("return_format", "json")).lower()
+            if return_format == "html":
                 return json2html(text="", paragraph=document_tree.content.structure,
                                  tables=document_tree.content.tables,
                                  tabs=0)
-            elif str(parameters.get("return_format", "json")).lower() == "tree":
+            elif return_format == "tree":
                 return json2tree(paragraph=document_tree.content.structure)
+            elif return_format in ("ujson", "json"):
+                return ujson.dumps(document_tree.to_dict(old_version=False))
             else:
                 logger.info("Send result. File {} with parameters {}".format(file.filename, parameters))
                 return document_tree
@@ -134,7 +140,7 @@ class SendExampleFile(Resource):
 @api.route('/results_file')
 @api.doc(False)
 class SendJson(Resource):
-    @marshal_with_wrapper(ParsedDocument.get_api_dict(api), request, skip_none=True)
+    @marshal_with_wrapper(ParsedDocument.get_api_dict(api), request, default_serializer="pretty_json", skip_none=True)
     def get(self):
         path = _get_static_file_path()
         document_tree = _handle_request(path)

@@ -1,15 +1,14 @@
-import warnings
-from collections import OrderedDict, defaultdict
-from typing import List, Iterable, Optional, Dict
+from collections import OrderedDict
+from typing import List, Optional
+
 from flask_restx import fields, Api, Model
 
-from dedoc.config import get_config
 from dedoc.data_structures.annotation import Annotation
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.serializable import Serializable
 from dedoc.structure_constructor.annotation_merger import AnnotationMerger
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
-from dedoc.data_structures.line_with_meta import LineWithMeta
 
 
 class TreeNode(Serializable):
@@ -70,7 +69,7 @@ class TreeNode(Serializable):
                                       description="Paragraph meta information"),
             'subparagraphs': fields.List(fields.Nested(api.model('others_TreeNode', {})),
                                          description="Node childes (with type 'TreeNode') of structure tree")
-            if depth == get_config()['recursion_deep_subparagraphs']
+            if depth == 30
             else fields.List(fields.Nested(TreeNode.get_api_dict(api,
                                                                  depth=depth + 1,
                                                                  name='refTreeNode' + str(depth))),

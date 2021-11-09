@@ -1,7 +1,11 @@
+import os.path
+
 from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
 
 
 class TestApiDocReader(AbstractTestApiDocReader):
+
+    data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "docx")
 
     def test_en_doc(self):
         file_name = "english_doc.doc"

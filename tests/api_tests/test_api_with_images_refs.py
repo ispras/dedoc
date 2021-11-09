@@ -1,7 +1,12 @@
+import os
+
 from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
 
 
 class TestApiImageRefs(AbstractTestApiDocReader):
+
+    data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "docx")
+
     def test_docx_with_images(self):
         file_name = "docx_with_images.docx"
         result = self._send_request(file_name, dict(with_attachments=True, structure_type="linear"))

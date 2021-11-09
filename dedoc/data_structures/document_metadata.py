@@ -1,3 +1,4 @@
+import uuid
 from collections import OrderedDict
 
 from flask_restx import fields, Api, Model
@@ -27,7 +28,8 @@ class DocumentMetadata(Serializable):
                  created_time: int,
                  access_time: int,
                  file_type: str,
-                 other_fields: dict = None):
+                 other_fields: dict = None,
+                 uid: str = None):
         self.file_name = file_name
         self.size = size
         self.modified_time = modified_time
@@ -37,6 +39,7 @@ class DocumentMetadata(Serializable):
         self.other_fields = {}
         if other_fields is not None and len(other_fields) > 0:
             self.extend_other_fields(other_fields)
+        self.uid = "doc_uid_auto_{}".format(uuid.uuid1()) if uid is None else uid
 
     def set_uid(self, uid: str):
         self.uid = uid  # noqa
@@ -55,21 +58,24 @@ class DocumentMetadata(Serializable):
 
     def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()
+        res["uid"] = self.uid
         res["file_name"] = self.file_name
         res["size"] = self.size
         res["modified_time"] = self.modified_time
         res["created_time"] = self.created_time
         res["access_time"] = self.access_time
         res["file_type"] = self.file_type
-        # if self.other_fields is not None:
-        #     for (key, value) in self.other_fields.items():
-        #         res[key] = value
-
+        if self.other_fields is not None:
+            for (key, value) in self.other_fields.items():
+                res[key] = value
+        res["other_fields"] = self.other_fields
         return res
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
         return api.model('DocumentMetadata', {
+            "uid": fields.String(description='unique document identifier',
+                                 example="doc_uid_auto_ba73d76a-326a-11ec-8092-417272234cb0"),
             'file_name': fields.String(description='file name', example="example.odt"),
             'size': fields.Integer(description='file size in bytes', example="20060"),
             'modified_time': fields.Integer(description='modification time of the document in the format UnixTime',

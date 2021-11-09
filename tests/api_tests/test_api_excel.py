@@ -1,7 +1,11 @@
+import os
+
 from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
 
 
 class TestApiExcelReader(AbstractTestApiDocReader):
+
+    data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "xlsx")
 
     def __check_content(self, tables):
         self.assertEqual(2, len(tables))

@@ -26,5 +26,5 @@ class TestApi(AbstractTestApiDocReader):
 
     def test_version_parsed_file(self):
         version = self.__get_version()
-        result = self._send_request("books.csv")
+        result = self._send_request("csvs/books.csv")
         self.assertEqual(version, result["version"].strip())

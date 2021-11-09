@@ -7,7 +7,7 @@ from dedoc.manager_config import get_manager_config
 
 
 class TestDedocManager(TestCase):
-    path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "csvs"))
     config = get_config()
     manager_config = get_manager_config(config=config)
     dedoc_manager = DedocManager.from_config(version="test", manager_config=manager_config, config=config)

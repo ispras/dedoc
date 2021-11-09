@@ -2,12 +2,11 @@ import os
 from unittest import TestCase
 
 from dedoc.readers.csv_reader.csv_reader import CSVReader
-from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from dedoc.structure_constructor.table_patcher import TablePatcher
 
 
 class TestTxtReader(TestCase):
-    path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "csvs"))
 
     def test__get_lines_with_meta(self):
         file = os.path.join(self.path, "books_2.csv")

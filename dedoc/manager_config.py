@@ -30,7 +30,7 @@ def get_manager_config(config: dict):
                                           ExcelReader(),
                                           PptxReader(),
                                           CSVReader(),
-                                          RawTextReader(),
+                                          RawTextReader(config=config),
                                           JsonReader(),
                                           ]),
 
