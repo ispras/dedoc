@@ -10,7 +10,7 @@ from flask_restx import Resource, Api, Model
 from werkzeug.local import LocalProxy
 import ujson
 
-from dedoc.api.api_utils import json2html, json2tree
+from dedoc.api.api_utils import json2html, json2tree, json2collapsed_tree
 from dedoc.api.init_api import app, config, static_files_dirs, PORT, static_path
 from dedoc.api.swagger_api_utils import get_command_keep_models
 from dedoc.common.exceptions.dedoc_exception import DedocException
@@ -55,7 +55,7 @@ def marshal_with_wrapper(model: Model, request_post: LocalProxy, default_seriali
         def wrapper(*args, **kwargs):
 
             serializer = str(request_post.values.get("return_format", default_serializer)).lower()
-            if serializer in ("html", "tree"):
+            if serializer in ("html", "tree", "collapsed_tree"):
                 return app.response_class(
                     response=func(*args, **kwargs),
                     status=200,
@@ -123,6 +123,8 @@ class UploadFile(Resource):
                 return json2tree(paragraph=document_tree.content.structure)
             elif return_format in ("ujson", "json"):
                 return ujson.dumps(document_tree.to_dict(old_version=False))
+            elif str(parameters.get("return_format", "json")).lower() == "collapsed_tree":
+                return json2collapsed_tree(paragraph=document_tree.content.structure)
             else:
                 logger.info("Send result. File {} with parameters {}".format(file.filename, parameters))
                 return document_tree
