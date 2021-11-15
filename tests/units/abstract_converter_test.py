@@ -21,6 +21,8 @@ class AbstractConverterTest(TestCase):
         filename_with_extension = filename + extension
         file = os.path.join(self.path, filename_with_extension)
         tmp_file = os.path.join(self.tmp_dir.name, filename_with_extension)
+        self.assertTrue(os.path.isfile(file), "no such file {}".format(file))
         shutil.copy(file, tmp_file)
         result = converter.do_convert(tmp_dir=self.tmp_dir.name, filename=filename, extension=extension)
-        self.assertTrue(os.path.isfile(os.path.join(self.tmp_dir.name, result)))
+        path = os.path.join(self.tmp_dir.name, result)
+        self.assertTrue(os.path.isfile(path), "no such file {}".format(path))
