@@ -150,6 +150,12 @@ def __value2tag(name: str, value: str) -> str:
     if name == "underlined":
         return "u"
 
+    if name == "superscript":
+        return "sup"
+
+    if name == "subscript":
+        return "sub"
+
     if value.startswith("heading "):
         level = value[len("heading "):]
         return "h" + level if int(level) < 7 else "strong"
@@ -164,9 +170,11 @@ def __annotations2html(paragraph: 'TreeNode', table2id: Dict[str, int]) -> str:
         name = annotation.name
         value = annotation.value
 
-        if name not in ["bold", "italic", "underlined", "table"] and not value.startswith("heading "):
+        bool_annotations = ["bold", "italic", "underlined", "superscript", "subscript"]
+        check_annotations = bool_annotations + ["table"]
+        if name not in check_annotations and not value.startswith("heading "):
             continue
-        elif name in ["bold", "italic", "underlined"] and annotation.value == "False":
+        elif name in bool_annotations and annotation.value == "False":
             continue
 
         tag = __value2tag(name, value)
