@@ -47,6 +47,14 @@ def change_run_properties(old_properties: "BaseProperties",
         elif isinstance(u_tag, str):
             old_properties.underlined = True
 
+    # sub and superscript
+    if tree.vertAlign:
+        sub_super_script = tree.vertAlign.attrs.get("w:val")
+        if sub_super_script == "superscript":
+            old_properties.superscript = True
+        elif sub_super_script == "subscript":
+            old_properties.subscript = True
+
 
 def change_indent(old_properties: "BaseProperties",
                   tree: BeautifulSoup):
