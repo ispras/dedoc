@@ -12,7 +12,7 @@ class SubscriptAnnotation(Annotation):
         try:
             bool(value)
         except ValueError:
-            raise ValueError("the value of bold annotation should be True or False")
+            raise ValueError("the value of subscript annotation should be True or False")
         super().__init__(start=start, end=end, name=SubscriptAnnotation.name, value=value)
 
     @staticmethod

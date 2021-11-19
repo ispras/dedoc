@@ -12,7 +12,7 @@ class SuperscriptAnnotation(Annotation):
         try:
             bool(value)
         except ValueError:
-            raise ValueError("the value of bold annotation should be True or False")
+            raise ValueError("the value of superscript annotation should be True or False")
         super().__init__(start=start, end=end, name=SuperscriptAnnotation.name, value=value)
 
     @staticmethod
