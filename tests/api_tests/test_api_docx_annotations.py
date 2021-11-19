@@ -1,3 +1,5 @@
+import os
+
 from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
 
 
@@ -104,3 +106,23 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
                     found = True
                     break
             self.assertTrue(found)
+
+    def test_subscript_docx(self):
+        file_name = "example_superscript.docx"
+        self._check_superscript(file_name)
+
+    def test_subscript_odt(self):
+        file_name = "example_superscript.odt"
+        self._check_superscript(file_name)
+
+    def test_subscript_doc(self):
+        file_name = "example_superscript.doc"
+        self._check_superscript(file_name)
+
+    def _check_superscript(self, file_name: str) -> None:
+        result = self._send_request(os.path.join("docx", file_name), data={"structure_type": "tree"})
+        content = result["content"]["structure"]
+        subparagraph = content["subparagraphs"][0]
+        annotations = subparagraph["annotations"]
+        self.assertIn({"start": 5, "end": 6, "name": "superscript", "value": "True"}, annotations)
+        self.assertIn({"start": 9, "end": 10, "name": "subscript", "value": "True"}, annotations)

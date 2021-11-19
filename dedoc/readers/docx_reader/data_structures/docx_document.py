@@ -17,6 +17,8 @@ from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicA
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
+from dedoc.data_structures.concrete_annotations.subscript_annotation import SubscriptAnnotation
+from dedoc.data_structures.concrete_annotations.superscript_annotation import SuperscriptAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
@@ -48,8 +50,8 @@ class DocxDocument:
 
         # information for logging
         self.logger = logger
-        self.total_paragraph_number = sum([len(p.find_all('w:p')
-                                               ) for p in self.body if p.name != 'p' and p.name != "tbl"])
+        self.total_paragraph_number = sum([len(p.find_all('w:p'))
+                                           for p in self.body if p.name != 'p' and p.name != "tbl"])
         self.total_paragraph_number += len([p for p in self.body if p.name == 'p'])
         self.current_paragraph_number = 0
         self.checkpoint_time = time.time()
@@ -134,7 +136,7 @@ class DocxDocument:
 
     def _get_lines_with_meta(self, hierarchy_level_extractor: HierarchyLevelExtractor) -> List[LineWithMeta]:
         """
-        :param paragraph_list: list of Paragraph
+        :param hierarchy_level_extractor: extractor of hierarchy level
         :return: list of LineWithMeta
         """
         lines_with_meta = []
@@ -159,14 +161,16 @@ class DocxDocument:
                 hierarchy_level = HierarchyLevel.create_raw_text()
 
             dict2annotations = {
-                "bold": BoldAnnotation,
-                "italic": ItalicAnnotation,
-                "underlined": UnderlinedAnnotation,
-                "size": SizeAnnotation,
-                "indentation": IndentationAnnotation,
-                "spacing": SpacingAnnotation,
-                "alignment": AlignmentAnnotation,
-                "style": StyleAnnotation,
+                BoldAnnotation.name: BoldAnnotation,
+                ItalicAnnotation.name: ItalicAnnotation,
+                UnderlinedAnnotation.name: UnderlinedAnnotation,
+                SizeAnnotation.name: SizeAnnotation,
+                IndentationAnnotation.name: IndentationAnnotation,
+                SpacingAnnotation.name: SpacingAnnotation,
+                AlignmentAnnotation.name: AlignmentAnnotation,
+                StyleAnnotation.name: StyleAnnotation,
+                SuperscriptAnnotation.name: SuperscriptAnnotation,
+                SubscriptAnnotation.name: SubscriptAnnotation,
             }
 
             annotations = []

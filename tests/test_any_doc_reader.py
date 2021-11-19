@@ -1,5 +1,7 @@
 import os
+import shutil
 import unittest
+from tempfile import TemporaryDirectory
 
 from dedoc.config import get_config
 from dedoc.readers.docx_reader.docx_reader import DocxReader
@@ -8,10 +10,19 @@ from dedoc.readers.docx_reader.docx_reader import DocxReader
 class TestAnyDocReader(unittest.TestCase):
 
     directory = os.path.join(os.path.dirname(__file__), "data", "docx")
+    tmpdir = None
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.tmpdir = TemporaryDirectory()
+
+    def tearDown(self) -> None:
+        self.tmpdir.cleanup()
+        super().tearDown()
 
     def test_docx(self):
         any_doc_reader = DocxReader(config=get_config())
-        path = os.path.join(self.directory, "example.docx")
+        path = self._get_path("example.docx")
         result = any_doc_reader.read(path)
         lines = result.lines
         self.assertEqual("Пример документа", lines[0].line)
@@ -29,7 +40,7 @@ class TestAnyDocReader(unittest.TestCase):
 
     def test_structure_docx(self):
         any_doc_reader = DocxReader(config=get_config())
-        path = os.path.join(self.directory, "header_test.docx")
+        path = self._get_path("header_test.docx")
         result = any_doc_reader.read(path)
         lines = result.lines
 
@@ -50,7 +61,7 @@ class TestAnyDocReader(unittest.TestCase):
 
     def test_tz_file(self):
         any_doc_reader = DocxReader(config=get_config())
-        path = os.path.join(self.directory, "tz.docx")
+        path = self._get_path("tz.docx")
         result = any_doc_reader.read(path)
         lines = result.lines
 
@@ -59,7 +70,7 @@ class TestAnyDocReader(unittest.TestCase):
 
     def test_docx_without_numbering(self):
         any_doc_reader = DocxReader(config=get_config())
-        path = os.path.join(self.directory, "without_numbering.docx")
+        path = self._get_path("without_numbering.docx")
         try:
             result = any_doc_reader.read(path)
         except AttributeError:
@@ -68,7 +79,7 @@ class TestAnyDocReader(unittest.TestCase):
 
     def test_docx_table_location(self):
         any_doc_reader = DocxReader(config=get_config())
-        path = os.path.join(self.directory, "example.docx")
+        path = self._get_path("example.docx")
         result = any_doc_reader.read(path)
         lines, tables = result.lines, result.tables
         first_table_uid = tables[0].metadata.uid
@@ -90,21 +101,21 @@ class TestAnyDocReader(unittest.TestCase):
 
     def test_caps_letters1(self):
         any_doc_reader = DocxReader(config=get_config())
-        path = os.path.join(self.directory, "caps_1.docx")
+        path = self._get_path("caps_1.docx")
         result = any_doc_reader.read(path)
         self.assertEqual('ШИЖМАШ МОГАЙ ЛИЕШ ГЫН?	', result.lines[2].line)
         self.assertEqual('АНАСТАСИЯ АЙГУЗИНА', result.lines[3].line)
 
     def test_caps_letters2(self):
         any_doc_reader = DocxReader(config=get_config())
-        path = os.path.join(self.directory, "caps_2.docx")
+        path = self._get_path("caps_2.docx")
         result = any_doc_reader.read(path)
         self.assertEqual('И. Одар "Таргылтыш"\n', result.lines[0].line)
         self.assertEqual('I глава\n', result.lines[2].line)
 
     def test_justification(self):
         any_doc_reader = DocxReader(config=get_config())
-        path = os.path.join(self.directory, "justification.docx")
+        path = self._get_path("justification.docx")
         result = any_doc_reader.read(path)
         answers = [(15, "left"), (16, "center"), (17, "both"), (18, "right")]
         for answer in answers:
@@ -114,7 +125,7 @@ class TestAnyDocReader(unittest.TestCase):
 
     def test_numeration(self):
         any_doc_reader = DocxReader(config=get_config())
-        path = os.path.join(self.directory, "numeration.docx")
+        path = self._get_path("numeration.docx")
         result = any_doc_reader.read(path)
         lines = result.lines
         self.assertEqual("5. Test numeration", lines[1].line)
@@ -130,7 +141,7 @@ class TestAnyDocReader(unittest.TestCase):
 
     def test_tables(self):
         any_doc_reader = DocxReader(config=get_config())
-        path = os.path.join(self.directory, "merged_cells.docx")
+        path = self._get_path("merged_cells.docx")
         result = any_doc_reader.read(path)
 
         self.assertEqual("Merged sells", result.tables[0].cells[0][0])
@@ -171,7 +182,7 @@ class TestAnyDocReader(unittest.TestCase):
 
     def test_diagram_annotation(self):
         any_doc_reader = DocxReader(config=get_config())
-        path = os.path.join(self.directory, "diagram_1.docx")
+        path = self._get_path("diagram_1.docx")
         result = any_doc_reader.read(path)
 
         for annotation in result.lines[0].annotations:
@@ -179,7 +190,7 @@ class TestAnyDocReader(unittest.TestCase):
                 self.assertEqual("dee352a576cf5ffd27ee1574d4dc4431", annotation.value)
             break
 
-        path = os.path.join(self.directory, "diagram_2.docx")
+        path = self._get_path("diagram_2.docx")
         result = any_doc_reader.read(path)
 
         for i in [0, 24]:
@@ -188,3 +199,9 @@ class TestAnyDocReader(unittest.TestCase):
                 if annotation.name == "attachment":
                     annotation_found = True
             self.assertTrue(annotation_found)
+
+    def _get_path(self, file_name: str) -> str:
+        path_in = os.path.join(self.directory, file_name)
+        path_out = os.path.join(self.tmpdir.name, file_name)
+        shutil.copy(path_in, path_out)
+        return path_out
