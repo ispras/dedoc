@@ -19,7 +19,9 @@ class BaseProperties:
             self.bold = properties.bold
             self.italic = properties.italic
             self.underlined = properties.underlined
-            properties.underlined = properties.underlined
+            self.superscript = properties.superscript
+            self.subscript = properties.subscript
+            self.underlined = properties.underlined
         else:
             self.jc = 'left'
             self.indentation = 0
@@ -27,4 +29,6 @@ class BaseProperties:
             self.bold = False
             self.italic = False
             self.underlined = False
+            self.superscript = False
+            self.subscript = False
         self.styles_extractor = styles_extractor

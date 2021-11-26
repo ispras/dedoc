@@ -1,4 +1,5 @@
 import re
+from collections import defaultdict
 from typing import Dict, List, Union, Tuple, Optional
 
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
@@ -17,14 +18,15 @@ class ParagraphInfo:
         self.style_level = paragraph.style_level
         self.text = ""
         # common properties for all runs in one paragraph
-        self.paragraph_properties = {"indentation": str(paragraph.indentation), "alignment": paragraph.jc,
+        self.paragraph_properties = {"indentation": str(paragraph.indentation),
+                                     "alignment": paragraph.jc,
                                      "spacing": str(paragraph.spacing)}
         if paragraph.style_name is not None:
             self.paragraph_properties["style"] = paragraph.style_name
 
         # dict with lists of unified run's properties
         # {"size": [[start, end, value], ...], ...}
-        self.properties = {"size": [], "bold": [], "italic": [], "underlined": []}
+        self.properties = defaultdict(list)
         for run in paragraph.runs:
             if len(run.text) == 0:
                 continue
@@ -34,6 +36,8 @@ class ParagraphInfo:
             new_properties['bold'] = run.bold
             new_properties['italic'] = run.italic
             new_properties['underlined'] = run.underlined
+            new_properties['superscript'] = run.superscript
+            new_properties['subscript'] = run.subscript
             new_properties['text'] = run.text
             self.__extend_properties(new_properties)
 
@@ -42,7 +46,7 @@ class ParagraphInfo:
 
     def __extend_properties(self, new_properties: dict) -> None:
         self.__extend_size_property(new_properties)
-        for property_name in ['bold', 'italic', 'underlined']:
+        for property_name in ['bold', 'italic', 'underlined', 'superscript', 'subscript']:
             self.__extend_font_property(property_name, new_properties)
 
     def __extend_size_property(self, new_properties: dict) -> None:

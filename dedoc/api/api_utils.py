@@ -16,6 +16,55 @@ def __prettify_text(text: str) -> Iterator[str]:
         yield " ".join(res)
 
 
+def _node2tree(paragraph: 'TreeNode', depth: int, depths: Set[int] = None) -> str:
+    if depths is None:
+        depths = set()
+
+    space_symbol = "&nbsp"
+    space = [space_symbol] * 4 * (depth - 1) + 4 * ["-"]
+    space = "".join(space)
+    node_result = []
+    node_result.append("  {} {} ".format(
+        space, paragraph.metadata.paragraph_type + "&nbsp" + paragraph.node_id))
+    for text in __prettify_text(paragraph.text):
+        space = [space_symbol] * 4 * (depth - 1) + 4 * [space_symbol]
+        space = "".join(space)
+        node_result.append("<p>  {} {}  </p>".format(space, text))
+    if len(paragraph.subparagraphs) > 0:
+        sub_nodes = "\n".join([_node2tree(sub_node, depth=depth + 1, depths=depths.union({depth}))
+                               for sub_node in paragraph.subparagraphs])
+        return """
+        <details>
+            <summary> <tt> {} </tt> </summary>
+            {}
+        </details>
+        """.format("".join(node_result), sub_nodes)
+    else:
+        return """
+                <p>
+                     {}
+                </p>
+                """.format("".join(node_result))
+
+
+def json2collapsed_tree(paragraph: 'TreeNode') -> str:
+    result = """
+    <!DOCTYPE html>
+    <html>
+     <head>
+      <meta charset="utf-8">
+      <title>details</title>
+     </head>
+     <body>
+     <tt>
+      {}
+      </tt>
+     </body>
+    </html>
+    """.format(_node2tree(paragraph, depth=0))
+    return result
+
+
 def json2tree(paragraph: 'TreeNode') -> str:
     stack = [paragraph]
     nodes = []
@@ -101,6 +150,12 @@ def __value2tag(name: str, value: str) -> str:
     if name == "underlined":
         return "u"
 
+    if name == "superscript":
+        return "sup"
+
+    if name == "subscript":
+        return "sub"
+
     if value.startswith("heading "):
         level = value[len("heading "):]
         return "h" + level if int(level) < 7 else "strong"
@@ -115,16 +170,18 @@ def __annotations2html(paragraph: 'TreeNode', table2id: Dict[str, int]) -> str:
         name = annotation.name
         value = annotation.value
 
-        if name not in ["bold", "italic", "underlined", "table"] and not value.startswith("heading "):
+        bool_annotations = ["bold", "italic", "underlined", "superscript", "subscript"]
+        check_annotations = bool_annotations + ["table"]
+        if name not in check_annotations and not value.startswith("heading "):
             continue
-        elif name in ["bold", "italic", "underlined"] and annotation.value == "False":
+        elif name in bool_annotations and annotation.value == "False":
             continue
 
         tag = __value2tag(name, value)
         indexes.setdefault(annotation.start, "")
         indexes.setdefault(annotation.end, "")
         if name == "table":
-            indexes[annotation.start] += '<p> <sub> <a href="#{uid}"> table#{index_table} </a> </sub> </p>'\
+            indexes[annotation.start] += '<p> <sub> <a href="#{uid}"> table#{index_table} </a> </sub> </p>' \
                 .format(uid=tag, index_table=table2id[tag])
         else:
             indexes[annotation.start] += "<" + tag + ">"

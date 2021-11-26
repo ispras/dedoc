@@ -44,6 +44,9 @@ class Run(BaseProperties):
         if hasattr(self, "caps") and xml.caps:
             self.text = self.text.upper()
 
+    def __repr__(self) -> str:
+        return "Run({})".format(self.text[:30].replace("\n", r"\n"))
+
     def __eq__(self,
                other: "Run") -> bool:
         """
@@ -51,5 +54,9 @@ class Run(BaseProperties):
         """
         if not isinstance(other, Run):
             return False
-        return self.size == other.size and self.bold == other.bold \
-            and self.italic == other.italic and self.underlined == other.underlined
+        return (self.size == other.size and
+                self.bold == other.bold and
+                self.italic == other.italic and
+                self.underlined == other.underlined and
+                self.superscript == other.superscript and
+                self.subscript == other.subscript)
