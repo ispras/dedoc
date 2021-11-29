@@ -17,8 +17,12 @@ class ExtendedAnnotation:
     def __init__(self, annotations: List[Annotation] = None, spaces: List[Space] = None):
         self.annotations = annotations if annotations is not None else []
         self.spaces = spaces if spaces is not None else []
+        self.start = self.get_start()
+        self.end = self.get_end()
 
     def add(self, annotation: Union[Annotation, Space]):
+        self.start = min(annotation.start, self.start) if self.start is not None else annotation.start
+        self.end = max(annotation.end, self.end) if self.end is not None else annotation.end
         if isinstance(annotation, Annotation):
             self.annotations.append(annotation)
         else:
@@ -37,12 +41,14 @@ class ExtendedAnnotation:
     def extended(self) -> List[Union[Annotation, Space]]:
         return self.annotations + self.spaces
 
-    @property
-    def start(self) -> int:
+    def get_start(self) -> Optional[int]:
+        if len(self.extended) == 0:
+            return None
         return min((annotation.start for annotation in self.extended))
 
-    @property
-    def end(self) -> int:
+    def get_end(self) -> Optional[int]:
+        if len(self.extended) == 0:
+            return None
         return max((annotation.end for annotation in self.extended))
 
     def merge(self) -> Optional[Annotation]:
@@ -76,10 +82,10 @@ class AnnotationMerger:
         """
         merge one group annotations, assume that all annotations has the same name and value
         """
-        assert len({(annotation.name, annotation.value) for annotation in annotations}) == 1
-        result = []
         if len(annotations) <= 1:
             return annotations
+        self.__check_annotations_group(annotations)
+        result = []
         sorted_annotations = sorted(annotations + spaces, key=lambda a: a.start)
         left = 0
         right = 1
@@ -95,6 +101,13 @@ class AnnotationMerger:
         result.append(current_annotation)
         result_annotations = (extended.merge() for extended in result)
         return [annotation for annotation in result_annotations if annotation is not None]
+
+    def __check_annotations_group(self, annotations: List[Annotation]) -> None:
+        if len(annotations) > 0:
+            first = annotations[0]
+            first_name_value = first.name, first.value
+            same_name_value = all((annotation.name, annotation.value) == first_name_value for annotation in annotations)
+            assert same_name_value, "all group items must have the same name and value"
 
     @staticmethod
     def _group_annotations(annotations: List[Annotation]) -> Dict[str, List[Annotation]]:
