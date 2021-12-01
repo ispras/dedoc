@@ -162,8 +162,7 @@ class DedocManager:
                     file_path = os.path.join(tmp_dir, attachment.get_filename_in_path())
                     parsed_file = self.parse_file(file_path,
                                                   parameters=parameters_copy,
-                                                  original_file_name=attachment.get_original_filename()
-                                                  )
+                                                  original_file_name=attachment.get_original_filename())
                 else:
                     parsed_file = self.__parse_file_meta(document_content=get_empty_content(),
                                                          directory=tmp_dir,

@@ -6,7 +6,7 @@ from tests.units.abstract_converter_test import AbstractConverterTest
 
 
 class TestExcelConverter(AbstractConverterTest):
-    converter = ExcelConverter(config={})
+    converter = ExcelConverter(config={"need_content_analysis": True})
 
     path = os.path.join(AbstractConverterTest.path, "xlsx")
 

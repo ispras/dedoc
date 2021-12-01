@@ -7,7 +7,7 @@ from tests.units.abstract_converter_test import AbstractConverterTest
 
 class TestDocxConverter(AbstractConverterTest):
 
-    converter = DocxConverter(config={})
+    converter = DocxConverter(config={"need_content_analysis": True})
     path = os.path.join(AbstractConverterTest.path, "docx")
 
     def test_convert_broken(self):

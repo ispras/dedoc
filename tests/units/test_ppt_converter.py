@@ -8,7 +8,7 @@ from tests.units.abstract_converter_test import AbstractConverterTest
 class TestDocxConverter(AbstractConverterTest):
 
     path = os.path.join(AbstractConverterTest.path, "pptx")
-    converter = PptxConverter(config={})
+    converter = PptxConverter(config={"need_content_analysis": True})
 
     def test_convert_broken(self):
         extension = ".odp"
