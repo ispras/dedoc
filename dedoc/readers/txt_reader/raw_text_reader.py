@@ -16,7 +16,7 @@ from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
-from dedoc.utils import calculate_file_hash
+from dedoc.utils import calculate_file_hash, get_encoding
 
 
 class RawTextReader(BaseReader):
@@ -49,14 +49,8 @@ class RawTextReader(BaseReader):
     def __get_encoding(self, path: str, parameters: dict) -> str:
         if "encoding" in parameters:
             return parameters["encoding"]
-        elif path.endswith("txt"):
-            with open(path, "rb") as file:
-                blob = file.read()
         else:
-            with gzip.open(path, "r") as file:
-                blob = file.read()
-        dammit = UnicodeDammit(blob)
-        return dammit.original_encoding
+            return get_encoding(path, "utf-8")
 
     def _get_lines_with_meta(self, path: str, encoding: str) -> List[LineWithMeta]:
         lines = []

@@ -1,3 +1,4 @@
+import gzip
 import hashlib
 import os
 import re
@@ -5,7 +6,9 @@ import time
 import random
 import mimetypes
 from os.path import splitext
-from typing import List, Tuple
+from typing import List, Tuple, Optional
+
+from bs4 import UnicodeDammit
 
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
@@ -111,3 +114,20 @@ def get_empty_content() -> DocumentContent:
                            hierarchy_level=HierarchyLevel.create_root(),
                            parent=None)
     )
+
+
+def get_encoding(path: str, default: str = None) -> Optional[str]:
+    """
+    try to define encoding of the given file
+    """
+    try:
+        if path.endswith(".gz"):
+            with gzip.open(path, "r") as file:
+                blob = file.read()
+        else:
+            with open(path, "rb") as file:
+                blob = file.read()
+        dammit = UnicodeDammit(blob)
+        return dammit.original_encoding
+    except:  # noqa  ignore exception and return default encoding
+        return default
