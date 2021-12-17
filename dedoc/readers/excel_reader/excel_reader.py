@@ -14,8 +14,9 @@ from dedoc.readers.base_reader import BaseReader
 
 class ExcelReader(BaseReader):
 
-    def __init__(self):
-        self.attachment_extractor = ExcelAttachmentsExtractor()
+    def __init__(self, *, config: dict):
+        need_content_analysis = config.get("need_content_analysis", True)
+        self.attachment_extractor = ExcelAttachmentsExtractor(need_content_analysis=need_content_analysis)
 
     def can_read(self,
                  path: str,

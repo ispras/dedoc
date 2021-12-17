@@ -27,6 +27,7 @@ _config = dict(
     # application port
     api_port=int(os.environ.get('DOCREADER_PORT', '1231')),
     static_files_dirs={},
+    need_content_analysis=True,
     recursion_deep_attachments=10,
     recursion_deep_subparagraphs=30,
     import_path_init_api_args="dedoc.api.api_args",

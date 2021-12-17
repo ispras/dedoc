@@ -23,7 +23,7 @@ class TestDocxAttachmentsExtractor(unittest.TestCase):
             'oleObject1.pdf': 'eef47ce98c4887d212907da8752df4d0',
             'test.py': 'd41d8cd98f00b204e9800998ecf8427e'
         }
-        docx_attachment_extractor = DocxAttachmentsExtractor()
+        docx_attachment_extractor = DocxAttachmentsExtractor(need_content_analysis=True)
         src_dir = os.path.join(os.path.dirname(__file__), 'data/with_attachments_docx/')
         extracted = 0
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -39,7 +39,7 @@ class TestDocxAttachmentsExtractor(unittest.TestCase):
         self.assertEqual(extracted, 12)
 
     def test_diagrams_extraction(self):
-        docx_attachment_extractor = DocxAttachmentsExtractor()
+        docx_attachment_extractor = DocxAttachmentsExtractor(need_content_analysis=True)
         src_dir = os.path.join(os.path.dirname(__file__), "data", "docx")
         files = [('diagram_1.docx', 1), ('diagram_2.docx', 5)]
         with tempfile.TemporaryDirectory() as tmp_dir:
