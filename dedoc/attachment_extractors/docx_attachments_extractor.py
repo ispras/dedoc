@@ -102,7 +102,7 @@ class DocxAttachmentsExtractor(AbstractAttachmentsExtractor):
         result = []
         name, ext = splitext_(filename)
 
-        if ext == '.docx':
+        if ext.lower() == '.docx':
             with zipfile.ZipFile(os.path.join(tmpdir, filename), 'r') as zfile:
                 files = zfile.namelist()
 
@@ -137,3 +137,5 @@ class DocxAttachmentsExtractor(AbstractAttachmentsExtractor):
                 except Exception as error:
                     print(error)
                     return []
+        else:
+            return []
