@@ -30,6 +30,7 @@ class StylesExtractor:
             self.default_style = self.default_style[0]
         else:
             self.default_style = None
+        self.__cache = {}
 
     def _find_style(self,
                     style_id: str,
@@ -40,9 +41,14 @@ class StylesExtractor:
         :param style_type: "paragraph" or "character"
         :return: None if there isn't such style else BeautifulSoup tree with style
         """
+        key = (style_id, style_type)
+        if key in self.__cache:
+            return self.__cache[key]
         styles = self.styles.find_all('w:style', attrs={'w:styleId': style_id, 'w:type': style_type})
         if styles:
-            return styles[0]
+            result = styles[0]
+            self.__cache[key] = result
+            return result
         return None
 
     def parse(self,
