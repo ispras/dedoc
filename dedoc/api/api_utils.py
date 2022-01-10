@@ -158,7 +158,7 @@ def __value2tag(name: str, value: str) -> str:
 
     if value.startswith("heading "):
         level = value[len("heading "):]
-        return "h" + level if int(level) < 7 else "strong"
+        return "h" + level if level.isdigit() and int(level) < 7 else "strong"
 
     return value
 

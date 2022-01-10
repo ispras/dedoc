@@ -154,6 +154,7 @@ class StylesExtractor:
         :param style_name: name of the style
         :returns: level if style name begins with heading else None
         """
-        if re.match(r'heading \d', style_name):
-            return int(style_name[len("heading "):]) - 1
+        match = re.match(r'heading \d', style_name)
+        if match:
+            return int(match.group()[len("heading "):]) - 1
         return None
