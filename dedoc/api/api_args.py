@@ -25,5 +25,6 @@ def init_args(api: Api, file_required: bool = True) -> Any:
     upload_parser.add_argument("structure_type", type=str, required=False,
                                help="output structure type (linear or tree)", choices=["linear", "tree"])
     upload_parser.add_argument("delimiter", type=str, required=False, help="column separator for csv-files")
+    upload_parser.add_argument("encoding", type=str, required=False, help="document encoding")
 
     return upload_parser
