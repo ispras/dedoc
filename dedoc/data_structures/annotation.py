@@ -23,9 +23,9 @@ class Annotation(Serializable):
         self.value = value
 
     def __eq__(self, o: object) -> bool:
-        if isinstance(o, Annotation):
-            return self.name == o.name and self.value == o.value and self.start == o.start and self.end == o.end
-        return False
+        if not isinstance(o, Annotation):
+            return False
+        return self.name == o.name and self.value == o.value and self.start == o.start and self.end == o.end
 
     def __str__(self) -> str:
         return "{name}({start}:{end}, {value})".format(name=self.name.capitalize(),

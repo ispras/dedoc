@@ -70,17 +70,10 @@ class LineWithMeta(Sized):
 
     def __getitem__(self, index: Union[slice, int]) -> "LineWithMeta":
         if isinstance(index, int):
-            if index >= len(self.line) or index < -len(self.line):
-                raise IndexError("Index out of range, index = {}, line_len = {}".format(index, len(self.line)))
-            index = index % len(self)
-            annotations = []
-            for annotation in self.annotations:
-                if annotation.start <= index < annotation.end:
-                    annotations.append(Annotation(name=annotation.name, start=0, end=1, value=annotation.value))
-            return LineWithMeta(line=self.line[index],
-                                hierarchy_level=self.hierarchy_level,
-                                metadata=self.metadata,
-                                annotations=annotations)
+            if len(self) == 0 or index >= len(self) or index < -len(self):
+                raise IndexError("Get item on empty line")
+            index %= len(self)
+            return self[index: index + 1]
         if isinstance(index, slice):
             start = index.start if index.start else 0
             stop = index.stop if index.stop is not None else len(self)
@@ -90,20 +83,29 @@ class LineWithMeta(Sized):
             if start > len(self) or 0 < len(self) == start:
                 raise IndexError("start > len(line)")
 
-            annotations = []
-            for annotation in self.annotations:
-                if start < annotation.end and stop > annotation.start:
-                    annotations.append(Annotation(
-                        start=max(annotation.start, start) - start,
-                        end=min(annotation.end, stop) - start,
-                        name=annotation.name,
-                        value=annotation.value))
+            annotations = self.__extract_annotations_by_slice(start, stop)
             return LineWithMeta(line=self.line[start: stop],
                                 metadata=self.metadata,
                                 annotations=annotations,
                                 hierarchy_level=self.hierarchy_level)
         else:
             raise TypeError("line indices must be integers")
+
+    def __extract_annotations_by_slice(self, start: int, stop: int) -> List[Annotation]:
+        """
+        extract annotations for given slice
+        """
+        assert start >= 0
+        assert stop >= 0
+        annotations = []
+        for annotation in self.annotations:
+            if start < annotation.end and stop > annotation.start:
+                annotations.append(Annotation(
+                    start=max(annotation.start, start) - start,
+                    end=min(annotation.end, stop) - start,
+                    name=annotation.name,
+                    value=annotation.value))
+        return annotations
 
     @property
     def line(self) -> str:
