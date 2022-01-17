@@ -1,4 +1,5 @@
-from typing import Optional, List
+import re
+from typing import Optional, List, Union, Sized
 from uuid import uuid1
 
 from dedoc.data_structures.annotation import Annotation
@@ -6,7 +7,7 @@ from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 
 
-class LineWithMeta:
+class LineWithMeta(Sized):
 
     def __init__(self,
                  line: str,
@@ -37,12 +38,74 @@ class LineWithMeta:
         self._annotations = annotations
         self._uid = str(uuid1()) if uid is None else uid
 
+    def __len__(self) -> int:
+        return len(self.line)
+
     def __check_hierarchy_level(self, hierarchy_level: HierarchyLevel):
         if not (hierarchy_level is None or isinstance(hierarchy_level, HierarchyLevel)):
             raise Exception(hierarchy_level)
         assert hierarchy_level is None or hierarchy_level.level_1 is None or hierarchy_level.level_1 >= 0
         if not (hierarchy_level is None or hierarchy_level.level_2 is None or hierarchy_level.level_2 >= 0):
             raise Exception(hierarchy_level)
+
+    def split(self, sep: str) -> List["LineWithMeta"]:
+        """
+        Split this line into a list of lines, keep annotations consistent.
+        This method does not remove any text from the line
+        """
+        if not sep:
+            raise ValueError("empty separator")
+        borders = set()
+        for group in re.finditer(sep, self.line):
+            borders.add(group.end())
+        borders.add(0)
+        borders.add(len(self.line))
+        borders = sorted(borders)
+        if len(borders) <= 2:
+            return [self]
+        result = []
+        for start, end in zip(borders[:-1], borders[1:]):
+            result.append(self[start:end])
+        return result
+
+    def __getitem__(self, index: Union[slice, int]) -> "LineWithMeta":
+        if isinstance(index, int):
+            if len(self) == 0 or index >= len(self) or index < -len(self):
+                raise IndexError("Get item on empty line")
+            index %= len(self)
+            return self[index: index + 1]
+        if isinstance(index, slice):
+            start = index.start if index.start else 0
+            stop = index.stop if index.stop is not None else len(self)
+            step = 1 if index.step is None else index.step
+            if start < 0 or stop < 0 or step != 1:
+                raise NotImplementedError()
+            if start > len(self) or 0 < len(self) == start:
+                raise IndexError("start > len(line)")
+
+            annotations = self.__extract_annotations_by_slice(start, stop)
+            return LineWithMeta(line=self.line[start: stop],
+                                metadata=self.metadata,
+                                annotations=annotations,
+                                hierarchy_level=self.hierarchy_level)
+        else:
+            raise TypeError("line indices must be integers")
+
+    def __extract_annotations_by_slice(self, start: int, stop: int) -> List[Annotation]:
+        """
+        extract annotations for given slice
+        """
+        assert start >= 0
+        assert stop >= 0
+        annotations = []
+        for annotation in self.annotations:
+            if start < annotation.end and stop > annotation.start:
+                annotations.append(Annotation(
+                    start=max(annotation.start, start) - start,
+                    end=min(annotation.end, stop) - start,
+                    name=annotation.name,
+                    value=annotation.value))
+        return annotations
 
     @property
     def line(self) -> str:

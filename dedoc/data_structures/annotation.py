@@ -22,6 +22,20 @@ class Annotation(Serializable):
         self.name = name
         self.value = value
 
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, Annotation):
+            return False
+        return self.name == o.name and self.value == o.value and self.start == o.start and self.end == o.end
+
+    def __str__(self) -> str:
+        return "{name}({start}:{end}, {value})".format(name=self.name.capitalize(),
+                                                       start=self.start,
+                                                       end=self.end,
+                                                       value=self.value)
+
+    def __repr__(self) -> str:
+        return "{name}(...)".format(name=self.name.capitalize())
+
     def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()
         res["start"] = self.start
