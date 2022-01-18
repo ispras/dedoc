@@ -6,7 +6,6 @@ import time
 from typing import Optional, Tuple, Iterable, List
 
 from unicodedata import normalize
-from bs4 import UnicodeDammit
 
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
@@ -47,7 +46,7 @@ class RawTextReader(BaseReader):
         return self._postprocess(result)
 
     def __get_encoding(self, path: str, parameters: dict) -> str:
-        if "encoding" in parameters:
+        if parameters.get("encoding"):
             return parameters["encoding"]
         else:
             return get_encoding(path, "utf-8")

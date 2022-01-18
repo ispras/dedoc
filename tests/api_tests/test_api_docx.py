@@ -123,6 +123,11 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
         self._check_metainfo(result['metadata'], 'application/vnd.oasis.opendocument.text', file_name)
 
+    def test_docx_heading_new(self):
+        file_name = "tz-1ek-20_minimum.docx"
+        data = dict(structure_type="tree", insert_table=True, return_format="html")
+        _ = self._send_request(file_name, data=data)
+
     def __check_doc_like_insert_table(self, result: dict):
         content = result["content"]["structure"]
         self.assertEqual("", get_by_tree_path(content, "0")["text"])
