@@ -45,7 +45,7 @@ class AbstractTestApiDocReader(unittest.TestCase):
             r = requests.post("http://{host}:{port}/upload".format(host=host, port=port), files=files, data=data)
             self.assertEqual(expected_code, r.status_code)
             if expected_code != 200:
-                return None
+                return r.content.decode()
             if "return_format" in data and data["return_format"] in ("html", "tree"):
                 return r.content.decode()
             else:

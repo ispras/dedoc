@@ -72,6 +72,26 @@ class DedocManager:
         :param original_file_name: name of original file (None if file was not ranamed)
         :return:
         """
+        try:
+            return self._parse_file_no_error_handling(file_path=file_path,
+                                                      parameters=parameters,
+                                                      original_file_name=original_file_name)
+        except DedocException as e:
+            e.version = self.version
+            e.filename = original_file_name
+            raise e
+
+    def _parse_file_no_error_handling(self,
+                                      file_path: str,
+                                      parameters: Dict[str, str],
+                                      original_file_name: Optional[str] = None) -> ParsedDocument:
+        """
+        Function of complete parsing document with 'filename' with attachment files analyze
+        :param file_path: full path where file lay
+        :param parameters: any parameters, specify how we want to parse file
+        :param original_file_name: name of original file (None if file was not ranamed)
+        :return:
+        """
         warnings = []
         if not os.path.isfile(path=file_path):
             raise FileNotFoundError()

@@ -2,7 +2,7 @@ import importlib
 import json
 import os
 from functools import wraps
-from typing import List
+from typing import List, Tuple
 
 from flask import Flask, request, Request
 from flask import send_file
@@ -104,7 +104,8 @@ class UploadFile(Resource):
     def post(self):
         if request.method == 'POST':
             if 'file' not in request.files or request.files['file'] is None or request.files['file'].filename == "":
-                raise MissingFileException("Error: Missing content in request_post file parameter")
+                raise MissingFileException("Error: Missing content in request_post file parameter",
+                                           version=manager.version)
             # check if the post request_post has the file part
             parameters = params_parser.parse_args()
             file = parameters['file']
@@ -166,12 +167,17 @@ class SendHtml(Resource):
 # ==================== Declare API exceptions =======================
 
 @api.errorhandler(DedocException)
-def handle_missing_file_exception(error):
-    return {'message': error.msg_api}, error.code
+def handle_missing_file_exception(error: DedocException) -> Tuple[dict, int]:
+    result = {"message": error.msg_api}
+    if error.filename:
+        result["file_name"] = error.filename
+    if error.version:
+        result["dedoc_version"] = error.version
+    return result, error.code
 
 
 version_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "VERSION"))
-manager = DedocThreadedManager.from_config(config=config, version=open(version_file_path).read())
+manager = DedocThreadedManager.from_config(config=config, version=open(version_file_path).read().strip())
 
 
 # ==================== Utils API functions =======================
