@@ -1,3 +1,5 @@
+from typing import Optional
+
 from dedoc.common.exceptions.dedoc_exception import DedocException
 
 
@@ -7,8 +9,8 @@ class BadParametersException(DedocException):
     (for example if string provided instead of bool)
     """
 
-    def __init__(self, msg: str, msg_api=None):
-        super(BadParametersException, self).__init__(msg=msg, msg_api=msg_api)
+    def __init__(self, msg: str, msg_api=None, filename: Optional[str] = None, version: Optional[str] = None):
+        super(BadParametersException, self).__init__(msg_api=msg_api, msg=msg, filename=filename, version=version)
 
     def __str__(self) -> str:
         return "BadParametersException({})".format(self.msg)

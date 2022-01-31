@@ -1,3 +1,5 @@
+from typing import Optional
+
 from dedoc.common.exceptions.dedoc_exception import DedocException
 
 
@@ -7,8 +9,8 @@ class ConversionException(DedocException):
     (converter terminated the process)
     """
 
-    def __init__(self, msg: str, msg_api=None):
-        super(ConversionException, self).__init__(msg_api=msg_api, msg=msg)
+    def __init__(self, msg: str, msg_api=None, filename: Optional[str] = None, version: Optional[str] = None):
+        super(ConversionException, self).__init__(msg_api=msg_api, msg=msg, filename=filename, version=version)
 
     def __str__(self) -> str:
         return "ConversionException({})".format(self.msg)

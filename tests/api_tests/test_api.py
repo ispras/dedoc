@@ -1,3 +1,4 @@
+import json
 import os
 
 import requests
@@ -14,7 +15,11 @@ class TestApi(AbstractTestApiDocReader):
             return version
 
     def test_bin_file(self):
-        self._send_request("file.bin", expected_code=415)
+        file_name = "file.bin"
+        result = self._send_request(file_name, expected_code=415)
+        result = json.loads(result)
+        self.assertIn("dedoc_version", result)
+        self.assertEqual(file_name, result["file_name"])
 
     def test_send_wo_file(self):
         self._send_request_wo_file(expected_code=400)
