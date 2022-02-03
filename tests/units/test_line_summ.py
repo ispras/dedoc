@@ -7,8 +7,6 @@ from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicA
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
-from dedoc.examples.create_unstructured_document import hierarchy_level
-from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 
 
 def _make_line(line: str, annotations: List[Annotation]) -> LineWithMeta:
@@ -25,6 +23,11 @@ class TestLineSplit(unittest.TestCase):
     sized_line = _make_line("SmallBig", [SizeAnnotation(0, 5, "8"), SizeAnnotation(5, 8, "14")])
     lines = [empty, italic_line, sized_line, bold_line]
 
+    def assertAnnotationsEqual(self, expected: List[Annotation], result: List[Annotation]) -> None:
+        self.assertEqual(len(expected), len(result))
+        for annotation in result:
+            self.assertIn(annotation, expected)
+
     def test_empty_plus_empty(self) -> None:
         result = self.empty + self.empty
         self.assertEqual("", result.line)
@@ -33,14 +36,14 @@ class TestLineSplit(unittest.TestCase):
         for non_empty in self.lines:
             for result in (self.empty + non_empty, non_empty + self.empty):
                 self.assertEqual(non_empty.line, result.line)
-                self.assertEqual(non_empty.annotations, result.annotations)
+                self.assertAnnotationsEqual(non_empty.annotations, result.annotations)
 
     def test_sum_with_str(self) -> None:
         text = "some text"
         for line in self.lines:
             result = line + text
             self.assertEqual(line.line + text, result.line)
-            self.assertEqual(line.annotations, result.annotations)
+            self.assertAnnotationsEqual(line.annotations, result.annotations)
 
     def test_line_plus_line(self) -> None:
         for first in self.lines:
@@ -53,4 +56,4 @@ class TestLineSplit(unittest.TestCase):
 
         result = self.bold_line + self.italic_line
         expected = [BoldAnnotation(0, len(self.bold_line.line), "True"), ItalicAnnotation(4, 10, "True")]
-        self.assertEqual(expected, result.annotations)
+        self.assertAnnotationsEqual(expected, result.annotations)

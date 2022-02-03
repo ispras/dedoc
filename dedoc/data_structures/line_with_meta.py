@@ -149,19 +149,18 @@ class LineWithMeta(Sized):
                                 metadata=self._metadata,
                                 annotations=self.annotations,
                                 uid=self.uid)
-        else:
-            line = self.line + other.line
-            shift = len(self)
-            other_annotations = []
-            for annotation in other.annotations:
-                new_annotation = Annotation(start=annotation.start + shift,
-                                            end=annotation.end + shift,
-                                            name=annotation.name,
-                                            value=annotation.value)
-                other_annotations.append(new_annotation)
-            annotations = AnnotationMerger().merge_annotations(self.annotations + other_annotations, text=line)
-            return LineWithMeta(line=line,
-                                hierarchy_level=self._hierarchy_level,
-                                metadata=self._metadata,
-                                annotations=annotations,
-                                uid=self.uid)
+        line = self.line + other.line
+        shift = len(self)
+        other_annotations = []
+        for annotation in other.annotations:
+            new_annotation = Annotation(start=annotation.start + shift,
+                                        end=annotation.end + shift,
+                                        name=annotation.name,
+                                        value=annotation.value)
+            other_annotations.append(new_annotation)
+        annotations = AnnotationMerger().merge_annotations(self.annotations + other_annotations, text=line)
+        return LineWithMeta(line=line,
+                            hierarchy_level=self._hierarchy_level,
+                            metadata=self._metadata,
+                            annotations=annotations,
+                            uid=self.uid)
