@@ -49,7 +49,8 @@ class Annotation(Serializable):
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
-        names = ["style", "bold", "italic", "underlined", "size", "indentation", "alignment", "table"]
+        names = ["style", "bold", "italic", "underlined", "size", "indentation", "alignment", "table",
+                 "attachment", "spacing", "strike", "subscript", "superscript"]
         return api.model('Annotation', {
             'start': fields.Integer(description='annotation start index', required=True, example=0),
             'end': fields.Integer(description='annotation end index', required=True, example=4),
