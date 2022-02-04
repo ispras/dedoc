@@ -47,6 +47,11 @@ def change_run_properties(old_properties: "BaseProperties",
         elif isinstance(u_tag, str):
             old_properties.underlined = True
 
+    # strike
+    if tree.strike:
+        strike_tag = tree.strike.get("w:val", True)
+        old_properties.strike = check_if_true(strike_tag) if isinstance(strike_tag, str) else strike_tag
+
     # sub and superscript
     if tree.vertAlign:
         sub_super_script = tree.vertAlign.attrs.get("w:val")
