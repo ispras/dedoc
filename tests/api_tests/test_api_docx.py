@@ -19,6 +19,23 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
         self._check_metainfo(result['metadata'], 'application/msword', file_name)
 
+    def test_footnotes(self):
+        file_name = "example_footnote_endnote.docx"
+        result = self._send_request(file_name, data={"structure_type": "tree"})
+        self.__check_doc_like(result)
+        full_text = []
+        stack = [result["content"]["structure"]]
+        while stack:
+            node = stack.pop()
+            stack.extend(node["subparagraphs"])
+            full_text.append(node["text"])
+        full_text = "".join(full_text).lower()
+        self.assertNotIn("союз", full_text)
+        self.assertNotIn("васька", full_text)
+        self.assertNotIn("опечатка", full_text)
+        self.assertIn("определения", full_text)
+        self.assertIn("понятное", full_text)
+
     def test_docx(self):
         file_name = "example.docx"
         result = self._send_request(file_name, data={"structure_type": "tree"})
