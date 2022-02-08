@@ -4,6 +4,7 @@ from uuid import uuid1
 
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.structure_constructor.annotation_merger import AnnotationMerger
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 
 
@@ -136,3 +137,30 @@ class LineWithMeta(Sized):
 
     def __repr__(self) -> str:
         return "LineWithMeta({})".format(self.line[:65])
+
+    def __add__(self, other: Union["LineWithMeta", str]) -> "LineWithMeta":
+        assert isinstance(other, (LineWithMeta, str))
+        if len(other) == 0:
+            return self
+        if isinstance(other, str):
+            line = self.line + other
+            return LineWithMeta(line=line,
+                                hierarchy_level=self._hierarchy_level,
+                                metadata=self._metadata,
+                                annotations=self.annotations,
+                                uid=self.uid)
+        line = self.line + other.line
+        shift = len(self)
+        other_annotations = []
+        for annotation in other.annotations:
+            new_annotation = Annotation(start=annotation.start + shift,
+                                        end=annotation.end + shift,
+                                        name=annotation.name,
+                                        value=annotation.value)
+            other_annotations.append(new_annotation)
+        annotations = AnnotationMerger().merge_annotations(self.annotations + other_annotations, text=line)
+        return LineWithMeta(line=line,
+                            hierarchy_level=self._hierarchy_level,
+                            metadata=self._metadata,
+                            annotations=annotations,
+                            uid=self.uid)
