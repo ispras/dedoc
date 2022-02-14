@@ -1,17 +1,23 @@
-from bs4 import BeautifulSoup
 from typing import Optional
+
+from bs4 import BeautifulSoup
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.data_structures.run import Run
+from dedoc.readers.docx_reader.footnote_extractor import FootnoteExtractor
+from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
+from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 
 
 class Paragraph(BaseProperties):
 
     def __init__(self,
                  xml: BeautifulSoup,
-                 styles_extractor: "StylesExtractor",
-                 numbering_extractor: "NumberingExtractor",
+                 styles_extractor: StylesExtractor,
+                 numbering_extractor: NumberingExtractor,
+                 footnote_extractor: FootnoteExtractor,
+                 endnote_extractor: FootnoteExtractor,
                  uid: str):
         """
         contains information about paragraph properties
@@ -20,6 +26,8 @@ class Paragraph(BaseProperties):
         :param numbering_extractor: NumberingExtractor
         :param uid: unique paragraph id based on file hash and paragraph xml
         """
+        self.footnote_extractor = footnote_extractor
+        self.endnote_extractor = endnote_extractor
         self.numbering_extractor = numbering_extractor
         self.runs = []
         self.text = ""
@@ -36,6 +44,7 @@ class Paragraph(BaseProperties):
         self.spacing = 0
 
         self.xml = xml
+        self.footnotes = []
         super().__init__(styles_extractor)
         self.parse()
         self.uid = uid
@@ -77,6 +86,14 @@ class Paragraph(BaseProperties):
         self._make_run_list()
         for run in self.runs:
             self.text = run.text if not self.text else self.text + run.text
+
+        for key, extractor in [("w:footnoteReference", self.footnote_extractor),
+                               ("w:endnoteReference", self.endnote_extractor)]:
+            notes = self.xml.find_all(key)
+            for footnote in notes:
+                note_id = footnote.get("w:id")
+                if note_id in extractor.id2footnote:
+                    self.footnotes.append(extractor.id2footnote[note_id])
 
     def _get_numbering_formatting(self) -> Optional[Run]:
         """
