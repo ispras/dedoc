@@ -1,5 +1,6 @@
 import os
 
+from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
 from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
 from tests.test_utils import get_by_tree_path
 
@@ -24,7 +25,16 @@ class TestApiDocReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, data={"structure_type": "tree"})
         self.__check_doc_like(result)
         full_text = []
-        stack = [result["content"]["structure"]]
+        tree = result["content"]["structure"]
+        node = get_by_tree_path(tree, "0.1.0")
+        annotations = [(annotation["name"], annotation["value"]) for annotation in node["annotations"]]
+        self.assertIn((LinkedTextAnnotation.name, "То – союз в русском языке"), annotations)
+
+        node = get_by_tree_path(tree, "0.1.1.0")
+        annotations = [(annotation["name"], annotation["value"]) for annotation in node["annotations"]]
+        self.assertIn((LinkedTextAnnotation.name, "В этом слове допущена опечатка"), annotations)
+
+        stack = [tree]
         while stack:
             node = stack.pop()
             stack.extend(node["subparagraphs"])
