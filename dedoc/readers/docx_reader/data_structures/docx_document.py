@@ -18,6 +18,7 @@ from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicA
 from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
+from dedoc.data_structures.concrete_annotations.strike_annotation import StrikeAnnotation
 from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
 from dedoc.data_structures.concrete_annotations.subscript_annotation import SubscriptAnnotation
 from dedoc.data_structures.concrete_annotations.superscript_annotation import SuperscriptAnnotation
@@ -172,6 +173,7 @@ class DocxDocument:
                                  ItalicAnnotation,
                                  SizeAnnotation,
                                  SpacingAnnotation,
+                                 StrikeAnnotation,
                                  StyleAnnotation,
                                  SubscriptAnnotation,
                                  SuperscriptAnnotation,

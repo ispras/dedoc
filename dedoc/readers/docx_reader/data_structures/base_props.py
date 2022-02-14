@@ -19,6 +19,7 @@ class BaseProperties:
             self.bold = properties.bold
             self.italic = properties.italic
             self.underlined = properties.underlined
+            self.strike = properties.strike
             self.superscript = properties.superscript
             self.subscript = properties.subscript
             self.underlined = properties.underlined
@@ -29,6 +30,7 @@ class BaseProperties:
             self.bold = False
             self.italic = False
             self.underlined = False
+            self.strike = False
             self.superscript = False
             self.subscript = False
         self.styles_extractor = styles_extractor

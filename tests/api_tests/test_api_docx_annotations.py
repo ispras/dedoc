@@ -26,7 +26,9 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         # indent
         self.assertIn({'start': 0, 'end': 12, 'name': 'indentation', 'value': '0'}, annotations[12])
         self.assertIn({'start': 0, 'end': 11, 'name': 'indentation', 'value': '720'}, annotations[13])
-        self.assertIn({'start': 0, 'end': 11, 'name': 'indentation', 'value': '1440'}, annotations[14])
+        self.assertIn({'start': 0, 'end': 12, 'name': 'indentation', 'value': '1440'}, annotations[14])
+        # strike
+        self.assertIn({'start': 0, 'end': 11, 'name': 'strike', 'value': 'True'}, annotations[15])
 
     def test_example_2(self):
         result = self._send_request("annotation_docx/example_2.docx")['content']['structure']['subparagraphs']
