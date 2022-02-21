@@ -36,6 +36,7 @@ class ParagraphInfo:
             new_properties['bold'] = run.bold
             new_properties['italic'] = run.italic
             new_properties['underlined'] = run.underlined
+            new_properties['strike'] = run.strike
             new_properties['superscript'] = run.superscript
             new_properties['subscript'] = run.subscript
             new_properties['text'] = run.text
@@ -46,7 +47,7 @@ class ParagraphInfo:
 
     def __extend_properties(self, new_properties: dict) -> None:
         self.__extend_size_property(new_properties)
-        for property_name in ['bold', 'italic', 'underlined', 'superscript', 'subscript']:
+        for property_name in ['bold', 'italic', 'underlined', 'strike', 'superscript', 'subscript']:
             self.__extend_font_property(property_name, new_properties)
 
     def __extend_size_property(self, new_properties: dict) -> None:

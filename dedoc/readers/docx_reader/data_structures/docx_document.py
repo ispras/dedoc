@@ -11,16 +11,18 @@ from bs4 import BeautifulSoup
 
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.concrete_annotations.alignment_annotation import AlignmentAnnotation
+from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
+from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
+from dedoc.data_structures.concrete_annotations.strike_annotation import StrikeAnnotation
 from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
 from dedoc.data_structures.concrete_annotations.subscript_annotation import SubscriptAnnotation
 from dedoc.data_structures.concrete_annotations.superscript_annotation import SuperscriptAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
-from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
@@ -29,6 +31,7 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
 from dedoc.readers.docx_reader.data_structures.paragraph_info import ParagraphInfo
 from dedoc.readers.docx_reader.data_structures.table import DocxTable
+from dedoc.readers.docx_reader.footnote_extractor import FootnoteExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
@@ -56,6 +59,8 @@ class DocxDocument:
         self.current_paragraph_number = 0
         self.checkpoint_time = time.time()
 
+        self.footnote_extractor = FootnoteExtractor(self.__get_bs_tree('word/footnotes.xml'))
+        self.endnote_extractor = FootnoteExtractor(self.__get_bs_tree('word/endnotes.xml'), key="endnote")
         self.styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'))
         num_tree = self.__get_bs_tree('word/numbering.xml')
         self.numbering_extractor = NumberingExtractor(num_tree, self.styles_extractor) if num_tree else None
@@ -111,6 +116,8 @@ class DocxDocument:
         paragraph = Paragraph(xml=paragraph_xml,
                               styles_extractor=self.styles_extractor,
                               numbering_extractor=self.numbering_extractor,
+                              footnote_extractor=self.footnote_extractor,
+                              endnote_extractor=self.endnote_extractor,
                               uid=uid)
         if self.prev_paragraph is None:
             paragraph.spacing = paragraph.spacing_before
@@ -160,22 +167,24 @@ class DocxDocument:
             else:
                 hierarchy_level = HierarchyLevel.create_raw_text()
 
-            dict2annotations = {
-                BoldAnnotation.name: BoldAnnotation,
-                ItalicAnnotation.name: ItalicAnnotation,
-                UnderlinedAnnotation.name: UnderlinedAnnotation,
-                SizeAnnotation.name: SizeAnnotation,
-                IndentationAnnotation.name: IndentationAnnotation,
-                SpacingAnnotation.name: SpacingAnnotation,
-                AlignmentAnnotation.name: AlignmentAnnotation,
-                StyleAnnotation.name: StyleAnnotation,
-                SuperscriptAnnotation.name: SuperscriptAnnotation,
-                SubscriptAnnotation.name: SubscriptAnnotation,
-            }
+            annotations_class = [AlignmentAnnotation,
+                                 BoldAnnotation,
+                                 IndentationAnnotation,
+                                 ItalicAnnotation,
+                                 SizeAnnotation,
+                                 SpacingAnnotation,
+                                 StrikeAnnotation,
+                                 StyleAnnotation,
+                                 SubscriptAnnotation,
+                                 SuperscriptAnnotation,
+                                 UnderlinedAnnotation]
+            dict2annotations = {annotation.name: annotation for annotation in annotations_class}
 
             annotations = []
             for annotation in line_with_meta["annotations"]:
                 annotations.append(dict2annotations[annotation[0]](*annotation[1:]))
+            for footnote in paragraph.footnotes:
+                annotations.append(LinkedTextAnnotation(start=0, end=len(line_with_meta), value=footnote))
 
             for object_dict in [self.image_refs, self.diagram_refs]:
                 if i in object_dict:
