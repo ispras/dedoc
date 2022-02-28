@@ -183,6 +183,8 @@ class DocxDocument:
             annotations = []
             for annotation in line_with_meta["annotations"]:
                 annotations.append(dict2annotations[annotation[0]](*annotation[1:]))
+            for footnote in paragraph.footnotes:
+                annotations.append(LinkedTextAnnotation(start=0, end=len(line_with_meta), value=footnote))
 
             for object_dict in [self.image_refs, self.diagram_refs]:
                 if i in object_dict:
