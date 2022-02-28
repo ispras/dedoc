@@ -1,5 +1,11 @@
 from typing import Optional, List, Dict, Iterator, Set
 
+from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
+from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
+from dedoc.data_structures.concrete_annotations.strike_annotation import StrikeAnnotation
+from dedoc.data_structures.concrete_annotations.subscript_annotation import SubscriptAnnotation
+from dedoc.data_structures.concrete_annotations.superscript_annotation import SuperscriptAnnotation
+from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
 from dedoc.data_structures.table import Table
 
 
@@ -141,20 +147,23 @@ def json2html(text: str,
 
 
 def __value2tag(name: str, value: str) -> str:
-    if name == "bold":
+    if name == BoldAnnotation.name:
         return "b"
 
-    if name == "italic":
+    if name == ItalicAnnotation.name:
         return "i"
 
-    if name == "underlined":
-        return "u"
+    if name == StrikeAnnotation.name:
+        return "strike"
 
-    if name == "superscript":
+    if name == SuperscriptAnnotation.name:
         return "sup"
 
-    if name == "subscript":
+    if name == SubscriptAnnotation.name:
         return "sub"
+
+    if name == UnderlinedAnnotation.name:
+        return "u"
 
     if value.startswith("heading "):
         level = value[len("heading "):]
@@ -170,7 +179,12 @@ def __annotations2html(paragraph: 'TreeNode', table2id: Dict[str, int]) -> str:
         name = annotation.name
         value = annotation.value
 
-        bool_annotations = ["bold", "italic", "underlined", "superscript", "subscript"]
+        bool_annotations = [BoldAnnotation.name,
+                            ItalicAnnotation.name,
+                            StrikeAnnotation.name,
+                            SubscriptAnnotation.name,
+                            SuperscriptAnnotation.name,
+                            UnderlinedAnnotation.name]
         check_annotations = bool_annotations + ["table"]
         if name not in check_annotations and not value.startswith("heading "):
             continue
