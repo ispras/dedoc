@@ -14,7 +14,8 @@ class AbstractMetadataExtractor(ABC):
                     filename: str,
                     converted_filename: str,
                     original_filename: str,
-                    parameters: dict = None) -> bool:
+                    parameters: Optional[dict] = None,
+                    other_fields: Optional[dict] = None) -> bool:
         """
         check if this extractor can handle given file. Return True if can handle and False otherwise
 
@@ -24,6 +25,7 @@ class AbstractMetadataExtractor(ABC):
         :type converted_filename: name of file after rename and conversion (for example 23141.docx)
         :type original_filename: file name before rename
         :type parameters: additional parameters
+        :type other_fields: other fields
         """
         pass
 
@@ -34,7 +36,8 @@ class AbstractMetadataExtractor(ABC):
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
-                     parameters: dict = None) -> ParsedDocument:
+                     parameters: Optional[dict] = None,
+                     other_fields: Optional[dict] = None) -> ParsedDocument:
         """
         add metadata to doc. Use this method only if this extractor can_extract this file
 
@@ -44,6 +47,6 @@ class AbstractMetadataExtractor(ABC):
         :type converted_filename: name of file after rename and conversion (for example 23141.docx)
         :type original_filename: file name before rename
         :type parameters: additional parameters
-
+        :type other_fields: other fields
         """
         pass

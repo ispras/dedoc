@@ -19,7 +19,8 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
                     filename: str,
                     converted_filename: str,
                     original_filename: str,
-                    parameters: dict = None) -> bool:
+                    parameters: Optional[dict] = None,
+                    other_fields: Optional[dict] = None) -> bool:
         """
         check if this extractor can handle given file. Return True if can handle and False otherwise
 
@@ -29,7 +30,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         :type converted_filename: name of file after rename and conversion (for example 23141.docx)
         :type original_filename: file name before rename
         :type parameters: additional parameters
-
+        :type other_fields: other fields
         """
         return True
 
@@ -39,7 +40,8 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
-                     parameters: dict = None) -> ParsedDocument:
+                     parameters: Optional[dict] = None,
+                     other_fields: Optional[dict] = None) -> ParsedDocument:
         """
         add metadata to doc. Use this method only if this extractor can_extract this file
 
@@ -49,7 +51,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         :type converted_filename: name of file after rename and conversion (for example 23141.docx)
         :type original_filename: file name before rename
         :type parameters: additional parameters
-
+        :type other_fields: other fields
         """
         if parameters is None:
             parameters = {}
@@ -62,6 +64,8 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
             created_time=meta_info["created_time"],
             modified_time=meta_info["modified_time"]
         )
+        if other_fields is not None:
+            metadata.extend_other_fields(other_fields)
         parsed_document = ParsedDocument(metadata=metadata, content=doc)
         return parsed_document
 

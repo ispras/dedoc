@@ -22,7 +22,8 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
                     filename: str,
                     converted_filename: str,
                     original_filename: str,
-                    parameters: dict = None) -> bool:
+                    parameters: Optional[dict] = None,
+                    other_fields: Optional[dict] = None) -> bool:
         return converted_filename.endswith("docx")
 
     def add_metadata(self,
@@ -31,10 +32,14 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
-                     parameters: dict = None) -> ParsedDocument:
+                     parameters: dict = None,
+                     other_fields: Optional[dict] = None) -> ParsedDocument:
         if parameters is None:
             parameters = {}
         file_path = os.path.join(directory, converted_filename)
+        docx_other_fields = self._get_docx_fields(file_path)
+        if other_fields is not None:
+            docx_other_fields = {**docx_other_fields, **other_fields}
 
         meta_info = self._get_base_meta_information(directory, filename, original_filename, parameters)
         metadata = DocumentMetadata(
@@ -44,7 +49,7 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
             access_time=meta_info["access_time"],
             created_time=meta_info["created_time"],
             modified_time=meta_info["modified_time"],
-            other_fields=self._get_docx_fields(file_path)
+            other_fields=docx_other_fields
         )
         parsed_document = ParsedDocument(metadata=metadata, content=doc)
         return parsed_document
