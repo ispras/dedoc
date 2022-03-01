@@ -38,7 +38,7 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
             parameters = {}
         file_path = os.path.join(directory, converted_filename)
         docx_other_fields = self._get_docx_fields(file_path)
-        if other_fields is not None:
+        if other_fields is not None and len(other_fields) > 0:
             docx_other_fields = {**docx_other_fields, **other_fields}
 
         meta_info = self._get_base_meta_information(directory, filename, original_filename, parameters)

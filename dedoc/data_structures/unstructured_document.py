@@ -25,4 +25,4 @@ class UnstructuredDocument:
         self.lines = lines
         self.attachments = attachments
         self.warnings = warnings if warnings else []
-        self.metadata = metadata
+        self.metadata = metadata if metadata is not None else {}

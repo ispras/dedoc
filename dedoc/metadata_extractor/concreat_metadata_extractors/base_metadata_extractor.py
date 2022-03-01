@@ -64,7 +64,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
             created_time=meta_info["created_time"],
             modified_time=meta_info["modified_time"]
         )
-        if other_fields is not None:
+        if other_fields is not None and len(other_fields) > 0:
             metadata.extend_other_fields(other_fields)
         parsed_document = ParsedDocument(metadata=metadata, content=doc)
         return parsed_document
