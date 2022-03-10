@@ -13,8 +13,6 @@ services:
     environment:
       PYTHONPATH: "/:/dedoc"
       DOCREADER_PORT: 1231
-    command:
-        python3.5 /dedoc/main.py  -c /dedoc/config.py
 
 
   test:
