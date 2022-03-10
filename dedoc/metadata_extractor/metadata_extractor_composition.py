@@ -20,18 +20,21 @@ class MetadataExtractorComposition:
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
-                     parameters: dict = None) -> ParsedDocument:
+                     parameters: Optional[dict] = None,
+                     other_fields: Optional[dict] = None) -> ParsedDocument:
         for extractor in self.extractors:
             if extractor.can_extract(doc=doc,
                                      directory=directory,
                                      filename=filename,
                                      converted_filename=converted_filename,
                                      original_filename=original_filename,
-                                     parameters=parameters):
+                                     parameters=parameters,
+                                     other_fields=other_fields):
                 return extractor.add_metadata(doc=doc,
                                               directory=directory,
                                               filename=filename,
                                               converted_filename=converted_filename,
                                               original_filename=original_filename,
-                                              parameters=parameters)
+                                              parameters=parameters,
+                                              other_fields=other_fields)
         raise Exception("Can't extract metadata from from file {}".format(filename))

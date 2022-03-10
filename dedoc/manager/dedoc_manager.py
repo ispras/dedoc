@@ -125,7 +125,8 @@ class DedocManager:
                                                      filename=filename,
                                                      converted_filename=filename_convert,
                                                      original_file_name=original_file_name,
-                                                     parameters=parameters)
+                                                     parameters=parameters,
+                                                     other_fields=unstructured_document.metadata)
             warnings.extend(parsed_document.warnings)
             self.logger.info("get structure and metadata {}".format(filename_convert))
 
@@ -149,7 +150,8 @@ class DedocManager:
                           filename: str,
                           converted_filename: str,
                           original_file_name: str,
-                          parameters: dict) -> ParsedDocument:
+                          parameters: dict,
+                          other_fields: Optional[dict] = None) -> ParsedDocument:
         """
         Decorator with metainformation
         document_content - None for unsupported document in attachments
@@ -159,7 +161,8 @@ class DedocManager:
                                                                         filename=filename,
                                                                         converted_filename=converted_filename,
                                                                         original_filename=original_file_name,
-                                                                        parameters=parameters)
+                                                                        parameters=parameters,
+                                                                        other_fields=other_fields)
         return parsed_document
 
     def __handle_attachments(self,
