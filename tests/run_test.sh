@@ -3,7 +3,7 @@ if [ "$is_test" = "true" ]
     echo "run tests"
     sleep 10
     echo "GO"
-    python3.5 -m unittest -v -f /tests/api_tests/test* /tests/test_* /tests/units/test*
+    python3.8 -m unittest -v -f /tests/api_tests/test* /tests/test_* /tests/units/test*
 else
   echo "skip tests"
   echo "if you want to run tests do "
