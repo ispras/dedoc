@@ -3,7 +3,8 @@ from typing import Optional, Dict
 from dedoc.common.exceptions.structure_extractor_exception import StructureExtractorException
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.structure_constructor.concreat_structure_constructors.abstract_structure_constructor import AbstractStructureConstructor
+from dedoc.structure_constructor.concreat_structure_constructors.abstract_structure_constructor import \
+    AbstractStructureConstructor
 from dedoc.structure_constructor.table_patcher import TablePatcher
 
 
@@ -11,7 +12,7 @@ class StructureConstructorComposition(AbstractStructureConstructor):
 
     def __init__(self,
                  extractors: Dict[str, AbstractStructureConstructor],
-                 default_extractor: AbstractStructureConstructor):
+                 default_extractor: AbstractStructureConstructor) -> None:
         self.extractors = extractors
         self.default_extractor = default_extractor
         self.table_patcher = TablePatcher()

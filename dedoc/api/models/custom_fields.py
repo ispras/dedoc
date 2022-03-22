@@ -1,11 +1,15 @@
-from flask_restx import fields
+from typing import TypeVar, Optional
 from weakref import WeakSet
+
+from flask_restx import fields
+
+T = TypeVar("T")
 
 
 class AnyNotNullField(fields.Raw):
     __schema_type__ = 'any'
 
-    def format(self, value):
+    def format(self, value: T) -> Optional[T]:  # NOQA
         if not isinstance(value, WeakSet):
             return value
 
@@ -13,7 +17,7 @@ class AnyNotNullField(fields.Raw):
 class ForbiddenField(fields.Raw):
     __schema_type__ = 'any'
 
-    def format(self, value):
+    def format(self, value: T) -> None:  # NOQA
         return
 
 

@@ -10,7 +10,7 @@ from dedoc.utils import splitext_, get_file_mime_type
 
 class FileConverterComposition(object):
 
-    def __init__(self, converters: List[AbstractConverter]):
+    def __init__(self, converters: List[AbstractConverter]) -> None:
         self.converters = converters
 
     def do_converting(self, tmp_dir: str, filename: str, parameters: Optional[dict] = None) -> str:

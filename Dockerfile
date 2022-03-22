@@ -11,7 +11,7 @@ ENV LC_ALL ru_RU.UTF-8
 RUN apt-get update && apt-get install software-properties-common -y \
     && apt-get install software-properties-common -y \
     && apt update \
-    && apt-get install -y build-essential python3.8 python3.8-dev python3-pip libxml2-dev libxslt-dev python-dev python3.8-distutils \
+    && apt-get install -y git build-essential python3.8 python3.8-dev python3-pip libxml2-dev libxslt-dev python-dev python3.8-distutils \
     && apt-get install -y libreoffice
 
 ADD requirements.txt .

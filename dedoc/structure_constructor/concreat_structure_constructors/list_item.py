@@ -6,7 +6,7 @@ LIST_ITEM_BRACKET_END_TYPE = ')'
 
 
 class ListItem:
-    def __init__(self, item: List[int], end: str):
+    def __init__(self, item: List[int], end: str) -> None:
         self.item = item
         self.end_type = LIST_ITEM_BRACKET_END_TYPE if end == ')' else LIST_ITEM_POINT_END_TYPE
 
@@ -43,5 +43,5 @@ class ListItem:
     def is_first_item(self) -> bool:
         return self.item == [1]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return ".".join([str(item) for item in self.item]) + self.end_type

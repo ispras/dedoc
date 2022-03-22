@@ -7,7 +7,7 @@ class AlignmentAnnotation(Annotation):
     name = "alignment"
     valid_values = ["left", "right", "both", "center"]
 
-    def __init__(self, start: int, end: int, value: str):
+    def __init__(self, start: int, end: int, value: str) -> None:
         if value not in ["left", "right", "both", "center"]:
             raise ValueError("the value of alignment annotation should be left, right, both, or center")
         super().__init__(start=start, end=end, name=AlignmentAnnotation.name, value=value)

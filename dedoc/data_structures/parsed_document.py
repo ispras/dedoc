@@ -1,5 +1,5 @@
-from typing import List, Optional
 from collections import OrderedDict
+from typing import List, Optional
 
 from flask_restx import fields, Api, Model
 
@@ -16,7 +16,7 @@ class ParsedDocument(Serializable):
                  content: Optional[DocumentContent],
                  version: Optional[str] = None,
                  warnings: List[str] = None,
-                 attachments: Optional[List["ParsedDocument"]] = None):
+                 attachments: Optional[List["ParsedDocument"]] = None) -> None:
         """
         That class hold information about the document content, metadata and attachments.
         :param metadata: document metadata such as size, creation , creation date and so on
@@ -31,15 +31,15 @@ class ParsedDocument(Serializable):
         self.version = version
         self.warnings = warnings if warnings is not None else []
 
-    def add_attachments(self, new_attachment: List["ParsedDocument"]):
+    def add_attachments(self, new_attachment: List["ParsedDocument"]) -> None:
         if self.attachments is None:
             self.attachments = []
         self.attachments.extend(new_attachment)
 
-    def set_metadata(self, metadata: DocumentMetadata):
+    def set_metadata(self, metadata: DocumentMetadata) -> None:
         self.metadata = metadata
 
-    def to_dict(self, old_version: bool):
+    def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()
         res["version"] = self.version
         res["warnings"] = self.warnings

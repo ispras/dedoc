@@ -4,12 +4,13 @@ from typing import List
 from bs4 import BeautifulSoup
 
 from dedoc.readers.docx_reader.data_structures.run import Run
+from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 
 
 class DocxTable:
     def __init__(self,
                  xml: BeautifulSoup,
-                 styles_extractor: "StylesExtractor") -> None:
+                 styles_extractor: StylesExtractor) -> None:
         """
         contains information about table properties
         :param xml: BeautifulSoup tree with table properties

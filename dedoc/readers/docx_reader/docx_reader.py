@@ -3,17 +3,17 @@ import os
 from typing import Optional, List
 
 from dedoc.attachment_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
-from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.structure_parser.heirarchy_level import HierarchyLevel
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.docx_reader.data_structures.docx_document import DocxDocument
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
+from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 
 
 class DocxReader(BaseReader):
-    def __init__(self, *, config: dict):
+    def __init__(self, *, config: dict) -> None:
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
         need_content_analysis = config.get("need_content_analysis", True)
         self.attachment_extractor = DocxAttachmentsExtractor(need_content_analysis=need_content_analysis)

@@ -1,10 +1,10 @@
 import gzip
 import hashlib
+import mimetypes
 import os
+import random
 import re
 import time
-import random
-import mimetypes
 from os.path import splitext
 from typing import List, Tuple, Optional
 
@@ -25,14 +25,14 @@ def splitext_(path: str) -> Tuple[str, str]:
     return splitext(path)
 
 
-def _text_from_item(item: dict):
+def _text_from_item(item: dict) -> str:
     res = item.get("text", "")
     if "subparagraphs" in item:
         res += "\n".join(_text_from_item(_) for _ in item["subparagraphs"])
     return res
 
 
-def document2txt(doc: dict):
+def document2txt(doc: dict) -> str:
     res = doc["header"]
     for item in doc["items"]:
         res += "\n"
@@ -69,11 +69,11 @@ def get_file_mime_type(path: str) -> str:
     return mimetypes.guess_type(path)[0] or 'application/octet-stream'
 
 
-def get_extensions_by_mime(mime: str):
+def get_extensions_by_mime(mime: str) -> List[str]:
     return mimetypes.guess_all_extensions(mime)
 
 
-def get_extensions_by_mimes(mimes: List[str]):
+def get_extensions_by_mimes(mimes: List[str]) -> List[str]:
     exts = []
     for mime in mimes:
         exts.extend(get_extensions_by_mime(mime))

@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from flask_restx import fields, Api, Model
 
-from dedoc.api.models.custom_fields import wild_any_fields, wild_forbid_fields
+from dedoc.api.models.custom_fields import wild_any_fields
 from dedoc.data_structures.serializable import Serializable
 
 
@@ -29,7 +29,7 @@ class DocumentMetadata(Serializable):
                  access_time: int,
                  file_type: str,
                  other_fields: dict = None,
-                 uid: str = None):
+                 uid: str = None) -> None:
         self.file_name = file_name
         self.size = size
         self.modified_time = modified_time
@@ -41,10 +41,10 @@ class DocumentMetadata(Serializable):
             self.extend_other_fields(other_fields)
         self.uid = "doc_uid_auto_{}".format(uuid.uuid1()) if uid is None else uid
 
-    def set_uid(self, uid: str):
+    def set_uid(self, uid: str) -> None:
         self.uid = uid  # noqa
 
-    def extend_other_fields(self, new_fields: dict):
+    def extend_other_fields(self, new_fields: dict) -> None:
         assert (new_fields is not None)
         assert (len(new_fields) > 0)
 

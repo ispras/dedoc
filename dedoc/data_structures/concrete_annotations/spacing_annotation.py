@@ -10,7 +10,7 @@ class SpacingAnnotation(Annotation):
     """
     name = "spacing"
 
-    def __init__(self, start: int, end: int, value: str):
+    def __init__(self, start: int, end: int, value: str) -> None:
         try:
             int(value)
         except ValueError:

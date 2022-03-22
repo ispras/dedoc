@@ -19,7 +19,7 @@ class ConfigurationManager(object):
 
         return cls.__instance
 
-    def initConfig(self, config: dict, new_config: dict = None):
+    def initConfig(self, config: dict, new_config: dict = None) -> None:
         if new_config is None:
             from dedoc.manager_config import get_manager_config
             self.__instance.__config = get_manager_config(config)
@@ -32,5 +32,5 @@ class ConfigurationManager(object):
         return self.__instance.__config
 
 
-def get_manager_config(config: dict):
+def get_manager_config(config: dict) -> dict:
     return ConfigurationManager().getConfig(config)

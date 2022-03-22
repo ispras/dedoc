@@ -7,7 +7,7 @@ from dedoc.metadata_extractor.concreat_metadata_extractors.abstract_metadata_ext
 
 class MetadataExtractorComposition:
 
-    def __init__(self, extractors: List[AbstractMetadataExtractor]):
+    def __init__(self, extractors: List[AbstractMetadataExtractor]) -> None:
         """
         Use list of extractors to extract metadata from file. Use first appropriate extractor (one that can_extract is
         True). Thus order of extractors is important

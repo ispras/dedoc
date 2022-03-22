@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from typing import Optional
+
 from flask_restx import fields, Api, Model
 
 from dedoc.data_structures.serializable import Serializable
@@ -7,7 +8,7 @@ from dedoc.data_structures.serializable import Serializable
 
 class TableMetadata(Serializable):
 
-    def __init__(self, page_id: Optional[int], uid: str = "", is_inserted: bool = False):
+    def __init__(self, page_id: Optional[int], uid: str = "", is_inserted: bool = False) -> None:
         """
         Holds the information about the table location in the document
         :param page_id: number of page where table starts

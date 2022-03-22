@@ -22,7 +22,7 @@ class ParagraphMetadata(Serializable):
                  predicted_classes: Optional[Dict[str, float]],
                  page_id: int,
                  line_id: Optional[int],
-                 other_fields=None):
+                 other_fields: Optional[dict] = None) -> None:
         self.paragraph_type = paragraph_type
         self.predicted_classes = predicted_classes
         self.page_id = page_id
@@ -31,7 +31,7 @@ class ParagraphMetadata(Serializable):
             self.extend_other_fields(other_fields)
         self.__other_fields = {}
 
-    def extend_other_fields(self, new_fields: dict):
+    def extend_other_fields(self, new_fields: dict) -> None:
         assert (new_fields is not None)
         assert (len(new_fields) > 0)
 

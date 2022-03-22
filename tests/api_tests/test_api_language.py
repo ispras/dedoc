@@ -7,7 +7,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
     data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "docx")
 
-    def test_en_doc(self):
+    def test_en_doc(self) -> None:
         file_name = "english_doc.doc"
         result = self._send_request(file_name, dict(language="eng", structure_type="tree"))
         content = result["content"]
@@ -22,7 +22,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertListEqual(['London', 'The capital of Great Britain'], table["cells"][0])
         self.assertListEqual(['Speek', 'From my heart'], table["cells"][1])
 
-    def test_en_docx(self):
+    def test_en_docx(self) -> None:
         file_name = "english_doc.docx"
         result = self._send_request(file_name, dict(language="eng", structure_type="tree"))
         content = result["content"]
@@ -37,7 +37,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertListEqual(['London', 'The capital of Great Britain'], table["cells"][0])
         self.assertListEqual(['Speek', 'From my heart'], table["cells"][1])
 
-    def test_en_odt(self):
+    def test_en_odt(self) -> None:
         file_name = "english_doc.odt"
         result = self._send_request(file_name, dict(language="eng", structure_type="tree"))
         content = result["content"]

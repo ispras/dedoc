@@ -7,7 +7,7 @@ class UnderlinedAnnotation(Annotation):
     name = "underlined"
     valid_values = ["True", "False"]
 
-    def __init__(self, start: int, end: int, value: str):
+    def __init__(self, start: int, end: int, value: str) -> None:
         try:
             bool(value)
         except ValueError:

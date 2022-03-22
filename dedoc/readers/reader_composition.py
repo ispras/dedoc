@@ -4,15 +4,15 @@ import warnings
 from typing import Dict, List
 
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
-from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.utils import splitext_, get_file_mime_type
 
 
 class ReaderComposition(object):
 
-    def __init__(self, readers: List[BaseReader]):
+    def __init__(self, readers: List[BaseReader]) -> None:
         self.readers = readers
 
     def parse_file(self, tmp_dir: str, filename: str, parameters: Dict[str, str]) -> UnstructuredDocument:

@@ -1,4 +1,5 @@
 from collections import OrderedDict
+
 from flask_restx import Api, Model, fields
 
 from dedoc.data_structures.serializable import Serializable
@@ -6,7 +7,7 @@ from dedoc.data_structures.serializable import Serializable
 
 class Annotation(Serializable):
 
-    def __init__(self, start: int, end: int, name: str, value: str):
+    def __init__(self, start: int, end: int, name: str, value: str) -> None:
         """
         Some kind of text information about symbols between start and end.
         For example Annotation(1, 13, "italic", "True")

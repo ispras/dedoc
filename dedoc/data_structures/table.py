@@ -9,7 +9,7 @@ from dedoc.data_structures.table_metadata import TableMetadata
 
 class Table(Serializable):
 
-    def __init__(self, cells: List[List[str]], metadata: TableMetadata):
+    def __init__(self, cells: List[List[str]], metadata: TableMetadata) -> None:
         """
         That class holds information about tables in the document. We assume that a table has rectangle form
         (has the same number of columns in each row)
@@ -20,7 +20,7 @@ class Table(Serializable):
         self.cells = cells
         self.metadata = metadata
 
-    def to_dict(self, old_version) -> dict:
+    def to_dict(self, old_version: bool) -> dict:
         res = OrderedDict()
         res["cells"] = self.cells
         res["metadata"] = self.metadata.to_dict(old_version)

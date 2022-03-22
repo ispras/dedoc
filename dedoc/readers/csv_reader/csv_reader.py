@@ -1,5 +1,5 @@
 import csv
-from typing import Optional, Tuple
+from typing import Optional
 
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
@@ -10,7 +10,7 @@ from dedoc.readers.base_reader import BaseReader
 
 class CSVReader(BaseReader):
     # TODO inherit from reader
-    def __init__(self):
+    def __init__(self) -> None:
         self.default_separator = ","
 
     def can_read(self,

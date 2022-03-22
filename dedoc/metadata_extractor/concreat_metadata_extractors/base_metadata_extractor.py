@@ -4,8 +4,8 @@ from typing import Optional
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.document_metadata import DocumentMetadata
 from dedoc.data_structures.parsed_document import ParsedDocument
-from dedoc.utils import get_file_mime_type
 from dedoc.metadata_extractor.concreat_metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
+from dedoc.utils import get_file_mime_type
 
 
 class BaseMetadataExtractor(AbstractMetadataExtractor):
@@ -69,11 +69,11 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         parsed_document = ParsedDocument(metadata=metadata, content=doc)
         return parsed_document
 
-    def _get_base_meta_information(self, dir: str, filename: str, name_actual: str, parameters: dict) -> dict:
-        (mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(os.path.join(dir, filename))
+    def _get_base_meta_information(self, directory: str, filename: str, name_actual: str, parameters: dict) -> dict:
+        (mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(os.path.join(directory, filename))
         meta = {
             "file_name": name_actual,
-            "file_type": get_file_mime_type(os.path.join(dir, filename)),
+            "file_type": get_file_mime_type(os.path.join(directory, filename)),
             "size": size,  # in bytes
             "access_time": atime,
             "created_time": ctime,

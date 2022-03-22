@@ -18,7 +18,7 @@ class TestListPatcher(unittest.TestCase):
         metadata = ParagraphMetadata("list_item", None, 0, None)
         return LineWithMeta(text, hierarchy_level=hierarchy_level, metadata=metadata, annotations=[])
 
-    def test_correct_list(self):
+    def test_correct_list(self) -> None:
         line1 = self.__get_line("1  item", 1, 0)
         line2 = self.__get_line("2  item", 1, 0)
         line3 = self.__get_line("2.1  item", 1, 1)
@@ -28,7 +28,7 @@ class TestListPatcher(unittest.TestCase):
         result = self.patcher.patch(lines)
         self.assertListEqual(self.__get_text(lines), self.__get_text(result))
 
-    def test_hl_raw_text4(self):
+    def test_hl_raw_text4(self) -> None:
         line1 = self.__get_line("2 item", None, None, HierarchyLevel.raw_text)
         line2 = self.__get_line("some item", None, None, HierarchyLevel.raw_text)
         line3 = self.__get_line("2 item", None, None, HierarchyLevel.raw_text)
@@ -38,12 +38,12 @@ class TestListPatcher(unittest.TestCase):
         expected = ["2 item", "some item", "2 item"]
         self.assertListEqual(expected, self.__get_text(result))
 
-    def test_empty_list(self):
+    def test_empty_list(self) -> None:
         lines = []
         result = self.patcher.patch(lines)
         self.assertListEqual([], self.__get_text(result))
 
-    def test_miss_head_element_list1(self):
+    def test_miss_head_element_list1(self) -> None:
         line2 = self.__get_line("2  item", 1, 0)
         line3 = self.__get_line("2.1  item", 1, 1)
         line4 = self.__get_line("2.2  item", 1, 0)
@@ -52,7 +52,7 @@ class TestListPatcher(unittest.TestCase):
         result = self.patcher.patch(lines)
         self.assertListEqual(self.__get_text(lines), self.__get_text(result))
 
-    def test_miss_head_element_list2(self):
+    def test_miss_head_element_list2(self) -> None:
         line3 = self.__get_line("2.1  item", 1, 1)
         line4 = self.__get_line("2.2  item", 1, 0)
         line5 = self.__get_line("3  item", 1, 0)

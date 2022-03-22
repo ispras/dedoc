@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 import ujson as json
 
@@ -43,7 +43,7 @@ class JsonReader(BaseReader):
 
         return UnstructuredDocument(tables=[], lines=result, attachments=[], warnings=[])
 
-    def __handle_list(self, depth: int, element: list, result: list, stack: list):
+    def __handle_list(self, depth: int, element: list, result: list, stack: list) -> None:
         for _ in range(len(element)):
             sub_element = element.pop(0)
             line = self.__handle_one_element(depth=depth,
@@ -56,7 +56,7 @@ class JsonReader(BaseReader):
                 stack.append((sub_element, depth + 1))
                 break
 
-    def __handle_dict(self, depth: int, element: dict, result: list, stack: list):
+    def __handle_dict(self, depth: int, element: dict, result: list, stack: list) -> None:
         for key in sorted(element.keys()):
             # key = min(element.keys()) if len(element) < 100 else list(element.keys())[0]
             value = element.pop(key)
@@ -70,7 +70,7 @@ class JsonReader(BaseReader):
                 stack.append((value, depth + 1))
                 break
 
-    def __handle_one_element(self, depth: int, value, paragraph_type: str, paragraph_type_meta):
+    def __handle_one_element(self, depth: int, value: Any, paragraph_type: str, paragraph_type_meta: str) -> LineWithMeta:
         if depth == 1 and paragraph_type == "title":
             level1 = 0
             level2 = 0
@@ -93,10 +93,10 @@ class JsonReader(BaseReader):
         )
         return line
 
-    def __is_flat(self, value):
+    def __is_flat(self, value: Any) -> bool:
         return not isinstance(value, (dict, list))
 
-    def __get_text(self, value) -> str:
+    def __get_text(self, value: Any) -> str:
         if isinstance(value, (dict, list)):
             return ""
         return str(value)

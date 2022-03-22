@@ -28,7 +28,7 @@ class DedocManager:
                  structure_constructor: StructureConstructorComposition,
                  document_metadata_extractor: MetadataExtractorComposition,
                  logger: logging.Logger,
-                 version: str):
+                 version: str) -> None:
         self.version = version
         self.converter = converter
         self.attachments_handler = attachments_handler

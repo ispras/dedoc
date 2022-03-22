@@ -9,7 +9,7 @@ from dedoc.common.exceptions.conversion_exception import ConversionException
 
 
 class AbstractConverter(ABC):
-    def __init__(self, *, config: dict):
+    def __init__(self, *, config: dict) -> None:
         self.timeout = 10
         self.period_checking = 0.05
         self.config = config
@@ -57,7 +57,7 @@ class AbstractConverter(ABC):
             self.logger.error(message)
             raise ConversionException(msg=message)
 
-    def _await_for_conversion(self, filename: str, tmp_dir: str):
+    def _await_for_conversion(self, filename: str, tmp_dir: str) -> None:
         t = 0
         while (not os.path.isfile("{tmp_dir}/{filename}".format(tmp_dir=tmp_dir, filename=filename))) \
                 and (t < self.timeout):

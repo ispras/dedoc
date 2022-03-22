@@ -1,14 +1,15 @@
 from bs4 import BeautifulSoup
 
+from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 
-def check_if_true(value: str):
+
+def check_if_true(value: str) -> bool:
     if value == '1' or value == 'True' or value == 'true':
         return True
     return False
 
 
-def change_paragraph_properties(old_properties: "BaseProperties",
-                                tree: BeautifulSoup):
+def change_paragraph_properties(old_properties: BaseProperties, tree: BeautifulSoup) -> None:
     """
     changes old properties indent, size, jc, spacing_before, spacing_after if they were found in tree
     :param old_properties: Paragraph
@@ -20,8 +21,7 @@ def change_paragraph_properties(old_properties: "BaseProperties",
     change_spacing(old_properties, tree)
 
 
-def change_run_properties(old_properties: "BaseProperties",
-                          tree: BeautifulSoup):
+def change_run_properties(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
     """
     changes old properties: bold, italic, underlined, size if they were found in tree
     :param old_properties: Run
@@ -61,8 +61,7 @@ def change_run_properties(old_properties: "BaseProperties",
             old_properties.subscript = True
 
 
-def change_indent(old_properties: "BaseProperties",
-                  tree: BeautifulSoup):
+def change_indent(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
     """
     changes old properties: indent if it was found in tree
     :param old_properties: Paragraph
@@ -105,8 +104,7 @@ def change_indent(old_properties: "BaseProperties",
     old_properties.indentation = indentation
 
 
-def change_size(old_properties: "BaseProperties",
-                tree: BeautifulSoup):
+def change_size(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
     """
     changes old properties: size if it was found in tree
     :param old_properties: Paragraph or Run
@@ -116,8 +114,7 @@ def change_size(old_properties: "BaseProperties",
         old_properties.size = int(tree.sz.get('w:val', old_properties.size))
 
 
-def change_jc(old_properties: "BaseProperties",
-              tree: BeautifulSoup):
+def change_jc(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
     """
     changes old_properties: jc (alignment) if tag jc was found in tree
     :param old_properties: Paragraph
@@ -147,8 +144,7 @@ def change_jc(old_properties: "BaseProperties",
         old_properties.jc = 'right'
 
 
-def change_caps(old_properties: "BaseProperties",
-                tree: BeautifulSoup):
+def change_caps(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
     """
     changes old_properties: caps if tag caps was found in tree
     :param old_properties: Paragraph or Run
@@ -161,8 +157,7 @@ def change_caps(old_properties: "BaseProperties",
     old_properties.caps = check_if_true(caps_tag) if isinstance(caps_tag, str) else caps_tag
 
 
-def change_spacing(old_properties: "BaseProperties",
-                   tree: BeautifulSoup):
+def change_spacing(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
     """
     changes old_properties: spacing_before, spacing_after if tag spacing was found in tree
     :param old_properties: Paragraph

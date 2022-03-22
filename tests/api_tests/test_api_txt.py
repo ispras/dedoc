@@ -8,11 +8,11 @@ class TestApiTxtReader(AbstractTestApiDocReader):
 
     data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "txt")
 
-    def test_txt_file(self):
+    def test_txt_file(self) -> None:
         file_name = "Pr_2013.02.18_21.txt"
-        result = self._send_request(file_name)
+        _ = self._send_request(file_name)
 
-    def test_text(self):
+    def test_text(self) -> None:
         file_name = "doc_001.txt"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]
@@ -21,7 +21,7 @@ class TestApiTxtReader(AbstractTestApiDocReader):
 
         self._check_metainfo(result['metadata'], 'text/plain', file_name)
 
-    def test_text_pretty_json(self):
+    def test_text_pretty_json(self) -> None:
         file_name = "doc_001.txt"
         result = self._send_request(file_name, data={"structure_type": "tree", "return_format": "pretty_json"})
         content = result["content"]["structure"]
@@ -30,7 +30,7 @@ class TestApiTxtReader(AbstractTestApiDocReader):
 
         self._check_metainfo(result['metadata'], 'text/plain', file_name)
 
-    def test_text_bad_return_format(self):
+    def test_text_bad_return_format(self) -> None:
         file_name = "doc_001.txt"
         result = self._send_request(file_name, data={"structure_type": "tree", "return_format": "broken"})
         content = result["content"]["structure"]
@@ -39,7 +39,7 @@ class TestApiTxtReader(AbstractTestApiDocReader):
 
         self._check_metainfo(result['metadata'], 'text/plain', file_name)
 
-    def test_text2(self):
+    def test_text2(self) -> None:
         file_name = "pr_17.txt"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]
@@ -47,20 +47,20 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         self.assertIn("1. Настоящие Требования разработаны в соответствии с Федеральным законом",
                       get_by_tree_path(content, "0.1.0")["text"])
 
-    def test_special_symbols(self):
+    def test_special_symbols(self) -> None:
         file_name = "special_symbol.txt"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]
         with open(self._get_abs_path(file_name)) as file_in:
             self.assertEqual(file_in.read(), content["subparagraphs"][0]["text"])
 
-    def test_paragraphs(self):
+    def test_paragraphs(self) -> None:
         file_name = "football.txt"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]["subparagraphs"]
         self.__check_football(content)
 
-    def test_large_file(self):
+    def test_large_file(self) -> None:
         file_name = "large_text.txt.gz"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]["subparagraphs"][0]["text"]
@@ -68,7 +68,7 @@ class TestApiTxtReader(AbstractTestApiDocReader):
             if line.strip() != "":
                 self.assertEqual("Line number {:09d}".format(line_id), line)
 
-    def test_paragraphs_gz(self):
+    def test_paragraphs_gz(self) -> None:
         file_name = "football.txt.gz"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]["subparagraphs"]

@@ -10,18 +10,18 @@ class TestDocxConverter(AbstractConverterTest):
     converter = DocxConverter(config={"need_content_analysis": True})
     path = os.path.join(AbstractConverterTest.path, "docx")
 
-    def test_convert_broken(self):
+    def test_convert_broken(self) -> None:
         extension = ".odt"
         filename = "broken"
         with self.assertRaises(ConversionException):
             self._convert(filename=filename, extension=extension, converter=self.converter)
 
-    def test_convert_odt(self):
+    def test_convert_odt(self) -> None:
         filename = "english_doc"
         extension = ".odt"
         self._convert(filename=filename, extension=extension, converter=self.converter)
 
-    def test_convert_doc(self):
+    def test_convert_doc(self) -> None:
         filename = "english_doc"
         extension = ".doc"
         self._convert(filename=filename, extension=extension, converter=self.converter)

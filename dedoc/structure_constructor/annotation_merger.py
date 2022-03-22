@@ -1,26 +1,26 @@
 import re
 from collections import defaultdict
-from typing import List, Dict, Union, Optional, Tuple
+from typing import List, Dict, Union, Optional
 
 from dedoc.data_structures.annotation import Annotation
 
 
 class Space:
 
-    def __init__(self, start: int, end: int):
+    def __init__(self, start: int, end: int) -> None:
         self.start = start
         self.end = end
 
 
 class ExtendedAnnotation:
 
-    def __init__(self, annotations: List[Annotation] = None, spaces: List[Space] = None):
+    def __init__(self, annotations: List[Annotation] = None, spaces: List[Space] = None) -> None:
         self.annotations = annotations if annotations is not None else []
         self.spaces = spaces if spaces is not None else []
         self.start = self.get_start()
         self.end = self.get_end()
 
-    def add(self, annotation: Union[Annotation, Space]):
+    def add(self, annotation: Union[Annotation, Space]) -> "ExtendedAnnotation":
         self.start = min(annotation.start, self.start) if self.start is not None else annotation.start
         self.end = max(annotation.end, self.end) if self.end is not None else annotation.end
         if isinstance(annotation, Annotation):

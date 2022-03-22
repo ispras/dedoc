@@ -20,7 +20,7 @@ class TreeNode(Serializable):
                  metadata: ParagraphMetadata,
                  subparagraphs: List["TreeNode"],
                  hierarchy_level: HierarchyLevel,
-                 parent: Optional["TreeNode"]):
+                 parent: Optional["TreeNode"]) -> None:
         """
         TreeNode helps to represent document as recursive tree structure. It has parent node (None for root ot the tree)
         and list of children nodes (empty list for list node)
@@ -124,7 +124,7 @@ class TreeNode(Serializable):
         self.subparagraphs.append(new_node)
         return new_node
 
-    def add_text(self, line: LineWithMeta):
+    def add_text(self, line: LineWithMeta) -> None:
         """
         add the text and annotations from given line, text is separated with \n
         :param line: line with text to add
@@ -147,7 +147,7 @@ class TreeNode(Serializable):
             new_annotations.append(new_annotation)
         return new_annotations
 
-    def get_root(self):
+    def get_root(self) -> "TreeNode":
         """
         :return: return root of the tree
         """
@@ -156,7 +156,7 @@ class TreeNode(Serializable):
             node = node.parent
         return node
 
-    def merge_annotations(self):
+    def merge_annotations(self) -> None:
         root = self.get_root()
         stack = [root]
         merger = AnnotationMerger()

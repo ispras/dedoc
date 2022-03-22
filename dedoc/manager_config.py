@@ -9,8 +9,8 @@ from dedoc.metadata_extractor.metadata_extractor_composition import MetadataExtr
 from dedoc.readers.csv_reader.csv_reader import CSVReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.readers.excel_reader.excel_reader import ExcelReader
-from dedoc.readers.pptx_reader.pptx_reader import PptxReader
 from dedoc.readers.json_reader.json_reader import JsonReader
+from dedoc.readers.pptx_reader.pptx_reader import PptxReader
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from dedoc.structure_constructor.concreat_structure_constructors.linear_constructor import LinearConstructor
@@ -20,7 +20,7 @@ from dedoc.structure_constructor.structure_constructor_composition import Struct
 """MANAGER SETTINGS"""
 
 
-def get_manager_config(config: dict):
+def get_manager_config(config: dict) -> dict:
     return dict(
         converter=FileConverterComposition(converters=[DocxConverter(config=config),
                                                        ExcelConverter(config=config),

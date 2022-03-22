@@ -12,8 +12,8 @@ from werkzeug.datastructures import FileStorage
 
 from dedoc.configuration_manager import get_manager_config
 from dedoc.data_structures.parsed_document import ParsedDocument
-from dedoc.utils import get_unique_name
 from dedoc.manager.dedoc_manager import DedocManager
+from dedoc.utils import get_unique_name
 
 
 class ThreadManager(Thread):
@@ -25,7 +25,7 @@ class ThreadManager(Thread):
                  logger: logging.Logger,
                  version: str,
                  *,
-                 config: dict):
+                 config: dict) -> None:
         Thread.__init__(self)
         self.version = version
         self.converter = manager_config["converter"]
@@ -39,7 +39,7 @@ class ThreadManager(Thread):
 
         self.manager = DedocManager.from_config(version=version, manager_config=manager_config, config=config)
 
-    def run(self):
+    def run(self) -> None:
         sleep_time = 0.01
         while True:
             if self.queue.empty():
@@ -101,8 +101,7 @@ class DedocThreadedManager(object):
                  logger: logging.Logger,
                  version: str,
                  *,
-                 config: dict
-                 ):
+                 config: dict) -> None:
         self.version = version
         self.tmp_dir = tmp_dir
         self.queue = queue
