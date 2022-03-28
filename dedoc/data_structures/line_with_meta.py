@@ -15,7 +15,7 @@ class LineWithMeta(Sized):
                  hierarchy_level: Optional[HierarchyLevel],
                  metadata: ParagraphMetadata,
                  annotations: List[Annotation],
-                 uid: str = None):
+                 uid: str = None) -> None:
         """
         Structural unit of document - line (or paragraph) of text and its metadata. One LineWithMeta should not contain
         text from different logical parts of the document (for example document title and raw text of document should not
@@ -42,7 +42,7 @@ class LineWithMeta(Sized):
     def __len__(self) -> int:
         return len(self.line)
 
-    def __check_hierarchy_level(self, hierarchy_level: HierarchyLevel):
+    def __check_hierarchy_level(self, hierarchy_level: HierarchyLevel) -> None:
         if not (hierarchy_level is None or isinstance(hierarchy_level, HierarchyLevel)):
             raise Exception(hierarchy_level)
         assert hierarchy_level is None or hierarchy_level.level_1 is None or hierarchy_level.level_1 >= 0
@@ -128,11 +128,11 @@ class LineWithMeta(Sized):
     def uid(self) -> str:
         return self._uid
 
-    def set_hierarchy_level(self, hierarchy_level: Optional[HierarchyLevel]):
+    def set_hierarchy_level(self, hierarchy_level: Optional[HierarchyLevel]) -> None:
         self.__check_hierarchy_level(hierarchy_level)
         self._hierarchy_level = hierarchy_level
 
-    def set_line(self, line: str):
+    def set_line(self, line: str) -> None:
         self._line = line
 
     def __repr__(self) -> str:

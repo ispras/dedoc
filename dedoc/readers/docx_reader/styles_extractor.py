@@ -1,17 +1,15 @@
-from typing import Optional, List
 import re
+from typing import Optional, List
 
 from bs4 import BeautifulSoup
 
-from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.data_structures.run import Run
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
 
 
 class StylesExtractor:
 
-    def __init__(self,
-                 xml: BeautifulSoup):
+    def __init__(self, xml: BeautifulSoup) -> None:
         """
         :param xml: BeautifulSoup tree with styles
         """
@@ -53,8 +51,8 @@ class StylesExtractor:
 
     def parse(self,
               style_id: Optional[str],
-              old_properties: BaseProperties,
-              style_type: str):
+              old_properties: "BaseProperties",  # NOQA
+              style_type: str) -> None:
         """
         if style_id is None finds default style
         else finds style with given style_id and changes
@@ -112,8 +110,8 @@ class StylesExtractor:
                 print(error)
 
     @staticmethod
-    def _apply_styles(old_properties: BaseProperties,
-                      styles: List[BeautifulSoup]):
+    def _apply_styles(old_properties: "BaseProperties",  # NOQA
+                      styles: List[BeautifulSoup]) -> None:
         """
         applies all styles to old_properties
         :param old_properties: properties for changing

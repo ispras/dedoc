@@ -6,7 +6,7 @@ from dedoc.data_structures.annotation import Annotation
 class StyleAnnotation(Annotation):
     name = "style"
 
-    def __init__(self, start: int, end: int, value: str):
+    def __init__(self, start: int, end: int, value: str) -> None:
         super().__init__(start=start, end=end, name=StyleAnnotation.name, value=value)
 
     @staticmethod

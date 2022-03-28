@@ -7,6 +7,7 @@ from dedoc.data_structures.concrete_annotations.subscript_annotation import Subs
 from dedoc.data_structures.concrete_annotations.superscript_annotation import SuperscriptAnnotation
 from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
 from dedoc.data_structures.table import Table
+from dedoc.data_structures.tree_node import TreeNode
 
 
 def __prettify_text(text: str) -> Iterator[str]:
@@ -22,7 +23,7 @@ def __prettify_text(text: str) -> Iterator[str]:
         yield " ".join(res)
 
 
-def _node2tree(paragraph: 'TreeNode', depth: int, depths: Set[int] = None) -> str:
+def _node2tree(paragraph: TreeNode, depth: int, depths: Set[int] = None) -> str:
     if depths is None:
         depths = set()
 
@@ -53,7 +54,7 @@ def _node2tree(paragraph: 'TreeNode', depth: int, depths: Set[int] = None) -> st
                 """.format("".join(node_result))
 
 
-def json2collapsed_tree(paragraph: 'TreeNode') -> str:
+def json2collapsed_tree(paragraph: TreeNode) -> str:
     result = """
     <!DOCTYPE html>
     <html>
@@ -71,7 +72,7 @@ def json2collapsed_tree(paragraph: 'TreeNode') -> str:
     return result
 
 
-def json2tree(paragraph: 'TreeNode') -> str:
+def json2tree(paragraph: TreeNode) -> str:
     stack = [paragraph]
     nodes = []
     while len(stack) > 0:
@@ -102,7 +103,7 @@ def json2tree(paragraph: 'TreeNode') -> str:
     return "".join(reversed(result))
 
 
-def __add_vertical_line(depths: Set[int], space: List[str]):
+def __add_vertical_line(depths: Set[int], space: List[str]) -> str:
     for d in depths:
         space[(d - 1) * 4] = "|"
     return "".join(space)

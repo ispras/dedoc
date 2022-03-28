@@ -17,7 +17,7 @@ class AbstractConverterTest(TestCase):
         super().tearDown()
         self.tmp_dir.cleanup()
 
-    def _convert(self, filename: str, extension: str, converter: AbstractConverter):
+    def _convert(self, filename: str, extension: str, converter: AbstractConverter) -> None:
         filename_with_extension = filename + extension
         file = os.path.join(self.path, filename_with_extension)
         tmp_file = os.path.join(self.tmp_dir.name, filename_with_extension)

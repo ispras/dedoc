@@ -8,9 +8,10 @@ class DocTree:
 
     def __init__(self, prefix: str,
                  hierarchy_level: Optional[HierarchyLevel],
-                 parent, child_num: int,
+                 parent: "DocTree",
+                 child_num: int,
                  texts: List[str],
-                 paragraph_type: Optional[dict]):
+                 paragraph_type: Optional[dict]) -> None:
         self.prefix = prefix
         self._hierarchy_level = hierarchy_level
         self.parent = parent
@@ -27,7 +28,7 @@ class DocTree:
         return self._hierarchy_level
 
     @staticmethod
-    def create(texts=None):
+    def create(texts: Optional[List[str]] = None) -> "DocTree":
         if texts is None:
             texts = []
         return DocTree(prefix="",
@@ -38,13 +39,13 @@ class DocTree:
                        paragraph_type={"type": "root"}
                        )
 
-    def add_text(self, text: str):
+    def add_text(self, text: str) -> None:
         self.texts.append(text)
 
     def add_child(self,
                   hierarchy_level: Optional[HierarchyLevel],
                   texts: List[str],
-                  paragraph_type: Optional[dict]):
+                  paragraph_type: Optional[dict]) -> "DocTree":
 
         if hierarchy_level is not None and self.hierarchy_level > hierarchy_level:
             raise ValueError("Child hierarchy level is {}, parent hierarchy level {}. Should be lower".format(
@@ -61,13 +62,13 @@ class DocTree:
         self.children.append(child)
         return child
 
-    def get_root(self):
+    def get_root(self) -> "DocTree":
         if self.parent is None:
             return self
         else:
             return self.parent.get_root()
 
-    def as_dict(self):  # we now pass header path from node to node from root to bottom
+    def as_dict(self) -> dict:  # we now pass header path from node to node from root to bottom
         res = OrderedDict()
         res["id"] = self.key
         res["header"] = self.header

@@ -1,3 +1,4 @@
+-e git+https://github.com/IlyaKozlov/csd.git@acb34ffc193728f7049699867c08d08d4be51258#egg=csd
 beautifulsoup4==4.10.0
 docx==0.2.4
 Flask==2.0.3
@@ -5,7 +6,6 @@ flask_cors==3.0.10
 flask-restx==0.5.1
 itsdangerous==2.1.0
 olefile~=0.46
-pycodestyle==2.8.0
 python-docx==0.8.11
 python-pptx==0.6.21
 requests==2.27.1

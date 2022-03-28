@@ -1,8 +1,8 @@
 from typing import List, Optional
 
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.data_structures.table import Table
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.data_structures.table import Table
 
 
 class UnstructuredDocument:
@@ -12,7 +12,7 @@ class UnstructuredDocument:
                  lines: List[LineWithMeta],
                  attachments: List[AttachedFile],
                  warnings: List[str] = None,
-                 metadata: Optional[dict] = None):
+                 metadata: Optional[dict] = None) -> None:
         """
         That class holds information about document content: its text and tables. Text is represented as flat
         list of lines.

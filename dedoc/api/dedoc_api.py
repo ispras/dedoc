@@ -2,13 +2,13 @@ import importlib
 import json
 import os
 from functools import wraps
-from typing import List, Tuple
+from typing import List, Tuple, Callable, Any, Union
 
-from flask import Flask, request, Request
+import ujson
+from flask import Flask, request, Request, Response
 from flask import send_file
 from flask_restx import Resource, Api, Model
 from werkzeug.local import LocalProxy
-import ujson
 
 from dedoc.api.api_utils import json2html, json2tree, json2collapsed_tree
 from dedoc.api.init_api import app, config, static_files_dirs, PORT, static_path
@@ -23,7 +23,7 @@ logger = config["logger"]
 
 
 @app.route('/', methods=['GET'])
-def get_info():
+def get_info() -> Response:
     """
     Root URL '/' is need start with simple Flask before rest-plus.API otherwise you will get 404 Error.
     It is bug of rest-plus lib.
@@ -38,21 +38,24 @@ def get_info():
 
 
 @app.route('/version', methods=['GET'])
-def get_version():
+def get_version() -> str:
     return manager.version
 
 
 api = Api(app, doc='/swagger/', description=get_command_keep_models())
 
 
-def marshal_with_wrapper(model: Model, request_post: LocalProxy, default_serializer: str = "json", **other):
+def marshal_with_wrapper(model: Model,
+                         request_post: LocalProxy,
+                         default_serializer: str = "json",
+                         **other: Any) -> Callable:
     """
     Response marshalling with json indent=2 for json and outputs html for return_html==True
     """
 
-    def decorator(func):
+    def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Response:
 
             serializer = str(request_post.values.get("return_format", default_serializer)).lower()
             if serializer in ("html", "tree", "collapsed_tree"):
@@ -78,7 +81,7 @@ def marshal_with_wrapper(model: Model, request_post: LocalProxy, default_seriali
     return decorator
 
 
-def _get_parameters(request: Request):
+def _get_parameters(request: Request) -> dict:
     return {k: v for k, v in request.values.items()}
 
 
@@ -101,7 +104,7 @@ def check_on_unnecessary(request: Request, from_parser: dict) -> List[str]:
 class UploadFile(Resource):
     @api.doc('parsed document', model=ParsedDocument.get_api_dict(api))
     @marshal_with_wrapper(ParsedDocument.get_api_dict(api), request, skip_none=True)
-    def post(self):
+    def post(self) -> Union[str, ParsedDocument]:
         if request.method == 'POST':
             if 'file' not in request.files or request.files['file'] is None or request.files['file'].filename == "":
                 raise MissingFileException("Error: Missing content in request_post file parameter",
@@ -134,7 +137,7 @@ class UploadFile(Resource):
 @api.route('/static_file')
 @api.doc(False)
 class SendExampleFile(Resource):
-    def get(self):
+    def get(self) -> Response:
         path = _get_static_file_path()
         as_attachment = request.values.get("as_attachment") == "true"
         return send_file(path, as_attachment=as_attachment)
@@ -144,7 +147,7 @@ class SendExampleFile(Resource):
 @api.doc(False)
 class SendJson(Resource):
     @marshal_with_wrapper(ParsedDocument.get_api_dict(api), request, default_serializer="pretty_json", skip_none=True)
-    def get(self):
+    def get(self) -> ParsedDocument:
         path = _get_static_file_path()
         document_tree = _handle_request(path)
         return document_tree
@@ -154,7 +157,7 @@ class SendJson(Resource):
 @api.doc(False)
 class SendHtml(Resource):
 
-    def get(self):
+    def get(self) -> Response:
         path = _get_static_file_path()
         document_tree = _handle_request(path)
         text_res = json2html("", document_tree.content.structure, document_tree.content.tables, 0)
@@ -183,7 +186,7 @@ manager = DedocThreadedManager.from_config(config=config, version=open(version_f
 # ==================== Utils API functions =======================
 
 
-def _get_static_file_path():
+def _get_static_file_path() -> str:
     file = request.values["fname"]
     directory_name = request.values.get("directory")
     directory = static_files_dirs[
@@ -191,7 +194,7 @@ def _get_static_file_path():
     return os.path.abspath(os.path.join(directory, file))
 
 
-def _handle_request(path: str):
+def _handle_request(path: str) -> ParsedDocument:
     parameters = _get_parameters(request)
     document_tree = manager.parse_existing_file(path=path, parameters=parameters)
     return document_tree
@@ -208,5 +211,5 @@ def get_api() -> Flask:
     return app
 
 
-def run_api(app: Flask):
+def run_api(app: Flask) -> None:
     app.run(host='0.0.0.0', port=PORT)

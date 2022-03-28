@@ -6,7 +6,7 @@ from dedoc.data_structures.annotation import Annotation
 class IndentationAnnotation(Annotation):
     name = "indentation"
 
-    def __init__(self, start: int, end: int, value: str):
+    def __init__(self, start: int, end: int, value: str) -> None:
         try:
             float(value)
         except ValueError:

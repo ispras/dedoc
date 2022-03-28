@@ -10,18 +10,18 @@ class TestExcelConverter(AbstractConverterTest):
 
     path = os.path.join(AbstractConverterTest.path, "xlsx")
 
-    def test_convert_broken(self):
+    def test_convert_broken(self) -> None:
         extension = ".ods"
         filename = "broken"
         with self.assertRaises(ConversionException):
             self._convert(filename=filename, extension=extension, converter=self.converter)
 
-    def test_convert_ods(self):
+    def test_convert_ods(self) -> None:
         extension = ".ods"
         filename = "example"
         self._convert(filename=filename, extension=extension, converter=self.converter)
 
-    def test_convert_doc(self):
+    def test_convert_doc(self) -> None:
         extension = ".xls"
         filename = "example"
         self._convert(filename=filename, extension=extension, converter=self.converter)

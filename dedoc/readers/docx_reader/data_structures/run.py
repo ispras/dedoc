@@ -10,7 +10,8 @@ class Run(BaseProperties):
 
     def __init__(self,
                  properties: Optional[BaseProperties],
-                 styles_extractor: "StylesExtractor"):
+                 styles_extractor: "StylesExtractor"  # NOQA
+                 ) -> None:
         """
         contains information about run properties
         :param properties: Paragraph or Run for copying it's properties
@@ -20,8 +21,7 @@ class Run(BaseProperties):
         self.text = ""
         super().__init__(styles_extractor, properties)
 
-    def get_text(self,
-                 xml: BeautifulSoup):
+    def get_text(self, xml: BeautifulSoup) -> None:
         """
         makes the text of run
         :param xml: BeautifulSoup tree with run properties

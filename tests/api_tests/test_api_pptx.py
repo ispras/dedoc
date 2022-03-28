@@ -7,22 +7,22 @@ class TestApiExcelReader(AbstractTestApiDocReader):
 
     data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "pptx")
 
-    def test_pptx(self):
+    def test_pptx(self) -> None:
         file_name = "example.pptx"
         result = self._send_request(file_name)
         self.__check_content(result['content'])
 
-    def test_ppt(self):
+    def test_ppt(self) -> None:
         file_name = "example.ppt"
         result = self._send_request(file_name)
         self.__check_content(result['content'])
 
-    def test_odp(self):
+    def test_odp(self) -> None:
         file_name = "example.odp"
         result = self._send_request(file_name)
         self.__check_content(result['content'])
 
-    def __check_content(self, content):
+    def __check_content(self, content: dict) -> None:
         subparagraphs = content['structure']['subparagraphs']
         self.assertEqual('A long time ago in a galaxy far far away ', subparagraphs[0]['text'])
         self.assertEqual('Example', subparagraphs[1]['text'])

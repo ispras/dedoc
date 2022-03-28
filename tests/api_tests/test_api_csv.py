@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
 
@@ -7,21 +8,21 @@ class TestApiCSVReader(AbstractTestApiDocReader):
 
     data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "csvs")
 
-    def test_csv(self):
+    def test_csv(self) -> None:
         file_name = "csv_coma.csv"
         result = self._send_request(file_name)
         self.assertIn("delimiter is ','", result["warnings"])
         tables = result["content"]["tables"]
         self.__check_content(tables)
 
-    def test_csv_patch_table(self):
+    def test_csv_patch_table(self) -> None:
         file_name = "csv_coma.csv"
         result = self._send_request(file_name, data={"insert_table": "true", "structure_type": "tree"})
         tables = result["content"]["tables"]
         self.__check_content(tables)
         self.__check_content_tree(result)
 
-    def test_tsv(self):
+    def test_tsv(self) -> None:
         file_name = "csv_tab.tsv"
         result = self._send_request(file_name, data={"insert_table": "true", "structure_type": "tree"})
         self.assertIn("delimiter is '\t'", result["warnings"])
@@ -29,7 +30,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
         self.__check_content(tables)
         self.__check_content_tree(result)
 
-    def test_csv_semicolon(self):
+    def test_csv_semicolon(self) -> None:
         file_name = "csv_semicolon.csv"
         result = self._send_request(file_name, dict(delimiter=";", insert_table="true", structure_type="tree"))
         self.assertIn("delimiter is ';'", result["warnings"])
@@ -37,7 +38,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
         self.__check_content(tables)
         self.__check_content_tree(result)
 
-    def test_csv_books(self):
+    def test_csv_books(self) -> None:
         file_name = "books.csv"
         result = self._send_request(file_name, dict(different_param="some value"))
 
@@ -52,7 +53,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
             ["055357342X", "book", "A Storm of Swords", "7.99", "true", "George R.R. Martin", "A Song of Ice and Fire",
              "3", "fantasy"], table[3])
 
-    def test_csv_books2(self):
+    def test_csv_books2(self) -> None:
         file_name = "books_2.csv"
         result = self._send_request(file_name)
         self.assertIn("delimiter is ','", result["warnings"])
@@ -65,7 +66,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
             ["0553579908", "book", 'A Clash of "Kings"', '7.99', 'True', 'George R.R. Martin',
              'A Song of Ice and Fire', '2', 'fantasy'], table[2])
 
-    def __check_content(self, tables):
+    def __check_content(self, tables: List[dict]) -> None:
         self.assertEqual(1, len(tables))
         table1 = tables[0]
         rows1 = table1["cells"]
@@ -82,7 +83,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
         self.assertEqual("3", rows1[2][1])
         self.assertEqual("1", rows1[2][2])
 
-    def __check_content_tree(self, result: dict):
+    def __check_content_tree(self, result: dict) -> None:
         table = result["content"]["structure"]["subparagraphs"][0]
         row1 = table["subparagraphs"][0]
         row2 = table["subparagraphs"][1]

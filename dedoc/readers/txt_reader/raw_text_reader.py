@@ -4,23 +4,22 @@ import logging
 import re
 import time
 from typing import Optional, Tuple, Iterable, List
-
 from unicodedata import normalize
 
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
-from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 from dedoc.utils import calculate_file_hash, get_encoding
 
 
 class RawTextReader(BaseReader):
 
-    def __init__(self, *, config: dict):
+    def __init__(self, *, config: dict) -> None:
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
         self.space_regexp = re.compile(r"^\s+")
         self.config = config

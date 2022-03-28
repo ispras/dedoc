@@ -40,7 +40,7 @@ from dedoc.utils import calculate_file_hash
 
 
 class DocxDocument:
-    def __init__(self, path: str, hierarchy_level_extractor: HierarchyLevelExtractor, logger: logging.Logger):
+    def __init__(self, path: str, hierarchy_level_extractor: HierarchyLevelExtractor, logger: logging.Logger) -> None:
         self.path = path
         self.path_hash = calculate_file_hash(path=path)
 
@@ -95,12 +95,12 @@ class DocxDocument:
                 return BeautifulSoup(document.read(filename), 'xml')
         except KeyError:
             return None
-        except zipfile.BadZipFile as exception:
+        except zipfile.BadZipFile:
             raise BadFileFormatException("Bad docx file:\n file_name = {}. Seems docx is broken".format(
                 os.path.basename(self.path)
             ))
 
-    def __get_paragraph_uid(self, paragraph_xml: BeautifulSoup):
+    def __get_paragraph_uid(self, paragraph_xml: BeautifulSoup) -> str:
         xml_hash = hashlib.md5(paragraph_xml.encode()).hexdigest()
         raw_uid = '{}_{}'.format(self.path_hash, xml_hash)
         uid = raw_uid
@@ -247,7 +247,7 @@ class DocxDocument:
 
         return self._get_lines_with_meta(hierarchy_level_extractor=hierarchy_level_extractor)
 
-    def _handle_table_xml(self, paragraph_xml: BeautifulSoup):
+    def _handle_table_xml(self, paragraph_xml: BeautifulSoup) -> None:
         table = DocxTable(paragraph_xml, self.styles_extractor)
         metadata = TableMetadata(page_id=None, uid=table.uid)
         self.tables.append(Table(cells=table.get_cells(), metadata=metadata))
@@ -266,13 +266,13 @@ class DocxDocument:
         else:
             self.table_refs[len(self.paragraph_list) - 1].append(table_uid)
 
-    def _handle_images_xml(self, images_xml: List[BeautifulSoup]):
+    def _handle_images_xml(self, images_xml: List[BeautifulSoup]) -> None:
         for image_xml in images_xml:
             blips = image_xml.find_all("a:blip")
             image_uid = self.images_rels[blips[0]["r:embed"]]
             self.image_refs[len(self.paragraph_list) - 1].append(image_uid)
 
-    def _handle_diagrams_xml(self, diagram_xml: BeautifulSoup):
+    def _handle_diagrams_xml(self, diagram_xml: BeautifulSoup) -> None:
         diagram_uid = hashlib.md5(diagram_xml.encode()).hexdigest()
         if not self.paragraph_list:
             empty_paragraph_xml = BeautifulSoup('<w:p></w:p>').body.contents[0]

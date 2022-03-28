@@ -1,14 +1,15 @@
+import hashlib
+import os
 import tempfile
 import unittest
-import os
-import hashlib
 from shutil import copyfile
+
 from dedoc.attachment_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
 
 
 class TestDocxAttachmentsExtractor(unittest.TestCase):
 
-    def test_example_1_2_3(self):
+    def test_example_1_2_3(self) -> None:
         right_hash = {
             '_________Microsoft_Visio.vsdx': 'b8512b46326a3488f54af64d1afa7b71',
             '_________Microsoft_Word.docx': '5644e4172116a213ba2363e28d98ff86',
@@ -38,7 +39,7 @@ class TestDocxAttachmentsExtractor(unittest.TestCase):
                     extracted += 1
         self.assertEqual(extracted, 12)
 
-    def test_diagrams_extraction(self):
+    def test_diagrams_extraction(self) -> None:
         docx_attachment_extractor = DocxAttachmentsExtractor(need_content_analysis=True)
         src_dir = os.path.join(os.path.dirname(__file__), "data", "docx")
         files = [('diagram_1.docx', 1), ('diagram_2.docx', 5)]

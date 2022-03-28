@@ -9,7 +9,11 @@ class ConversionException(DedocException):
     (converter terminated the process)
     """
 
-    def __init__(self, msg: str, msg_api=None, filename: Optional[str] = None, version: Optional[str] = None):
+    def __init__(self,
+                 msg: str,
+                 msg_api: Optional[str] = None,
+                 filename: Optional[str] = None,
+                 version: Optional[str] = None) -> None:
         super(ConversionException, self).__init__(msg_api=msg_api, msg=msg, filename=filename, version=version)
 
     def __str__(self) -> str:

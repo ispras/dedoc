@@ -1,6 +1,6 @@
 class AttachedFile:
 
-    def __init__(self, original_name: str, tmp_file_path: str, need_content_analysis: bool, uid: str):
+    def __init__(self, original_name: str, tmp_file_path: str, need_content_analysis: bool, uid: str) -> None:
         """
         Holds information about attached files.
         :param original_name: Name of the file from which the attachments are extracted

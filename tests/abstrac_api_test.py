@@ -1,8 +1,8 @@
 import json
 import os
+import unittest
 
 import requests
-import unittest
 
 
 class AbstractTestApiDocReader(unittest.TestCase):
@@ -10,22 +10,22 @@ class AbstractTestApiDocReader(unittest.TestCase):
     data_directory_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../tests", "data"))
     print(data_directory_path)
 
-    def _check_metainfo(self, metainfo, actual_type: str, actual_name: str):
+    def _check_metainfo(self, metainfo: dict, actual_type: str, actual_name: str) -> None:
         self.assertEqual(metainfo['file_type'], actual_type)
         self.assertEqual(metainfo['file_name'], actual_name)
 
-    def __get_host(self):
+    def __get_host(self) -> str:
         host = os.environ.get('DOC_READER_HOST', 'localhost')
         return host
 
-    def __get_port(self):
+    def __get_port(self) -> int:
         port = int(os.environ.get('DOCREADER_PORT', '1231'))
         return port
 
     def _get_abs_path(self, file_name: str) -> str:
         return os.path.join(self.data_directory_path, file_name)
 
-    def _send_request(self, file_name: str, data: dict = None, expected_code: int = 200):
+    def _send_request(self, file_name: str, data: dict = None, expected_code: int = 200) -> dict:
         """
         send file `file_name` in post request with `data` as parameters. Expects that response return code
         `expected_code`

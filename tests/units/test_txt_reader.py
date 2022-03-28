@@ -8,7 +8,7 @@ from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 class TestTxtReader(TestCase):
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "txt"))
 
-    def test__get_lines_with_meta(self):
+    def test__get_lines_with_meta(self) -> None:
         file = os.path.join(self.path, "pr_17.txt")
         reader = RawTextReader(config=get_config())
         for line in reader._get_lines_with_meta(path=file, encoding="utf-8"):

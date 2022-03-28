@@ -8,8 +8,7 @@ from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 
 class ParagraphInfo:
 
-    def __init__(self,
-                 paragraph: Paragraph):
+    def __init__(self, paragraph: Paragraph) -> None:
         """
         extracts information from paragraph properties
         :param paragraph: Paragraph for extracting it's properties

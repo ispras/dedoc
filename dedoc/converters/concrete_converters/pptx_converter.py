@@ -6,7 +6,7 @@ from dedoc.extensions import converted_extensions, converted_mimes
 
 
 class PptxConverter(AbstractConverter):
-    def __init__(self, *, config: dict):
+    def __init__(self, *, config: dict) -> None:
         super().__init__(config=config)
 
     def can_convert(self, extension: str, mime: str, parameters: Optional[dict] = None) -> bool:

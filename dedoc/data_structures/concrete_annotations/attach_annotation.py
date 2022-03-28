@@ -1,5 +1,6 @@
-from dedoc.data_structures.annotation import Annotation
 from flask_restx import Model, Api, fields
+
+from dedoc.data_structures.annotation import Annotation
 
 
 class AttachAnnotation(Annotation):
@@ -9,7 +10,7 @@ class AttachAnnotation(Annotation):
     """
     name = "attachment"
 
-    def __init__(self, attach_uid: str, start: int, end: int):
+    def __init__(self, attach_uid: str, start: int, end: int) -> None:
         super().__init__(start=start, end=end, name=AttachAnnotation.name, value=attach_uid)
 
     @staticmethod

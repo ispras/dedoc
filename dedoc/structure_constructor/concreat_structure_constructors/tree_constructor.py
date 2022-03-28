@@ -3,18 +3,18 @@ from typing import List, Tuple, Optional
 from soupsieve.util import deprecated
 
 from dedoc.data_structures.document_content import DocumentContent
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.tree_node import TreeNode
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.structure_parser.heirarchy_level import HierarchyLevel
-from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_constructor.concreat_structure_constructors.abstract_structure_constructor import \
     AbstractStructureConstructor
+from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 
 
 class TreeConstructor(AbstractStructureConstructor):
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     def structure_document(self,
@@ -54,7 +54,7 @@ class TreeConstructor(AbstractStructureConstructor):
                 other_lines.append(line)
         return document_name, other_lines
 
-    def __add_lists(self, not_document_name: List[LineWithMeta]):
+    def __add_lists(self, not_document_name: List[LineWithMeta]) -> List[LineWithMeta]:
         previous_hierarchy_levels = []
         res = []
         for line in not_document_name:
@@ -71,7 +71,7 @@ class TreeConstructor(AbstractStructureConstructor):
         return res
 
     @staticmethod
-    def __create_list_line(line: LineWithMeta):
+    def __create_list_line(line: LineWithMeta) -> LineWithMeta:
         return LineWithMeta(line="",
                             hierarchy_level=HierarchyLevel(
                                 level_1=line.hierarchy_level.level_1,

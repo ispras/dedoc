@@ -1,13 +1,12 @@
-import unittest
-
-import pycodestyle
 import os
+from typing import List
+
+from style_test import StyleTest
 
 
-class TestCodeFormat(unittest.TestCase):
+class TestCodeFormat(StyleTest):
 
-    @staticmethod
-    def get_files():
+    def get_files(self) -> List[str]:
         files = []
         for code_dir in ["dedoc", "tests"]:
             path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../..", code_dir))
@@ -17,19 +16,5 @@ class TestCodeFormat(unittest.TestCase):
                         files.append(os.path.join(root, file))
         return files
 
-    def test_pep8_conformance(self):
-        """Test that we conform to PEP8."""
-
-        files = self.get_files()
-        ignore = [
-            "E501",  # skip line length check because  79 is not enough
-            "W504"  # we choose this from 503 and 504
-        ]
-        pep8style = pycodestyle.StyleGuide(quiet=True, ignore=ignore)
-        file_check = pep8style.check_files(files)
-        if file_check.total_errors > 0:
-            print("GET {} ERRORS".format(file_check.total_errors))
-            pep8style = pycodestyle.StyleGuide(quiet=False, ignore=ignore)
-            pep8style.check_files(files)
-
-        self.assertEqual(0, file_check.total_errors, "some file contains errors. To skip line use # noqa")
+    def test_style(self) -> None:
+        self.flake_test()

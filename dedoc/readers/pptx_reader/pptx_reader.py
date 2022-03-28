@@ -1,19 +1,19 @@
+from typing import Optional
+
 from pptx import Presentation
 
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.readers.base_reader import BaseReader
-from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
-
-from typing import Optional
 
 
 class PptxReader(BaseReader):
-    def __init__(self):
+    def __init__(self) -> None:
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
 
     def can_read(self,

@@ -6,13 +6,13 @@ from dedoc.data_structures.line_with_meta import LineWithMeta, HierarchyLevel
 
 class HierarchyLevelExtractor:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.chapter = re.compile("^(статья|пункт|параграф|глава|определение)\s*([0-9]+\\.)*([0-9]+\\.?)")  # noqa
         self.dotted_num = re.compile("^([0-9]+\\.)+([0-9]+\\.?)?(\\s|$)")
         self.bracket_num = re.compile("^[0-9]+\\)")
         self.letter = re.compile("^(([а-я]|[a-z])\\))")
 
-    def __need_update_level(self, hierarchy_level: HierarchyLevel, extracted_level: HierarchyLevel):
+    def __need_update_level(self, hierarchy_level: HierarchyLevel, extracted_level: HierarchyLevel) -> bool:
         if hierarchy_level is None:
             return True
 

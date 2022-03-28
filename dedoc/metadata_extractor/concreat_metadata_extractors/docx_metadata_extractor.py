@@ -54,7 +54,7 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
         parsed_document = ParsedDocument(metadata=metadata, content=doc)
         return parsed_document
 
-    def __convert_date(self, date: Optional[datetime]):
+    def __convert_date(self, date: Optional[datetime]) -> Optional[int]:
         if date is not None:
             return int(date.timestamp())
         return None

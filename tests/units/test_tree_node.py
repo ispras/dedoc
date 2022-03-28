@@ -1,6 +1,5 @@
 from unittest import TestCase
 
-from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -11,7 +10,7 @@ from dedoc.structure_parser.heirarchy_level import HierarchyLevel
 
 class TestTreeNode(TestCase):
 
-    def test_root_annotations(self):
+    def test_root_annotations(self) -> None:
         lines = [LineWithMeta(line="bold text\n",
                               hierarchy_level=HierarchyLevel.create_root(),
                               metadata=ParagraphMetadata(paragraph_type="root", predicted_classes=None, page_id=0,

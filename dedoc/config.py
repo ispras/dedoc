@@ -1,7 +1,7 @@
+import argparse
+import importlib.util
 import logging
 import os
-import importlib.util
-import argparse
 import sys
 
 parser_config = argparse.ArgumentParser()
@@ -61,7 +61,7 @@ class Configuration(object):
 
         return cls.__instance
 
-    def __initConfig(self):
+    def __initConfig(self) -> None:
         if args_config.config_path is not None:
             spec = importlib.util.spec_from_file_location("config_module", args_config.config_path)
             config_module = importlib.util.module_from_spec(spec)
@@ -76,5 +76,5 @@ class Configuration(object):
         return self.__config
 
 
-def get_config():
+def get_config() -> dict:
     return Configuration().getConfig()

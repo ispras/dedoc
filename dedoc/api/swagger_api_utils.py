@@ -3,7 +3,7 @@ from dedoc.config import get_config
 config = get_config()
 
 
-def get_command_keep_models():
+def get_command_keep_models() -> str:
     """
     Ignore some private models in swagger api documentations
     """

@@ -20,7 +20,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.tmpdir.cleanup()
         super().tearDown()
 
-    def test_docx(self):
+    def test_docx(self) -> None:
         any_doc_reader = DocxReader(config=get_config())
         path = self._get_path("example.docx")
         result = any_doc_reader.read(path)
@@ -38,7 +38,7 @@ class TestAnyDocReader(unittest.TestCase):
 
         self.assertEqual("1.2.3.", lines[11].line)
 
-    def test_structure_docx(self):
+    def test_structure_docx(self) -> None:
         any_doc_reader = DocxReader(config=get_config())
         path = self._get_path("header_test.docx")
         result = any_doc_reader.read(path)
@@ -59,7 +59,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual("4.5. п", lines[10].line)
         self.assertEqual("4.6. п", lines[11].line)
 
-    def test_tz_file(self):
+    def test_tz_file(self) -> None:
         any_doc_reader = DocxReader(config=get_config())
         path = self._get_path("tz.docx")
         result = any_doc_reader.read(path)
@@ -68,7 +68,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual("Техническое задание\nна оказание услуг по созданию системы защиты персональных данных \n",
                          lines[0].line)
 
-    def test_docx_without_numbering(self):
+    def test_docx_without_numbering(self) -> None:
         any_doc_reader = DocxReader(config=get_config())
         path = self._get_path("without_numbering.docx")
         try:
@@ -77,7 +77,7 @@ class TestAnyDocReader(unittest.TestCase):
             result = None
         self.assertTrue(result is not None)
 
-    def test_docx_table_location(self):
+    def test_docx_table_location(self) -> None:
         any_doc_reader = DocxReader(config=get_config())
         path = self._get_path("example.docx")
         result = any_doc_reader.read(path)
@@ -99,21 +99,21 @@ class TestAnyDocReader(unittest.TestCase):
                 break
         self.assertTrue(found)
 
-    def test_caps_letters1(self):
+    def test_caps_letters1(self) -> None:
         any_doc_reader = DocxReader(config=get_config())
         path = self._get_path("caps_1.docx")
         result = any_doc_reader.read(path)
         self.assertEqual('ШИЖМАШ МОГАЙ ЛИЕШ ГЫН?	', result.lines[2].line)
         self.assertEqual('АНАСТАСИЯ АЙГУЗИНА', result.lines[3].line)
 
-    def test_caps_letters2(self):
+    def test_caps_letters2(self) -> None:
         any_doc_reader = DocxReader(config=get_config())
         path = self._get_path("caps_2.docx")
         result = any_doc_reader.read(path)
         self.assertEqual('И. Одар "Таргылтыш"\n', result.lines[0].line)
         self.assertEqual('I глава\n', result.lines[2].line)
 
-    def test_justification(self):
+    def test_justification(self) -> None:
         any_doc_reader = DocxReader(config=get_config())
         path = self._get_path("justification.docx")
         result = any_doc_reader.read(path)
@@ -123,7 +123,7 @@ class TestAnyDocReader(unittest.TestCase):
                 if annotation.name == "alignment":
                     self.assertEqual(answer[1], annotation.value)
 
-    def test_numeration(self):
+    def test_numeration(self) -> None:
         any_doc_reader = DocxReader(config=get_config())
         path = self._get_path("numeration.docx")
         result = any_doc_reader.read(path)
@@ -139,7 +139,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual("5.4.\tlist", lines[11].line)
         self.assertEqual("5.5.\tlist", lines[13].line)
 
-    def test_tables(self):
+    def test_tables(self) -> None:
         any_doc_reader = DocxReader(config=get_config())
         path = self._get_path("merged_cells.docx")
         result = any_doc_reader.read(path)
@@ -180,7 +180,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual("v1", result.tables[1].cells[2][4])
         self.assertEqual("v2", result.tables[1].cells[2][5])
 
-    def test_diagram_annotation(self):
+    def test_diagram_annotation(self) -> None:
         any_doc_reader = DocxReader(config=get_config())
         path = self._get_path("diagram_1.docx")
         result = any_doc_reader.read(path)

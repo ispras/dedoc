@@ -18,7 +18,7 @@ class Paragraph(BaseProperties):
                  numbering_extractor: NumberingExtractor,
                  footnote_extractor: FootnoteExtractor,
                  endnote_extractor: FootnoteExtractor,
-                 uid: str):
+                 uid: str) -> None:
         """
         contains information about paragraph properties
         :param xml: BeautifulSoup tree with paragraph properties
@@ -110,7 +110,7 @@ class Paragraph(BaseProperties):
                 return numbering_run
         return None
 
-    def _make_run_list(self):
+    def _make_run_list(self) -> None:
         """
         makes runs of the paragraph and adds them to the paragraph list
         """

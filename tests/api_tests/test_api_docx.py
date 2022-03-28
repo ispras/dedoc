@@ -9,18 +9,18 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
     data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "docx")
 
-    def test_broken_conversion(self):
+    def test_broken_conversion(self) -> None:
         file_name = "broken.odt"
-        result = self._send_request(file_name, expected_code=415)
+        _ = self._send_request(file_name, expected_code=415)
 
-    def test_doc(self):
+    def test_doc(self) -> None:
         file_name = "example.doc"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         self.__check_doc_like(result)
 
         self._check_metainfo(result['metadata'], 'application/msword', file_name)
 
-    def test_footnotes(self):
+    def test_footnotes(self) -> None:
         file_name = "example_footnote_endnote.docx"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         self.__check_doc_like(result)
@@ -46,7 +46,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertIn("определения", full_text)
         self.assertIn("понятное", full_text)
 
-    def test_docx(self):
+    def test_docx(self) -> None:
         file_name = "example.docx"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         self.__check_doc_like(result)
@@ -54,14 +54,14 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self._check_metainfo(result['metadata'],
                              'application/vnd.openxmlformats-officedocument.wordprocessingml.document', file_name)
 
-    def test_odt(self):
+    def test_odt(self) -> None:
         file_name = "example.odt"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         self.__check_doc_like(result)
 
         self._check_metainfo(result['metadata'], 'application/vnd.oasis.opendocument.text', file_name)
 
-    def __check_doc_like(self, result):
+    def __check_doc_like(self, result: dict) -> None:
         content = result["content"]["structure"]
         self.assertEqual("", get_by_tree_path(content, "0")["text"])
         self.assertEqual("Пример документа", get_by_tree_path(content, "0.0")["text"])
@@ -98,17 +98,17 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertTrue(metadata["access_time"] is not None)
         self.assertIn("modified_date", metadata["other_fields"])
 
-    def test_tricky_doc(self):
+    def test_tricky_doc(self) -> None:
         file_name = "doc.docx"
-        result = self._send_request(file_name)
+        _ = self._send_request(file_name)
 
-    def test_broken_docx(self):
+    def test_broken_docx(self) -> None:
         self._send_request("broken.docx", expected_code=415)
 
-    def test_send_wo_file(self):
+    def test_send_wo_file(self) -> None:
         self._send_request_wo_file(expected_code=400)
 
-    def test_return_html(self):
+    def test_return_html(self) -> None:
         file_name = "example.doc"
         result = self._send_request(file_name, data={"structure_type": "tree", "return_format": "html"})
         self.assertTrue("<p>  <strong></strong>     <sub> id = 0 ; type = root </sub></p><p> &nbsp;&nbsp;&nbsp;&nbsp; "
@@ -123,19 +123,19 @@ class TestApiDocReader(AbstractTestApiDocReader):
                         "<td >Примечания</td>\n"
                         "</tr>" in result)
 
-    def test_newline_tree(self):
+    def test_newline_tree(self) -> None:
         file_name = "inspector.docx"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]
         self.assertTrue(content["subparagraphs"][0]["text"].startswith("КАКОЕ-ТО ЗАДАНИЕ"))
 
-    def test_doc_insert_table(self):
+    def test_doc_insert_table(self) -> None:
         file_name = "example.doc"
         result = self._send_request(file_name, data=dict(structure_type="tree", insert_table=True))
         self.__check_doc_like_insert_table(result)
         self._check_metainfo(result['metadata'], 'application/msword', file_name)
 
-    def test_docx_insert_table(self):
+    def test_docx_insert_table(self) -> None:
         file_name = "example.docx"
         result = self._send_request(file_name, data=dict(structure_type="tree", insert_table=True))
         self.__check_doc_like_insert_table(result)
@@ -143,19 +143,19 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self._check_metainfo(result['metadata'],
                              'application/vnd.openxmlformats-officedocument.wordprocessingml.document', file_name)
 
-    def test_odt_insert_table(self):
+    def test_odt_insert_table(self) -> None:
         file_name = "example.odt"
         result = self._send_request(file_name, data=dict(structure_type="tree", insert_table=True))
         self.__check_doc_like_insert_table(result)
 
         self._check_metainfo(result['metadata'], 'application/vnd.oasis.opendocument.text', file_name)
 
-    def test_docx_heading_new(self):
+    def test_docx_heading_new(self) -> None:
         file_name = "tz-1ek-20_minimum.docx"
         data = dict(structure_type="tree", insert_table=True, return_format="html")
         _ = self._send_request(file_name, data=data)
 
-    def __check_doc_like_insert_table(self, result: dict):
+    def __check_doc_like_insert_table(self, result: dict) -> None:
         content = result["content"]["structure"]
         self.assertEqual("", get_by_tree_path(content, "0")["text"])
         self.assertEqual("Пример документа", get_by_tree_path(content, "0.0")["text"])

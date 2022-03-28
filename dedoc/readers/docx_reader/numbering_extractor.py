@@ -1,10 +1,11 @@
+import re
+from typing import List, Dict, Union
+
 from bs4 import BeautifulSoup
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
-from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
-from typing import List, Dict, Union
-import re
+from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.docx_reader.windows_font_mapping import mapping
 
 numFmtList = {"decimal": "1",  # 1, 2, 3, ..., 10, 11, 12, ...
@@ -18,8 +19,7 @@ numFmtList = {"decimal": "1",  # 1, 2, 3, ..., 10, 11, 12, ...
               }
 
 
-def get_next_item(num_fmt: str,
-                  shift: int):
+def get_next_item(num_fmt: str, shift: int) -> str:
     """
     computes the next item of the list sequence
     :param num_fmt: some value from numFmtList
@@ -56,9 +56,7 @@ getSuffix = {"nothing": "",
 
 class AbstractNum:
 
-    def __init__(self,
-                 tree: BeautifulSoup,
-                 styles_extractor: StylesExtractor):
+    def __init__(self, tree: BeautifulSoup, styles_extractor: StylesExtractor) -> None:
         """
         :param tree: BeautifulSoup tree with abstractNum content
         :param styles_extractor: StylesExtractor
@@ -82,8 +80,7 @@ class AbstractNum:
         # properties = {"lvlText", "numFmt", "start", "lvlRestart", "restart", "suff", "styleId", "pPr", "rPr"}
         self.levels = {}
 
-    def parse(self,
-              lvl_list: List[BeautifulSoup]):
+    def parse(self, lvl_list: List[BeautifulSoup]) -> None:
         """
         save information about levels in self.levels
         :param lvl_list: list with BeautifulSoup trees which contain information about levels
@@ -169,7 +166,7 @@ class Num(AbstractNum):
                  num_id: str,
                  abstract_num_list: Dict[str, BeautifulSoup],
                  num_list: Dict[str, BeautifulSoup],
-                 styles_extractor: StylesExtractor):
+                 styles_extractor: StylesExtractor) -> None:
         """
         :param num_id: numId for num element
         :param abstract_num_list: dictionary with abstractNum BeautifulSoup trees
@@ -205,9 +202,7 @@ class Num(AbstractNum):
 
 class NumberingExtractor:
 
-    def __init__(self,
-                 xml: BeautifulSoup,
-                 styles_extractor: StylesExtractor):
+    def __init__(self, xml: BeautifulSoup, styles_extractor: StylesExtractor) -> None:
         """
         :param xml: BeautifulSoup tree with numberings
         :param styles_extractor: StylesExtractor
@@ -298,9 +293,7 @@ class NumberingExtractor:
         text += lvl_info['suff']
         return text
 
-    def _get_next_number(self,
-                         num_id: str,
-                         level: str):
+    def _get_next_number(self, num_id: str, level: str) -> str:
         """
         computes the shift from the first item for given list and text of next item according to the shift
         :param num_id: string with list numId
@@ -322,10 +315,7 @@ class NumberingExtractor:
         num_fmt = get_next_item(lvl_info['numFmt'], shift - 1)
         return num_fmt
 
-    def parse(self,
-              xml: BeautifulSoup,
-              paragraph_properties: BaseProperties,
-              run_properties: BaseProperties):
+    def parse(self, xml: BeautifulSoup, paragraph_properties: BaseProperties, run_properties: BaseProperties) -> None:
         """
         parses numPr content and extracts properties for paragraph for given numId and list level
         changes old_paragraph properties according to list properties

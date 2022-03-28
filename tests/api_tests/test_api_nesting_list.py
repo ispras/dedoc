@@ -6,7 +6,7 @@ from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
 class TestApiDocReader(AbstractTestApiDocReader):
 
     @unittest.skip
-    def test_list_nesting_content(self):
+    def test_list_nesting_content(self) -> None:
         file_name = "pr14tz_v5_2007_03_01.docx"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]

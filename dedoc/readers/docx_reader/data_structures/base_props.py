@@ -4,8 +4,8 @@ from typing import Optional
 class BaseProperties:
 
     def __init__(self,
-                 styles_extractor: "StylesExtractor",
-                 properties: Optional["BaseProperties"] = None):
+                 styles_extractor: "StylesExtractor",  # NOQA
+                 properties: Optional["BaseProperties"] = None) -> None:
         """
         contains properties for paragraphs and runs
         jc, indent, size, bold, italic, underlined

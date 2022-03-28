@@ -5,7 +5,7 @@ from tests.api_tests.abstrac_api_test import AbstractTestApiDocReader
 
 class TestApiDocxAnnotations(AbstractTestApiDocReader):
 
-    def test_example_1(self):
+    def test_example_1(self) -> None:
         result = self._send_request("annotation_docx/example_1.docx")['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in result]
 
@@ -30,7 +30,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         # strike
         self.assertIn({'start': 0, 'end': 11, 'name': 'strike', 'value': 'True'}, annotations[15])
 
-    def test_example_2(self):
+    def test_example_2(self) -> None:
         result = self._send_request("annotation_docx/example_2.docx")['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in result]
 
@@ -59,7 +59,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertIn({'start': 0, 'end': 51, 'name': 'underlined', 'value': 'True'}, annotations[51])
         self.assertIn({'start': 0, 'end': 51, 'name': 'italic', 'value': 'True'}, annotations[51])
 
-    def test_spacing_1(self):
+    def test_spacing_1(self) -> None:
         result = self._send_request("annotation_docx/spacing_libreoffice.docx")['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in result]
 
@@ -72,7 +72,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '114'}, annotations[6])
         self.assertIn({'start': 0, 'end': 9, 'name': 'spacing', 'value': '0'}, annotations[7])
 
-    def test_spacing_2(self):
+    def test_spacing_2(self) -> None:
         result = self._send_request("annotation_docx/"
                                     "spacing_microsoft_word.docx")['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in result]
@@ -87,7 +87,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '400'}, annotations[7])
         self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'}, annotations[8])
 
-    def test_identation(self):
+    def test_identation(self) -> None:
         result = self._send_request("annotation_docx/"
                                     "indentation_libreoffice.docx")['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in result]
@@ -97,7 +97,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertIn({'start': 0, 'end': 21, 'name': 'indentation', 'value': '709'}, annotations[16])
         self.assertIn({'start': 0, 'end': 65, 'name': 'indentation', 'value': '786'}, annotations[20])
 
-    def test_table_refs(self):
+    def test_table_refs(self) -> None:
         result = self._send_request("annotation_docx/"
                                     "table_refs.docx")['content']['structure']['subparagraphs']
         for i in [0, 2, 4, 6, 9]:
@@ -109,15 +109,15 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
                     break
             self.assertTrue(found)
 
-    def test_subscript_docx(self):
+    def test_subscript_docx(self) -> None:
         file_name = "example_superscript.docx"
         self._check_superscript(file_name)
 
-    def test_subscript_odt(self):
+    def test_subscript_odt(self) -> None:
         file_name = "example_superscript.odt"
         self._check_superscript(file_name)
 
-    def test_subscript_doc(self):
+    def test_subscript_doc(self) -> None:
         file_name = "example_superscript.doc"
         self._check_superscript(file_name)
 

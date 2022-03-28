@@ -1,12 +1,13 @@
 import re
 from typing import List
-from dedoc.data_structures.line_with_meta import LineWithMeta
+
 from dedoc.data_structures.line_with_meta import HierarchyLevel
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_constructor.concreat_structure_constructors.list_item import ListItem
 
 
 class ListPatcher:
-    def __init__(self):
+    def __init__(self) -> None:
         self.list_line_regexp = re.compile(r' *\d+(?:\.\d+|)*[ .)].*')
         self.list_item_regexp = re.compile(r' *\d+(?:\.\d+|)*[ .)]')
 
@@ -18,7 +19,7 @@ class ListPatcher:
         items = [int(item) for item in list_item[:-1].split(r'.') if item]
         return ListItem(items, list_item[-1:])
 
-    def __update_line_levels(self, lines: List[LineWithMeta], list_item_line: LineWithMeta):
+    def __update_line_levels(self, lines: List[LineWithMeta], list_item_line: LineWithMeta) -> None:
         for line in lines:
             level_1 = list_item_line.hierarchy_level.level_1
             level_2 = list_item_line.hierarchy_level.level_2
