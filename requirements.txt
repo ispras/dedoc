@@ -1,4 +1,3 @@
--e git+https://github.com/IlyaKozlov/csd.git@acb34ffc193728f7049699867c08d08d4be51258#egg=csd
 beautifulsoup4==4.10.0
 docx==0.2.4
 Flask==2.0.3

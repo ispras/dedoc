@@ -2,6 +2,7 @@ if [ "$is_test" = "true" ]
   then
     echo "run tests"
     sleep 10
+    pip3 install -r /tests/requirements_test.txt
     echo "GO"
     python3.8 -m unittest -v -f /tests/api_tests/test* /tests/test_* /tests/units/test*
 else
