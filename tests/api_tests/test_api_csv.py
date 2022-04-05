@@ -15,6 +15,16 @@ class TestApiCSVReader(AbstractTestApiDocReader):
         tables = result["content"]["tables"]
         self.__check_content(tables)
 
+    def test_csv_encoding(self) -> None:
+        for file_name in ("utf-8.csv", "cp1251.csv", "utf-8.tsv", "cp1251.tsv"):
+            result = self._send_request(file_name)
+            tables = result["content"]["tables"]
+            self.assertEqual(1, len(tables))
+            cells = tables[0]["cells"]
+            self.assertListEqual(["имя", "фамилия", "возраст"], cells[0])
+            self.assertListEqual(["Иванов", "Иван", "31"], cells[1])
+            self.assertListEqual(["Алексей", "Петров", "15"], cells[2])
+
     def test_csv_patch_table(self) -> None:
         file_name = "csv_coma.csv"
         result = self._send_request(file_name, data={"insert_table": "true", "structure_type": "tree"})

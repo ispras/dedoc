@@ -49,7 +49,7 @@ class TestApiTxtReader(AbstractTestApiDocReader):
 
     def test_special_symbols(self) -> None:
         file_name = "special_symbol.txt"
-        result = self._send_request(file_name, data={"structure_type": "tree"})
+        result = self._send_request(file_name, data={"structure_type": "tree", "encoding": "utf-8"})
         content = result["content"]["structure"]
         with open(self._get_abs_path(file_name)) as file_in:
             self.assertEqual(file_in.read(), content["subparagraphs"][0]["text"])
