@@ -8,7 +8,7 @@ import time
 from os.path import splitext
 from typing import List, Tuple, Optional
 
-from bs4 import UnicodeDammit
+from charset_normalizer import from_bytes
 
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
@@ -127,7 +127,7 @@ def get_encoding(path: str, default: str = None) -> Optional[str]:
         else:
             with open(path, "rb") as file:
                 blob = file.read()
-        dammit = UnicodeDammit(blob)
-        return dammit.original_encoding
+        dammit = from_bytes(blob)
+        return dammit.best().encoding
     except:  # noqa  ignore exception and return default encoding
         return default
