@@ -31,7 +31,7 @@ converted_mimes = Extensions(
     image_like_format=['image/gif',
                        'image/x-portable-pixmap', 'image/x-portable-anymap', 'image/x-portable-graymap',
                        'image/x-portable-bitmap', 'image/x-pcx', 'image/x-pict',
-                       'application/postscript', 'image/x-cmu-raster'],
+                       'application/postscript', 'image/x-cmu-raster', 'application/octet-stream'],
     pdf_like_format=['image/vnd.djvu'],
     csv_like_format=[]
 )
