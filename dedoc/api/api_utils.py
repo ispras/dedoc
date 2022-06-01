@@ -23,7 +23,7 @@ def __prettify_text(text: str) -> Iterator[str]:
         yield " ".join(res)
 
 
-def _node2tree(paragraph: TreeNode, depth: int, depths: Set[int] = None) -> str:
+def _node2tree(paragraph: 'TreeNode', depth: int, depths: Set[int] = None) -> str:
     if depths is None:
         depths = set()
 
@@ -31,6 +31,7 @@ def _node2tree(paragraph: TreeNode, depth: int, depths: Set[int] = None) -> str:
     space = [space_symbol] * 4 * (depth - 1) + 4 * ["-"]
     space = "".join(space)
     node_result = []
+
     node_result.append("  {} {} ".format(
         space, paragraph.metadata.paragraph_type + "&nbsp" + paragraph.node_id))
     for text in __prettify_text(paragraph.text):
@@ -54,7 +55,7 @@ def _node2tree(paragraph: TreeNode, depth: int, depths: Set[int] = None) -> str:
                 """.format("".join(node_result))
 
 
-def json2collapsed_tree(paragraph: TreeNode) -> str:
+def json2collapsed_tree(paragraph: 'TreeNode') -> str:
     result = """
     <!DOCTYPE html>
     <html>
@@ -72,7 +73,7 @@ def json2collapsed_tree(paragraph: TreeNode) -> str:
     return result
 
 
-def json2tree(paragraph: TreeNode) -> str:
+def json2tree(paragraph: 'TreeNode') -> str:
     stack = [paragraph]
     nodes = []
     while len(stack) > 0:
@@ -217,10 +218,18 @@ def __table2html(table: Table, table2id: Dict[str, int]) -> str:
     text += '<table border="1" id={uid} style="border-collapse: collapse; width: 100%;">\n<tbody>\n'.format(
         uid=uid
     )
-    for row in table.cells:
+    cell_properties = table.metadata.cell_properties
+    for row_id, row in enumerate(table.cells):
         text += "<tr>\n"
-        for col in row:
-            text += "<td >{}</td>\n".format(col)
+        for col_id, cell in enumerate(row):
+            text += "<td"
+            if cell_properties:
+                prop = cell_properties[row_id][col_id]
+                if prop.invisible:
+                    text += " style=\"display: none\" "
+                text += " colspan=\"{}\" rowspan=\"{}\">{}</td>\n".format(prop.colspan, prop.rowspan, cell)
+            else:
+                text += f">{cell}</td>\n"
         text += "</tr>\n"
     text += '</tbody>\n</table>'
     return text
