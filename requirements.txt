@@ -12,3 +12,5 @@ requests==2.27.1
 ujson==5.3.0
 Werkzeug==2.0.3
 xlrd==1.2.0
+numpy==1.22.3
+#-e git+https://github.com/IlyaKozlov/csd.git#egg=csd # for run tests/units/test_style.py
