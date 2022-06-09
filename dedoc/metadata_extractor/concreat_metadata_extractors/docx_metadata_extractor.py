@@ -32,6 +32,7 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
+                     version: str,
                      parameters: dict = None,
                      other_fields: Optional[dict] = None) -> ParsedDocument:
         if parameters is None:
@@ -51,7 +52,7 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
             modified_time=meta_info["modified_time"],
             other_fields=docx_other_fields
         )
-        parsed_document = ParsedDocument(metadata=metadata, content=doc)
+        parsed_document = ParsedDocument(metadata=metadata, content=doc, version=version)
         return parsed_document
 
     def __convert_date(self, date: Optional[datetime]) -> Optional[int]:
