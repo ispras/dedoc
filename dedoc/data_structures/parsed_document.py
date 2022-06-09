@@ -14,7 +14,7 @@ class ParsedDocument(Serializable):
     def __init__(self,
                  metadata: DocumentMetadata,
                  content: Optional[DocumentContent],
-                 version: Optional[str] = None,
+                 version: str,
                  warnings: List[str] = None,
                  attachments: Optional[List["ParsedDocument"]] = None) -> None:
         """
@@ -28,6 +28,7 @@ class ParsedDocument(Serializable):
         self.metadata = metadata
         self.content = content
         self.attachments = [] if attachments is None else attachments
+        assert version is not None
         self.version = version
         self.warnings = warnings if warnings is not None else []
 

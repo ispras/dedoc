@@ -40,6 +40,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
+                     version: str,
                      parameters: Optional[dict] = None,
                      other_fields: Optional[dict] = None) -> ParsedDocument:
         """
@@ -66,7 +67,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         )
         if other_fields is not None and len(other_fields) > 0:
             metadata.extend_other_fields(other_fields)
-        parsed_document = ParsedDocument(metadata=metadata, content=doc)
+        parsed_document = ParsedDocument(metadata=metadata, content=doc, version=version)
         return parsed_document
 
     def _get_base_meta_information(self, directory: str, filename: str, name_actual: str, parameters: dict) -> dict:

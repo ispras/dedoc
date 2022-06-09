@@ -162,7 +162,8 @@ class DedocManager:
                                                                         converted_filename=converted_filename,
                                                                         original_filename=original_file_name,
                                                                         parameters=parameters,
-                                                                        other_fields=other_fields)
+                                                                        other_fields=other_fields,
+                                                                        version=self.version)
         return parsed_document
 
     def __handle_attachments(self,
