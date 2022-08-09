@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<note>
+  <to id="1" name="name_1">Tove</to>
+  <from id="2" name="name_2">Jani</from>
+  <heading id="3" date="some_date">Reminder</heading>
+  <body value="some_value">Don't forget me this weekend!</body>
+</note>
