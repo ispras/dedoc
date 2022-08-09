@@ -23,7 +23,7 @@ class TxtConverter(AbstractConverter):
             xml_content = BeautifulSoup(f, 'xml')
 
         converted_file_name = f"{filename}.txt"
-        with open(os.path.join(tmp_dir, converted_file_name), "w") as f:
+        with open(os.path.join(tmp_dir, converted_file_name), "w", encoding="utf-8") as f:
             f.write(xml_content.prettify())
 
         return converted_file_name
