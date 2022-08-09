@@ -1,6 +1,7 @@
 from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
 from dedoc.converters.concrete_converters.docx_converter import DocxConverter
 from dedoc.converters.concrete_converters.excel_converter import ExcelConverter
+from dedoc.converters.concrete_converters.txt_converter import TxtConverter
 from dedoc.converters.concrete_converters.pptx_converter import PptxConverter
 from dedoc.converters.file_converter import FileConverterComposition
 from dedoc.metadata_extractor.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
@@ -24,7 +25,8 @@ def get_manager_config(config: dict) -> dict:
     return dict(
         converter=FileConverterComposition(converters=[DocxConverter(config=config),
                                                        ExcelConverter(config=config),
-                                                       PptxConverter(config=config)]),
+                                                       PptxConverter(config=config),
+                                                       TxtConverter(config=config)]),
 
         reader=ReaderComposition(readers=[DocxReader(config=config),
                                           ExcelReader(config=config),
