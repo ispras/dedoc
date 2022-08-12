@@ -70,7 +70,8 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         parsed_document = ParsedDocument(metadata=metadata, content=doc, version=version)
         return parsed_document
 
-    def _get_base_meta_information(self, directory: str, filename: str, name_actual: str, parameters: dict) -> dict:
+    @staticmethod
+    def _get_base_meta_information(directory: str, filename: str, name_actual: str, parameters: dict) -> dict:
         (mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(os.path.join(directory, filename))
         meta = {
             "file_name": name_actual,
