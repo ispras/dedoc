@@ -13,6 +13,7 @@ from dedoc.converters.file_converter import FileConverterComposition
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.metadata_extractor.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.metadata_extractor.metadata_extractor_composition import MetadataExtractorComposition
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.structure_constructor.structure_constructor_composition import StructureConstructorComposition
@@ -69,7 +70,7 @@ class DedocManager:
         Function of complete parsing document with 'filename' with attachment files analyze
         :param file_path: full path where file lay
         :param parameters: any parameters, specify how we want to parse file
-        :param original_file_name: name of original file (None if file was not ranamed)
+        :param original_file_name: name of original file (None if file was not renamed)
         :return:
         """
         try:
@@ -79,6 +80,11 @@ class DedocManager:
         except DedocException as e:
             e.version = self.version
             e.filename = original_file_name
+            file_dir, file_name = os.path.split(file_path)
+            e.metadata = BaseMetadataExtractor._get_base_meta_information(directory=file_dir,
+                                                                          filename=file_name,
+                                                                          name_actual=file_name,
+                                                                          parameters={})
             raise e
 
     def _parse_file_no_error_handling(self,

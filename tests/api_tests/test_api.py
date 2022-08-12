@@ -19,6 +19,7 @@ class TestApi(AbstractTestApiDocReader):
         result = json.loads(result)
         self.assertIn("dedoc_version", result)
         self.assertEqual(file_name, result["file_name"])
+        self.assertIn("metadata", result)
 
     def test_send_wo_file(self) -> None:
         self._send_request_wo_file(expected_code=400)

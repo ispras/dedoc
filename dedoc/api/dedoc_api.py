@@ -176,6 +176,8 @@ def handle_missing_file_exception(error: DedocException) -> Tuple[dict, int]:
         result["file_name"] = error.filename
     if error.version:
         result["dedoc_version"] = error.version
+    if error.metadata:
+        result["metadata"] = error.metadata
     return result, error.code
 
 
