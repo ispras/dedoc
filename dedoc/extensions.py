@@ -10,7 +10,7 @@ Extensions = namedtuple('Parts', 'excel_like_format '
                                  'archive_like_format '
                                  'image_like_format '
                                  'pdf_like_format '
-                                 'json_like_format')
+                                 'txt_like_format')
 
 
 converted_extensions = Extensions(
@@ -21,7 +21,7 @@ converted_extensions = Extensions(
     image_like_format=['.pcx', '.webp', '.sgi', '.hdr', '.sr', '.pic'],
     pdf_like_format=[],
     csv_like_format=[],
-    json_like_format=[]
+    txt_like_format=[]
 )
 # .sgi, .hdr, .sr, .ras - не зарегистрованы в mime
 converted_mimes = Extensions(
@@ -36,7 +36,7 @@ converted_mimes = Extensions(
                        'application/postscript', 'image/x-cmu-raster'],
     pdf_like_format=['image/vnd.djvu'],
     csv_like_format=[],
-    json_like_format=["application/xml", "text/xml"]
+    txt_like_format=["application/xml", "text/xml"]
 )
 
 recognized_extensions = Extensions(
@@ -47,7 +47,7 @@ recognized_extensions = Extensions(
     image_like_format=[],
     pdf_like_format=[],
     csv_like_format=[".csv", ".tsv"],
-    json_like_format=[]
+    txt_like_format=[]
 )
 
 recognized_mimes = Extensions(
@@ -58,7 +58,7 @@ recognized_mimes = Extensions(
     image_like_format=['image/jpeg', 'image/png', 'image/tiff', 'image/x-ms-bmp', 'image/bmp'],
     pdf_like_format=['application/pdf'],
     csv_like_format=[],
-    json_like_format=[]
+    txt_like_format=[]
 )
 
 
