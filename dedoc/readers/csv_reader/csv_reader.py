@@ -6,7 +6,7 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils import get_encoding
+from dedoc.utils.utils import get_encoding
 
 
 class CSVReader(BaseReader):

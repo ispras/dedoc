@@ -7,7 +7,7 @@ from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils import splitext_, get_file_mime_type
+from dedoc.utils.utils import splitext_, get_file_mime_type
 
 
 class ReaderComposition(object):

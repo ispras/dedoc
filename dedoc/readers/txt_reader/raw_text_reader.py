@@ -14,7 +14,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
-from dedoc.utils import calculate_file_hash, get_encoding
+from dedoc.utils.utils import calculate_file_hash, get_encoding
 
 
 class RawTextReader(BaseReader):
