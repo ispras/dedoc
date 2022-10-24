@@ -1,7 +1,7 @@
 from collections import namedtuple
 from typing import List
 
-from dedoc.utils import get_extensions_by_mimes
+from dedoc.utils.utils import get_extensions_by_mimes
 
 Extensions = namedtuple('Parts', 'excel_like_format '
                                  'pptx_like_format '

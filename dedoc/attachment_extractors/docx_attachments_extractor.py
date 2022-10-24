@@ -3,13 +3,12 @@ import os
 import tempfile
 import zipfile
 from typing import List, Tuple
-
 import olefile
 from bs4 import BeautifulSoup
 
 from dedoc.attachment_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.utils import splitext_
+from dedoc.utils.utils import splitext_
 
 
 class DocxAttachmentsExtractor(AbstractAttachmentsExtractor):

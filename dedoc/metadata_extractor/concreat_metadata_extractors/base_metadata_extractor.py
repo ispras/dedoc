@@ -5,7 +5,7 @@ from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.document_metadata import DocumentMetadata
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.metadata_extractor.concreat_metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
-from dedoc.utils import get_file_mime_type
+from dedoc.utils.utils import get_file_mime_type
 
 
 class BaseMetadataExtractor(AbstractMetadataExtractor):

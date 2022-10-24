@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple, Optional
 
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.utils import save_data_to_unique_file
+from dedoc.utils.utils import save_data_to_unique_file
 
 
 class AbstractAttachmentsExtractor(ABC):
