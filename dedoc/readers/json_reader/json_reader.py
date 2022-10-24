@@ -1,5 +1,4 @@
 from typing import Optional, Any
-
 import ujson as json
 
 from dedoc.data_structures.line_with_meta import LineWithMeta

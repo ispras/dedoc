@@ -13,7 +13,7 @@ from werkzeug.datastructures import FileStorage
 from dedoc.configuration_manager import get_manager_config
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.manager.dedoc_manager import DedocManager
-from dedoc.utils import get_unique_name
+from dedoc.utils.utils import get_unique_name
 
 
 class ThreadManager(Thread):

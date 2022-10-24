@@ -4,7 +4,7 @@ from typing import List
 
 from dedoc.attachment_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.utils import splitext_
+from dedoc.utils.utils import splitext_
 
 
 class ExcelAttachmentsExtractor(AbstractAttachmentsExtractor):

@@ -6,7 +6,7 @@ import random
 import re
 import time
 from os.path import splitext
-from typing import List, Tuple, Optional
+from typing import List, Optional, TypeVar, Tuple, Iterable, Iterator
 
 from charset_normalizer import from_bytes
 
@@ -14,6 +14,37 @@ from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.tree_node import TreeNode
 from dedoc.structure_parser.heirarchy_level import HierarchyLevel
+
+T = TypeVar("T")
+
+
+def list_get(ls: List[T], index: int, default: Optional[T] = None) -> Optional[T]:
+    if 0 <= index < len(ls):
+        return ls[index]
+    return default
+
+
+def flatten(data: List[List[T]]) -> Iterable[T]:
+    for group in data:
+        for item in group:
+            yield item
+
+
+def get_batch(size: int, iterable: Iterator[T]) -> Iterator[List[T]]:
+    """
+    it is batch generator. Generating batch with 'size'. Last batch can be less then size or equals []
+    :param size: batch size
+    :param iterable: input data iterator
+    :return: iterator of element of current batch
+    """
+    batch = []
+    for item in iterable:
+        batch.append(item)
+        if len(batch) >= size:
+            yield batch
+            batch = []
+    if len(batch) > 0:
+        yield batch
 
 
 def splitext_(path: str) -> Tuple[str, str]:

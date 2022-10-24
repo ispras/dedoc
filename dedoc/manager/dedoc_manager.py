@@ -17,7 +17,7 @@ from dedoc.metadata_extractor.concreat_metadata_extractors.base_metadata_extract
 from dedoc.metadata_extractor.metadata_extractor_composition import MetadataExtractorComposition
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.structure_constructor.structure_constructor_composition import StructureConstructorComposition
-from dedoc.utils import get_unique_name, get_empty_content
+from dedoc.utils.utils import get_unique_name, get_empty_content
 
 
 class DedocManager:
