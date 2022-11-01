@@ -1,0 +1,53 @@
+import gzip
+import os
+import pickle
+from typing import List
+from xgboost import XGBClassifier
+
+from src.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
+from src.readers.scanned_reader.paragraph_extractor.paragraph_features import ParagraphFeatureExtractor
+
+
+class ScanParagraphClassifierExtractor(object):
+    """
+    Classifier detects current line is continues
+    """
+
+    def __init__(self, *, config: dict) -> None:
+        super().__init__()
+        dirname = os.path.dirname(__file__)
+        path = os.path.join(dirname, "..", "..", "..", "..", "resources", "paragraph_classifier.pkl.gz")
+        self.path = os.path.abspath(path)
+        self.config = config
+        assert os.path.isfile(self.path), "file does not exist {}".format(self.path)
+        self._feature_extractor = None
+        self._classifier = None
+
+    @property
+    def feature_extractor(self) -> ParagraphFeatureExtractor:
+        if self._feature_extractor is None:
+            self._unpickle()
+        return self._feature_extractor
+
+    @property
+    def classifier(self) -> XGBClassifier:
+        if self._classifier is None:
+            self._unpickle()
+        return self._classifier
+
+    def _unpickle(self) -> None:
+        with gzip.open(self.path) as file:
+            self._classifier, parameters = pickle.load(file)
+            self._feature_extractor = ParagraphFeatureExtractor(**parameters, config=self.config)
+
+    def extract(self, lines_with_links: List[LineWithLocation]) -> List[LineWithLocation]:
+        data = self.feature_extractor.transform([lines_with_links])
+        if any((data[col].isna().all() for col in data.columns)):
+            labels = ["not_paragraph"] * len(lines_with_links)
+        else:
+            labels = self.classifier.predict(data)
+        for label, line in zip(labels, lines_with_links):
+            if line.line.strip() == "":
+                label = "not_paragraph"
+            line.metadata.extend_other_fields({"new_paragraph": label == "paragraph"})
+        return lines_with_links

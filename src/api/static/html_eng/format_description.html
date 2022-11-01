@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Recognized Document Structure</title>
+    <link rel="stylesheet" href="static_file?fname=styles.css" />
+</head>
+<h1>Recognized Document Structure</h1>
+<p><a href="static_file?fname=html_eng/info.html" target="_blank" rel="noopener"> <- go to the main page</a>&nbsp;</p>
+<p> The ParsedDocument structure is returned, the structure is returned as a Json format.</p>
+<p> Dedoc supports linear and tree format. In linear format every documents line is a child of the root. In
+tree structure dedoc tries to reconstruct logical structure of the document as tree</p>
+
+<h2 id="ParsedDocument"> ParsedDocument </h2>
+<ol>
+    <li><strong>version</strong>: <a> str </a> (required field) -
+        Dedoc version
+    </li>
+    <li><strong>warnings</strong>: List[str]  (required field) -
+        any warning, occur in the process of document processing
+    </li>
+    <li><strong>metadata</strong>: <a href="#DocumentMetadata"> DocumentMetadata </a> (required field) -
+        document meta-information
+    </li>
+    <li><strong>content</strong>: <a href="#DocumentContent"> DocumentContent </a> (required field) - parsed document structure
+    </li>
+    <li><strong>attachments</strong>: List[<a href="#ParsedDocument"> ParsedDocument </a> ] (optional field) -
+        attached documents, returned only if the condition for processing attached files is set. See the "with_attachment" parameter in the POST-request
+    </li>
+</ol>
+
+<h2 id="DocumentMetadata"> DocumentMetadata</h2>
+<p>Contains document meta-information (for example file name, size, access time).</p>
+<ol>
+    <li><strong>uid</strong>: <a> str </a> (required field) - unique document identifier <em> (example: "doc_uid_auto_ba73d76a-326a-11ec-8092-417272234cb0") </em></li>
+    <li><strong>file_name</strong>: <a> string </a> (required field) - file name<em> (example: "example.odt") </em></li>
+    <li><strong>bucket_name</strong>: <a> str </a> (optional field) -  bucket name in which the file is located.
+         Included when analyzing a file from a cloud storage <em> (example: "dedoc") </em></li>
+    <li><strong>size</strong>: <a> integer </a> (required field) - file size in bytes<em> (example: 20060) </em></li>
+    <li><strong>modified_time</strong>: <a> integer </a> (required field) - modification date of the document in the format <a
+            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime </a> <em> (example: 1590579805) </em></li>
+    <li><strong>created_time</strong>: <a> integer </a> (required field) - creation date of the document in the format <a
+            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime</a> <em> (example: 1590579805) </em></li>
+    <li><strong>access_time</strong>: <a> integer </a> (required field) - file access date in format <a
+            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime</a> <em> (example: 1590579805) </em></li>
+    <li><strong>file_type</strong>: <a> string </a> (optional field) - mime-type file <em> (example:
+        "application/vnd.oasis.opendocument.text") </em></li>
+    <li><strong>other_fields</strong>: <a> dict </a> (optional field) - each file type has its own set of meta information,
+        <a href="static_file?fname=html_eng/metadata_description.html" target="_blank" rel="noopener"> here is a detailed description of the other_fields</a></li>
+</ol>
+
+
+<h2 id="DocumentContent"> DocumentContent</h2>
+<p>Contains document content structure</p>
+<ol>
+    <li><strong>tables</strong>: <a href="#Table"> List[Table] </a> (required field) - list of tables in a document</li>
+    <li><strong>structure</strong>: <a href="#TreeNode"> TreeNode</a> (required field) - document tree structure
+    </li>
+</ol>
+
+<h3 id="Table">Table</h3>
+Detected and parsed table in a document
+<ol>
+    <li><strong>cells</strong>: <a> List[List[string]] </a> (required field) - list of table cell lists. The cell contains text.
+    </li>
+    <li><strong>metadata</strong>: <a href="#TableMetadata"> TableMetadata</a> (required field) - table meta information
+    </li>
+</ol>
+
+<h4 id="TableMetadata"> TableMetadata</h4>
+<p>Contains table meta information</p>
+<ol>
+    <li><strong>uid</strong>: <a> str (required field) </a> - unique identifier. </li>
+    <li><strong>page_id</strong>: <a> integer </a> (optional field) - page number on which the table begins. Can be null.</li>
+    <li><strong>is_inserted</strong>: <a> bool </a> (optional field) - was table inserted into document.</li>
+</ol>
+
+<h3 id="TreeNode"> TreeNode</h3>
+<p>Contains document tree structure</p>
+<ol>
+    <li><strong>node_id</strong> : string (required field) - document item identifier. It is unique in for one tree (i.e. in this tree there will not be another such node_id, but in attachment it can occur).
+         The identifier has the form 0.2.1 where each number symbolizes a serial number at an appropriate level
+        иерархии. <br/>For example node_id 0.2.1 means that this element is the second subhead of the third chapter. The first number is the root of the document. Numbering goes from 0.
+    </li>
+    <li><strong>text</strong>: string (required field) -&nbsp;element text;</li>
+    <li><strong>annotations</strong>: List[<a href="#Annotation"> Annotation </a>] (required field) - the field describes any properties of the text, for example, boldness, font size, etc.
+    </li>
+    <li><strong>metadata</strong>: <a href="#ParagraphMetadata"> ParagraphMetadata </a> (required field) -
+        meta-information relevant to the entire subparagraph, such as page number and position on this page.
+    </li>
+    <li><strong>subparagraphs</strong>: List[<a href="#TreeNode"> TreeNode </a> ] (required field) -
+       "children" of the current item (for example, sub-chapters for a chapter). The structure of "children" is similar to the current one.
+    </li>
+</ol>
+
+
+<h4 id="Annotation"> Annotation</h4>
+<p>Contains text annotations</p>
+<ol>
+    <li><strong> start </strong> : integer (required field) - annotation start index.</li>
+    <li><strong> end </strong> : integer (required field) - annotation end index.
+        The index of the last character (associated with this annotation) + 1.
+        For example, if the first character is annotated, then start = 0, end = 1;
+        if all line is annotated, then start = 0, end = length of s.</li>
+    <li><strong> name </strong> : string (required field) - annotation type (size, italic etc).</li>
+    <li><strong> value </strong> : string (required field) - annotation value
+        (to learn more see <a href="#ConcreteAnnotations">Concrete types of annotations</a>).</li>
+</ol>
+
+<h4 id="ConcreteAnnotations"> Concrete types of annotations.</h4>
+<ul>
+    <li><strong> AlignmentAnnotation </strong> : text alignment. The value of "name" field = "alignment".
+        "value" field may be "left" (left alignment), "right" (right alignment),
+        "both" (alignment on both sides), "center" (center alignment). </li>
+    <li><strong> BoldAnnotation </strong> : bold text. The value of "name" field = "bold".
+        "value" may be "True", if the font is bold and "False" otherwise. </li>
+    <li><strong> IndentationAnnotation </strong> : indent from the left edge of the page.
+        For documents in docx format, we mean the indentation from the inner borders of the document
+        (margin is not taken into account). The value of "name" field = "indentation".
+        "value" may be any real number converted to a string.
+        For docx documents, the indent is measured in twentieths of a point (1/1440 of an inch). </li>
+    <li><strong> ItalicAnnotation </strong> : italic text. The value of "name" field = "italic".
+        "value" may be "True", if the text is in italics and "False" otherwise. </li>
+    <li><strong> SizeAnnotation </strong> : font size in points (1/72 of an inch). The value of "name" field = "size".
+         "value" may be any real number converted to a string. </li>
+    <li><strong> StyleAnnotation </strong> : the name of the style applied to the text, for example, "heading 1".
+        The value of "name" field = "style".
+        "value" may be any string. </li>
+    <li><strong> Table Annotation </strong> : table reference. The value of "name" field = "table".
+        "value" field = unique identifier of the table. </li>
+    <li><strong> UnderlinedAnnotation </strong> : underlined text. The value of "name" field = "underlined".
+        "value" may be "True", if the text is underlined and "False" otherwise. </li>
+</ul>
+
+<h4 id="ParagraphMetadata"> ParagraphMetadata</h4>
+<p>Contains paragraph meta information</p>
+<ol>
+    <li><strong> paragraph_type </strong> : string (required field) - paragraph type (paragraph, list item and so on).
+        Possible values depend on the type of document.
+        Default values: ['root', 'paragraph', 'raw_text', 'list', 'list_item', 'named_header']
+        Values for document_type 'law': ['root', 'raw_text', 'struct_unit', 'item', 'article', 'subitem',
+        'footer', 'header', 'title', 'part']
+    </li>
+    <li><strong> predicted_classes </strong> : Dict[str -> float] (optional field) - classifier results, paragraph type
+        is the probability that the paragraph is of this type, the list of keys depends on the type of document.
+    </li>
+    <li><strong> page_id </strong> : integer (optional field) - page on which this paragraph begins.</li>
+    <li><strong> line_id </strong> : integer (optional field) - The line number on which this paragraph begins.</li>
+</ol>
+
+
