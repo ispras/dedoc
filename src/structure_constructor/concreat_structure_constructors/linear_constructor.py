@@ -1,0 +1,23 @@
+from typing import Optional
+
+from src.data_structures.document_content import DocumentContent
+from src.data_structures.tree_node import TreeNode
+from src.data_structures.unstructured_document import UnstructuredDocument
+from src.structure_constructor.concreat_structure_constructors.abstract_structure_constructor import \
+    AbstractStructureConstructor
+
+
+class LinearConstructor(AbstractStructureConstructor):
+
+    def __init__(self) -> None:
+        pass
+
+    def structure_document(self,
+                           document: UnstructuredDocument,
+                           structure_type: Optional[str] = None) -> DocumentContent:
+        lines = document.lines
+        tree = TreeNode.create(lines=[])
+        for line in lines:
+            tree.add_child(line)
+        tree.merge_annotations()
+        return DocumentContent(tables=document.tables, structure=tree)

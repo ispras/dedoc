@@ -24,7 +24,7 @@ with pathlib.Path('requirements.txt').open() as requirements_txt:
 
 setup(
 
-    name='dedoc',
+    name='src',
 
     version=version,
 
@@ -58,7 +58,7 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
     ],
 
-    package_dir={'dedoc': 'dedoc'},
+    package_dir={'src': 'src'},
 
     python_requires='>=3.5, <4',
 

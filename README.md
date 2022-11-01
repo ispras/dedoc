@@ -24,16 +24,20 @@ Clone the project
 ```bash
 git clone https://github.com/ispras/dedoc.git
 
-cd dedoc/
+cd src/
 ```
  
-Ensure you have Docker installed
- 
+Ensure you have Docker installed.
+Start 'Dedoc' on the port 1231:
  ```bash
-docker build . -t dedoc_container
-docker run -p 1231:1231 --rm dedoc_container:latest python3.8 /dedoc/main.py
+docker-compose up --build
 ```
+
+Start Dedoc with tests:
+ ```bash
+ test="true" docker-compose up --build
+ ```
 
 Now you can go to the localhost:1231 and look at the docs and examples.
 
-You can change the port and host in the config file
+You can change the port and host in the config file 'dedoc/config.py'
