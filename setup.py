@@ -24,11 +24,11 @@ with pathlib.Path('requirements.txt').open() as requirements_txt:
 
 setup(
 
-    name='src',
+    name='dedoc',
 
     version=version,
 
-    description='Convert different document in tree structure',
+    description='Extract content and logical tree structure from textual documents',
 
     long_description=long_description,
 
@@ -50,16 +50,15 @@ setup(
 
         'License :: OSI Approved :: MIT License',
 
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
     ],
 
-    package_dir={'src': 'src'},
+    package_dir={'src': 'dedoc'},
+    packages=['src'],
 
-    python_requires='>=3.5, <4',
+    python_requires='>=3.6, <4',
 
 )
