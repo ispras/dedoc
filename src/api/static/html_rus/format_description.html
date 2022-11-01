@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Структура распознанного документа</title>
+    <link rel="stylesheet" href="static_file?fname=styles.css" />
+</head>
+<h1>Структура распознанного документа</h1>
+<p> Возвращается структура ParsedDocument, структура возвращается в виде Json. </p>
+<p> Dedoc поддерживает линейную и древовидную структуру. В случае линейной структуры все строки документа являются
+    наследниками корня дерева.  В случае древовидной структуры (tree) dedoc пытается восстановить логическую структуру
+    документа в виде дерева.
+</p>
+
+<h2 id="ParsedDocument"> ParsedDocument </h2>
+<ol>
+    <li><strong>version</strong>: str  (обязательное поле) -
+        версия Dedoc
+    </li>
+    <li><strong>warnings</strong>: List[str]  (обязательное поле) -
+        любые ворнинги, возникшие в процессе обработки документа
+    </li>
+    <li><strong>metadata</strong>: <a href="#DocumentMetadata"> DocumentMetadata </a> (обязательное поле) -
+        метаинформация документа
+    </li>
+    <li><strong>content</strong>: <a href="#DocumentContent"> DocumentContent </a> (обязательное поле) - разобранная
+        структура документа
+    </li>
+    <li><strong>attachments</strong>: List[<a href="#ParsedDocument"> ParsedDocument </a> ] (необязательное поле) -
+        вложенные документы, возвращается только
+        если задано условие обработки вложенных файлов.
+    </li>
+</ol>
+
+<h2 id="DocumentMetadata"> DocumentMetadata. Метаинформация документа </h2>
+<ol>
+    <li><strong>uid</strong>: <a> str </a> (обязательное поле) - уникальный идентификатор документа <em> (пример: "doc_uid_auto_ba73d76a-326a-11ec-8092-417272234cb0") </em></li>
+    <li><strong>file_name</strong>: <a> str </a> (обязательное поле) - имя файла <em> (пример: "example.pdf") </em></li>
+    <li><strong>size</strong>: <a> int </a> (обязательное поле) - размер файла в байтах <em> (пример: 20060) </em></li>
+    <li><strong>modified_time</strong>: <a> int </a> (обязательное поле) - дата модификации документа в формате <a
+            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime </a> <em> (пример: 1590579805) </em></li>
+    <li><strong>created_time</strong>: <a> int </a> (обязательное поле) - дата создания документа в формате <a
+            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime</a> <em> (пример: 1590579805) </em></li>
+    <li><strong>access_time</strong>: <a> int </a> (обязательное поле) - дата доступа к файло в формате <a
+            href="https://en.wikipedia.org/wiki/Unix_time">UnixTime</a> <em> (пример: 1590579805) </em></li>
+    <li><strong>file_type</strong>: <a> str </a> (необязательное поле) - mime-тип файла <em> (пример:
+        "application/pdf") </em></li>
+    <li><strong>other_fields</strong>: <a> dict </a> (необязательное поле) - у каждого типа файла свой набор метаинформации,
+        <a href="static_file?fname=html_rus/metadata_description.html" target="_blank" rel="noopener"> здесь представлено подробное описание поля other_fields</a></li>
+</ol>
+
+
+<h2 id="DocumentContent"> DocumentContent. Структура содержимого документа</h2>
+<ol>
+    <li><strong>tables</strong>: <a href="#Table"> List[Table] </a> (обязательное поле) - список таблиц</li>
+    <li><strong>structure</strong>: <a href="#TreeNode"> TreeNode</a> (обязательное поле) - древовидная структура
+        документа
+    </li>
+</ol>
+
+<h3 id="Table"> Table. Разобранные таблицы.</h3>
+<ol>
+    <li><strong>cells</strong>: <a> List[List[str]] </a> (обязательное поле) - список списков строк таблицы, строка
+        таблицы представляет из себя списко содержимого ячеек. Ячейка содрежит текст,
+    </li>
+    <li><strong>metadata</strong>: <a href="#TableMetadata"> TableMetadata</a> (обязательное поле) - метаинформация о
+        таблице
+    </li>
+</ol>
+
+<h4 id="TableMetadata"> TableMetadata. Метаинформация таблицы.</h4>
+<ol>
+    <li><strong>uid</strong>: <a> str (обязательное поле) </a> - уникальный идентификатор таблицы.</li>
+    <li><strong>page_id</strong>: <a> int </a> (необязательное поле) - номер страницы на которой начинается таблица.</li>
+    <li><strong>is_inserted</strong>: <a> bool </a> (необязательное поле) - была ли таблица встроена в тело документа.</li>
+</ol>
+
+<h3 id="TreeNode"> TreeNode. Древовидная структура документа.</h3>
+<ol>
+    <li><strong>node_id</strong> : str (обязательное поле) - идентификатор элемента документа. Уникален в рамках одного
+        дерева (т.е. в этом дереве не будет другого такого node_id, а в attachment может встретиться)
+        Идентификатор имеет вид 0.2.1 где каждое число символизирует порядковый номер на соотвтетствующем уровне
+        иерархии. <br/> Например node_id 0.2.1 означает что этот элемент это вторая подглова третьей главы
+        (нумерация с 0, первое число это корень документа);
+    </li>
+    <li><strong>text</strong>: str (обязательное поле) -&nbsp;текст элемента;</li>
+    <li><strong>annotations</strong>: List[<a href="#Annotation"> Annotation </a>] (обязательное поле) - поле описывает
+        какие-либо свойства текста, например жирность, размер шрифта etc.
+    </li>
+    <li><strong>metadata</strong>: <a href="#ParagraphMetadata"> ParagraphMetadata </a> (обязательное поле) -
+        метоинформация, относящаяся ко всему субпараграфу, например номер страницы и положение на этой странице.
+    </li>
+    <li><strong>subparagraphs</strong>: List[<a href="#TreeNode"> TreeNode </a> ] (обязательное поле) -
+        "дети" текущего элемента (например подглавы для главы). Структура "детей" аналогична текущей.
+    </li>
+</ol>
+
+
+<h4 id="Annotation"> Annotation. Аннотации текста.</h4>
+<ol>
+    <li><strong> start </strong> : int (обязательное поле) - индекс начала аннотации.</li>
+    <li><strong> end </strong> : int (обязательное поле) - индекс конца аннотации.
+        Равен индексу последнего символа (относящегося к данной аннотации) + 1.
+        Например, если в строке проаннотирован только первый символ, то start = 0, end = 1;
+        если проаннотирована вся строка s, то start = 0, end = длина s. </li>
+    <li><strong> name </strong> : string (обязательное поле) - тип аннотации (размер шрифта, курсив и т.д.).</li>
+    <li><strong> value </strong> : str (обязательное поле) - значение аннотации
+        (подробнее в <a href="#ConcreteAnnotations">ConcreteAnnotations</a>).</li>
+</ol>
+
+<h4 id="ConcreteAnnotations"> Concrete annotations. Конкретные виды аннотаций.</h4>
+<ul>
+    <li><strong> AlignmentAnnotation </strong> : выравнивание текста. Значение поля name = "alignment".
+        Значением поля value может быть "left" (выравнивание по левому краю), "right" (выравнивание по правому краю),
+        "both" (выравнивание по обоим краям), "center" (выравнивание по центру). </li>
+    <li><strong> BoldAnnotation </strong> : жирность текста. Значение поля name = "bold".
+        Значением поля value может быть "True", если шрифт жирный и "False" иначе. </li>
+    <li><strong> IndentationAnnotation </strong> : отступ от левого края страницы.
+        Для документов в формате docx хранится отступ от внутренних границ документа
+        (не учитывается отступ от края страницы). Значение поля name = "indentation".
+        Значением поля value может быть любое действительное число, сконвертированное в строку.
+        Для документов в формате docx отступ измеряется в двадцатых пункта (1/1440 дюйма). </li>
+    <li><strong> ItalicAnnotation </strong> : выделен ли текст курсивом. Значение поля name = "italic".
+        Значением поля value может быть "True", если текст выделен курсивом и "False" иначе. </li>
+    <li><strong> SizeAnnotation </strong> : размер шрифта в пунктах (1/72 дюйма). Значение поля name = "size".
+        Значением поля value может быть любое действительное число, сконвертированное в строку.</li>
+    <li><strong> StyleAnnotation </strong> : название стиля, примененного к тексту, например, "heading 1".
+        Значение поля name = "style".
+        Значением поля value может быть любая строка.</li>
+    <li><strong> Table Annotation </strong> : является ли строка ссылкой на таблицу. Значение поля name = "table".
+        Значение поля value = уникальный идентификатор таблицы. </li>
+    <li><strong> UnderlinedAnnotation </strong> : выделен ли текст подчеркиванием. Значение поля name = "underlined".
+        Значением поля value может быть "True", если текст выделен подчеркиванием и "False" иначе. </li>
+</ul>
+
+<h4 id="ParagraphMetadata"> ParagraphMetadata. Метаинформация, относящаяся к параграфу.</h4>
+<ol>
+    <li><strong> paragraph_type </strong> : str (обязательное поле) - тип параграфа (заголовок, элемент списка и так далее).
+        Возможные значения зависят от типа документа.
+        Значения по умолчанию: ['root', 'paragraph', 'raw_text', 'list', 'list_item', 'named_header']
+        Значения для типа документа='law': ['root', 'raw_text', 'struct_unit', 'item', 'article', 'subitem',
+        'footer', 'header', 'title', 'part']
+    </li>
+    <li><strong> predicted_classes </strong> : Dict[str -> float] (необязательное поле) - результаты работы
+        классификатора,
+        тип параграфа -> вероятность того, что параграф относится к такому типу, список ключей зависит от типа
+        документа.
+    </li>
+    <li><strong> page_id </strong> : int (необязательное поле) - страница на которой начинается этот параграф.</li>
+    <li><strong> line_id </strong> : int (необязательное поле) - номер строки, на которой начинается этот параграф.</li>
+</ol>
+
+
