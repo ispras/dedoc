@@ -1,5 +1,5 @@
 ARG REPOSITORY="docker.io"
-FROM dedocproject/baseimg
+from dedocproject/baseimg
 
 ENV PYTHONPATH ":/dedoc/:/dedoc/src/"
 
@@ -11,7 +11,7 @@ RUN mkdir /dedoc
 ADD src /dedoc/src
 ADD resources /dedoc/resources/
 ADD test/run_tests_in_docker.sh .
-ADD config.py /dedoc/
+ADD dedoc/config.py /dedoc/
 ADD VERSION /dedoc/
 
 
