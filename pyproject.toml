@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dedoc"
+
+description = "Extract content and logical tree structure from textual documents"
+dynamic = ["dependencies", "version", "readme"]
+requires-python = ">=3.8"
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+dependencies = {file = ["requirements.txt", "requirements-2.txt"]}
+readme = {file = ["README.md"]}
+
+[tool.setuptools]
+packages = ["dedoc"]
+
+[project.scripts]
+dedoc = "dedoc.main:main"

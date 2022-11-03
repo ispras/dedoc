@@ -1,7 +1,6 @@
 import pathlib
-
 import pkg_resources
-from setuptools import setup
+from setuptools import setup, find_packages
 from os import path
 
 here = path.abspath(path.dirname(__file__))
@@ -50,15 +49,16 @@ setup(
 
         'License :: OSI Approved :: MIT License',
 
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.6',        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
     ],
-
-    package_dir={'src': 'dedoc'},
-    packages=['src'],
+    package_dir={'dedoc': 'dedoc'},
+    packages=find_packages(where="dedoc"),
 
     python_requires='>=3.6, <4',
+    project_urls={
+        "Source": "https://github.com/ispras/dedoc",
+    },
 
 )
