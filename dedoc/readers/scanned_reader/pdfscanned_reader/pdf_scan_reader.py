@@ -61,8 +61,6 @@ class PdfScanReader(PdfBase):
         #  TODO fond: --- Step 2: table detection and recognition ---
         clean_image, tables = rotated_image, []
 
-        # TODO fond: --- Step 3: text detection and clean background ---
-
         # --- Step 4: plain text recognition and text style detection ---
         page = self.ocr.split_image2lines(image=clean_image,
                                           language=parameters.language,
