@@ -4,7 +4,7 @@ if [ "$is_test" = "true" ]
     apt install -y cowsay
     echo "run tests"
     sleep 5
-    python3.8 -m unittest -v -f /dedoc/src/tests/units/test*  /dedoc/src/tests/test* /dedoc/src/tests/api_tests/test_api*
+    python3.8 -m unittest -v -f /dedoc/dedoc/tests/units/test*  /dedoc/dedoc/tests/test* /dedoc/dedoc/tests/api_tests/test_api*
     test_exit_code=$?
   if [ $test_exit_code -eq 0 ]
     then /usr/games/cowsay "all right"
