@@ -1,0 +1,34 @@
+ARG REPOSITORY="docker.io"
+FROM ubuntu:bionic-20210118
+
+# the commands below are used to install tesseract
+
+RUN apt-get update && apt-get install software-properties-common -y && apt update
+
+RUN add-apt-repository -y ppa:alex-p/tesseract-ocr-devel \
+    && apt update --allow-releaseinfo-change \
+    && apt-get install -y git unzip wget djvulibre-bin unrtf poppler-utils pstotext tesseract-ocr libjpeg-dev swig \
+     libtesseract-dev libleptonica-dev unrar python-poppler automake ca-certificates g++ git libtool libleptonica-dev \
+     make pkg-config libpango1.0-dev
+
+RUN git clone --depth 1 --branch 5.0.0-beta-20210916 https://github.com/tesseract-ocr/tesseract/
+RUN cd tesseract && ./autogen.sh && ./configure &&  make &&  make install && ldconfig
+
+RUN apt update --allow-releaseinfo-change \
+    && apt-get install -y tesseract-ocr-rus build-essential libcairo2  \
+    libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev shared-mime-info
+ENV TESSDATA_PREFIX /usr/share/tesseract-ocr/5/tessdata/
+
+RUN apt-get update && apt-get install -y locales && locale-gen en_US.UTF-8
+RUN locale-gen ru_RU.UTF-8
+ENV TZ=Europe/Moscow
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+ENV LANG ru_RU.utf8
+ENV LANGUAGE ru_RU:ru
+ENV LC_ALL ru_RU.UTF-8
+
+RUN apt-get update && apt-get install software-properties-common -y && apt update \
+    && apt-get install -y git build-essential python3.8 python3.8-dev python3-pip libxml2-dev libxslt-dev python-dev python3.8-distutils \
+    && apt-get install python3-setuptools python3-wheel python3-cffi \
+    && apt-get install -y libreoffice \
+    && python3.8 -m pip install pip==22.0.4 --upgrade
