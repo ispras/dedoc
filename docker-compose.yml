@@ -16,6 +16,8 @@ services:
 
 
   test:
+    depends_on:
+      - dedoc
     build:
           context: .
           dockerfile: Dockerfile
