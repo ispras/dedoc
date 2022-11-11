@@ -1,1 +1,0 @@
--e git+https://github.com/IlyaKozlov/csd.git@acb34ffc193728f7049699867c08d08d4be51258#egg=csd

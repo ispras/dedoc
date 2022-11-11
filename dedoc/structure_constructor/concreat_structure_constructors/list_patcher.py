@@ -1,9 +1,9 @@
 import re
 from typing import List
 
-from dedoc.data_structures import HierarchyLevel
-from dedoc.data_structures import LineWithMeta
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_constructor.concreat_structure_constructors.list_item import ListItem
+from dedoc.structure_parser.hierarchy_level import HierarchyLevel
 
 
 class ListPatcher:

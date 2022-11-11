@@ -1,6 +1,6 @@
 ### Python template
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*__pycache__*
 *.py[cod]
 *$py.class
 
@@ -35,7 +35,7 @@ var/
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
+# Unit tests / coverage reports
 htmlcov/
 .tox/
 .coverage

@@ -35,7 +35,7 @@ docker-compose up --build
 
 Start Dedoc with tests:
  ```bash
- test="true" docker-compose up --build
+ tests="true" docker-compose up --build
  ```
 
 Now you can go to the localhost:1231 and look at the docs and examples.
