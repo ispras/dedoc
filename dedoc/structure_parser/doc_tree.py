@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from typing import List, Optional
 
-from dedoc.structure_parser.heirarchy_level import HierarchyLevel
+from dedoc.structure_parser.hierarchy_level import HierarchyLevel
 
 
 class DocTree:

@@ -1,28 +1,32 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
 
 # Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: 
-      - '*'
-
+    branches:
+    - master
+  pull_request:
+    branches:
+    - develop
+    - master
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  pipeline:
-    # The type of runner that the job will run on
+  test:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      # Runs a set of commands using the runners shell
-      - name: build-tests
-        run: test="true" docker-compose up --build --exit-code-from test
+    - name: Checkout repo
+      uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip3 install pycodestyle==2.7.0 flake8==3.9.2 flake8-annotations==2.6.2 pyflakes==2.3.1
+    - name: Run tests
+      run: |
+        python3 -m unittest -v -f tests/test_style.py && \
+        tests="true" docker-compose up --build --exit-code-from tests

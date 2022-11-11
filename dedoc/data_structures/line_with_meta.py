@@ -6,7 +6,7 @@ from uuid import uuid1
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.structure_constructor.annotation_merger import AnnotationMerger
-from dedoc.structure_parser.heirarchy_level import HierarchyLevel
+from dedoc.structure_parser.hierarchy_level import HierarchyLevel
 
 
 class LineWithMeta(Sized):

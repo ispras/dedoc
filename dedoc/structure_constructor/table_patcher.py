@@ -4,7 +4,7 @@ from dedoc.data_structures.concrete_annotations.table_annotation import TableAnn
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.structure_parser.heirarchy_level import HierarchyLevel
+from dedoc.structure_parser.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 
 
