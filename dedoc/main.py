@@ -5,7 +5,6 @@
 # set_config(new_config)
 
 # 1 - set configuration of service
-import os
 from dedoc.configuration_manager import ConfigurationManager
 
 ConfigurationManager().getInstance()
@@ -14,9 +13,7 @@ ConfigurationManager().getInstance()
 from dedoc.api.dedoc_api import run_api, get_api  # noqa
 
 
-def main():
-
-    print(os.environ["PYTHONPATH"])
+def main() -> None:
     run_api(get_api())
 
 
