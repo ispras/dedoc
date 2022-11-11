@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Dict, List, Union, Tuple, Optional
 
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
-from dedoc.structure_parser.heirarchy_level import HierarchyLevel
+from dedoc.structure_parser.hierarchy_level import HierarchyLevel
 
 
 class ParagraphInfo:

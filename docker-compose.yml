@@ -11,7 +11,6 @@ services:
     ports:
       - 1231:1231
     environment:
-      PYTHONPATH: ":/:/dedoc/"
       DOCREADER_PORT: 1231
 
 
@@ -21,15 +20,14 @@ services:
     build:
           context: .
           dockerfile: docker/Dockerfile
-
     tty: true
     environment:
-      PYTHONPATH: ":/:/dedoc/"
       DOC_READER_HOST: "dedoc"
       DOCREADER_PORT: 1231
       is_test: $test
+      PYTHONPATH: $PYTHONPATH:/dedoc_root/tests:/dedoc_root
     command:
-        bash run_tests_in_docker.sh
+        bash dedoc_root/tests/run_tests_in_docker.sh
 
 ## By default this config uses default local driver,
 ## For custom volumes replace with volume driver configuration.

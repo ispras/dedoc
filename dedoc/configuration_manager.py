@@ -27,7 +27,7 @@ class ConfigurationManager(object):
             self.__instance.__config = new_config
 
     def getConfig(self, config: dict) -> dict:
-        if self.__instance.__config is None:
+        if self.getInstance().__config is None:
             self.initConfig(config)
         return self.__instance.__config
 

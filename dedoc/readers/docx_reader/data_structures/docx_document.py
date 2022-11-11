@@ -34,7 +34,7 @@ from dedoc.readers.docx_reader.footnote_extractor import FootnoteExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
-from dedoc.structure_parser.heirarchy_level import HierarchyLevel
+from dedoc.structure_parser.hierarchy_level import HierarchyLevel
 from dedoc.utils.utils import calculate_file_hash
 
 

@@ -6,7 +6,7 @@ from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.structure_parser.heirarchy_level import HierarchyLevel
+from dedoc.structure_parser.hierarchy_level import HierarchyLevel
 
 
 class AbstractLineTypeClassifier(abc.ABC):
