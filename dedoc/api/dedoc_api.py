@@ -24,7 +24,7 @@ logger = config["logger"]
 @app.route('/', methods=['GET'])
 def get_info() -> Response:
     """
-    Root URL '/' is need start with simple Flask before rest-plus.API otherwise you will get 404 Error.
+    Root URL '/' is need start with simple Flask before rest-plus. API otherwise you will get 404 Error.
     It is bug of rest-plus lib.
     """
     key = "start_page_path"
@@ -180,7 +180,7 @@ def handle_missing_file_exception(error: DedocException) -> Tuple[dict, int]:
     return result, error.code
 
 
-version_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../src", "..", "VERSION"))
+version_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "VERSION"))
 manager = DedocThreadedManager.from_config(config=config, version=open(version_file_path).read().strip())
 
 

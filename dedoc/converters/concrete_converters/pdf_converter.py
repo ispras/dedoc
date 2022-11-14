@@ -1,4 +1,3 @@
-
 from typing import Optional
 
 from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
