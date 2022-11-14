@@ -73,7 +73,7 @@ def change_indent(old_properties: "BaseProperties", tree: BeautifulSoup) -> None
     # start describes classical indentation (startChars)
     # left isn't specified in the documentation, F
     # main measurement 1/1440 of an inch
-    # 1 inch is 12 char unit_tests, 1/100 char unit = 1/1200 inch = 1.2 * (1/1440 of an inch)
+    # 1 inch is 12 char units, 1/100 char unit = 1/1200 inch = 1.2 * (1/1440 of an inch)
 
     attributes = {"firstLine": 0, "firstLineChars": 0, "hanging": 0, "hangingChars": 0,
                   "start": 0, "startChars": 0, "left": 0}

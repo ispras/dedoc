@@ -47,7 +47,7 @@ class AbstractMetadataExtractor(ABC):
         :type filename: name of file after rename (for example 23141.doc)
         :type converted_filename: name of file after rename and conversion (for example 23141.docx)
         :type original_filename: file name before rename
-        :type version: src version
+        :type version: dedoc version
         :type parameters: additional parameters
         :type other_fields: other fields
         """
