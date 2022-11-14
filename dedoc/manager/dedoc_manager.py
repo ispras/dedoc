@@ -41,10 +41,10 @@ class DedocManager:
     @staticmethod
     def from_config(version: str, manager_config: dict, *, config: dict) -> "DedocManager":
         """
-        this method helps to construct src manager from config
-        :param version: str, actual version of src (or your lib, based on src) Lay in file VERSION
+        this method helps to construct dedoc manager from config
+        :param version: str, actual version of dedoc (or your lib, based on dedoc) Lay in file VERSION
         :param manager_config: dict, you may get example of managers config dict in manager_config.py
-        :param config: any additional parameters for src lay in config, see config.py
+        :param config: any additional parameters for dedoc lay in config, see config.py
         :return: DedocManager
         """
 

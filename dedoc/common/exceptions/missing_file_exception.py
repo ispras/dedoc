@@ -1,4 +1,3 @@
-
 from typing import Optional
 
 from dedoc.common.exceptions.dedoc_exception import DedocException
