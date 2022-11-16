@@ -6,9 +6,9 @@ import pandas as pd
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
-from dedoc.line_type_classifier.feature_extractor.abstract_extractor import AbstractFeatureExtractor
 from dedoc.readers.scanned_reader.data_classes.bbox import BBox
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
+from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.utils.utils import list_get
 
 

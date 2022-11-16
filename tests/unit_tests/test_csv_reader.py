@@ -2,7 +2,7 @@ import os
 from unittest import TestCase
 
 from dedoc.readers.csv_reader.csv_reader import CSVReader
-from dedoc.structure_constructor.table_patcher import TablePatcher
+from dedoc.structure_constructors.table_patcher import TablePatcher
 
 
 class TestTxtReader(TestCase):

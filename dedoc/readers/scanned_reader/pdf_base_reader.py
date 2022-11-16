@@ -17,7 +17,7 @@ from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes, recognized_extensions
-from dedoc.line_type_classifier.concrete_classifiers.default_classifier import DefaultLineTypeClassifier
+from dedoc.structure_extractors.line_type_classifiers.default_classifier import DefaultLineTypeClassifier
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.archive_reader.archive_reader import ArchiveReader
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation

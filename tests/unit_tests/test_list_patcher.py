@@ -3,8 +3,8 @@ from typing import List
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
-from dedoc.structure_constructor.concreat_structure_constructors.list_patcher import ListPatcher
-from dedoc.structure_parser.hierarchy_level import HierarchyLevel
+from dedoc.structure_constructors.concreat_structure_constructors.list_patcher import ListPatcher
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
 class TestListPatcher(unittest.TestCase):

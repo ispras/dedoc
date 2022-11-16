@@ -13,10 +13,10 @@ from dedoc.converters.file_converter import FileConverterComposition
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.metadata_extractor.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
-from dedoc.metadata_extractor.metadata_extractor_composition import MetadataExtractorComposition
+from dedoc.metadata_extractors.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
+from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
 from dedoc.readers.reader_composition import ReaderComposition
-from dedoc.structure_constructor.structure_constructor_composition import StructureConstructorComposition
+from dedoc.structure_constructors.structure_constructor_composition import StructureConstructorComposition
 from dedoc.utils.utils import get_unique_name, get_empty_content
 
 
@@ -54,7 +54,7 @@ class DedocManager:
             converter=manager_config["converter"],
             attachments_handler=manager_config["attachments_extractor"],
             reader=manager_config["reader"],
-            structure_constructor=manager_config["structure_constructor"],
+            structure_constructor=manager_config["structure_constructors"],
             document_metadata_extractor=manager_config["document_metadata_extractor"],
             logger=logger,
             version=version
