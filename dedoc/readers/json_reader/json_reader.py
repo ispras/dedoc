@@ -5,7 +5,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
-from dedoc.structure_parser.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
 class JsonReader(BaseReader):

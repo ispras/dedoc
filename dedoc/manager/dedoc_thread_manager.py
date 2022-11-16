@@ -29,9 +29,8 @@ class ThreadManager(Thread):
         Thread.__init__(self)
         self.version = version
         self.converter = manager_config["converter"]
-        self.attachments_extractor = manager_config["attachments_extractor"]
         self.reader = manager_config["reader"]
-        self.structure_constructor = manager_config["structure_constructor"]
+        self.structure_constructor = manager_config["structure_constructors"]
         self.document_metadata_extractor = manager_config["document_metadata_extractor"]
         self.queue = queue
         self.result = result

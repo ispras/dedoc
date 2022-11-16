@@ -1,6 +1,6 @@
 import unittest
 
-from dedoc.structure_parser.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
 class TestHierarchyLevel(unittest.TestCase):
