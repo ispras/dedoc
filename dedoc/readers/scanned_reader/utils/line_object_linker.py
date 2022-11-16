@@ -5,7 +5,7 @@ from typing import List, Union, Dict
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
-from dedoc.structure_parser.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 from dedoc.readers.scanned_reader.data_classes.bbox import BBox
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation

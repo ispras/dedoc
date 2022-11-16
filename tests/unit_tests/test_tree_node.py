@@ -5,7 +5,7 @@ from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicA
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.tree_node import TreeNode
-from dedoc.structure_parser.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
 class TestTreeNode(TestCase):

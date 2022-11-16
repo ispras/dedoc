@@ -17,6 +17,7 @@ Werkzeug==2.0.3
 xlrd==1.2.0
 numpy==1.22.3
 PyPDF2==1.26.0
+python-Levenshtein==0.12.2
 pdfminer.six==20211012
 pytesseract==0.3.0 #0.3.6 - there are '\x0c'
 scikit_learn==1.0.2
@@ -25,6 +26,7 @@ opencv-python==4.5.5.64
 pandas==1.4.1
 pdf2image==1.10.0 #1.14.0 - there are converting artifacts '№' != '№\n\x0c'
 rarfile==4.0
+roman==3.3
 scipy==1.8.0
 six==1.16.0
 pylzma==0.5.0

@@ -3,7 +3,7 @@ from typing import Optional, List
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
-from dedoc.structure_parser.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 from dedoc.readers.scanned_reader.data_classes.tables.location import Location
 

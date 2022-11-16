@@ -15,7 +15,7 @@ from charset_normalizer import from_bytes
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.tree_node import TreeNode
-from dedoc.structure_parser.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 T = TypeVar("T")
 
