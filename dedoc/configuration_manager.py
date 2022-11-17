@@ -1,4 +1,3 @@
-
 class ConfigurationManager(object):
     """
     Pattern Singleton for configuration service

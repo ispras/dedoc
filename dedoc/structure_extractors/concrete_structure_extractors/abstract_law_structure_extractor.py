@@ -13,14 +13,18 @@ from dedoc.structure_extractors.line_type_classifiers.law_classifier import LawL
 
 class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
 
-    def __init__(self, path: str, *, config: dict):
+    def __init__(self, path: str, txt_path: str, *, config: dict):
         self.classifier = LawLineTypeClassifier(path=path, config=config)
+        self.txt_classifier = LawLineTypeClassifier(path=txt_path, config=config)
         self.hierarchy_level_builders = [StubHierarchyLevelBuilder()]
         self.hl_type = "law"
         self.init_hl_depth = 1
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
-        predictions = self.classifier.predict(document.lines)
+        if document.metadata.get("file_type") == "text/plain":
+            predictions = self.txt_classifier.predict(document.lines)
+        else:
+            predictions = self.classifier.predict(document.lines)
         labels = self._fix_labels(predictions)
 
         header_lines = []
