@@ -8,6 +8,7 @@ from dedoc.structure_extractors.abstract_structure_extractor import AbstractStru
 
 
 class DefaultStructureExtractor(AbstractStructureExtractor):
+    document_type = "other"
 
     def __init__(self) -> None:
         self.chapter = re.compile(r"^(статья|пункт|параграф|глава|определение)\s*([0-9]+\.)*([0-9]+\.?)")  # noqa

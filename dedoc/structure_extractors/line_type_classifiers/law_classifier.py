@@ -1,60 +1,50 @@
 import re
-from collections import namedtuple
-from typing import List, Iterator
+from typing import List
 
-from xgboost import XGBClassifier
+import numpy as np
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
-from dedoc.structure_extractors.hierarchy_level_builders.header_builder.header_hierarchy_level_builder import \
-    HeaderHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.law_builders.application_builder.application_law_hierarchy_level_builder import \
-    ApplicationLawHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.body_law_hierarchy_level_builder import \
-    BodyLawHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.law_builders.cellar_builder import \
-    CellarHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_number
-from dedoc.structure_extractors.line_type_classifiers.abstract_law_classifier import AbstractLawLineTypeClassifier
-
-LineLevel = namedtuple("LineLevel", ["name", "level1", "level2", "multiline"])
-TagWithLineId = namedtuple("TagWithLineId", ["tag", "line_id"])
+from dedoc.structure_extractors.line_type_classifiers.abstract_pickled_classifier import \
+    AbstractPickledLineTypeClassifier
 
 
-class LawLineTypeClassifier(AbstractLawLineTypeClassifier):
+class LawLineTypeClassifier(AbstractPickledLineTypeClassifier):
 
-    document_type = "law"
+    def __init__(self, path: str, *, config: dict) -> None:
+        super().__init__(config=config)
+        self.classifier, feature_extractor_parameters = self.load(path)
+        self.feature_extractor = LawTextFeatures(**feature_extractor_parameters)
+        self.regexp_application_begin = re.compile(
+            r"^(\'|\")?((приложение)|(утвержден)[оаы]?){1}(( )*([№n]?( )*(\d){1,3})?( )*)"
+            r"((к распоряжению)|(к постановлению)|(к приказу))?\s*$")
 
-    def __init__(self, classifier: XGBClassifier,
-                 feature_extractor: LawTextFeatures,
-                 *, config: dict) -> None:
-        super().__init__(classifier, feature_extractor, config=config)
+    def predict(self, lines: List[LineWithMeta]) -> List[str]:
+        if len(lines) == 0:
+            return []
 
-        self.regexps_item = re.compile(r'^\s*(\d*\.)*\d+[\)|\}]')
-        self.regexps_part = regexps_number
-        self.regexps_subitem = re.compile(r'^\s*[а-яё]\)')
+        features = self.feature_extractor.transform([lines])
+        labels_probability = self.classifier.predict_proba(features)  # noqa
 
-        self.__init_hl_depth = 2
-        self.hl_type = "law"
-        self._chunk_hl_builders = [HeaderHierarchyLevelBuilder(),
-                                   BodyLawHierarchyLevelBuilder(),
-                                   CellarHierarchyLevelBuilder(),
-                                   ApplicationLawHierarchyLevelBuilder()]
+        # mark lines inside quotes as raw_text
+        inside_quotes = np.array(LawTextFeatures()._inside_quotes(lines), dtype=bool)  # noqa
+        raw_text_id = list(self.classifier.classes_).index("raw_text")
+        labels_probability[inside_quotes, raw_text_id] = 1
+        labels = [self.classifier.classes_[label_id] for label_id in labels_probability.argmax(1)]
+        content_start = [line_id for line_id, label in enumerate(labels)
+                         if self.__match_body_begin(lines[line_id].line, label) or
+                         self.regexp_application_begin.match(lines[line_id].line.lower().strip())]
+        header_end = min(content_start) if len(content_start) else len(labels) - 1
+        # preparing header_id features
+        header_id = list(self.classifier.classes_).index("header")
+        labels_probability[header_end:, header_id] = 0
+        labels_probability[:header_end, :] = 0
+        labels_probability[:header_end, header_id] = 1
+        # update labels
+        labels = [self.classifier.classes_[label_id] for label_id in labels_probability.argmax(1)]
+        return labels
 
-    @staticmethod
-    def load_pickled(path: str = None, *, config: dict) -> "LawLineTypeClassifier":
-        classifier, feature_extractor_parameters = LawLineTypeClassifier._load_gzipped_xgb(path)
-
-        return LawLineTypeClassifier(classifier=classifier,
-                                     feature_extractor=LawTextFeatures(**feature_extractor_parameters),
-                                     config=config)
-
-    def _law_line_postprocess(self, lines: List[LineWithMeta]) -> Iterator[LineWithMeta]:
-        yield from self._line_postprocess(lines=lines,
-                                          paragraph_type=["item", "articlePart", "subitem"],
-                                          regexps=[self.regexps_item,
-                                                   self.regexps_part,
-                                                   self.regexps_subitem],
-                                          excluding_regexps=[None,
-                                                             self.ends_of_number,
-                                                             self.ends_of_number])
+    def __match_body_begin(self, text: str, label: str) -> bool:
+        return (label == "structure_unit" or
+                label in ("header", "raw_text") and
+                any(regexp.match(text.strip()) for regexp in LawTextFeatures.named_regexp))
