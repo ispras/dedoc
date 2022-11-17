@@ -1,14 +1,12 @@
-from typing import List, Tuple
-
-import numpy as np
+from typing import List
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.diploma_feature_extractor import DiplomaFeatureExtractor
-from dedoc.structure_extractors.line_type_classifiers.abstract_pickled_classifier import AbstractPickledLineTypeClassifier
+from dedoc.structure_extractors.line_type_classifiers.abstract_pickled_classifier import \
+    AbstractPickledLineTypeClassifier
 
 
 class DiplomaLineTypeClassifier(AbstractPickledLineTypeClassifier):
-    document_type = "diploma"
 
     def __init__(self, path: str, *, config: dict) -> None:
         super().__init__(config=config)

@@ -17,7 +17,6 @@ from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes, recognized_extensions
-from dedoc.structure_extractors.line_type_classifiers.default_classifier import DefaultLineTypeClassifier
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.archive_reader.archive_reader import ArchiveReader
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
@@ -53,7 +52,6 @@ class PdfBase(BaseReader):
 
     def __init__(self, config: dict) -> None:
         # TODO fond: init Table Recognizer
-        self.default_classifier = DefaultLineTypeClassifier(config=config)
         self.metadata_extractor = LineMetadataExtractor(config=config)
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
@@ -156,8 +154,6 @@ class PdfBase(BaseReader):
         mp_tables = []
 
         all_lines_with_links = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=attachments)
-        all_lines_with_links = self._extract_logical_structure(lines=all_lines_with_links,
-                                                               document_type=parameters.document_type)
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
@@ -261,12 +257,3 @@ class PdfBase(BaseReader):
             images.append(image)
         # TODO fond: call table recognizer
         return images, result_batch
-
-    def _extract_logical_structure(self,
-                                   lines: List[LineWithMeta],
-                                   document_type: Optional[str]
-                                   ) -> List[LineWithMeta]:
-        if document_type is None or document_type == "default" or document_type == "" or document_type == "other":
-            return self.default_classifier.predict(lines)
-        else:
-            raise ValueError("unsupported document type '{}' for scan images".format(document_type))

@@ -1,5 +1,3 @@
-import os
-
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.non_letter_prefix import NonLetterPrefix
@@ -11,6 +9,7 @@ from dedoc.structure_extractors.line_type_classifiers.tz_classifier import TzLin
 
 
 class TzStructureExtractor(AbstractStructureExtractor):
+    document_type = "tz"
 
     def __init__(self, path: str, *, config: dict):
         self.header_builder = HeaderHierarchyLevelBuilder()
