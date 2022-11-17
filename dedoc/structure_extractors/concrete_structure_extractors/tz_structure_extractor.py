@@ -11,14 +11,18 @@ from dedoc.structure_extractors.line_type_classifiers.tz_classifier import TzLin
 class TzStructureExtractor(AbstractStructureExtractor):
     document_type = "tz"
 
-    def __init__(self, path: str, *, config: dict):
+    def __init__(self, path: str, txt_path: str, *, config: dict):
         self.header_builder = HeaderHierarchyLevelBuilder()
         self.body_builder = TzBodyBuilder()
         self.toc_builder = TocBuilder()
         self.classifier = TzLineTypeClassifier(path=path, config=config)
+        self.txt_classifier = TzLineTypeClassifier(path=txt_path, config=config)
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
-        predictions = self.classifier.predict(document.lines)
+        if document.metadata.get("file_type") == "text/plain":
+            predictions = self.txt_classifier.predict(document.lines)
+        else:
+            predictions = self.classifier.predict(document.lines)
         header_lines, toc_lines, body_lines = [], [], []
 
         last_toc_line = max((line_id for line_id, prediction in enumerate(predictions) if prediction in ("toc", "title")), default=0)

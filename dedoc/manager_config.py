@@ -1,3 +1,5 @@
+import os
+
 from dedoc.converters.concrete_converters.docx_converter import DocxConverter
 from dedoc.converters.concrete_converters.excel_converter import ExcelConverter
 from dedoc.converters.concrete_converters.pdf_converter import PDFConverter
@@ -22,6 +24,16 @@ from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from dedoc.structure_constructors.concreat_structure_constructors.linear_constructor import LinearConstructor
 from dedoc.structure_constructors.concreat_structure_constructors.tree_constructor import TreeConstructor
 from dedoc.structure_constructors.structure_constructor_composition import StructureConstructorComposition
+from dedoc.structure_extractors.concrete_structure_extractors.classifying_law_structure_extractor import \
+    ClassifyingLawStructureExtractor
+from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import \
+    DefaultStructureExtractor
+from dedoc.structure_extractors.concrete_structure_extractors.diploma_structure_extractor import \
+    DiplomaStructureExtractor
+from dedoc.structure_extractors.concrete_structure_extractors.foiv_law_structure_extractor import \
+    FoivLawStructureExtractor
+from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
+from dedoc.structure_extractors.concrete_structure_extractors.tz_structure_extractor import TzStructureExtractor
 from dedoc.structure_extractors.structure_extractor_composition import StructureExtractorComposition
 
 """MANAGER SETTINGS"""
@@ -46,15 +58,35 @@ def get_manager_config(config: dict) -> dict:
         PdfScanReader(config=config),
         ArchiveReader(config=config)
     ]
-    structure_extractors = {
 
-    }
     metadata_extractors = [
         DocxMetadataExtractor(),
         PdfMetadataExtractor(config=config),
         ImageMetadataExtractor(config=config),
         BaseMetadataExtractor()
     ]
+
+    law_extractors = {
+        FoivLawStructureExtractor.document_type:
+            FoivLawStructureExtractor(path=os.path.join("..", "resources", "line_type_classifiers", "law_classifier.pkl.gz"),
+                                      txt_path=os.path.join("..", "resources", "line_type_classifiers", "law_txt_classifier.pkl.gz"),
+                                      config=config),
+        LawStructureExtractor.document_type:
+            LawStructureExtractor(path=os.path.join("..", "resources", "line_type_classifiers", "law_classifier.pkl.gz"),
+                                  txt_path=os.path.join("..", "resources", "line_type_classifiers", "law_txt_classifier.pkl.gz"),
+                                  config=config)
+    }
+    structure_extractors = {
+        **law_extractors,
+        DefaultStructureExtractor.document_type: DefaultStructureExtractor(),
+        DiplomaStructureExtractor.document_type:
+            DiplomaStructureExtractor(path=os.path.join("..", "resources", "line_type_classifiers", "diploma_classifier.pkl.gz"), config=config),
+        TzStructureExtractor.document_type:
+            TzStructureExtractor(path=os.path.join("..", "resources", "line_type_classifiers", "tz_classifier.pkl.gz"),
+                                 txt_path=os.path.join("..", "resources", "line_type_classifiers", "tz_classifier_txt.pkl.gz"),
+                                 config=config),
+        ClassifyingLawStructureExtractor.document_type: ClassifyingLawStructureExtractor(extractors=law_extractors, config=config)
+    }
 
     return dict(
         converter=FileConverterComposition(converters=converters),

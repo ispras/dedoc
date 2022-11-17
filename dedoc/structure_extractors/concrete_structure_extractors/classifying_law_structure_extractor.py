@@ -49,7 +49,7 @@ class LawDocType(Enum):
 
 
 class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
-    document_type = LawStructureExtractor.document_type
+    document_type = "classifying_foiv_law"
 
     def __init__(self, extractors: Dict[str, AbstractStructureExtractor], *, config: dict):
         self.extractors = extractors
@@ -136,8 +136,8 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
     def __get_extractor_by_type(self, doc_type: Optional[LawDocType]) -> AbstractStructureExtractor:
         if doc_type is None:
             self.logger.info("Dynamic document type not found, using base: {}".format(
-                FoivLawStructureExtractor.document_type))
-            return self.extractors[self.document_type]
+                LawStructureExtractor.document_type))
+            return self.extractors[LawStructureExtractor.document_type]
         elif doc_type in LawDocType.foiv_types():
             if FoivLawStructureExtractor.document_type in self.extractors:
                 self.logger.info("Dynamic document type predicted: {}".format(
@@ -145,11 +145,11 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
                 return self.extractors[FoivLawStructureExtractor.document_type]
             else:
                 self.logger.warning("No classifier for predicted dynamic document type {}, using {}".format(
-                    FoivLawStructureExtractor.document_type, self.document_type))
-                return self.extractors[self.document_type]
+                    FoivLawStructureExtractor.document_type, LawStructureExtractor.document_type))
+                return self.extractors[LawStructureExtractor.document_type]
         else:
-            self.logger.info("Dynamic document type predicted: {}".format(self.document_type))
-            return self.extractors[self.document_type]
+            self.logger.info("Dynamic document type predicted: {}".format(LawStructureExtractor.document_type))
+            return self.extractors[LawStructureExtractor.document_type]
 
     def __add_whitespace_match(self, pattern: Iterable, char_map: dict = None) -> str:
         if char_map is not None:
