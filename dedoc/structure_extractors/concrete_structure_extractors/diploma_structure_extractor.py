@@ -12,6 +12,7 @@ from dedoc.structure_extractors.line_type_classifiers.diploma_classifier import 
 
 
 class DiplomaStructureExtractor(AbstractStructureExtractor):
+    document_type = "diploma"
 
     def __init__(self, path: str, *, config: dict):
         self.toc_extractor = TOCFeatureExtractor()
