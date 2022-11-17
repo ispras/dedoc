@@ -19,8 +19,8 @@ from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexp
 class FoivLawStructureExtractor(AbstractLawStructureExtractor):
     document_type = "foiv_law"
 
-    def __init__(self, path: str, *, config: dict):
-        super().__init__(path=path, config=config)
+    def __init__(self, path: str, txt_path: str, *, config: dict):
+        super().__init__(path=path, txt_path=txt_path, config=config)
         self.hierarchy_level_builders = [HeaderHierarchyLevelBuilder(),
                                          BodyLawHierarchyLevelBuilder(),
                                          CellarHierarchyLevelBuilder(),
