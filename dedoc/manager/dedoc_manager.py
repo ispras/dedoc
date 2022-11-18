@@ -10,13 +10,14 @@ from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractA
 from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
 from dedoc.common.exceptions.dedoc_exception import DedocException
 from dedoc.converters.file_converter import FileConverterComposition
-from dedoc.data_structures.document_content import DocumentContent
+from dedoc.data_structures.document_metadata import DocumentMetadata
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.structure_constructors.structure_constructor_composition import StructureConstructorComposition
+from dedoc.structure_extractors.structure_extractor_composition import StructureExtractorComposition
 from dedoc.utils.utils import get_unique_name, get_empty_content
 
 
@@ -26,6 +27,7 @@ class DedocManager:
                  converter: FileConverterComposition,
                  attachments_handler: AttachmentsHandler,
                  reader: ReaderComposition,
+                 structure_extractor: StructureExtractorComposition,
                  structure_constructor: StructureConstructorComposition,
                  document_metadata_extractor: MetadataExtractorComposition,
                  logger: logging.Logger,
@@ -34,6 +36,7 @@ class DedocManager:
         self.converter = converter
         self.attachments_handler = attachments_handler
         self.reader = reader
+        self.structure_extractor = structure_extractor
         self.structure_constructor = structure_constructor
         self.document_metadata_extractor = document_metadata_extractor
         self.logger = logger
@@ -54,6 +57,7 @@ class DedocManager:
             converter=manager_config["converter"],
             attachments_handler=manager_config["attachments_extractor"],
             reader=manager_config["reader"],
+            structure_extractor=manager_config["structure_extractor"],
             structure_constructor=manager_config["structure_constructors"],
             document_metadata_extractor=manager_config["document_metadata_extractor"],
             logger=logger,
@@ -101,7 +105,7 @@ class DedocManager:
         warnings = []
         if not os.path.isfile(path=file_path):
             raise FileNotFoundError()
-        self.logger.info("start handle {}".format(file_path))
+        self.logger.info("Start handle {}".format(file_path))
         if original_file_name is None:
             original_file_name = os.path.basename(file_path)
         filename = get_unique_name(file_path)
@@ -110,66 +114,42 @@ class DedocManager:
 
             # Step 1 - Converting
             filename_convert = self.converter.do_converting(tmp_dir, filename, parameters=parameters)
-            self.logger.info("finish conversion {} -> {}".format(filename, filename_convert))
+            self.logger.info("Finish conversion {} -> {}".format(filename, filename_convert))
             # Step 2 - Parsing content of converted file
-            unstructured_document = self.reader.parse_file(
-                tmp_dir=tmp_dir,
-                filename=filename_convert,
-                parameters=parameters
-            )
+            unstructured_document = self.reader.parse_file(tmp_dir=tmp_dir, filename=filename_convert, parameters=parameters)
             warnings.extend(unstructured_document.warnings)
-            self.logger.info("parse file {}".format(filename_convert))
-            structure_type = parameters.get("structure_type")
-            document_content = self.structure_constructor.structure_document(document=unstructured_document,
-                                                                             structure_type=structure_type,
-                                                                             parameters=parameters)
-            warnings.extend(document_content.warnings)
-            self.logger.info("get document content {}".format(filename_convert))
+            self.logger.info("Finish parse file {}".format(filename_convert))
             # Step 3 - Adding meta-information
-            parsed_document = self.__parse_file_meta(document_content=document_content,
-                                                     directory=tmp_dir,
-                                                     filename=filename,
-                                                     converted_filename=filename_convert,
-                                                     original_file_name=original_file_name,
-                                                     parameters=parameters,
-                                                     other_fields=unstructured_document.metadata)
+            unstructured_document = self.document_metadata_extractor.add_metadata(doc=unstructured_document,
+                                                                                  directory=tmp_dir,
+                                                                                  filename=filename,
+                                                                                  converted_filename=filename_convert,
+                                                                                  original_filename=original_file_name,
+                                                                                  parameters=parameters,
+                                                                                  version=self.version)
+            warnings.extend(unstructured_document.warnings)
+            # Step 4 - Extract structure
+            unstructured_document = self.structure_extractor.extract_structure(unstructured_document, parameters)
+            warnings.extend(unstructured_document.warnings)
+            # Step 5 - Form the output structure
+            structure_type = parameters.get("structure_type")
+            parsed_document = self.structure_constructor.structure_document(document=unstructured_document,
+                                                                            version=self.version,
+                                                                            structure_type=structure_type,
+                                                                            parameters=parameters)
             warnings.extend(parsed_document.warnings)
-            self.logger.info("get structure and metadata {}".format(filename_convert))
+            self.logger.info("Get structure and metadata {}".format(filename_convert))
 
             if AbstractAttachmentsExtractor.with_attachments(parameters):
-                self.logger.info("start handle attachments")
-                parsed_attachment_files = self.__handle_attachments(document=unstructured_document,
-                                                                    parameters=parameters,
-                                                                    tmp_dir=tmp_dir)
-                self.logger.info("get attachments {}".format(filename_convert))
+                self.logger.info("Start handle attachments")
+                parsed_attachment_files = self.__handle_attachments(document=unstructured_document, parameters=parameters, tmp_dir=tmp_dir)
+                self.logger.info("Get attachments {}".format(filename_convert))
                 parsed_document.add_attachments(parsed_attachment_files)
             else:
                 parsed_document.attachments = None
             parsed_document.version = self.version
             parsed_document.warnings.extend(warnings)
-            self.logger.info("finish handle {}".format(filename))
-        return parsed_document
-
-    def __parse_file_meta(self,
-                          document_content: Optional[DocumentContent],
-                          directory: str,
-                          filename: str,
-                          converted_filename: str,
-                          original_file_name: str,
-                          parameters: dict,
-                          other_fields: Optional[dict] = None) -> ParsedDocument:
-        """
-        Decorator with metainformation
-        document_content - None for unsupported document in attachments
-        """
-        parsed_document = self.document_metadata_extractor.add_metadata(doc=document_content,
-                                                                        directory=directory,
-                                                                        filename=filename,
-                                                                        converted_filename=converted_filename,
-                                                                        original_filename=original_file_name,
-                                                                        parameters=parameters,
-                                                                        other_fields=other_fields,
-                                                                        version=self.version)
+            self.logger.info("Finish handle {}".format(filename))
         return parsed_document
 
     def __handle_attachments(self,
@@ -194,20 +174,31 @@ class DedocManager:
                                                   parameters=parameters_copy,
                                                   original_file_name=attachment.get_original_filename())
                 else:
-                    parsed_file = self.__parse_file_meta(document_content=get_empty_content(),
-                                                         directory=tmp_dir,
-                                                         filename=attachment.get_filename_in_path(),
-                                                         converted_filename=attachment.get_filename_in_path(),
-                                                         original_file_name=attachment.get_original_filename(),
-                                                         parameters=parameters_copy)
+                    parsed_file = self.__get_empty_document(directory=tmp_dir,
+                                                            filename=attachment.get_filename_in_path(),
+                                                            converted_filename=attachment.get_filename_in_path(),
+                                                            original_file_name=attachment.get_original_filename(),
+                                                            parameters=parameters_copy)
             except DedocException:
                 # return empty ParsedDocument with Meta information
-                parsed_file = self.__parse_file_meta(document_content=get_empty_content(),
-                                                     directory=tmp_dir,
-                                                     filename=attachment.get_filename_in_path(),
-                                                     converted_filename=attachment.get_filename_in_path(),
-                                                     original_file_name=attachment.get_original_filename(),
-                                                     parameters=parameters_copy)
+                parsed_file = self.__get_empty_document(directory=tmp_dir,
+                                                        filename=attachment.get_filename_in_path(),
+                                                        converted_filename=attachment.get_filename_in_path(),
+                                                        original_file_name=attachment.get_original_filename(),
+                                                        parameters=parameters_copy)
             parsed_file.metadata.set_uid(attachment.uid)
             parsed_attachment_files.append(parsed_file)
         return parsed_attachment_files
+
+    def __get_empty_document(self, directory: str, filename: str, converted_filename: str, original_file_name: str,
+                             parameters: dict) -> ParsedDocument:
+        unstructured_document = UnstructuredDocument(lines=[], tables=[], attachments=[])
+        unstructured_document = self.document_metadata_extractor.add_metadata(doc=unstructured_document,
+                                                                              directory=directory,
+                                                                              filename=filename,
+                                                                              converted_filename=converted_filename,
+                                                                              original_filename=original_file_name,
+                                                                              parameters=parameters,
+                                                                              version=self.version)
+        metadata = DocumentMetadata(**unstructured_document.metadata)
+        return ParsedDocument(content=get_empty_content(), metadata=metadata, version=self.version)

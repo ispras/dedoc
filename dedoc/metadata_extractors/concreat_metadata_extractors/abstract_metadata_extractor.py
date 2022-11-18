@@ -1,15 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from dedoc.data_structures.document_content import DocumentContent
-from dedoc.data_structures.parsed_document import ParsedDocument
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
 
 
 class AbstractMetadataExtractor(ABC):
 
     @abstractmethod
     def can_extract(self,
-                    doc: Optional[DocumentContent],
+                    doc: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,
@@ -31,14 +30,14 @@ class AbstractMetadataExtractor(ABC):
 
     @abstractmethod
     def add_metadata(self,
-                     doc: Optional[DocumentContent],
+                     doc: UnstructuredDocument,
                      directory: str,
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
                      version: str,
                      parameters: Optional[dict] = None,
-                     other_fields: Optional[dict] = None) -> ParsedDocument:
+                     other_fields: Optional[dict] = None) -> UnstructuredDocument:
         """
         add metadata to doc. Use this method only if this extractor can_extract this file
 

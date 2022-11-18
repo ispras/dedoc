@@ -5,9 +5,7 @@ from typing import Optional
 import docx
 from docx.opc.exceptions import PackageNotFoundError
 
-from dedoc.data_structures.document_content import DocumentContent
-from dedoc.data_structures.document_metadata import DocumentMetadata
-from dedoc.data_structures.parsed_document import ParsedDocument
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
@@ -17,7 +15,7 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
         super().__init__()
 
     def can_extract(self,
-                    doc: Optional[DocumentContent],
+                    doc: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,
@@ -27,14 +25,14 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
         return converted_filename.endswith("docx")
 
     def add_metadata(self,
-                     doc: Optional[DocumentContent],
+                     document: UnstructuredDocument,
                      directory: str,
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
                      version: str,
                      parameters: dict = None,
-                     other_fields: Optional[dict] = None) -> ParsedDocument:
+                     other_fields: Optional[dict] = None) -> UnstructuredDocument:
         if parameters is None:
             parameters = {}
         file_path = os.path.join(directory, converted_filename)
@@ -43,17 +41,9 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
             docx_other_fields = {**docx_other_fields, **other_fields}
 
         meta_info = self._get_base_meta_information(directory, filename, original_filename, parameters)
-        metadata = DocumentMetadata(
-            file_name=meta_info["file_name"],
-            file_type=meta_info["file_type"],
-            size=meta_info["size"],
-            access_time=meta_info["access_time"],
-            created_time=meta_info["created_time"],
-            modified_time=meta_info["modified_time"],
-            other_fields=docx_other_fields
-        )
-        parsed_document = ParsedDocument(metadata=metadata, content=doc, version=version)
-        return parsed_document
+        meta_info["other_fields"] = docx_other_fields
+        document.metadata = meta_info
+        return document
 
     def __convert_date(self, date: Optional[datetime]) -> Optional[int]:
         if date is not None:

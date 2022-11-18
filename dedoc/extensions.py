@@ -58,7 +58,7 @@ recognized_mimes = Extensions(
     image_like_format=['image/jpeg', 'image/png', 'image/tiff', 'image/x-ms-bmp', 'image/bmp'],
     pdf_like_format=['application/pdf'],
     csv_like_format=[],
-    txt_like_format=[]
+    txt_like_format=['text/plain', 'text/html']
 )
 
 

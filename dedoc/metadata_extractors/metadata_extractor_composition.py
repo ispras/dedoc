@@ -1,7 +1,6 @@
 from typing import List, Optional
 
-from dedoc.data_structures.document_content import DocumentContent
-from dedoc.data_structures.parsed_document import ParsedDocument
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.concreat_metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 
 
@@ -15,14 +14,14 @@ class MetadataExtractorComposition:
         self.extractors = extractors
 
     def add_metadata(self,
-                     doc: Optional[DocumentContent],
+                     doc: UnstructuredDocument,
                      directory: str,
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
                      version: str,
                      parameters: Optional[dict] = None,
-                     other_fields: Optional[dict] = None) -> ParsedDocument:
+                     other_fields: Optional[dict] = None) -> UnstructuredDocument:
         for extractor in self.extractors:
             if extractor.can_extract(doc=doc,
                                      directory=directory,

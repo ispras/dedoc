@@ -2,12 +2,12 @@ import logging
 import math
 import os
 from typing import Optional, Union
+
 import piexif
 from PIL import Image, ExifTags
 from dateutil import parser
 
-from dedoc.data_structures.document_content import DocumentContent
-from dedoc.data_structures.parsed_document import ParsedDocument
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
@@ -35,7 +35,7 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
         }
 
     def can_extract(self,
-                    doc: Optional[DocumentContent],
+                    doc: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,
@@ -45,28 +45,27 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
         return filename.lower().endswith((".png", ".jpg", ".jpeg"))
 
     def add_metadata(self,
-                     doc: Optional[DocumentContent],
+                     document: UnstructuredDocument,
                      directory: str,
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
                      version: str,
                      parameters: dict = None,
-                     other_fields: Optional[dict] = None) -> ParsedDocument:
-        result = super().add_metadata(doc=doc,
+                     other_fields: Optional[dict] = None) -> UnstructuredDocument:
+        result = super().add_metadata(document=document,
                                       directory=directory,
                                       filename=filename,
                                       converted_filename=converted_filename,
                                       original_filename=original_filename,
                                       parameters=parameters,
-                                      version=version)
+                                      version=version,
+                                      other_fields=other_fields)
 
-        if other_fields is not None and len(other_fields) > 0:
-            result.metadata.extend_other_fields(other_fields)
         path = os.path.join(directory, filename)
         exif_fields = self._get_exif(path)
         if len(exif_fields) > 0:
-            result.metadata.extend_other_fields(exif_fields)
+            result.metadata["other_fields"] = {**result.metadata.get("other_fields", {}), **exif_fields}
         return result
 
     def __encode_exif(self, exif: Union[str, bytes]) -> Optional[str]:

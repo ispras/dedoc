@@ -3,12 +3,13 @@ from typing import List, Tuple, Optional
 from soupsieve.util import deprecated
 
 from dedoc.data_structures.document_content import DocumentContent
+from dedoc.data_structures.document_metadata import DocumentMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.tree_node import TreeNode
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.structure_constructors.abstract_structure_constructor import \
-    AbstractStructureConstructor
+from dedoc.structure_constructors.abstract_structure_constructor import AbstractStructureConstructor
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
@@ -19,7 +20,8 @@ class TreeConstructor(AbstractStructureConstructor):
 
     def structure_document(self,
                            document: UnstructuredDocument,
-                           structure_type: Optional[str] = None) -> DocumentContent:
+                           version: str,
+                           structure_type: Optional[str] = None) -> ParsedDocument:
         document_name, not_document_name = self.__get_document_name(document.lines)
         not_document_name = self.__add_lists(not_document_name)
         tree = TreeNode.create(lines=document_name)
@@ -38,11 +40,9 @@ class TreeConstructor(AbstractStructureConstructor):
                 tree = tree.add_child(line=line)
         tree = tree.get_root()
         tree.merge_annotations()
-        return DocumentContent(tables=document.tables, structure=tree)
-
-    @deprecated("use structurize_document instead")
-    def construct_tree(self, document: UnstructuredDocument) -> DocumentContent:
-        return self.structure_document(document)
+        document_content = DocumentContent(tables=document.tables, structure=tree)
+        metadata = DocumentMetadata(**document.metadata)
+        return ParsedDocument(content=document_content, metadata=metadata, version=version)
 
     def __get_document_name(self, lines: List[LineWithMeta]) -> Tuple[List[LineWithMeta], List[LineWithMeta]]:
         document_name = []

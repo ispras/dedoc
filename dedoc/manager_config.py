@@ -66,24 +66,25 @@ def get_manager_config(config: dict) -> dict:
         BaseMetadataExtractor()
     ]
 
+    classifiers_path = os.path.join("..", "resources", "line_type_classifiers")
     law_extractors = {
         FoivLawStructureExtractor.document_type:
-            FoivLawStructureExtractor(path=os.path.join("..", "resources", "line_type_classifiers", "law_classifier.pkl.gz"),
-                                      txt_path=os.path.join("..", "resources", "line_type_classifiers", "law_txt_classifier.pkl.gz"),
+            FoivLawStructureExtractor(path=os.path.join(classifiers_path, "law_classifier.pkl.gz"),
+                                      txt_path=os.path.join(classifiers_path, "law_txt_classifier.pkl.gz"),
                                       config=config),
         LawStructureExtractor.document_type:
-            LawStructureExtractor(path=os.path.join("..", "resources", "line_type_classifiers", "law_classifier.pkl.gz"),
-                                  txt_path=os.path.join("..", "resources", "line_type_classifiers", "law_txt_classifier.pkl.gz"),
+            LawStructureExtractor(path=os.path.join(classifiers_path, "law_classifier.pkl.gz"),
+                                  txt_path=os.path.join(classifiers_path, "law_txt_classifier.pkl.gz"),
                                   config=config)
     }
     structure_extractors = {
         **law_extractors,
         DefaultStructureExtractor.document_type: DefaultStructureExtractor(),
         DiplomaStructureExtractor.document_type:
-            DiplomaStructureExtractor(path=os.path.join("..", "resources", "line_type_classifiers", "diploma_classifier.pkl.gz"), config=config),
+            DiplomaStructureExtractor(path=os.path.join(classifiers_path, "diploma_classifier.pkl.gz"), config=config),
         TzStructureExtractor.document_type:
-            TzStructureExtractor(path=os.path.join("..", "resources", "line_type_classifiers", "tz_classifier.pkl.gz"),
-                                 txt_path=os.path.join("..", "resources", "line_type_classifiers", "tz_classifier_txt.pkl.gz"),
+            TzStructureExtractor(path=os.path.join(classifiers_path, "tz_classifier.pkl.gz"),
+                                 txt_path=os.path.join(classifiers_path, "tz_classifier_txt.pkl.gz"),
                                  config=config),
         ClassifyingLawStructureExtractor.document_type: ClassifyingLawStructureExtractor(extractors=law_extractors, config=config)
     }
