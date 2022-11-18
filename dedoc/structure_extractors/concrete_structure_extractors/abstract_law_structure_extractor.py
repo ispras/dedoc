@@ -4,10 +4,10 @@ from typing import List, Tuple
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.extensions import recognized_mimes
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
 from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
-from dedoc.structure_extractors.hierarchy_level_builders.law_builders.stub_hierarchy_level_builder import \
-    StubHierarchyLevelBuilder
+from dedoc.structure_extractors.hierarchy_level_builders.law_builders.stub_hierarchy_level_builder import StubHierarchyLevelBuilder
 from dedoc.structure_extractors.line_type_classifiers.law_classifier import LawLineTypeClassifier
 
 
@@ -21,7 +21,7 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
         self.init_hl_depth = 1
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
-        if document.metadata.get("file_type") == "text/plain":
+        if document.metadata.get("file_type") in recognized_mimes.txt_like_format:
             predictions = self.txt_classifier.predict(document.lines)
         else:
             predictions = self.classifier.predict(document.lines)

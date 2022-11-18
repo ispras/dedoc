@@ -1,11 +1,11 @@
 import logging
 import os
 from typing import Optional
+
 from PyPDF2 import PdfFileReader
 from PyPDF2.utils import PdfReadError
 
-from dedoc.data_structures.document_content import DocumentContent
-from dedoc.data_structures.parsed_document import ParsedDocument
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.utils.utils import convert_datetime
 
@@ -31,7 +31,7 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
         self.logger = config.get("logger", logging.getLogger())
 
     def can_extract(self,
-                    doc: Optional[DocumentContent],
+                    doc: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,
@@ -41,27 +41,26 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
         return filename.lower().endswith(".pdf")
 
     def add_metadata(self,
-                     doc: Optional[DocumentContent],
+                     document: UnstructuredDocument,
                      directory: str,
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
                      version: str,
                      parameters: dict = None,
-                     other_fields: Optional[dict] = None) -> ParsedDocument:
-        result = super().add_metadata(doc=doc,
+                     other_fields: Optional[dict] = None) -> UnstructuredDocument:
+        result = super().add_metadata(document=document,
                                       directory=directory,
                                       filename=filename,
                                       converted_filename=converted_filename,
                                       original_filename=original_filename,
                                       parameters=parameters,
-                                      version=version)
-        if other_fields is not None and len(other_fields) > 0:
-            result.metadata.extend_other_fields(other_fields)
+                                      version=version,
+                                      other_fields=other_fields)
         path = os.path.join(directory, filename)
         pdf_fields = self._get_pdf_info(path)
         if len(pdf_fields) > 0:
-            result.metadata.extend_other_fields(pdf_fields)
+            result.metadata["other_fields"] = {**result.metadata.get("other_fields", {}), **pdf_fields}
         return result
 
     def _get_pdf_info(self, path: str) -> dict:

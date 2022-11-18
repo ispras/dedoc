@@ -7,6 +7,7 @@ from dedoc.structure_extractors.abstract_structure_extractor import AbstractStru
 class StructureExtractorComposition(AbstractStructureExtractor):
 
     def __init__(self, extractors: Dict[str, AbstractStructureExtractor], default_key: str) -> None:
+        assert default_key in extractors
         self.extractors = extractors
         self.default_extractor_key = default_key
 

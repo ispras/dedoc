@@ -49,10 +49,6 @@ class DocumentMetadata(Serializable):
         assert (new_fields is not None)
         assert (len(new_fields) > 0)
 
-        '''if self.other_fields is None:
-            self.other_fields = {}
-        for (key, value) in new_fields.items():
-            self.other_fields[key] = value'''
         for key, value in new_fields.items():
             setattr(self, key, value)
             self.other_fields[key] = value

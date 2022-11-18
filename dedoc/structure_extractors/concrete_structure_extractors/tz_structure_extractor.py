@@ -1,4 +1,5 @@
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.extensions import recognized_mimes
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.non_letter_prefix import NonLetterPrefix
 from dedoc.structure_extractors.feature_extractors.tz_feature_extractor import TzTextFeatures
@@ -19,7 +20,7 @@ class TzStructureExtractor(AbstractStructureExtractor):
         self.txt_classifier = TzLineTypeClassifier(path=txt_path, config=config)
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
-        if document.metadata.get("file_type") == "text/plain":
+        if document.metadata.get("file_type") in recognized_mimes.txt_like_format:
             predictions = self.txt_classifier.predict(document.lines)
         else:
             predictions = self.classifier.predict(document.lines)
