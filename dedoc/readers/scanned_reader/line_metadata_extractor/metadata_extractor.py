@@ -62,13 +62,13 @@ class LineMetadataExtractor:
         return lines
 
     def get_line_with_meta(self, bbox: TextWithBBox) -> LineWithLocation:
-        metadata = ParagraphMetadata(paragraph_type="unknown",
+        metadata = ParagraphMetadata(paragraph_type=HierarchyLevel.unknown,
                                      predicted_classes=None,
                                      page_id=bbox.page_num,
                                      line_id=bbox.line_num)
 
         line = LineWithLocation(line=bbox.text,
-                                hierarchy_level=HierarchyLevel.create_raw_text(),
+                                hierarchy_level=HierarchyLevel.create_unknown(),
                                 metadata=metadata,
                                 annotations=bbox.annotations,
                                 uid=bbox.uid,

@@ -17,12 +17,15 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
         self.letter = re.compile(r"^(([а-я]|[a-z])\))")
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
+        if document.metadata.get("file_type") == "application/json":
+            return document
+
         previous_header = None
         previous_hierarchy_level = None
         for line in document.lines:
             hierarchy_level = line.hierarchy_level
 
-            if hierarchy_level is None or self.chapter.match(line.line.lower().strip()):
+            if hierarchy_level is None or hierarchy_level.is_unknown() or self.chapter.match(line.line.lower().strip()):
                 hierarchy_level = self.__get_hierarchy_level_single_line(
                     line=line,
                     previous_header=previous_header,

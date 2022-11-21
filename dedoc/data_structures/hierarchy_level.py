@@ -8,6 +8,7 @@ class HierarchyLevel:
     raw_text = "raw_text"
     list_item = "list_item"
     root = "root"
+    unknown = "unknown"
 
     def __init__(self,
                  level_1: Optional[int],
@@ -21,7 +22,8 @@ class HierarchyLevel:
         self.can_be_multiline = can_be_multiline
         self.paragraph_type = paragraph_type
 
-        assert paragraph_type == HierarchyLevel.raw_text or (level_1 is not None and level_2 is not None)
+        assert paragraph_type == HierarchyLevel.raw_text or \
+               paragraph_type == HierarchyLevel.unknown or (level_1 is not None and level_2 is not None)
 
     def __is_defined(self, other: "HierarchyLevel") -> bool:
         return (self.level_1 is not None and
@@ -59,15 +61,19 @@ class HierarchyLevel:
     def is_raw_text(self) -> bool:
         return self.paragraph_type == HierarchyLevel.raw_text
 
+    def is_unknown(self) -> bool:
+        return self.paragraph_type == HierarchyLevel.unknown
+
     def is_list_item(self) -> bool:
         return self.paragraph_type == HierarchyLevel.list_item
 
     @staticmethod
     def create_raw_text() -> "HierarchyLevel":
-        return HierarchyLevel(level_1=None,
-                              level_2=None,
-                              can_be_multiline=True,
-                              paragraph_type=HierarchyLevel.raw_text)
+        return HierarchyLevel(level_1=None, level_2=None, can_be_multiline=True, paragraph_type=HierarchyLevel.raw_text)
+
+    @staticmethod
+    def create_unknown() -> "HierarchyLevel":
+        return HierarchyLevel(level_1=None, level_2=None, can_be_multiline=True, paragraph_type=HierarchyLevel.unknown)
 
     @staticmethod
     def create_root() -> "HierarchyLevel":
