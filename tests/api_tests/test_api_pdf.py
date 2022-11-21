@@ -125,7 +125,7 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self._check_tree_sanity(tree)
         # check, that handwritten text was filtered
         self.assertIn("№ выдан _, дата выдачи\nт. код подразделения зарегистрированный по адресу:\n",
-                      tree['subparagraphs'][2]['text'])
+                      tree['subparagraphs'][0]['text'])
 
     @unittest.skip
     def test_rotated_image(self) -> None:
