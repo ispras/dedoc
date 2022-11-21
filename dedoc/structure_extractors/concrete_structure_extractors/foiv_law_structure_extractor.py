@@ -5,12 +5,10 @@ from dedoc.structure_extractors.concrete_structure_extractors.abstract_law_struc
     AbstractLawStructureExtractor
 from dedoc.structure_extractors.hierarchy_level_builders.header_builder.header_hierarchy_level_builder import \
     HeaderHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.law_builders.application_builder.application_law_hierarchy_level_builder import \
-    ApplicationLawHierarchyLevelBuilder
+from dedoc.structure_extractors.hierarchy_level_builders.law_builders.application_builder.application_foiv_hierarchy_level_builder import \
+    ApplicationFoivHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.body_foiv_hierarchy_level_builder import \
     BodyFoivHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.body_law_hierarchy_level_builder import \
-    BodyLawHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.cellar_builder import CellarHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, \
     regexps_foiv_item
@@ -19,12 +17,12 @@ from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexp
 class FoivLawStructureExtractor(AbstractLawStructureExtractor):
     document_type = "foiv_law"
 
-    def __init__(self, path: str, txt_path: str, *, config: dict):
+    def __init__(self, path: str, txt_path: str, *, config: dict) -> None:
         super().__init__(path=path, txt_path=txt_path, config=config)
         self.hierarchy_level_builders = [HeaderHierarchyLevelBuilder(),
-                                         BodyLawHierarchyLevelBuilder(),
+                                         BodyFoivHierarchyLevelBuilder(),
                                          CellarHierarchyLevelBuilder(),
-                                         ApplicationLawHierarchyLevelBuilder()]
+                                         ApplicationFoivHierarchyLevelBuilder()]
         self.regexps_subitem_with_number = BodyFoivHierarchyLevelBuilder.regexps_subitem_with_number
         self.regexps_subitem_with_char = BodyFoivHierarchyLevelBuilder.regexps_subitem_with_char
         self.regexps_ends_of_number = regexps_ends_of_number

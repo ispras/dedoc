@@ -58,7 +58,7 @@ class DedocManager:
             attachments_handler=manager_config["attachments_extractor"],
             reader=manager_config["reader"],
             structure_extractor=manager_config["structure_extractor"],
-            structure_constructor=manager_config["structure_constructors"],
+            structure_constructor=manager_config["structure_constructor"],
             document_metadata_extractor=manager_config["document_metadata_extractor"],
             logger=logger,
             version=version
@@ -120,17 +120,19 @@ class DedocManager:
             warnings.extend(unstructured_document.warnings)
             self.logger.info("Finish parse file {}".format(filename_convert))
             # Step 3 - Adding meta-information
-            unstructured_document = self.document_metadata_extractor.add_metadata(doc=unstructured_document,
+            unstructured_document = self.document_metadata_extractor.add_metadata(document=unstructured_document,
                                                                                   directory=tmp_dir,
                                                                                   filename=filename,
                                                                                   converted_filename=filename_convert,
                                                                                   original_filename=original_file_name,
                                                                                   parameters=parameters,
                                                                                   version=self.version)
+            self.logger.info("Add metadata of file {}".format(filename_convert))
             warnings.extend(unstructured_document.warnings)
             # Step 4 - Extract structure
             unstructured_document = self.structure_extractor.extract_structure(unstructured_document, parameters)
             warnings.extend(unstructured_document.warnings)
+            self.logger.info("Extract structure from file {}".format(filename_convert))
             # Step 5 - Form the output structure
             structure_type = parameters.get("structure_type")
             parsed_document = self.structure_constructor.structure_document(document=unstructured_document,
@@ -138,7 +140,7 @@ class DedocManager:
                                                                             structure_type=structure_type,
                                                                             parameters=parameters)
             warnings.extend(parsed_document.warnings)
-            self.logger.info("Get structure and metadata {}".format(filename_convert))
+            self.logger.info("Get structured document {}".format(filename_convert))
 
             if AbstractAttachmentsExtractor.with_attachments(parameters):
                 self.logger.info("Start handle attachments")
@@ -193,7 +195,7 @@ class DedocManager:
     def __get_empty_document(self, directory: str, filename: str, converted_filename: str, original_file_name: str,
                              parameters: dict) -> ParsedDocument:
         unstructured_document = UnstructuredDocument(lines=[], tables=[], attachments=[])
-        unstructured_document = self.document_metadata_extractor.add_metadata(doc=unstructured_document,
+        unstructured_document = self.document_metadata_extractor.add_metadata(document=unstructured_document,
                                                                               directory=directory,
                                                                               filename=filename,
                                                                               converted_filename=converted_filename,

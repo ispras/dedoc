@@ -43,7 +43,8 @@ class TablePatcher:
         return UnstructuredDocument(lines=paragraphs,
                                     tables=document.tables,
                                     attachments=document.attachments,
-                                    warnings=document.warnings)
+                                    warnings=document.warnings,
+                                    metadata=document.metadata)
 
     def _create_paragraphs_from_table(self, table: Table, hierarchy_level: int) -> List[LineWithMeta]:
         """

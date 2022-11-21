@@ -14,7 +14,7 @@ class MetadataExtractorComposition:
         self.extractors = extractors
 
     def add_metadata(self,
-                     doc: UnstructuredDocument,
+                     document: UnstructuredDocument,
                      directory: str,
                      filename: str,
                      converted_filename: str,
@@ -23,14 +23,14 @@ class MetadataExtractorComposition:
                      parameters: Optional[dict] = None,
                      other_fields: Optional[dict] = None) -> UnstructuredDocument:
         for extractor in self.extractors:
-            if extractor.can_extract(doc=doc,
+            if extractor.can_extract(document=document,
                                      directory=directory,
                                      filename=filename,
                                      converted_filename=converted_filename,
                                      original_filename=original_filename,
                                      parameters=parameters,
                                      other_fields=other_fields):
-                return extractor.add_metadata(doc=doc,
+                return extractor.add_metadata(document=document,
                                               directory=directory,
                                               filename=filename,
                                               converted_filename=converted_filename,

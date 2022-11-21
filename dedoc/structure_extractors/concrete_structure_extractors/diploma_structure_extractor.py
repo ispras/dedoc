@@ -14,7 +14,7 @@ from dedoc.structure_extractors.line_type_classifiers.diploma_classifier import 
 class DiplomaStructureExtractor(AbstractStructureExtractor):
     document_type = "diploma"
 
-    def __init__(self, path: str, *, config: dict):
+    def __init__(self, path: str, *, config: dict) -> None:
         self.toc_extractor = TOCFeatureExtractor()
         self.header_builder = HeaderHierarchyLevelBuilder()
         self.toc_builder = TocBuilder()

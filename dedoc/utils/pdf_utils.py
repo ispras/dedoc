@@ -1,7 +1,8 @@
 from typing import Optional, Dict, Any, Tuple
-from pdf2image import convert_from_path
+
 from PIL.Image import Image
 from PyPDF2 import PdfFileReader
+from pdf2image import convert_from_path
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 

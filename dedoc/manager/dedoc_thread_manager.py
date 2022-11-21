@@ -30,8 +30,9 @@ class ThreadManager(Thread):
         self.version = version
         self.converter = manager_config["converter"]
         self.reader = manager_config["reader"]
-        self.structure_constructor = manager_config["structure_constructors"]
+        self.structure_constructor = manager_config["structure_constructor"]
         self.document_metadata_extractor = manager_config["document_metadata_extractor"]
+        self.attachments_extractor = manager_config["attachments_extractor"]
         self.queue = queue
         self.result = result
         self.logger = logger
@@ -48,17 +49,17 @@ class ThreadManager(Thread):
                 sleep_time = 0.01
                 self.logger.info("{} files to handle".format(self.queue.qsize()))
                 uid, directory, filename, parameters, original_file_name = self.queue.get()
-                self.logger.info("start handle file {}".format(filename))
+                self.logger.info("Start handle file {}".format(filename))
                 with tempfile.TemporaryDirectory() as tmp_dir:
                     file_original = os.path.join(directory, filename)
                     file_new_location = os.path.join(tmp_dir, filename)
-                    self.logger.debug("move file from {} to {}".format(file_original, file_new_location))
+                    self.logger.debug("Move file from {} to {}".format(file_original, file_new_location))
                     shutil.move(file_original, file_new_location)
                     try:
                         result = self.manager.parse_file(file_path=file_new_location,
                                                          parameters=parameters,
                                                          original_file_name=original_file_name)
-                        self.logger.info("finish handle file {}".format(original_file_name))
+                        self.logger.info("Finish handle file {}".format(original_file_name))
                         self.result[uid] = result
                     except Exception as e:
                         self.result[uid] = e
@@ -111,9 +112,9 @@ class DedocThreadedManager(object):
 
     def parse_file(self, file: FileStorage, parameters: Dict[str, str]) -> ParsedDocument:
         original_filename = file.filename.split("/")[-1]
-        self.logger.info("get file {}".format(original_filename))
+        self.logger.info("Get file {}".format(original_filename))
         filename = get_unique_name(original_filename)
-        self.logger.info("rename file {} to {}".format(original_filename, filename))
+        self.logger.info("Rename file {} to {}".format(original_filename, filename))
 
         if self.tmp_dir is None:
             with tempfile.TemporaryDirectory() as tmp_dir:
@@ -136,7 +137,7 @@ class DedocThreadedManager(object):
         )
 
     def parse_existing_file(self, path: str, parameters: Dict[str, str]) -> ParsedDocument:
-        self.logger.info("parse existing file {}".format(path))
+        self.logger.info("Parse existing file {}".format(path))
         with open(path, 'rb') as fp:
             file = FileStorage(fp, filename=path)
             return self.parse_file(file=file, parameters=parameters)
@@ -144,7 +145,7 @@ class DedocThreadedManager(object):
     def __parse_file(self, tmp_dir: str, filename: str, parameters: dict, original_file_name: str) -> ParsedDocument:
         sleep_time = 0.01
         uid = str(uuid.uuid1())
-        self.logger.info("put file in queue {}".format(filename))
+        self.logger.info("Put file in queue {}".format(filename))
         self.queue.put((uid, tmp_dir, filename, parameters, original_file_name))
         while uid not in self.result:
             sleep(sleep_time)
