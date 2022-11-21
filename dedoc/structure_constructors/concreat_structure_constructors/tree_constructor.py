@@ -1,7 +1,5 @@
 from typing import List, Tuple, Optional
 
-from soupsieve.util import deprecated
-
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.document_metadata import DocumentMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta

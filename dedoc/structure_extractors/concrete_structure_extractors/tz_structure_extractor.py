@@ -12,7 +12,7 @@ from dedoc.structure_extractors.line_type_classifiers.tz_classifier import TzLin
 class TzStructureExtractor(AbstractStructureExtractor):
     document_type = "tz"
 
-    def __init__(self, path: str, txt_path: str, *, config: dict):
+    def __init__(self, path: str, txt_path: str, *, config: dict) -> None:
         self.header_builder = HeaderHierarchyLevelBuilder()
         self.body_builder = TzBodyBuilder()
         self.toc_builder = TocBuilder()

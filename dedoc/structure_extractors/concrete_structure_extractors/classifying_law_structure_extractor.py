@@ -49,9 +49,9 @@ class LawDocType(Enum):
 
 
 class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
-    document_type = "classifying_foiv_law"
+    document_type = "law"
 
-    def __init__(self, extractors: Dict[str, AbstractStructureExtractor], *, config: dict):
+    def __init__(self, extractors: Dict[str, AbstractStructureExtractor], *, config: dict) -> None:
         self.extractors = extractors
         self.logger = config.get("logger", logging.getLogger())
 

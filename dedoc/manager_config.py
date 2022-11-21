@@ -1,5 +1,6 @@
 import os
 
+from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
 from dedoc.converters.concrete_converters.docx_converter import DocxConverter
 from dedoc.converters.concrete_converters.excel_converter import ExcelConverter
 from dedoc.converters.concrete_converters.pdf_converter import PDFConverter
@@ -66,7 +67,7 @@ def get_manager_config(config: dict) -> dict:
         BaseMetadataExtractor()
     ]
 
-    classifiers_path = os.path.join("..", "resources", "line_type_classifiers")
+    classifiers_path = os.path.join(os.path.dirname(__file__), "..", "resources", "line_type_classifiers")
     law_extractors = {
         FoivLawStructureExtractor.document_type:
             FoivLawStructureExtractor(path=os.path.join(classifiers_path, "law_classifier.pkl.gz"),
@@ -78,7 +79,6 @@ def get_manager_config(config: dict) -> dict:
                                   config=config)
     }
     structure_extractors = {
-        **law_extractors,
         DefaultStructureExtractor.document_type: DefaultStructureExtractor(),
         DiplomaStructureExtractor.document_type:
             DiplomaStructureExtractor(path=os.path.join(classifiers_path, "diploma_classifier.pkl.gz"), config=config),
@@ -92,10 +92,11 @@ def get_manager_config(config: dict) -> dict:
     return dict(
         converter=FileConverterComposition(converters=converters),
         reader=ReaderComposition(readers=readers),
-        structrure_extractor=StructureExtractorComposition(extractors=structure_extractors, default_key="other"),
+        structure_extractor=StructureExtractorComposition(extractors=structure_extractors, default_key="other"),
         structure_constructor=StructureConstructorComposition(
             extractors={"linear": LinearConstructor(), "tree": TreeConstructor()},
             default_extractor=TreeConstructor()
         ),
         document_metadata_extractor=MetadataExtractorComposition(extractors=metadata_extractors),
+        attachments_extractor=AttachmentsHandler(config=config)
     )

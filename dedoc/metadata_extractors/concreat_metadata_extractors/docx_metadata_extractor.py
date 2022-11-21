@@ -15,7 +15,7 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
         super().__init__()
 
     def can_extract(self,
-                    doc: UnstructuredDocument,
+                    document: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,
