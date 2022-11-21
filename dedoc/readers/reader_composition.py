@@ -20,7 +20,7 @@ class ReaderComposition(object):
         name, extension = splitext_(filename)
         file_path = os.path.join(tmp_dir, filename)
         mime = get_file_mime_type(file_path)
-        document_type = parameters.get("document_type")
+        document_type = ""
 
         for reader in self.readers:
             if "parameters" in inspect.getfullargspec(reader.can_read).args:

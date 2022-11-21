@@ -13,7 +13,7 @@ from dedoc.structure_extractors.line_type_classifiers.law_classifier import LawL
 
 class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
 
-    def __init__(self, path: str, txt_path: str, *, config: dict):
+    def __init__(self, path: str, txt_path: str, *, config: dict) -> None:
         self.classifier = LawLineTypeClassifier(path=path, config=config)
         self.txt_classifier = LawLineTypeClassifier(path=txt_path, config=config)
         self.hierarchy_level_builders = [StubHierarchyLevelBuilder()]
@@ -69,7 +69,7 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
             if builder.can_build(start_tag, self.hl_type):
                 return builder.get_lines_with_hierarchy(lines_with_labels=lines_with_labels,
                                                         init_hl_depth=self.init_hl_depth)
-        raise ValueError("no one can handle {} {}".format(start_tag, self.hl_type))
+        raise ValueError("No one can handle {} {}".format(start_tag, self.hl_type))
 
     def _fix_labels(self, labels: List[str]) -> List[str]:
         """

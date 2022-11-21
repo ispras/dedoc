@@ -8,6 +8,7 @@ from dedoc.data_structures.concrete_annotations.indentation_annotation import In
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.data_structures.concrete_annotations.color_annotation import ColorAnnotation
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.scanned_reader.data_classes.page_with_bboxes import PageWithBBox
@@ -67,7 +68,7 @@ class LineMetadataExtractor:
                                      line_id=bbox.line_num)
 
         line = LineWithLocation(line=bbox.text,
-                                hierarchy_level=None,
+                                hierarchy_level=HierarchyLevel.create_raw_text(),
                                 metadata=metadata,
                                 annotations=bbox.annotations,
                                 uid=bbox.uid,

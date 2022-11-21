@@ -56,14 +56,6 @@
                         </select> pdf_with_text_layer
                     </label>
                 </p>
-                <p>
-                    <label>
-                    <select name="document_type" >
-                        <option value="" selected>other</option>
-                        <option value="law">law</option>
-                    </select>
-                    </label> document_type
-                </p>
                 <p><label><input type="checkbox" name="need_text_localization" value="true"> need_text_localization</label></p>
                 <p><label id="is_one_column_document">
                         <select name="is_one_column_document">
@@ -89,13 +81,18 @@
                 </div>
 
                 <p>
-                    <label><select name="document_type">
-                        <option value="" selected>other</option>
-                    </select> document_type</label>
+                    <label>
+                        <select name="document_type">
+                            <option value="" selected>other</option>
+                            <option value="law">law</option>
+                            <option value="tz">tz</option>
+                            <option value="diploma">diploma</option>
+                        </select> document_type
+                    </label>
                 </p>
                 <p>
                     <label>
-                    <select name="structure_type" >
+                    <select name="structure_type">
                         <option value="linear" selected>linear</option>
                         <option value="tree">tree</option>
                     </select>

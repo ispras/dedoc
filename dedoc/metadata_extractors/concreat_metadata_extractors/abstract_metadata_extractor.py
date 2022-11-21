@@ -8,7 +8,7 @@ class AbstractMetadataExtractor(ABC):
 
     @abstractmethod
     def can_extract(self,
-                    doc: UnstructuredDocument,
+                    document: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,
@@ -18,7 +18,7 @@ class AbstractMetadataExtractor(ABC):
         """
         check if this extractor can handle given file. Return True if can handle and False otherwise
 
-        :type doc: document content
+        :type document: document content
         :type directory: path to directory where original file and converted file are located
         :type filename: name of file after rename (for example 23141.doc)
         :type converted_filename: name of file after rename and conversion (for example 23141.docx)
@@ -30,7 +30,7 @@ class AbstractMetadataExtractor(ABC):
 
     @abstractmethod
     def add_metadata(self,
-                     doc: UnstructuredDocument,
+                     document: UnstructuredDocument,
                      directory: str,
                      filename: str,
                      converted_filename: str,
@@ -41,7 +41,7 @@ class AbstractMetadataExtractor(ABC):
         """
         add metadata to doc. Use this method only if this extractor can_extract this file
 
-        :type doc: document content
+        :type document: document content
         :type directory: path to directory where original file and converted file are located
         :type filename: name of file after rename (for example 23141.doc)
         :type converted_filename: name of file after rename and conversion (for example 23141.docx)

@@ -31,7 +31,7 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
         self.logger = config.get("logger", logging.getLogger())
 
     def can_extract(self,
-                    doc: UnstructuredDocument,
+                    document: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,

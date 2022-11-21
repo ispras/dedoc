@@ -12,7 +12,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
     """
 
     def can_extract(self,
-                    doc: UnstructuredDocument,
+                    document: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,
@@ -22,7 +22,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         """
         check if this extractor can handle given file. Return True if can handle and False otherwise
 
-        :type doc: document content
+        :type document: document content
         :type directory: path to directory where original file and converted file are located
         :type filename: name of file after rename (for example 23141.doc)
         :type converted_filename: name of file after rename and conversion (for example 23141.docx)
