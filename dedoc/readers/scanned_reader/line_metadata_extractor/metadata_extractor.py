@@ -68,7 +68,7 @@ class LineMetadataExtractor:
                                      line_id=bbox.line_num)
 
         line = LineWithLocation(line=bbox.text,
-                                hierarchy_level=HierarchyLevel.create_unknown(),
+                                hierarchy_level=None,
                                 metadata=metadata,
                                 annotations=bbox.annotations,
                                 uid=bbox.uid,

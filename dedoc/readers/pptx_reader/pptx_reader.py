@@ -2,6 +2,7 @@ from typing import Optional
 
 from pptx import Presentation
 
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.table import Table
@@ -9,7 +10,7 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
+from dedoc.readers.utils.hierarchy_level_extractor import HierarchyLevelExtractor
 
 
 class PptxReader(BaseReader):
@@ -35,7 +36,7 @@ class PptxReader(BaseReader):
             for paragraph_id, shape in enumerate(slide.shapes, start=1):
 
                 if shape.has_text_frame:
-                    metadata = ParagraphMetadata(paragraph_type="raw_text",
+                    metadata = ParagraphMetadata(paragraph_type=HierarchyLevel.unknown,
                                                  predicted_classes=None,
                                                  page_id=page_id,
                                                  line_id=paragraph_id)

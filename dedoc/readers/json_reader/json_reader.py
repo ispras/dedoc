@@ -16,7 +16,7 @@ class JsonReader(BaseReader):
                  extension: str,
                  document_type: Optional[str],
                  parameters: Optional[dict] = None) -> bool:
-        return extension.endswith(".json") and not document_type
+        return extension.lower().endswith(".json") and not document_type
 
     def read(self,
              path: str,
