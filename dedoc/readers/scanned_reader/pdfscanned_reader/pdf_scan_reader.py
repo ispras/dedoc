@@ -38,8 +38,8 @@ class PdfScanReader(PdfBase):
                  parameters: Optional[dict] = None) -> bool:
         parameters = {} if parameters is None else parameters
         with_archive = parameters.get("archive_as_single_file", "true").lower() == "true"
-        return ((self.__check_mime(mime, with_archive) or self.__check_path(path, with_archive)) and
-                (not document_type or document_type.replace(".", "") in supported_image_types))
+        return self.__check_mime(mime, with_archive) or self.__check_path(path, with_archive) or \
+            extension.replace(".", "") in supported_image_types
 
     def _process_one_page(self,
                           image: np.ndarray,
@@ -80,8 +80,8 @@ class PdfScanReader(PdfBase):
                 mime in recognized_mimes.image_like_format)
 
     def __check_path(self, path: str, with_archive: bool) -> bool:
-        return (path.endswith(tuple(recognized_extensions.image_like_format)) or
-                (path.endswith(tuple(recognized_extensions.archive_like_format)) and with_archive))
+        return (path.lower().endswith(tuple(recognized_extensions.image_like_format)) or
+                (path.lower().endswith(tuple(recognized_extensions.archive_like_format)) and with_archive))
 
     def _detect_classifier_columns_orientation(self, image: np.ndarray) -> Tuple[int, int]:
         #  TODO fond: call orientation classifier

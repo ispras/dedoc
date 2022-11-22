@@ -19,7 +19,7 @@ class CSVReader(BaseReader):
                  extension: str,
                  document_type: Optional[str],
                  parameters: Optional[dict] = None) -> bool:
-        return extension in recognized_extensions.csv_like_format and not document_type
+        return extension in recognized_extensions.csv_like_format
 
     def read(self,
              path: str,

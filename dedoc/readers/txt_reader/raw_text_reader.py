@@ -31,7 +31,7 @@ class RawTextReader(BaseReader):
                  extension: str,
                  document_type: Optional[str],
                  parameters: Optional[dict] = None) -> bool:
-        return extension.lower().endswith((".txt", "txt.gz")) and not document_type
+        return extension.lower().endswith((".txt", "txt.gz"))
 
     def read(self,
              path: str,
