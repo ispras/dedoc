@@ -23,9 +23,6 @@ class ExcelReader(BaseReader):
                  extension: str,
                  document_type: Optional[str],
                  parameters: Optional[dict] = None) -> bool:
-        if document_type:
-            return False
-
         return extension in recognized_extensions.excel_like_format or mime in recognized_mimes.excel_like_format
 
     def read(self,
