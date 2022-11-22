@@ -12,7 +12,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
-from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
+from dedoc.readers.utils.hierarchy_level_extractor import HierarchyLevelExtractor
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.utils.utils import calculate_file_hash, get_encoding
 
@@ -31,7 +31,7 @@ class RawTextReader(BaseReader):
                  extension: str,
                  document_type: Optional[str],
                  parameters: Optional[dict] = None) -> bool:
-        return extension.endswith((".txt", "txt.gz")) and not document_type
+        return extension.lower().endswith((".txt", "txt.gz")) and not document_type
 
     def read(self,
              path: str,
@@ -62,7 +62,7 @@ class RawTextReader(BaseReader):
             metadata = ParagraphMetadata(page_id=0,
                                          line_id=line_id,
                                          predicted_classes=None,
-                                         paragraph_type="raw_text")
+                                         paragraph_type=HierarchyLevel.unknown)
             uid = "txt_{}_{}".format(file_hash, line_id)
             spacing_annotation_value = str(int(100 * (0.5 if number_of_empty_lines == 0 else number_of_empty_lines)))
             spacing_annotation = SpacingAnnotation(start=0, end=len(line), value=spacing_annotation_value)

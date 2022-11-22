@@ -28,6 +28,7 @@ from dedoc.readers.scanned_reader.paragraph_extractor.scan_paragraph_classifier_
     ScanParagraphClassifierExtractor
 from dedoc.readers.scanned_reader.utils.header_footers_analysis import footer_header_analysis
 import dedoc.utils.parameter_utils as param_utils
+from dedoc.readers.utils.hierarchy_level_extractor import HierarchyLevelExtractor
 from dedoc.utils.pdf_utils import get_pdf_page_count, postprocess, get_page_slice
 from dedoc.utils.utils import flatten
 from dedoc.utils.utils import get_file_mime_type, splitext_
@@ -58,8 +59,8 @@ class PdfBase(BaseReader):
         # TODO fond: init Attachment Extractor
         self.archive_reader = ArchiveReader(config=config)
         self.linker = LineObjectLinker(config=config)
-        self.supported_types = {None, "default", "", "other"}
         self.paragraph_extractor = ScanParagraphClassifierExtractor(config=config)
+        self.hierarchy_level_extractor = HierarchyLevelExtractor()
 
     def read(self,
              path: str,
@@ -154,6 +155,7 @@ class PdfBase(BaseReader):
         mp_tables = []
 
         all_lines_with_links = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=attachments)
+        all_lines_with_links = self.hierarchy_level_extractor.get_hierarchy_level(all_lines_with_links)
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
