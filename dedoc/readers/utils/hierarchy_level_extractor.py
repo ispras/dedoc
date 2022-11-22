@@ -36,7 +36,6 @@ class HierarchyLevelExtractor:
                 previous_hierarchy_level = hierarchy_level
 
             line.set_hierarchy_level(hierarchy_level)
-            line.metadata.paragraph_type = hierarchy_level.paragraph_type
             assert line.hierarchy_level is not None
             result.append(line)
 

@@ -112,15 +112,15 @@ class ParagraphInfo:
         result['level'] = hierarchy_level
 
         if not hierarchy_level:
-            result['type'] = HierarchyLevel.raw_text
+            result['type'] = HierarchyLevel.unknown
         elif self.style_level is not None:
             result['type'] = "style_header"
         elif hierarchy_level[0] == 0 or hierarchy_level[0] == 1:
-            result['type'] = "paragraph"
+            result['type'] = HierarchyLevel.paragraph
         elif hierarchy_level[0] == 2:
-            result['type'] = "list_item"
+            result['type'] = HierarchyLevel.list_item
         else:
-            result['type'] = HierarchyLevel.raw_text
+            result['type'] = HierarchyLevel.unknown
 
         result['annotations'] = []
         # add annotations common for all paragraph

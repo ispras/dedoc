@@ -8,7 +8,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.docx_reader.data_structures.docx_document import DocxDocument
-from dedoc.readers.utils.hierarch_level_extractor import HierarchyLevelExtractor
+from dedoc.readers.utils.hierarchy_level_extractor import HierarchyLevelExtractor
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
