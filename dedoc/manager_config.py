@@ -69,14 +69,12 @@ def get_manager_config(config: dict) -> dict:
 
     classifiers_path = os.path.join(os.path.dirname(__file__), "..", "resources", "line_type_classifiers")
     law_extractors = {
-        FoivLawStructureExtractor.document_type:
-            FoivLawStructureExtractor(path=os.path.join(classifiers_path, "law_classifier.pkl.gz"),
-                                      txt_path=os.path.join(classifiers_path, "law_txt_classifier.pkl.gz"),
-                                      config=config),
-        LawStructureExtractor.document_type:
-            LawStructureExtractor(path=os.path.join(classifiers_path, "law_classifier.pkl.gz"),
-                                  txt_path=os.path.join(classifiers_path, "law_txt_classifier.pkl.gz"),
-                                  config=config)
+        FoivLawStructureExtractor.document_type: FoivLawStructureExtractor(path=os.path.join(classifiers_path, "law_classifier.pkl.gz"),
+                                                                           txt_path=os.path.join(classifiers_path, "law_txt_classifier.pkl.gz"),
+                                                                           config=config),
+        LawStructureExtractor.document_type: LawStructureExtractor(path=os.path.join(classifiers_path, "law_classifier.pkl.gz"),
+                                                                   txt_path=os.path.join(classifiers_path, "law_txt_classifier.pkl.gz"),
+                                                                   config=config)
     }
     structure_extractors = {
         DefaultStructureExtractor.document_type: DefaultStructureExtractor(),

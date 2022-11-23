@@ -39,7 +39,7 @@ class PdfScanReader(PdfBase):
         parameters = {} if parameters is None else parameters
         with_archive = parameters.get("archive_as_single_file", "true").lower() == "true"
         return self.__check_mime(mime, with_archive) or self.__check_path(path, with_archive) or \
-            extension.replace(".", "") in supported_image_types
+            extension.lower().replace(".", "") in supported_image_types
 
     def _process_one_page(self,
                           image: np.ndarray,
