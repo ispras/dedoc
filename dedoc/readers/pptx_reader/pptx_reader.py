@@ -23,7 +23,7 @@ class PptxReader(BaseReader):
                  extension: str,
                  document_type: str,
                  parameters: Optional[dict] = None) -> bool:
-        return extension in recognized_extensions.pptx_like_format or mime in recognized_mimes.pptx_like_format
+        return extension.lower() in recognized_extensions.pptx_like_format or mime in recognized_mimes.pptx_like_format
 
     def read(self,
              path: str,

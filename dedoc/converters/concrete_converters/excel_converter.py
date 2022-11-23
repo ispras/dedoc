@@ -10,7 +10,7 @@ class ExcelConverter(AbstractConverter):
         super().__init__(config=config)
 
     def can_convert(self, extension: str, mime: str, parameters: Optional[dict] = None) -> bool:
-        return extension in converted_extensions.excel_like_format or mime in converted_mimes.excel_like_format
+        return extension.lower() in converted_extensions.excel_like_format or mime in converted_mimes.excel_like_format
 
     def do_convert(self, tmp_dir: str, filename: str, extension: str) -> str:
 

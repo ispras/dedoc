@@ -78,7 +78,8 @@ class AbstractStructureExtractor(ABC):
 
         return result
 
-    def _select_annotations(self, annotations: List[Annotation], start: int, end: int) -> List[Annotation]:
+    @staticmethod
+    def _select_annotations(annotations: List[Annotation], start: int, end: int) -> List[Annotation]:
         assert start <= end
         res = []
         for annotation in annotations:

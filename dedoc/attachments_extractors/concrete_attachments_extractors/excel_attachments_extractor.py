@@ -15,7 +15,7 @@ class ExcelAttachmentsExtractor(AbstractAttachmentsExtractor):
     def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[AttachedFile]:
         attachments = []
         name, ext = splitext_(filename)
-        if ext == '.xlsx':
+        if ext.lower() == '.xlsx':
 
             with zipfile.ZipFile(os.path.join(tmpdir, filename), 'r') as zfile:
                 name_zip, *files = zfile.namelist()
