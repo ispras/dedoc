@@ -27,7 +27,7 @@ def init_args(api: Api, file_required: bool = True) -> Any:
     upload_parser.add_argument("encoding", type=str, required=False, help="document encoding")
 
     upload_parser.add_argument("document_type", type=str, required=False,
-                               help="document type", choices=["", "law", "tz", "diploma"]),
+                               help="document type", choices=["", "law", "tz", "diploma", "article", "slide"]),
     upload_parser.add_argument("pdf_with_text_layer", type=str, required=False,
                                help="option to extract text from a text layer to PDF or using OCR methods from "
                                     "image documents.", choices=["true", "auto", "auto_tabby", "false", "tabby"])

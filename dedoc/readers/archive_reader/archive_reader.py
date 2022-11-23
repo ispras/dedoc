@@ -37,7 +37,7 @@ class ArchiveReader(BaseReader):
         if parameters is None:
             parameters = {}
 
-        if ((extension in recognized_extensions.archive_like_format or
+        if ((extension.lower() in recognized_extensions.archive_like_format or
              mime in recognized_mimes.archive_like_format)):
             if parameters.get("archive_as_single_file", "true").lower() == "false":
                 return True
