@@ -117,7 +117,6 @@ class DedocManager:
             self.logger.info("Finish conversion {} -> {}".format(filename, filename_convert))
             # Step 2 - Parsing content of converted file
             unstructured_document = self.reader.parse_file(tmp_dir=tmp_dir, filename=filename_convert, parameters=parameters)
-            warnings.extend(unstructured_document.warnings)
             self.logger.info("Finish parse file {}".format(filename_convert))
             # Step 3 - Adding meta-information
             unstructured_document = self.document_metadata_extractor.add_metadata(document=unstructured_document,
@@ -126,9 +125,9 @@ class DedocManager:
                                                                                   converted_filename=filename_convert,
                                                                                   original_filename=original_file_name,
                                                                                   parameters=parameters,
-                                                                                  version=self.version)
+                                                                                  version=self.version,
+                                                                                  other_fields=unstructured_document.metadata)
             self.logger.info("Add metadata of file {}".format(filename_convert))
-            warnings.extend(unstructured_document.warnings)
             # Step 4 - Extract structure
             unstructured_document = self.structure_extractor.extract_structure(unstructured_document, parameters)
             warnings.extend(unstructured_document.warnings)

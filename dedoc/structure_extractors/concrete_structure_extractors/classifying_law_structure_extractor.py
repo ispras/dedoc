@@ -99,7 +99,10 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
         selected_extractor = self._predict_extractor(lines=document.lines)
-        return selected_extractor.extract_structure(document, parameters)
+        result = selected_extractor.extract_structure(document, parameters)
+        warning = "Use {} classifier".format(selected_extractor.document_type)
+        result.warnings = result.warnings + [warning]
+        return result
 
     def _predict_extractor(self, lines: List[LineWithMeta]) -> AbstractStructureExtractor:
         raw_lines = [line.line for line in lines]
