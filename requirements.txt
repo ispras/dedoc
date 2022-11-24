@@ -16,7 +16,7 @@ ujson==5.3.0
 Werkzeug==2.0.3
 xlrd==1.2.0
 numpy==1.22.3
-PyPDF2==1.26.0
+PyPDF2==1.27.5
 pdfminer.six==20211012
 pytesseract==0.3.0 #0.3.6 - there are '\x0c'
 scikit_learn==1.0.2
