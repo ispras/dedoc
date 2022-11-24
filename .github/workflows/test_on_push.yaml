@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  pipeline:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
