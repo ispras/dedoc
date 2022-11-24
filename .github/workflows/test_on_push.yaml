@@ -2,9 +2,6 @@ name: CI
 
 # Controls when the action will run. 
 on:
-  push:
-    branches:
-    - master
   pull_request:
     branches:
     - develop
