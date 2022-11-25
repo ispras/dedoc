@@ -18,6 +18,7 @@ from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExt
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.structure_constructors.structure_constructor_composition import StructureConstructorComposition
 from dedoc.structure_extractors.structure_extractor_composition import StructureExtractorComposition
+from dedoc.train_dataset.train_dataset_utils import save_line_with_meta, get_path_original_documents
 from dedoc.utils.utils import get_unique_name, get_empty_content
 
 
@@ -31,7 +32,9 @@ class DedocManager:
                  structure_constructor: StructureConstructorComposition,
                  document_metadata_extractor: MetadataExtractorComposition,
                  logger: logging.Logger,
-                 version: str) -> None:
+                 version: str,
+                 *,
+                 config: dict) -> None:
         self.version = version
         self.converter = converter
         self.attachments_handler = attachments_handler
@@ -40,6 +43,7 @@ class DedocManager:
         self.structure_constructor = structure_constructor
         self.document_metadata_extractor = document_metadata_extractor
         self.logger = logger
+        self.config = config
 
     @staticmethod
     def from_config(version: str, manager_config: dict, *, config: dict) -> "DedocManager":
@@ -61,7 +65,8 @@ class DedocManager:
             structure_constructor=manager_config["structure_constructor"],
             document_metadata_extractor=manager_config["document_metadata_extractor"],
             logger=logger,
-            version=version
+            version=version,
+            config=config
         )
 
         return manager
@@ -132,6 +137,10 @@ class DedocManager:
             unstructured_document = self.structure_extractor.extract_structure(unstructured_document, parameters)
             warnings.extend(unstructured_document.warnings)
             self.logger.info("Extract structure from file {}".format(filename_convert))
+
+            if self.config.get("labeling_mode", False):
+                self.__save(file_path, unstructured_document)
+
             # Step 5 - Form the output structure
             structure_type = parameters.get("structure_type")
             parsed_document = self.structure_constructor.structure_document(document=unstructured_document,
@@ -152,6 +161,11 @@ class DedocManager:
             parsed_document.warnings.extend(warnings)
             self.logger.info("Finish handle {}".format(filename))
         return parsed_document
+
+    def __save(self, path: str, classified_document: UnstructuredDocument) -> None:
+        save_line_with_meta(lines=classified_document.lines, config=self.config,
+                            original_document=os.path.basename(path))
+        shutil.copy(path, os.path.join(get_path_original_documents(self.config), os.path.basename(path)))
 
     def __handle_attachments(self,
                              document: UnstructuredDocument,
