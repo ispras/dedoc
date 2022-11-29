@@ -66,7 +66,7 @@ class AbstractBodyHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
             metadata.paragraph_type = hierarchy_level.paragraph_type
 
             if hierarchy_level.paragraph_type != HierarchyLevel.root and not is_body_begun:
-                result.append(self.get_body_line())
+                result.append(self.get_body_line(init_hl_depth=init_hl_depth))
                 is_body_begun = True
 
             line = LineWithMeta(
@@ -78,7 +78,7 @@ class AbstractBodyHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
             )
             result.append(line)
         if not is_body_begun:
-            result.append(self.get_body_line())
+            result.append(self.get_body_line(init_hl_depth=init_hl_depth))
         return result
 
     def _line_2level(self,
