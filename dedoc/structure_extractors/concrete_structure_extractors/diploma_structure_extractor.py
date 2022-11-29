@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -20,16 +21,28 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
         self.toc_builder = TocBuilder()
         self.body_builder = DiplomaBodyBuilder()
         self.classifier = DiplomaLineTypeClassifier(path=path, config=config)
+        self.footnote_start_regexp = re.compile(r"^\d+ ")
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
         lines = self._replace_toc_lines(document.lines)
-        # exclude found toc from predicting
-        lines_without_toc = [line for line in lines if line.metadata.paragraph_type != "toc"]
-        predictions = self.classifier.predict(lines_without_toc)
+        lines = self._replace_footnote_lines(lines)
 
-        header_lines = [(line, prediction) for line, prediction in zip(lines, predictions) if prediction == "title"]
+        for i in range(1, len(lines) - 1):
+            line = lines[i]
+            if (lines[i - 1].metadata.page_id < line.metadata.page_id or line.metadata.page_id < lines[i + 1].metadata.page_id) \
+                    and line.line.strip().isdigit():
+                line.metadata.paragraph_type = "page_id"
+
+        # exclude found toc from predicting
+        lines_for_predict = [line for line in lines if line.metadata.paragraph_type not in ("toc", "page_id", "footnote")]
+        predictions = self.classifier.predict(lines_for_predict)
+        assert len(predictions) == len(lines_for_predict)
+        for line, prediction in zip(lines_for_predict, predictions):
+            line.metadata.paragraph_type = prediction
+
+        header_lines = [(line, line.metadata.paragraph_type) for line in lines if line.metadata.paragraph_type == "title"]
         toc_lines = [(line, "toc") for line in lines if line.metadata.paragraph_type == "toc"]
-        body_lines = [(line, prediction) for line, prediction in zip(lines, predictions) if prediction != "title"]
+        body_lines = [(line, line.metadata.paragraph_type) for line in lines if line.metadata.paragraph_type not in ("title", "toc")]
 
         header_lines = self.header_builder.get_lines_with_hierarchy(lines_with_labels=header_lines, init_hl_depth=0)
         toc_lines = self.toc_builder.get_lines_with_hierarchy(lines_with_labels=toc_lines, init_hl_depth=1)
@@ -55,3 +68,34 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
         lines = lines_wo_toc + toc_lines
         lines = sorted(lines, key=lambda x: (x.metadata.page_id, x.metadata.line_id))
         return lines
+
+    def _replace_footnote_lines(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:
+        fixed_lines = []
+        current_footnote = None
+        for line in lines:
+            # usual case of simple line
+            if line.metadata.paragraph_type != "footnote" and current_footnote is None:
+                fixed_lines.append(line)
+
+            # simple line, previous was footnote
+            elif line.metadata.paragraph_type != "footnote":
+                fixed_lines.append(current_footnote)
+                fixed_lines.append(line)
+                current_footnote = None
+
+            # first footnote
+            elif current_footnote is None:
+                current_footnote = line
+
+            # new footnote after previous one
+            elif self.footnote_start_regexp.match(line.line):
+                fixed_lines.append(current_footnote)
+                current_footnote = line
+
+            # footnote continuation
+            else:
+                current_footnote += line
+
+        if current_footnote is not None:
+            fixed_lines.append(current_footnote)
+        return fixed_lines
