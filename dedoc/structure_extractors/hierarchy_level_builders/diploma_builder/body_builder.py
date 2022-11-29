@@ -37,6 +37,7 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
             else:
                 line.set_hierarchy_level(HierarchyLevel.create_raw_text())
                 line.metadata.paragraph_type = prediction
+                line.hierarchy_level.paragraph_type = prediction
                 result.append(line)
         return result
 

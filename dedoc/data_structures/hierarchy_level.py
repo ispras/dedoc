@@ -41,11 +41,11 @@ class HierarchyLevel:
     def __lt__(self, other: "HierarchyLevel") -> bool:
         if self.__is_defined(other):
             return (self.level_1, self.level_2) < (other.level_1, other.level_2)
-        if self.paragraph_type == HierarchyLevel.raw_text and other.paragraph_type == HierarchyLevel.raw_text:
+        if self.level_1 is None and self.level_2 is None and other.level_1 is None and other.level_2 is None:
             return False
-        if self.paragraph_type == HierarchyLevel.raw_text and other.paragraph_type != HierarchyLevel.raw_text:
+        if (self.level_1 is None or self.level_2 is None) and (other.level_1 is not None or other.level_2 is not None):
             return False
-        if self.paragraph_type != HierarchyLevel.raw_text and other.paragraph_type == HierarchyLevel.raw_text:
+        if (self.level_1 is not None or self.level_2 is not None) and (other.level_1 is None or other.level_2 is None):
             return True
         return (self.level_1, self.level_2) < (other.level_1, other.level_2)
 
