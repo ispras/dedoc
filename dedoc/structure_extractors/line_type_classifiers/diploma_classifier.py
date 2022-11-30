@@ -30,7 +30,16 @@ class DiplomaLineTypeClassifier(AbstractPickledLineTypeClassifier):
 
         # Work with a title
         labels = [self.classifier.classes_[i] for i in labels_probability.argmax(1)]
-        first_non_title = min((i for i, label in enumerate(labels) if label not in ["title", "raw_text"]), default=0)
+        first_title_line = None
+        first_non_title = 0
+        for i, line in enumerate(lines):
+            if labels[i] in ("title", "raw_text") and not first_title_line:
+                first_title_line = line
+            elif labels[i] in ("title", "raw_text") and line.metadata.page_id != first_title_line.metadata.page_id or \
+                    labels[i] not in ("title", "raw_text"):
+                first_non_title = i
+                break
+
         # set probability to one for title before the body or toc
         labels_probability[:first_non_title, :] = 0
         labels_probability[:first_non_title, title_id] = 1
