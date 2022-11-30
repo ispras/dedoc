@@ -26,12 +26,7 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
         lines = self._replace_toc_lines(document.lines)
         lines = self._replace_footnote_lines(lines)
-
-        for i in range(1, len(lines) - 1):
-            line = lines[i]
-            if (lines[i - 1].metadata.page_id < line.metadata.page_id or line.metadata.page_id < lines[i + 1].metadata.page_id) \
-                    and line.line.strip().isdigit():
-                line.metadata.paragraph_type = "page_id"
+        self._add_page_id_lines(lines)
 
         # exclude found toc from predicting
         lines_for_predict = [line for line in lines if line.metadata.paragraph_type not in ("toc", "page_id", "footnote")]
@@ -77,7 +72,7 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
             if line.metadata.paragraph_type != "footnote" and current_footnote is None:
                 fixed_lines.append(line)
 
-            # simple line, previous was footnote
+            # simple line, previous was a footnote
             elif line.metadata.paragraph_type != "footnote":
                 fixed_lines.append(current_footnote)
                 fixed_lines.append(line)
@@ -99,3 +94,10 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
         if current_footnote is not None:
             fixed_lines.append(current_footnote)
         return fixed_lines
+
+    def _add_page_id_lines(self, lines: List[LineWithMeta]) -> None:
+        for i in range(1, len(lines) - 1):
+            line = lines[i]
+            if (lines[i - 1].metadata.page_id < line.metadata.page_id or line.metadata.page_id < lines[i + 1].metadata.page_id) \
+                    and line.line.strip().isdigit():
+                line.metadata.paragraph_type = "page_id"
