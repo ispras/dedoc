@@ -17,6 +17,18 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
         self.check_english_doc(result)
 
+    def test_former_txt_file(self) -> None:
+        file_name = "cp1251.pdf"
+        result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
+        content = result["content"]
+        tree = content["structure"]
+        self._check_tree_sanity(tree)
+        texts = []
+        for subrapagraph in tree["subparagraphs"]:
+            texts.append(subrapagraph["text"])
+        with open(self._get_abs_path(file_name.replace(".pdf", ".txt"))) as file:
+            self.assertEqual(file.read(), "".join(texts))
+
     def test_article(self) -> None:
         file_name = "../pdf_auto/0004057v1.pdf"
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
@@ -25,6 +37,12 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         self._check_tree_sanity(tree)
         node = self._get_by_tree_path(tree, "0.0")
         self.assertIn("UWB@FinTOC-2019 Shared Task: Financial Document Title Detection", node["text"])
+        node = self._get_by_tree_path(tree, "0.11")
+        self.assertIn("The shared task consists of two subtasks:", node["text"])
+        node = self._get_by_tree_path(tree, "0.20")
+        self.assertIn("3 Dataset", node["text"])
+        node = self._get_by_tree_path(tree, "0.39")
+        self.assertIn("4 Issues", node["text"])
 
     def test_presentation(self) -> None:
         file_name = "line_classifier.pdf"
@@ -41,7 +59,31 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
 
         node = self._get_by_tree_path(tree, "0.0")
         self.assertEqual("raw_text", node["metadata"]["paragraph_type"])
-        self.assertEqual("Docreader система разметки\nИль", node["text"].strip()[:30])
+        self.assertIn("Docreader система разметки\nИлья Козлов", node["text"])
+
+        node = self._get_by_tree_path(tree, "0.2")
+        self.assertEqual("list", node["metadata"]["paragraph_type"])
+        self.assertEqual("", node["text"].strip()[:30])
+
+        node = self._get_by_tree_path(tree, "0.2.0")
+        self.assertEqual("list_item", node["metadata"]["paragraph_type"])
+        self.assertEqual("1. Общая идея систем разметки", node["text"].strip()[:30])
+
+        node = self._get_by_tree_path(tree, "0.2.1")
+        self.assertEqual("list_item", node["metadata"]["paragraph_type"])
+        self.assertEqual("2. Как запустить", node["text"].strip()[:30])
+
+        node = self._get_by_tree_path(tree, "0.2.2")
+        self.assertEqual("list_item", node["metadata"]["paragraph_type"])
+        self.assertEqual("3. Формируем задания", node["text"].strip()[:30])
+
+        node = self._get_by_tree_path(tree, "0.2.3")
+        self.assertEqual("list_item", node["metadata"]["paragraph_type"])
+        self.assertEqual("4. Раздаём и собираем задания", node["text"].strip()[:30])
+
+        node = self._get_by_tree_path(tree, "0.2.3.0")
+        self.assertEqual("raw_text", node["metadata"]["paragraph_type"])
+        self.assertEqual("3/100", node["text"].strip()[:30])
 
     def test_pdf_with_text_style(self) -> None:
         file_name = "diff_styles.pdf"
@@ -59,15 +101,17 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
 
         sub2 = self._get_by_tree_path(tree, "0.1.0")
         self.assertEqual('1. TimesNewRoman18\n', sub2['text'])
-        self.assertIn({'start': 0, 'end': 2, "name": "size", 'value': '15'}, sub2['annotations'])
+        self.assertIn({'start': 3, 'end': 18, "name": "size", 'value': '18'}, sub2['annotations'])
 
         sub3 = self._get_by_tree_path(tree, "0.1.1")
         self.assertEqual('2. TimesNewRoman9, TimesNewRomanBold7.5, TimesNewRoman6.5\n', sub3['text'])
         self.assertIn({'start': 3, 'end': 18, "name": "size", 'value': '9'}, sub3['annotations'])
+        self.assertIn({'start': 19, 'end': 57, "name": "size", 'value': '6'}, sub3['annotations'])
 
         sub4 = self._get_by_tree_path(tree, "0.1.2")
         self.assertEqual('3. TimesNewRomanItalic14, Calibri18, Tahoma16\n', sub4['text'])
         self.assertIn({'start': 3, 'end': 25, "name": "size", 'value': '14'}, sub4['annotations'])
+        self.assertIn({'start': 26, 'end': 36, "name": "size", 'value': '18'}, sub4['annotations'])
 
     def test_tables2(self) -> None:
         file_name = "VVP_global_table.pdf"
@@ -290,4 +334,20 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
 
         node = self._get_by_tree_path(tree, "0.0")
         self.assertEqual("raw_text", node["metadata"]["paragraph_type"])
-        self.assertEqual("ВВП\n", node["text"])
+        self.assertEqual("ВВП", node["text"].strip())
+
+        node = self._get_by_tree_path(tree, "0.1")
+        self.assertEqual("raw_text", node["metadata"]["paragraph_type"])
+        self.assertEqual("ВВП (валовой внутренний продук", node["text"].strip()[:30])
+
+        node = self._get_by_tree_path(tree, "0.5.0")
+        self.assertEqual("list_item", node["metadata"]["paragraph_type"])
+        self.assertEqual("1. В соответствии с доходами.", node["text"].strip()[:30])
+
+        node = self._get_by_tree_path(tree, "0.5.1")
+        self.assertEqual("list_item", node["metadata"]["paragraph_type"])
+        self.assertEqual("2. В соответствии с расходами.", node["text"].strip()[:30])
+
+        node = self._get_by_tree_path(tree, "0.5.2")
+        self.assertEqual("list_item", node["metadata"]["paragraph_type"])
+        self.assertEqual("3. В соответствии с полученной", node["text"].strip()[:30])

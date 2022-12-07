@@ -6,6 +6,9 @@ import subprocess
 from typing import List, Optional, Tuple
 
 import numpy as np
+
+from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
+from dedoc.common.exceptions.tabby_pdf_error import TabbyPdfError
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
@@ -22,11 +25,8 @@ from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWit
 from dedoc.readers.scanned_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.scanned_reader.data_classes.tables.location import Location
 from dedoc.readers.scanned_reader.data_classes.tables.scantable import ScanTable
-from dedoc.utils.utils import calculate_file_hash
-
-from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
-from dedoc.common.exceptions.tabby_pdf_error import TabbyPdfError
 from dedoc.readers.scanned_reader.pdf_base_reader import ParametersForParseDoc, PdfBase
+from dedoc.utils.utils import calculate_file_hash
 
 
 class TabbyPDFReader(PdfBase):
