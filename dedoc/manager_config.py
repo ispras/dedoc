@@ -56,11 +56,11 @@ def get_manager_config(config: dict) -> dict:
         ExcelReader(config=config),
         PptxReader(),
         CSVReader(),
+        TabbyPDFReader(config=config),
         RawTextReader(config=config),
         JsonReader(),
         PdfScanReader(config=config),
-        ArchiveReader(config=config),
-        TabbyPDFReader(config=config),
+        ArchiveReader(config=config)
     ]
 
     metadata_extractors = [
