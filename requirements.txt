@@ -34,4 +34,5 @@ xgboost==1.1.1
 piexif==1.1.3
 torch==1.11.0
 torchvision==0.12.0
+texttable==1.6.7
 #-e git+https://github.com/IlyaKozlov/csd.git#egg=csd # for run tests/units/test_style.py
