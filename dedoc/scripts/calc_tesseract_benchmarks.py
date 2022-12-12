@@ -31,7 +31,8 @@ def _init_statistics_by_dataset(statistics: Dict, dataset_name: str) -> Dict:
         "ASCII_Digits": [],
         "ASCII_Uppercase_Letters": [],
         "Latin1_Special_Symbols": [],
-        "Cyrillic": []
+        "Cyrillic": [],
+        "Amount of words": []
     }
 
     return statistics
@@ -45,7 +46,7 @@ def _update_statistics_by_symbol_kind(statistics_dataset: List, pattern: str, li
     return statistics_dataset
 
 
-def _update_statistics_by_dataset(statistics: Dict, dataset: str, accuracy_path: str) -> Dict:
+def _update_statistics_by_dataset(statistics: Dict, dataset: str, accuracy_path: str, word_cnt: int) -> Dict:
     statistic = statistics[dataset]
     with open(accuracy_path, "r") as f:
         lines = f.readlines()
@@ -54,6 +55,7 @@ def _update_statistics_by_dataset(statistics: Dict, dataset: str, accuracy_path:
             matched = [line for line in lines if "Accuracy\n" in line]
         acc_percent = re.findall(r'\d+\.\d+', matched[0])[0][:-1]
         statistic["Accuracy"].append(float(acc_percent))
+        statistic["Amount of words"].append(word_cnt)
 
         statistic["ASCII_Spacing_Characters"] = _update_statistics_by_symbol_kind(statistic["ASCII_Spacing_Characters"],
                                                                                   "ASCII Spacing Characters",
@@ -83,14 +85,15 @@ def _get_avg_by_dataset(statistics: Dict, dataset: str) -> List:
             _get_avg(statistics[dataset]["ASCII_Uppercase_Letters"]),
             _get_avg(statistics[dataset]["Latin1_Special_Symbols"]),
             _get_avg(statistics[dataset]["Cyrillic"]),
+            sum(statistics[dataset]["Amount of words"]),
             _get_avg(statistics[dataset]["Accuracy"])]
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    accs = [["Dataset", "Image name", "--psm", "Accuracy OCR"]]
+    accs = [["Dataset", "Image name", "--psm", "Amount of words", "Accuracy OCR"]]
     accs_common = [["Dataset", "ASCII_Spacing_Chars", "ASCII_Special_Symbols", "ASCII_Digits",
-                    "ASCII_Uppercase_Chars", "Latin1_Special_Symbols", "Cyrillic", "AVG Accuracy"]]
+                    "ASCII_Uppercase_Chars", "Latin1_Special_Symbols", "Cyrillic", "Amount of words", "AVG Accuracy"]]
     base_zip = "data_tesseract_benchmarks"
 
     statistics = {}
@@ -127,7 +130,10 @@ if __name__ == "__main__":
                                 open(tmp_gt_path, "wb") as tmp_gt_file,\
                                 open(tmp_ocr_path, "w") as tmp_ocr_file:
 
-                            tmp_gt_file.write(gt_file.read())  # extraction gt from zip
+                            gt_text = gt_file.read().decode("utf-8")
+                            word_cnt = len(gt_text.split())
+
+                            tmp_gt_file.write(gt_text.encode())  # extraction gt from zip
                             tmp_gt_file.flush()
 
                             arch_file.extract(imgs_path, tmpdir)
@@ -143,8 +149,8 @@ if __name__ == "__main__":
                             command = "accuracy {} {} >> {}".format(tmp_gt_path, tmp_ocr_path, accuracy_path)
                             os.system(command)
 
-                            statistics = _update_statistics_by_dataset(statistics, dataset_name, accuracy_path)
-                            accs.append([dataset_name, base_name, psm, statistics[dataset_name]["Accuracy"][-1]])
+                            statistics = _update_statistics_by_dataset(statistics, dataset_name, accuracy_path, word_cnt)
+                            accs.append([dataset_name, base_name, psm, word_cnt, statistics[dataset_name]["Accuracy"][-1]])
 
                     except Exception as ex:
                         print(ex)
