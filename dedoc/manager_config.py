@@ -21,6 +21,7 @@ from dedoc.readers.json_reader.json_reader import JsonReader
 from dedoc.readers.pptx_reader.pptx_reader import PptxReader
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.readers.scanned_reader.pdfscanned_reader.pdf_scan_reader import PdfScanReader
+from dedoc.readers.scanned_reader.pdftxtlayer_reader.tabby_pdf_reader import TabbyPDFReader
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from dedoc.structure_constructors.concreat_structure_constructors.linear_constructor import LinearConstructor
 from dedoc.structure_constructors.concreat_structure_constructors.tree_constructor import TreeConstructor
@@ -56,6 +57,7 @@ def get_manager_config(config: dict) -> dict:
         CSVReader(),
         RawTextReader(config=config),
         JsonReader(),
+        TabbyPDFReader(config=config),
         PdfScanReader(config=config),
         ArchiveReader(config=config)
     ]
