@@ -1,4 +1,5 @@
 import os
+import unittest
 from typing import List
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
@@ -29,21 +30,21 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         with open(self._get_abs_path(file_name.replace(".pdf", ".txt"))) as file:
             self.assertEqual(file.read(), "".join(texts))
 
-    #TODO: add support for 2 columns documents
-    #def test_article(self) -> None:
-        #file_name = "../pdf_auto/0004057v1.pdf"
-        #result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
-        #content = result["content"]
-        #tree = content["structure"]
-        #self._check_tree_sanity(tree)
-        #node = self._get_by_tree_path(tree, "0.0")
-        #self.assertIn("UWB@FinTOC-2019 Shared Task: Financial Document Title Detection", node["text"])
-        #node = self._get_by_tree_path(tree, "0.11")
-        #self.assertIn("The shared task consists of two subtasks:", node["text"])
-        #node = self._get_by_tree_path(tree, "0.20")
-        #self.assertIn("3 Dataset", node["text"])
-        #node = self._get_by_tree_path(tree, "0.39")
-        #self.assertIn("4 Issues", node["text"])
+    @unittest.skip("TODO: add support for 2 columns documents")
+    def test_article(self) -> None:
+        file_name = "../pdf_auto/0004057v1.pdf"
+        result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
+        content = result["content"]
+        tree = content["structure"]
+        self._check_tree_sanity(tree)
+        node = self._get_by_tree_path(tree, "0.0")
+        self.assertIn("UWB@FinTOC-2019 Shared Task: Financial Document Title Detection", node["text"])
+        node = self._get_by_tree_path(tree, "0.11")
+        self.assertIn("The shared task consists of two subtasks:", node["text"])
+        node = self._get_by_tree_path(tree, "0.20")
+        self.assertIn("3 Dataset", node["text"])
+        node = self._get_by_tree_path(tree, "0.39")
+        self.assertIn("4 Issues", node["text"])
 
     def test_presentation(self) -> None:
         file_name = "line_classifier.pdf"
