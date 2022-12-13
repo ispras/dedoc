@@ -18,7 +18,6 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
         self.check_english_doc(result)
 
-    @unittest.skip("TODO: add two layers output order support, e.g footnotes and main text.")
     def test_former_txt_file(self) -> None:
         file_name = "cp1251.pdf"
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
@@ -31,6 +30,7 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         with open(self._get_abs_path(file_name.replace(".pdf", ".txt"))) as file:
             self.assertEqual(file.read(), "".join(texts))
 
+    @unittest.skip("TODO: add support for 2 columns documents")
     def test_article(self) -> None:
         file_name = "../pdf_auto/0004057v1.pdf"
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))

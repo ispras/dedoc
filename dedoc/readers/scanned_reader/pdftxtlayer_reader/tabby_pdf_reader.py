@@ -12,7 +12,6 @@ from dedoc.common.exceptions.tabby_pdf_error import TabbyPdfError
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
-from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
@@ -151,23 +150,15 @@ class TabbyPDFReader(PdfBase):
                 is_italic = annotation["is_italic"]
                 font_name = annotation["font_name"]
                 font_size = annotation["font_size"]
-                link = annotation["metadata"]
-                text = annotation["text"]
                 start = annotation["start"]
                 end = annotation["end"]
 
                 annotations.append(SizeAnnotation(start, end, str(font_size)))
-
                 if is_bold:
                     annotations.append(BoldAnnotation(start, end, "True"))
-
                 if is_italic:
                     annotations.append(ItalicAnnotation(start, end, "True"))
-
                 annotations.append(StyleAnnotation(start, end, font_name))
-
-                if link == "LINK":
-                    annotations.append(LinkedTextAnnotation(start, end, text))
 
             meta = block["metadata"].lower()
             uid = "txt_{}_{}".format(file_hash, block_id)
