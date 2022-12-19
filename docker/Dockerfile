@@ -5,7 +5,6 @@ ENV PYTHONPATH "${PYTHONPATH}:/dedoc_root"
 
 ADD requirements.txt .
 RUN python3.8 -m pip install pip==22.0.4 --upgrade && pip3.8 install -r requirements.txt
-RUN pip3.8 install torch==1.11.0+cpu torchvision==0.12.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
 RUN mkdir /dedoc_root
 ADD dedoc /dedoc_root/dedoc
