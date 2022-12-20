@@ -1,9 +1,11 @@
 import os
+import unittest
 from typing import List
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
+@unittest.skip("TODO")
 class TestApiExcelReader(AbstractTestApiDocReader):
 
     data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "xlsx")

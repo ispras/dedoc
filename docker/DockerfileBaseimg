@@ -1,7 +1,6 @@
 ARG REPOSITORY="docker.io"
 FROM ubuntu:bionic-20210118
 
-
 # -----------------------------------------------TESSERACT INSTALLATION-------------------------------------------------
 # the commands below are used to install tesseract
 
@@ -9,7 +8,7 @@ RUN apt-get update && apt-get install software-properties-common -y && apt updat
 
 RUN add-apt-repository -y ppa:alex-p/tesseract-ocr-devel \
     && apt update --allow-releaseinfo-change \
-    && apt-get install -y git unzip wget djvulibre-bin unrtf poppler-utils pstotext tesseract-ocr libjpeg-dev swig \
+    && apt-get install -y git unzip curl wget djvulibre-bin unrtf poppler-utils pstotext tesseract-ocr libjpeg-dev swig \
      libtesseract-dev libleptonica-dev unrar python-poppler automake ca-certificates g++ git libtool libleptonica-dev \
      make pkg-config libpango1.0-dev
 
@@ -29,27 +28,27 @@ ENV LANG ru_RU.utf8
 ENV LANGUAGE ru_RU:ru
 ENV LC_ALL ru_RU.UTF-8
 
-
 # --------------------------------------------------PYTHON INSTALLATION-------------------------------------------------
-RUN apt-get update && apt-get install software-properties-common -y && apt update \
-    && apt-get install -y git build-essential python3.8 python3.8-dev python3-pip libxml2-dev libxslt-dev python-dev python3.8-distutils \
-    && apt-get install python3-setuptools python3-wheel python3-cffi \
-    && apt-get install -y libreoffice \
-    && python3.8 -m pip install pip==22.0.4 --upgrade
+RUN apt-get update && \
+    apt-get -y install build-essential gcc-multilib g++-multilib git clang zlib1g-dev \
+                       pkg-config libglib2.0-dev python3 python3-pip libtool binutils-dev
+RUN curl https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh --output anaconda.sh
+RUN bash anaconda.sh -b -p /anaconda3
+ENV PATH=/anaconda3/bin:$PATH
+RUN conda init bash
+RUN bash
 
+RUN apt-get install -y libreoffice
 
 # --------------------------------------------------DOCTR INSTALLATION--------------------------------------------------
 # ATTENTION: don't change an order of pip's package install here, otherwise you get conflicts
-RUN pip3.8 install setuptools==60.10.0 cffi==1.15.0
-RUN pip3.8 install python-doctr==0.5.1
+RUN pip install setuptools==60.10.0 cffi==1.15.0
+RUN pip install python-doctr==0.5.1
 
 
-# -----------------------------------------------SECURE TORCH INSTALLATION----------------------------------------------
-# download secure pytorch 1.11.0 (>o<)
-ADD docker/download_torch.sh .
-RUN bash download_torch.sh
-# build secure pytorch 1.11.0 (>o<) without CUDA
-ADD docker/build_torch.sh .
-RUN bash build_torch.sh
-
-RUN pip3.8 install torchvision==0.12.0+cpu -f https://download.pytorch.org/whl/torch_stable.html --no-deps
+# ----------------------------------------SECURE TORCH & TORCHVISION INSTALLATION---------------------------------------
+RUN wget -O torch-1.11.0a0+git1911a63-cp39-cp39-linux_x86_64.whl https://at.ispras.ru/owncloud/index.php/s/gGZa46pboBlVZ7t/download
+RUN pip install torch-1.11.0a0+git1911a63-cp39-cp39-linux_x86_64.whl
+RUN wget -O torchvision-0.12.0a0+9b5a3fe-cp39-cp39-linux_x86_64.whl https://at.ispras.ru/owncloud/index.php/s/doFEAhID6OhNCkp/download
+RUN pip install torchvision-0.12.0a0+9b5a3fe-cp39-cp39-linux_x86_64.whl
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/anaconda3/lib/

@@ -69,6 +69,7 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         file_name = "broken.djvu"
         _ = self._send_request(file_name, expected_code=415)
 
+    @unittest.skip("TODO")
     def test_header_pdf(self) -> None:
         file_name = "header_test.pdf"
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="true"))
