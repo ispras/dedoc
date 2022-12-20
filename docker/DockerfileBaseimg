@@ -41,7 +41,6 @@ RUN apt-get update && apt-get install software-properties-common -y && apt updat
 # --------------------------------------------------DOCTR INSTALLATION--------------------------------------------------
 # ATTENTION: don't change an order of pip's package install here, otherwise you get conflicts
 RUN pip3.8 install setuptools==60.10.0 cffi==1.15.0
-RUN pip3.8 install --no-deps rembg==2.0.24
 RUN pip3.8 install python-doctr==0.5.1
 
 
@@ -53,4 +52,4 @@ RUN bash download_torch.sh
 ADD docker/build_torch.sh .
 RUN bash build_torch.sh
 
-RUN pip3.8 install torchvision==0.12.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip3.8 install torchvision==0.12.0+cpu -f https://download.pytorch.org/whl/torch_stable.html --no-deps
