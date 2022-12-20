@@ -2,7 +2,7 @@
 
 ## Change the DockerfileBaseimg file
 
-This file is used for building an image with tesseract-ocr and python tools in order to 
+This file is used for building an image with tesseract-ocr, libreoffice, secure pytorch and python tools in order to 
 reduce time for its building in the main docker/Dockerfile
 
 ## Build the new baseimg image locally 
