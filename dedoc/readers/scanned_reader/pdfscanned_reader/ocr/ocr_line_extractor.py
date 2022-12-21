@@ -17,7 +17,6 @@ bbox_level = BBoxLevel(4, 5)
 class OCRLineExtractor:
 
     def __init__(self, *, config: dict) -> None:
-        super().__init__()
         self.config = config
 
     def split_image2lines(self,
@@ -43,7 +42,7 @@ class OCRLineExtractor:
 
     def _parse_one_image(self, args: List) -> PageWithBBox:
         page_num, image, language = args
-        bboxes = self.__split_image2bboxes(image=image, page_num=page_num, lang=language, is_one_column_document=True)
+        bboxes = self.__split_image2bboxes(image=image, page_num=page_num, language=language, is_one_column_document=True)
         if len(bboxes) > 0:
             new_parsed_doc = PageWithBBox(page_num=page_num, bboxes=bboxes, image=image)
             return new_parsed_doc
