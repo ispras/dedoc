@@ -45,3 +45,12 @@ def get_page_slice(parameters: Dict[str, Any]) -> Tuple[Optional[int], Optional[
         return first_page, last_page
     except Exception:
         raise ValueError("Bad page limit {}".format(pages))
+
+
+def get_is_one_column_document_list(parameters: Optional[dict]) -> Optional[bool]:
+    if parameters is None:
+        return None
+    is_one_column_document_list = parameters.get("is_one_column_document_list", "")
+    if is_one_column_document_list == "":
+        return None
+    return is_one_column_document_list
