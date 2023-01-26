@@ -23,7 +23,11 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
         :returns: list files with diagrams
         """
         result = []
-        bs = BeautifulSoup(document.read('word/document.xml'), 'xml')
+        try:
+            bs = BeautifulSoup(document.read('word/document.xml'), 'xml')
+        except KeyError:
+            bs = BeautifulSoup(document.read('word/document2.xml'), 'xml')
+
         paragraphs = [p for p in bs.body]
         diagram_paragraphs = []
         for paragraph in paragraphs:
