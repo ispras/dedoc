@@ -1,13 +1,12 @@
-import os
-import zipfile
 from typing import List
 
-from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
+from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_office_attachments_extractor import \
+    AbstractOfficeAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.utils.utils import splitext_
 
 
-class ExcelAttachmentsExtractor(AbstractAttachmentsExtractor):
+class ExcelAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
     """
     Extracts attachments from excel files
     """
@@ -15,14 +14,7 @@ class ExcelAttachmentsExtractor(AbstractAttachmentsExtractor):
     def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[AttachedFile]:
         attachments = []
         name, ext = splitext_(filename)
-        if ext.lower() == '.xlsx':
+        if ext.lower() != '.xlsx':
+            return attachments
 
-            with zipfile.ZipFile(os.path.join(tmpdir, filename), 'r') as zfile:
-                name_zip, *files = zfile.namelist()
-
-                medias = [file for file in files if file.startswith("xl/media/")]
-
-                for media in medias:
-                    namefile = os.path.split(media)[-1]
-                    attachments.append((namefile, zfile.read(media)))
-        return self._content2attach_file(content=attachments, tmpdir=tmpdir)
+        return self._get_attachments(tmpdir=tmpdir, filename=filename, parameters=parameters, attachments_dir="xl")
