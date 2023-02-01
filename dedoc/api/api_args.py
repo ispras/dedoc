@@ -72,9 +72,6 @@ def init_args(api: Api, file_required: bool = True) -> Any:
     upload_parser.add_argument("return_base64", type=str, required=False,
                                help="returns images in base64 format", default="false")
 
-    upload_parser.add_argument("archive_as_single_file", type=str, required=False,
-                               help="additional parameters for archive reader", default="true")
-
     upload_parser.add_argument("upload_attachments_into_cloud", type=str, required=False,
                                help="on if you need upload attachments into cloud. On if with_attachments=True and "
                                     "\"cloud_bucket\" not empty",
