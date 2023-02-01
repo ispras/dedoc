@@ -1,15 +1,10 @@
 import logging
 import os
-import shutil
 import tarfile
 import uuid
 import zipfile
 import zlib
-from mimetypes import guess_type
-from tempfile import TemporaryDirectory
-from typing import List, Optional, IO, Iterator, Tuple
-import cv2
-import numpy as np
+from typing import List, Optional, IO, Iterator
 import py7zlib
 import rarfile
 
@@ -34,16 +29,8 @@ class ArchiveReader(BaseReader):
                  extension: str,
                  document_type: Optional[str],
                  parameters: Optional[dict] = None) -> bool:
-        if parameters is None:
-            parameters = {}
 
-        if ((extension.lower() in recognized_extensions.archive_like_format or
-             mime in recognized_mimes.archive_like_format)):
-            if parameters.get("archive_as_single_file", "true").lower() == "false":
-                return True
-            return not self.does_archive_content_scanned_files(path)
-
-        return False
+        return extension.lower() in recognized_extensions.archive_like_format or mime in recognized_mimes.archive_like_format
 
     def read(self,
              path: str,
@@ -116,45 +103,3 @@ class ArchiveReader(BaseReader):
             uid="attach_{}".format(uuid.uuid1())
         )
         return attachment
-
-    def does_archive_content_scanned_files(self, path: str) -> bool:
-        with TemporaryDirectory() as tmp_dir:
-            path_out = os.path.join(tmp_dir, os.path.basename(path))
-            shutil.copy(path, path_out)
-            parsed_arch = self.__get_attachments(path_out)
-            files = [file.original_name for file in parsed_arch]
-            return self.__analyze_on_include_scans(files=files)
-
-    def __is_hidden(self, file: str) -> bool:
-        return file.split('/')[-1].startswith('.')
-
-    def __analyze_on_include_scans(self, files: List[str]) -> bool:
-
-        hidden_files = [file for file in files if self.__is_hidden(file)]
-
-        path_order = [file for file in files if file.endswith('/order.csv') or file == 'order.csv']
-
-        images = [file for file in files if guess_type(file)[0] in recognized_mimes.image_like_format and
-                  file not in hidden_files]
-
-        if len(path_order) > 0:
-            files.remove(path_order[0])
-
-        if len(files) - len(hidden_files) == len(images):
-            return True
-        else:
-            return False
-
-    def parse_archive_on_images(self, path: str) -> Tuple[int, Iterator[np.ndarray]]:
-        attachments = self.__get_attachments(path)
-        files = [file for file in attachments
-                 if not file.tmp_file_path.endswith(".csv") and not self.__is_hidden(file.original_name)]
-        order_csv = [file.tmp_file_path for file in attachments if file.tmp_file_path.endswith(".csv")]
-        if len(order_csv) > 0:
-            with open(order_csv[0]) as file:
-                order_dict = {name: int(order) for name, order in map(lambda t: t.split(","), file)}
-        else:
-            order_dict = {}
-        files.sort(key=lambda f: order_dict.get(f.original_name, f.original_name))
-
-        return len(attachments), (cv2.imread(file.tmp_file_path) for file in files)
