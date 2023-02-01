@@ -249,7 +249,8 @@ class DocxDocument:
     def _handle_table_xml(self, paragraph_xml: BeautifulSoup) -> None:
         table = DocxTable(paragraph_xml, self.styles_extractor)
         metadata = TableMetadata(page_id=None, uid=table.uid)
-        self.tables.append(Table(cells=table.get_cells(), metadata=metadata))
+        cells, cells_with_property = table.get_cells()
+        self.tables.append(Table(cells=cells, metadata=metadata, cells_with_property=cells_with_property))
         table_uid = table.uid
         while len(self.paragraph_list) > 0:
             if self.paragraph_list[-1].text.strip() == "":
