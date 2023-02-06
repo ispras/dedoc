@@ -19,7 +19,7 @@ numpy==1.22.3
 PyPDF2==1.26.0
 python-Levenshtein==0.12.2
 pdfminer.six==20211012
-pytesseract==0.3.0 #0.3.6 - there are '\x0c'
+pytesseract==0.3.10
 scikit_learn==1.0.2
 imutils==0.5.4
 opencv-python==4.5.5.64
@@ -33,4 +33,3 @@ pylzma==0.5.0
 xgboost==1.1.1
 piexif==1.1.3
 texttable==1.6.7
-#-e git+https://github.com/IlyaKozlov/csd.git#egg=csd # for run tests/units/test_style.py
