@@ -49,7 +49,11 @@ def init_args(api: Api, file_required: bool = True) -> Any:
                                     "\"true\" - is one column documents, "
                                     "\"false\" - is multiple column documents",
                                default="auto", choices=["auto", "true", "false"])
-
+    upload_parser.add_argument("is_vertical_document", type=str, required=False,
+                               help="option to set that document in vertical orientation and do not need to be rotated "
+                                    "\"auto\" - system predict angle (0, 90, 180, 370) and rotate document, "
+                                    "\"true\" - do not predict orientation ",
+                               default="auto", choices=["auto", "true", "false"])
     upload_parser.add_argument("html_fields", type=str, required=False,
                                help="a list of fields for JSON documents to be parsed as HTML documents. "
                                     "It is written as a json string of a list, where each list item is a list of keys "
