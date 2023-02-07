@@ -4,7 +4,6 @@ import os
 import re
 import subprocess
 from typing import List, Optional, Tuple
-
 import numpy as np
 
 from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
@@ -91,9 +90,22 @@ class TabbyPDFReader(PdfBase):
             cells = [[cell for cell in row] for row in scan_table.matrix_cells]
             table = Table(metadata=metadata, cells=cells)
             tables.append(table)
+
+        attachments = []
+        if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
+            tmp_dir = os.path.dirname(path)
+            file_name = os.path.basename(path)
+            attachments += self.attachment_extractor.get_attachments(tmpdir=tmp_dir,
+                                                                     filename=file_name,
+                                                                     parameters=parameters)
+
         lines = [line for line_group in lines for line in line_group.split("\n")]
         lines_with_paragraphs = self.paragraph_extractor.extract(lines)
-        result = UnstructuredDocument(lines=lines_with_paragraphs, tables=tables, attachments=[], warnings=warnings, metadata=document_metadata)
+        result = UnstructuredDocument(lines=lines_with_paragraphs,
+                                      tables=tables,
+                                      attachments=attachments,
+                                      warnings=warnings,
+                                      metadata=document_metadata)
 
         return self._postprocess(result)
 
