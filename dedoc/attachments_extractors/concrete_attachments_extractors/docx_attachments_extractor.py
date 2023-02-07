@@ -3,7 +3,6 @@ import os
 import tempfile
 import zipfile
 from typing import List
-
 from bs4 import BeautifulSoup
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_office_attachments_extractor import \
