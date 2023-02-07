@@ -122,11 +122,14 @@ class TabbyPDFReader(PdfBase):
             y_top_left = table["y_top_left"]
             x_bottom_right = x_top_left + table["width"]
             y_bottom_right = y_top_left + table["height"]
+            order = table["order"]
             rows = table["rows"]
             cells = [row for row in rows]
             bbox = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))
 
-            tables.append(ScanTable(matrix_cells=cells, page_number=page_number, bbox=bbox, name=file_hash + str(page_number) + str(i)))
+            tables.append(ScanTable(matrix_cells=cells, page_number=page_number, bbox=bbox,
+                                    name=file_hash + str(page_number) + str(i), order=order))
+
         return tables
 
     def __get_lines_with_location(self, page: dict, file_hash: str) -> List[LineWithLocation]:
@@ -134,7 +137,7 @@ class TabbyPDFReader(PdfBase):
         page_number = page["number"]
         for block in page["blocks"]:
             annotations = []
-            block_id = block["order"]
+            order = block["order"]
             block_text = block["text"]
             bx_top_left = block["x_top_left"]
             by_top_left = block["y_top_left"]
@@ -170,16 +173,19 @@ class TabbyPDFReader(PdfBase):
                     annotations.append(LinkedTextAnnotation(start, end, text))
 
             meta = block["metadata"].lower()
-            uid = "txt_{}_{}".format(file_hash, block_id)
+            uid = "txt_{}_{}".format(file_hash, order)
             bbox = BBox.from_two_points((bx_top_left, by_top_left), (bx_bottom_right, by_bottom_right))
-            metadata = ParagraphMetadata(page_id=page_number, line_id=block_id, predicted_classes=None, paragraph_type=meta)
+            metadata = ParagraphMetadata(page_id=page_number, line_id=order, predicted_classes=None,
+                                         paragraph_type=meta)
 
             line_with_location = LineWithLocation(line=block_text,
                                                   hierarchy_level=None,
                                                   metadata=metadata,
                                                   annotations=annotations,
                                                   uid=uid,
-                                                  location=Location(bbox=bbox, page_number=page_number))
+                                                  location=Location(bbox=bbox, page_number=page_number),
+                                                  order=order)
+
             lines.append(line_with_location)
 
         return lines

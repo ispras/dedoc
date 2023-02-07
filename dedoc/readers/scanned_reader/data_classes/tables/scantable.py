@@ -13,11 +13,13 @@ class ScanTable:
                  page_number: int,
                  matrix_cells: List[List[Cell]] = None,
                  bbox: BBox = None,
-                 name: str = "") -> None:
+                 name: str = "",
+                 order: int = -1) -> None:
         self.matrix_cells = matrix_cells
         self.page_number = page_number
         self.locations = []
         self.name = name
+        self.order = order
         if bbox is not None:
             self.locations.append(Location(page_number, bbox))
 
@@ -26,6 +28,8 @@ class ScanTable:
         self.locations.extend(table.locations)
         # extend values
         self.matrix_cells.extend(table.matrix_cells)
+        # extend order
+        self.order = max(self.order, table.order)
 
     @staticmethod
     def get_cells_text(attr_cells: List[List[Cell]]) -> List[List[str]]:
