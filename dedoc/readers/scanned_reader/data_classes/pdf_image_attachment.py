@@ -9,8 +9,10 @@ class PdfImageAttachment(AttachedFile):
                  tmp_file_path: str,
                  need_content_analysis: bool,
                  uid: str,
-                 location: Location) -> None:
+                 location: Location,
+                 order: int = -1) -> None:
         self.location = location
+        self.order = order
         super().__init__(original_name=original_name,
                          tmp_file_path=tmp_file_path,
                          need_content_analysis=need_content_analysis,
