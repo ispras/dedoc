@@ -88,7 +88,7 @@ class TabbyPDFReader(PdfBase):
         tables = []
         for scan_table in scan_tables:
             metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name)
-            cells = [[cell.replace("\n", "<br />") for cell in row] for row in scan_table.matrix_cells]
+            cells = [[cell for cell in row] for row in scan_table.matrix_cells]
             table = Table(metadata=metadata, cells=cells)
             tables.append(table)
         lines = [line for line_group in lines for line in line_group.split("\n")]
@@ -155,7 +155,7 @@ class TabbyPDFReader(PdfBase):
                 font_name = annotation["font_name"]
                 font_size = annotation["font_size"]
                 link = annotation["metadata"]
-                text = annotation["text"]
+                url = annotation["url"]
                 start = annotation["start"]
                 end = annotation["end"]
 
@@ -170,7 +170,7 @@ class TabbyPDFReader(PdfBase):
                 annotations.append(StyleAnnotation(start, end, font_name))
 
                 if link == "LINK":
-                    annotations.append(LinkedTextAnnotation(start, end, text))
+                    annotations.append(LinkedTextAnnotation(start, end, url))
 
             meta = block["metadata"].lower()
             uid = "txt_{}_{}".format(file_hash, order)
