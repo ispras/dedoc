@@ -15,8 +15,13 @@ logging.basicConfig(stream=sys.stdout,
                     level=logging.INFO,
                     format="%(asctime)s - %(pathname)s - %(levelname)s - %(message)s")
 
+DEBUG_MODE = False
 
 _config = dict(
+    # -----------------------------------------COMMON DEBUG SETTINGS----------------------------------------------------
+    debug_mode=DEBUG_MODE,
+    path_debug="/tmp/dedoc",
+
     # --------------------------------------------JOBLIB SETTINGS-------------------------------------------------------
     # number of parallel jobs in some tasks as OCR
     n_jobs=1,
@@ -35,6 +40,20 @@ _config = dict(
     # analyse content of attachments
     need_content_analysis=True,
     recursion_deep_attachments=10,
+
+    # ----------------------------------------TABLE RECOGNIZER SETTINGS-------------------------------------------------
+    min_h_cell=8,
+    min_w_cell=20,
+    type_top_attr=1,
+    type_left_top_attr=2,
+    type_left_attr=3,
+    max_vertical_extended=20,
+    minimal_cell_cnt_line=5,
+    minimal_cell_avg_length_line=10,
+
+    path_cells="/tmp/docreader/debug_tables/imgs/cells/",
+    path_detect="/tmp/docreader/debug_tables/imgs/detect_lines/",
+    rotate_threshold=0.3,
 
     # -------------------------------------------RECOGNIZE SETTINGS-----------------------------------------------------
     # TESSERACT OCR confidence threshold ( values: [-1 - undefined;  0.0 : 100.0 % - confidence value)

@@ -1,3 +1,4 @@
+import importlib
 import os
 import signal
 from typing import Union, List, Optional, Any
@@ -14,6 +15,15 @@ def get_by_tree_path(tree: dict, path: Union[List[int], str]) -> dict:
     for child_id in path:
         tree = tree["subparagraphs"][child_id]
     return tree
+
+
+def get_test_config() -> dict:
+    config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../dedoc/config.py"))
+    spec = importlib.util.spec_from_file_location("config_module", config_path)
+    config_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(config_module)
+    config = config_module._config
+    return config
 
 
 class TestTimeout:

@@ -24,6 +24,7 @@ from dedoc.readers.scanned_reader.data_classes.pdf_image_attachment import PdfIm
 from dedoc.readers.scanned_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.scanned_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
 from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
+from dedoc.readers.scanned_reader.table_recognizer.table_recognizer import TableRecognizer
 from dedoc.readers.scanned_reader.utils.line_object_linker import LineObjectLinker
 from dedoc.readers.scanned_reader.paragraph_extractor.scan_paragraph_classifier_extractor import \
     ScanParagraphClassifierExtractor
@@ -53,7 +54,7 @@ class PdfBase(BaseReader):
     """
 
     def __init__(self, config: dict) -> None:
-        # TODO fond: init Table Recognizer
+        self.table_recognizer = TableRecognizer(config=config)
         self.metadata_extractor = LineMetadataExtractor(config=config)
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
@@ -156,9 +157,7 @@ class PdfBase(BaseReader):
             lines, headers, footers = footer_header_analysis(lines)
             all_lines = list(flatten(lines))
 
-        # TODO fond: create multipage tables
-        mp_tables = []
-
+        mp_tables = self.table_recognizer.convert_to_multipages_tables(unref_tables, lines_with_meta=all_lines)
         all_lines_with_links = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=attachments)
         all_lines_with_links = self.hierarchy_level_extractor.get_hierarchy_level(all_lines_with_links)
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
@@ -259,8 +258,9 @@ class PdfBase(BaseReader):
                              orient_analysis_cells: bool = False,
                              orient_cell_angle: int = 270,
                              table_type: str = "") -> Tuple[List[np.ndarray], List[ScanTable]]:
-        images, result_batch = [], []
-        for i, image in enumerate(batch):
-            images.append(image)
-        # TODO fond: call table recognizer
-        return images, result_batch
+        result_batch = Parallel(n_jobs=self.config["n_jobs"])(
+            delayed(self.table_recognizer.recognize_tables_from_image)(
+                image, page_number_begin + i, language, orient_analysis_cells, orient_cell_angle, table_type)
+            for i, image in enumerate(batch))  # noqa
+
+        return result_batch
