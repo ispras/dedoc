@@ -72,6 +72,7 @@ def get_param_is_vertical_document(parameters: Optional[dict]) -> Optional[bool]
     else:
         return True
 
+
 def get_param_project(parameters: Optional[dict]) -> str:
     if parameters is None:
         return "docreader_project"
