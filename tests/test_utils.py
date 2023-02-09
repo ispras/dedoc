@@ -3,6 +3,11 @@ import os
 import signal
 from typing import Union, List, Optional, Any
 
+from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
+from dedoc.readers.scanned_reader.data_classes.tables.location import Location
+
 
 def get_full_path(path: str, file: str = __file__) -> str:
     dir_path = os.path.dirname(file)
@@ -24,6 +29,27 @@ def get_test_config() -> dict:
     spec.loader.exec_module(config_module)
     config = config_module._config
     return config
+
+
+def create_line_by_coordinates(x_top_left: int,
+                               y_top_left: int,
+                               width: int,
+                               height: int,
+                               page: int) -> LineWithLocation:
+    bbox = BBox(x_top_left=x_top_left, y_top_left=y_top_left, width=width, height=height)
+    location = Location(bbox=bbox, page_number=page)
+    line = LineWithLocation(
+        line="Some text",
+        hierarchy_level=None,
+        metadata=ParagraphMetadata(
+            paragraph_type="raw_text",
+            predicted_classes=None,
+            page_id=page,
+            line_id=0
+        ),
+        annotations=[],
+        location=location)
+    return line
 
 
 class TestTimeout:

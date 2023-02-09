@@ -33,3 +33,4 @@ pylzma==0.5.0
 xgboost==1.1.1
 piexif==1.1.3
 texttable==1.6.7
+scikit-image==0.19.3
