@@ -47,14 +47,22 @@ class PdfScanReader(PdfBase):
                           page_number: int,
                           path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
         # TODO fond: --- Step 1: correct orientation and detect column count ---
+        angle = 0
+        if parameters.is_one_column_document is None or parameters.is_vertical_document is None:
+            self.logger.debug("Orientation & columns classificator works")
+            columns, angle = self._detect_classifier_columns_orientation(image)
+            print('class angle', angle)
+
         if parameters.is_one_column_document is not None:
             is_one_column_document = parameters.is_one_column_document
-            angle = 0
         else:
-            columns, angle = self._detect_classifier_columns_orientation(image)
             is_one_column_document = True if columns == 1 else False
-        rotated_image, _ = self.scan_rotator.auto_rotate(image, angle)
 
+        if parameters.is_vertical_document is True:
+            angle = 0
+
+        self.logger.debug("Final orientation angle {}".format(angle))
+        rotated_image, _ = self.scan_rotator.auto_rotate(image, angle)
         if self.config.get("debug_mode"):
             cv2.imwrite(os.path.join(self.config["path_debug"], "result_orientation.jpg"), rotated_image)
 
