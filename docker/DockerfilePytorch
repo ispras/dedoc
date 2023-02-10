@@ -18,7 +18,7 @@ RUN curl -L -O https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-
 RUN pip3 install --upgrade pip && \
     pip3 install scikit-build astunparse numpy ninja pyyaml mkl mkl-include setuptools cmake cffi typing_extensions
 
-ADD pytorch.tar.gz /
+RUN wget -O pytorch.tar.gz $DOWNLOAD_LINK # add link instead 
 
 WORKDIR /
 RUN curl https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh --output anaconda.sh
