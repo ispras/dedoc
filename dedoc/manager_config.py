@@ -53,7 +53,7 @@ def get_manager_config(config: dict) -> dict:
     readers = [
         DocxReader(config=config),
         ExcelReader(config=config),
-        PptxReader(config=config),
+        PptxReader(),
         CSVReader(),
         RawTextReader(config=config),
         JsonReader(),

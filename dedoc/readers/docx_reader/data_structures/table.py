@@ -1,13 +1,9 @@
 import hashlib
-from collections import namedtuple
+from typing import List
 from bs4 import BeautifulSoup
 
-from dedoc.data_structures.table import Table
-from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.readers.docx_reader.data_structures.run import Run
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
-
-CellPropertyInfo = namedtuple('NamedTuple', 'colspan, rowspan, invisible')
 
 
 class DocxTable:
@@ -26,9 +22,10 @@ class DocxTable:
     def uid(self) -> str:
         return self._uid
 
-    def to_table(self) -> Table:
+    def get_cells(self) -> List[List[str]]:
         """
-        returns table class
+        returns list of lists with table cells
+        merged cells are split and duplicated in result table
         """
         # tbl tag defines table
         # tr tag defines table row
@@ -41,15 +38,11 @@ class DocxTable:
 
         rows = self.xml.find_all("w:tr")
         prev_row = []
-
-        cell_property_list = []
-        rowspan_start_info = {}
-        for row_index, row in enumerate(rows):
+        for row in rows:
             cells = row.find_all("w:tc")
             cells_text = []
 
             cell_ind = 0
-            cell_property_row_list = []
             for cell in cells:
                 # gridSpan tag describes number of horizontally merged cells
                 if cell.gridSpan:
@@ -63,28 +56,16 @@ class DocxTable:
                 if cell.vMerge:
                     value = cell.vMerge.get("w:val", "continue")
                     if value == "continue":
-                        cell_property_row_list.append(CellPropertyInfo(1, 1, True))
                         cell_text += prev_row[cell_ind]
-                        last_cell_rowspan = cell_property_list[rowspan_start_info[cell_ind]][cell_ind]
-                        cell_property_list[rowspan_start_info[cell_ind]][cell_ind] = last_cell_rowspan._replace(
-                            rowspan=last_cell_rowspan.rowspan + 1)
-                    elif value == "restart":
-                        rowspan_start_info[cell_ind] = row_index
-                        cell_property_row_list.append(CellPropertyInfo(grid_span, 1, False))
-                else:
-                    cell_property_row_list.append(CellPropertyInfo(grid_span, 1, False))
                 # split merged cells
-                for span in range(grid_span - 1):
-                    cell_property_row_list.append(CellPropertyInfo(1, 1, True))
+                for span in range(grid_span):
                     cell_ind += 1
                     cells_text.append(cell_text)
-                cell_ind += 1
-                cells_text.append(cell_text)
-            cell_property_list.append(cell_property_row_list)
+
             result_cells.append(cells_text)
             prev_row = cells_text
-        return Table(cells=result_cells, metadata=TableMetadata(page_id=None, uid=self.uid),
-                     cells_with_property=cell_property_list)
+
+        return result_cells
 
     def __get_cell_text(self, cell: BeautifulSoup) -> str:
         cell_text = ""

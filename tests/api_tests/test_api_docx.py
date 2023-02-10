@@ -115,12 +115,12 @@ class TestApiDocReader(AbstractTestApiDocReader):
                         "<b>Пример документа</b>" in result)
         self.assertTrue("<tbody>\n"
                         "<tr>\n"
-                        "<td colspan=\"1\" rowspan=\"1\">N</td>\n"
-                        "<td colspan=\"1\" rowspan=\"1\">Фамилия</td>\n"
-                        "<td colspan=\"1\" rowspan=\"1\">Имя</td>\n"
-                        "<td colspan=\"1\" rowspan=\"1\">Организация</td>\n"
-                        "<td colspan=\"1\" rowspan=\"1\">Телефон</td>\n"
-                        "<td colspan=\"1\" rowspan=\"1\">Примечания</td>\n"
+                        "<td>N</td>\n"
+                        "<td>Фамилия</td>\n"
+                        "<td>Имя</td>\n"
+                        "<td>Организация</td>\n"
+                        "<td>Телефон</td>\n"
+                        "<td>Примечания</td>\n"
                         "</tr>" in result)
 
     def test_newline_tree(self) -> None:
