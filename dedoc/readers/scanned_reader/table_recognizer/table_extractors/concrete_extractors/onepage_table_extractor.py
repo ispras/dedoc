@@ -18,7 +18,6 @@ from dedoc.readers.scanned_reader.table_recognizer.table_utils.utils import get_
 from dedoc.utils.image_utils import rotate_image
 
 
-
 class OnePageTableExtractor(BaseTableExtractor):
 
     def __init__(self, *, config: dict, logger: logging.Logger) -> None:

@@ -42,3 +42,14 @@ class TestTimeout:
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         signal.alarm(0)
+
+
+def tree2linear(tree: dict) -> List[dict]:
+    lines = []
+    stack = [tree]
+    while len(stack) > 0:
+        line = stack.pop()
+        lines.append(line)
+        stack.extend(line["subparagraphs"])
+    lines.sort(key=lambda line: (line["metadata"]["page_id"], line["metadata"]["line_id"]))
+    return lines

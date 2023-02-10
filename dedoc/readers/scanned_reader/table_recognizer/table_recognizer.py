@@ -8,7 +8,6 @@ import os
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.scanned_reader.data_classes.bbox import BBox
-
 from dedoc.readers.scanned_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.scanned_reader.data_classes.tables.table_type import TableTypeAdditionalOptions
 from dedoc.readers.scanned_reader.table_recognizer.table_extractors.concrete_extractors.multipage_table_extractor import MultiPageTableExtractor

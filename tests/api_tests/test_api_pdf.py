@@ -1,6 +1,4 @@
 import os
-import unittest
-
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
@@ -38,8 +36,6 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self.__check_metainfo(result['metadata'], 'application/pdf', file_name)
         self.assertEqual([], result['attachments'])
 
-    # TODO include when add table processing
-    @unittest.skip
     def test_djvu(self) -> None:
         file_name = "example_with_table7.djvu"
         result = self._send_request(file_name, dict(document_type=""))
@@ -51,8 +47,6 @@ class TestApiPdfReader(AbstractTestApiDocReader):
 
         self.__check_metainfo(result['metadata'], 'image/vnd.djvu', file_name)
 
-    # TODO include when add table processing
-    @unittest.skip
     def test_djvu_2(self) -> None:
         file_name = "example_with_table9.djvu"
         result = self._send_request(file_name)
@@ -127,7 +121,6 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self.assertIn("№ выдан _, дата выдачи\nт. код подразделения зарегистрированный по адресу:\n",
                       tree['subparagraphs'][2]['text'])
 
-    @unittest.skip
     def test_rotated_image(self) -> None:
         result = self._send_request("orient_1.png", data=dict(need_pdf_table_analysis="false"))
         tree = result["content"]["structure"]
