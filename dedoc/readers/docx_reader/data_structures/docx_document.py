@@ -25,8 +25,6 @@ from dedoc.data_structures.concrete_annotations.table_annotation import TableAnn
 from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
-from dedoc.data_structures.table import Table
-from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
 from dedoc.readers.docx_reader.data_structures.paragraph_info import ParagraphInfo
 from dedoc.readers.docx_reader.data_structures.table import DocxTable
@@ -248,8 +246,7 @@ class DocxDocument:
 
     def _handle_table_xml(self, paragraph_xml: BeautifulSoup) -> None:
         table = DocxTable(paragraph_xml, self.styles_extractor)
-        metadata = TableMetadata(page_id=None, uid=table.uid)
-        self.tables.append(Table(cells=table.get_cells(), metadata=metadata))
+        self.tables.append(table.to_table())
         table_uid = table.uid
         while len(self.paragraph_list) > 0:
             if self.paragraph_list[-1].text.strip() == "":
