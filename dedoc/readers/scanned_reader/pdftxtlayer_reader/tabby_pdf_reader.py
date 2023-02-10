@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 from typing import List, Optional, Tuple
+
 import numpy as np
 
 from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
@@ -11,7 +12,6 @@ from dedoc.common.exceptions.tabby_pdf_error import TabbyPdfError
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
-from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
@@ -87,25 +87,12 @@ class TabbyPDFReader(PdfBase):
         tables = []
         for scan_table in scan_tables:
             metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name)
-            cells = [[cell for cell in row] for row in scan_table.matrix_cells]
+            cells = [[cell.replace("\n", "<br />") for cell in row] for row in scan_table.matrix_cells]
             table = Table(metadata=metadata, cells=cells)
             tables.append(table)
-
-        attachments = []
-        if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
-            tmp_dir = os.path.dirname(path)
-            file_name = os.path.basename(path)
-            attachments += self.attachment_extractor.get_attachments(tmpdir=tmp_dir,
-                                                                     filename=file_name,
-                                                                     parameters=parameters)
-
         lines = [line for line_group in lines for line in line_group.split("\n")]
         lines_with_paragraphs = self.paragraph_extractor.extract(lines)
-        result = UnstructuredDocument(lines=lines_with_paragraphs,
-                                      tables=tables,
-                                      attachments=attachments,
-                                      warnings=warnings,
-                                      metadata=document_metadata)
+        result = UnstructuredDocument(lines=lines_with_paragraphs, tables=tables, attachments=[], warnings=warnings, metadata=document_metadata)
 
         return self._postprocess(result)
 
@@ -134,14 +121,11 @@ class TabbyPDFReader(PdfBase):
             y_top_left = table["y_top_left"]
             x_bottom_right = x_top_left + table["width"]
             y_bottom_right = y_top_left + table["height"]
-            order = table["order"]
             rows = table["rows"]
             cells = [row for row in rows]
             bbox = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))
 
-            tables.append(ScanTable(matrix_cells=cells, page_number=page_number, bbox=bbox,
-                                    name=file_hash + str(page_number) + str(i), order=order))
-
+            tables.append(ScanTable(matrix_cells=cells, page_number=page_number, bbox=bbox, name=file_hash + str(page_number) + str(i)))
         return tables
 
     def __get_lines_with_location(self, page: dict, file_hash: str) -> List[LineWithLocation]:
@@ -149,7 +133,7 @@ class TabbyPDFReader(PdfBase):
         page_number = page["number"]
         for block in page["blocks"]:
             annotations = []
-            order = block["order"]
+            block_id = block["order"]
             block_text = block["text"]
             bx_top_left = block["x_top_left"]
             by_top_left = block["y_top_left"]
@@ -166,38 +150,27 @@ class TabbyPDFReader(PdfBase):
                 is_italic = annotation["is_italic"]
                 font_name = annotation["font_name"]
                 font_size = annotation["font_size"]
-                link = annotation["metadata"]
-                url = annotation["url"]
                 start = annotation["start"]
                 end = annotation["end"]
 
                 annotations.append(SizeAnnotation(start, end, str(font_size)))
-
                 if is_bold:
                     annotations.append(BoldAnnotation(start, end, "True"))
-
                 if is_italic:
                     annotations.append(ItalicAnnotation(start, end, "True"))
-
                 annotations.append(StyleAnnotation(start, end, font_name))
 
-                if link == "LINK":
-                    annotations.append(LinkedTextAnnotation(start, end, url))
-
             meta = block["metadata"].lower()
-            uid = "txt_{}_{}".format(file_hash, order)
+            uid = "txt_{}_{}".format(file_hash, block_id)
             bbox = BBox.from_two_points((bx_top_left, by_top_left), (bx_bottom_right, by_bottom_right))
-            metadata = ParagraphMetadata(page_id=page_number, line_id=order, predicted_classes=None,
-                                         paragraph_type=meta)
+            metadata = ParagraphMetadata(page_id=page_number, line_id=block_id, predicted_classes=None, paragraph_type=meta)
 
             line_with_location = LineWithLocation(line=block_text,
                                                   hierarchy_level=None,
                                                   metadata=metadata,
                                                   annotations=annotations,
                                                   uid=uid,
-                                                  location=Location(bbox=bbox, page_number=page_number),
-                                                  order=order)
-
+                                                  location=Location(bbox=bbox, page_number=page_number))
             lines.append(line_with_location)
 
         return lines

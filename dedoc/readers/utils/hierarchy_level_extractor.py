@@ -9,7 +9,6 @@ class HierarchyLevelExtractor:
     def __init__(self) -> None:
         self.chapter = re.compile("^(статья|пункт|параграф|глава|определение)\s*([0-9]+\\.)*([0-9]+\\.?)")  # noqa
         self.dotted_num = re.compile("^([0-9]+\\.)+([0-9]+\\.?)?(\\s|$)")
-        self.dotted_without_space_num = re.compile(r"^\d+\.[a-z]")  # TODO: it's dirty hack for pmi, please remove
         self.bracket_num = re.compile("^[0-9]+\\)")
         self.letter = re.compile("^(([а-я]|[a-z])\\))")
 
@@ -92,10 +91,6 @@ class HierarchyLevelExtractor:
             if (all((float(n) <= 1900 for n in line_num)) and  # FIX dates like 9.05.1945
                     len(line_text.split()[0]) <= 9):  # too long items is rare a list
 
-                return HierarchyLevel(2, len(line_num), False, paragraph_type=HierarchyLevel.list_item)
-        elif self.dotted_without_space_num.match(line_text):
-            line_num = [line_text.split(".")[0]]
-            if all((float(n) <= 1900 for n in line_num)):  # FIX dates like 9.05.1945
                 return HierarchyLevel(2, len(line_num), False, paragraph_type=HierarchyLevel.list_item)
         elif self.bracket_num.match(line_text):
             line_num = [n for n in line_text.strip().split()[0].split(".") if len(n) > 0]

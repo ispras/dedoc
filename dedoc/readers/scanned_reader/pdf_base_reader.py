@@ -23,7 +23,6 @@ from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWit
 from dedoc.readers.scanned_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.scanned_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.scanned_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
-from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
 from dedoc.readers.scanned_reader.utils.line_object_linker import LineObjectLinker
 from dedoc.readers.scanned_reader.paragraph_extractor.scan_paragraph_classifier_extractor import \
     ScanParagraphClassifierExtractor
@@ -57,7 +56,7 @@ class PdfBase(BaseReader):
         self.metadata_extractor = LineMetadataExtractor(config=config)
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
-        self.attachment_extractor = PDFAttachmentsExtractor(config=config)
+        # TODO fond: init Attachment Extractor
         self.archive_reader = ArchiveReader(config=config)
         self.linker = LineObjectLinker(config=config)
         self.paragraph_extractor = ScanParagraphClassifierExtractor(config=config)
@@ -92,12 +91,8 @@ class PdfBase(BaseReader):
             table = Table(metadata=metadata, cells=text_cells, cells_with_property=cells)
             tables.append(table)
 
-        if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
-            tmp_dir = os.path.dirname(path)
-            file_name = os.path.basename(path)
-            attachments += self.attachment_extractor.get_attachments(tmpdir=tmp_dir,
-                                                                     filename=file_name,
-                                                                     parameters=parameters)
+        # TODO fond: extract attachments from pdf
+        attachments = []
 
         result = UnstructuredDocument(lines=lines,
                                       tables=tables,
@@ -109,7 +104,7 @@ class PdfBase(BaseReader):
     def _postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:
         return postprocess(document)
 
-    def _can_contain_attachements(self, path: str) -> bool:
+    def __can_contain_attachements(self, path: str) -> bool:
         can_contain_attachments = False
         mime = get_file_mime_type(path)
         if mime in recognized_mimes.pdf_like_format:

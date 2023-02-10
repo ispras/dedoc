@@ -16,10 +16,8 @@ class LineWithLocation(LineWithMeta):
                  metadata: ParagraphMetadata,
                  annotations: List[Annotation],
                  location: Location,
-                 uid: str = None,
-                 order: int = -1) -> None:
+                 uid: str = None) -> None:
         self.location = location
-        self.order = order
         super().__init__(line, hierarchy_level, metadata, annotations, uid)
 
     def __repr__(self) -> str:
