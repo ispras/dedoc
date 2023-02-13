@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import datetime
 from typing import List, Tuple, Optional
 import numpy as np
 import cv2
@@ -50,16 +51,26 @@ class PdfScanReader(PdfBase):
                           page_number: int,
                           path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
         #  --- Step 1: correct orientation and detect column count ---
+        angle = 0
+        if parameters.is_one_column_document is None or parameters.is_vertical_document is None:
+            self.logger.info("Call orientation and columns classifier")
+            columns, angle = self._detect_classifier_columns_orientation(image)
+
         if parameters.is_one_column_document is not None:
             is_one_column_document = parameters.is_one_column_document
-            angle = 0
         else:
-            columns, angle = self._detect_classifier_columns_orientation(image)
             is_one_column_document = True if columns == 1 else False
+
+        if parameters.is_vertical_document is True:
+            angle = 0
+
+        self.logger.info(f"Final orientation angle: {angle}")
+        self.logger.info(f"Final number of columns: {columns}")
         rotated_image, _ = self.scan_rotator.auto_rotate(image, angle)
 
         if self.config.get("debug_mode"):
-            cv2.imwrite(os.path.join(self.config["path_debug"], "result_orientation.jpg"), rotated_image)
+            time = datetime.now().strftime("%H-%M-%S")
+            cv2.imwrite(os.path.join(self.config["path_debug"], f"{time}_result_orientation.jpg"), rotated_image)
 
         #  --- Step 2: table detection and recognition ---
         if parameters.need_pdf_table_analysis:
