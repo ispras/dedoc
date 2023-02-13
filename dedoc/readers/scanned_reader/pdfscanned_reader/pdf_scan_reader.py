@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List, Tuple, Optional
 import numpy as np
 import cv2
+from datetime import datetime
 
 from dedoc.extensions import recognized_mimes, recognized_extensions
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
@@ -84,7 +85,7 @@ class PdfScanReader(PdfBase):
         else:
             clean_image, tables = rotated_image, []
 
-        # --- Step 4: plain text recognition and text style detection ---
+        # --- Step 3: plain text recognition and text style detection ---
         page = self.ocr.split_image2lines(image=clean_image,
                                           language=parameters.language,
                                           is_one_column_document=is_one_column_document,
