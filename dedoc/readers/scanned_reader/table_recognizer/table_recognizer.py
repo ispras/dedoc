@@ -3,7 +3,7 @@ import logging
 import cv2
 from PIL import Image
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 import os
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -149,7 +149,7 @@ class TableRecognizer(object):
                ratio < 0.65)
         return res
 
-    def __save_tables(self, tables: List[ScanTable], image: np.ndarray, table_path=None) -> None:
+    def __save_tables(self, tables: List[ScanTable], image: np.ndarray, table_path: Optional[str] = None) -> None:
         image = Image.fromarray(image)
         os.makedirs(table_path, exist_ok=True)
         for table in tables:
