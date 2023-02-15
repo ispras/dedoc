@@ -85,11 +85,11 @@ class TestApiPdfReader(AbstractTestApiDocReader):
 
         self._check_similarity("4.3. п", self._get_by_tree_path(tree, "0.0.1.3.0.2")["text"])
 
-        self._check_similarity("4.4.", self._get_by_tree_path(tree, "0.0.1.3.0.3")["text"])
+        self._check_similarity("4.4. п", self._get_by_tree_path(tree, "0.0.1.3.0.3")["text"])
 
-        self._check_similarity("4.5.", self._get_by_tree_path(tree, "0.0.1.3.0.4")["text"])
+        self._check_similarity("4.5. п", self._get_by_tree_path(tree, "0.0.1.3.0.4")["text"])
 
-        self._check_similarity("4.6.", self._get_by_tree_path(tree, "0.0.1.3.0.5")["text"])
+        self._check_similarity("4.6. п", self._get_by_tree_path(tree, "0.0.1.3.0.5")["text"])
 
         self.__check_metainfo(result['metadata'], 'application/pdf', file_name)
 
@@ -118,8 +118,8 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
         # check, that handwritten text was filtered
-        self.assertIn("№ выдан _, дата выдачи\nт. код подразделения зарегистрированный по адресу:\n",
-                      tree['subparagraphs'][2]['text'])
+        self._check_similarity('ФИО  года рождения, паспорт: серия \n№ выдан _, дата выдачи\n'
+                               'т. код подразделения зарегистрированный по адресу:\n \n', tree['subparagraphs'][3]['text'])
 
     def test_rotated_image(self) -> None:
         result = self._send_request("orient_1.png", data=dict(need_pdf_table_analysis="false"))

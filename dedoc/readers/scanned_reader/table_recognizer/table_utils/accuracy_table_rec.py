@@ -9,6 +9,7 @@ from dedoc.readers.scanned_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.scanned_reader.pdfscanned_reader.pdf_scan_reader import PdfScanReader
 from dedoc.config import get_config
 
+
 def _create_cell(c: str, text_cells: list) -> Cell:
     cell = Cell(
         x_bottom_right=-1,

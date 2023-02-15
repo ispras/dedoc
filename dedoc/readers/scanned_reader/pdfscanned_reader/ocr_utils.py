@@ -1,6 +1,5 @@
 import numpy as np
 import pytesseract
-import os
 
 from dedoc.readers.scanned_reader.pdfscanned_reader.ocr_page.ocr_page import OcrPage
 
