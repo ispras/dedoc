@@ -91,3 +91,7 @@ def get_param_table_type(parameters: Optional[dict]) -> str:
         return ""
 
     return str(parameters.get("table_type", ""))
+
+
+def get_is_one_column_document_list(parameters: Optional[dict]) -> Optional[bool]:
+    return None if parameters is None else parameters.get("is_one_column_document_list")

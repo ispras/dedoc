@@ -11,6 +11,9 @@ from joblib import Parallel, delayed
 from pdf2image import convert_from_path
 from pdf2image.exceptions import PDFPageCountError, PDFSyntaxError
 
+from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
+from dedoc.readers.utils.hierarchy_level_extractor import HierarchyLevelExtractor
+import dedoc.utils.parameter_utils as param_utils
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
@@ -18,22 +21,22 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes, recognized_extensions
 from dedoc.readers.base_reader import BaseReader
+from dedoc.utils.pdf_utils import get_page_slice, postprocess, get_pdf_page_count
+from dedoc.utils.utils import get_file_mime_type, splitext_
 from dedoc.readers.archive_reader.archive_reader import ArchiveReader
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.scanned_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.scanned_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.scanned_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
-from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
-from dedoc.readers.scanned_reader.table_recognizer.table_recognizer import TableRecognizer
 from dedoc.readers.scanned_reader.utils.line_object_linker import LineObjectLinker
 from dedoc.readers.scanned_reader.paragraph_extractor.scan_paragraph_classifier_extractor import \
     ScanParagraphClassifierExtractor
 from dedoc.readers.scanned_reader.utils.header_footers_analysis import footer_header_analysis
-import dedoc.utils.parameter_utils as param_utils
-from dedoc.readers.utils.hierarchy_level_extractor import HierarchyLevelExtractor
-from dedoc.utils.pdf_utils import get_pdf_page_count, postprocess, get_page_slice
+from dedoc.readers.scanned_reader.table_recognizer.table_recognizer import TableRecognizer
 from dedoc.utils.utils import flatten
-from dedoc.utils.utils import get_file_mime_type, splitext_
+
+# TODO delete parameter is_one_column_document_list
+# TODO change TextLocalization on AdaptiveBinarization
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", ["orient_analysis_cells",
                                                              "orient_cell_angle",
@@ -45,7 +48,8 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", ["orient_analysis_ce
                                                              "first_page",
                                                              "last_page",
                                                              "need_text_localization",
-                                                             'table_type'])
+                                                             'table_type',
+                                                             "is_one_column_document_list"])
 
 
 class PdfBase(BaseReader):
@@ -55,14 +59,15 @@ class PdfBase(BaseReader):
 
     def __init__(self, config: dict) -> None:
         self.table_recognizer = TableRecognizer(config=config)
+        self.hierarchy_level_extractor = HierarchyLevelExtractor()
         self.metadata_extractor = LineMetadataExtractor(config=config)
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
         self.attachment_extractor = PDFAttachmentsExtractor(config=config)
         self.archive_reader = ArchiveReader(config=config)
         self.linker = LineObjectLinker(config=config)
+        self.supported_types = {None, "default", "", "other"}
         self.paragraph_extractor = ScanParagraphClassifierExtractor(config=config)
-        self.hierarchy_level_extractor = HierarchyLevelExtractor()
 
     def read(self,
              path: str,
@@ -81,7 +86,8 @@ class PdfBase(BaseReader):
             first_page=first_page,
             last_page=last_page,
             need_text_localization=param_utils.get_param_need_text_localization(parameters),
-            table_type=param_utils.get_param_table_type(parameters)
+            table_type=param_utils.get_param_table_type(parameters),
+            is_one_column_document_list=param_utils.get_is_one_column_document_list(parameters)
         )
 
         lines, scan_tables, attachments, warnings, other_fields = self._parse_document(path, params_for_parse)
@@ -93,7 +99,7 @@ class PdfBase(BaseReader):
             table = Table(metadata=metadata, cells=text_cells, cells_with_property=cells)
             tables.append(table)
 
-        if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
+        if self.__can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
             tmp_dir = os.path.dirname(path)
             file_name = os.path.basename(path)
             attachments += self.attachment_extractor.get_attachments(tmpdir=tmp_dir,
@@ -110,7 +116,7 @@ class PdfBase(BaseReader):
     def _postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:
         return postprocess(document)
 
-    def _can_contain_attachements(self, path: str) -> bool:
+    def __can_contain_attachements(self, path: str) -> bool:
         can_contain_attachments = False
         mime = get_file_mime_type(path)
         if mime in recognized_mimes.pdf_like_format:
@@ -156,10 +162,9 @@ class PdfBase(BaseReader):
             lines = [lines for lines, _, _ in result]
             lines, headers, footers = footer_header_analysis(lines)
             all_lines = list(flatten(lines))
-
         mp_tables = self.table_recognizer.convert_to_multipages_tables(unref_tables, lines_with_meta=all_lines)
         all_lines_with_links = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=attachments)
-        all_lines_with_links = self.hierarchy_level_extractor.get_hierarchy_level(all_lines_with_links)
+        all_lines_with_links = self.hierarchy_level_extractor.get_hierarchy_level(lines=all_lines_with_links)
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
@@ -258,9 +263,9 @@ class PdfBase(BaseReader):
                              orient_analysis_cells: bool = False,
                              orient_cell_angle: int = 270,
                              table_type: str = "") -> Tuple[List[np.ndarray], List[ScanTable]]:
+
         result_batch = Parallel(n_jobs=self.config["n_jobs"])(
             delayed(self.table_recognizer.recognize_tables_from_image)(
                 image, page_number_begin + i, language, orient_analysis_cells, orient_cell_angle, table_type)
             for i, image in enumerate(batch))  # noqa
-
         return result_batch
