@@ -132,3 +132,21 @@ class TestApiPdfReader(AbstractTestApiDocReader):
                                                                  'и работ, оказываемых и выполняемых\n'
                                                                  'государственными учреждениями Калужской\n'
                                                                  'области\n')
+
+    def test_pdf_with_only_mp_table(self) -> None:
+        file_name = os.path.join("..", "multipage_table.pdf")
+        result = self._send_request(file_name)
+
+        table_refs = [ann["value"] for ann in result["content"]["structure"]["subparagraphs"][0]["annotations"]
+                      if ann["name"] == "table"]
+
+        self.assertTrue(len(result["content"]["tables"]), len(table_refs))
+        for table in result["content"]["tables"]:
+            self.assertTrue(table["metadata"]["uid"] in table_refs)
+
+    def test_2_columns(self) -> None:
+        file_name = os.path.join("..", "scanned", "example_2_columns.png")
+        result = self._send_request(file_name)
+        tree = result["content"]["structure"]
+        self._check_tree_sanity(tree)
+        self.assertEqual(797, len(self._get_by_tree_path(tree, "0.0")["text"]))

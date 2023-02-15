@@ -1,9 +1,11 @@
-from typing import Tuple
+from typing import Tuple, List
 import PIL
 import cv2
 import numpy as np
 from PIL import Image
 from scipy.ndimage import maximum_filter
+from copy import deepcopy
+from PIL import Image, ImageDraw
 
 from dedoc.readers.scanned_reader.data_classes.bbox import BBox
 
@@ -109,3 +111,36 @@ supported_image_types = {"bmp",
                          "webp",
                          "j2k"}
 supported_image_types = {prefix + image_format for image_format in supported_image_types for prefix in [".", ""]}
+
+
+def draw_rectangle(image: PIL.Image,
+                   x_top_left: int,
+                   y_top_left: int,
+                   width: int,
+                   height: int,
+                   color: Tuple[int, int, int] = (0, 0, 0)) -> np.ndarray:
+    if color == "black":
+        color = (0, 0, 0)
+    source_img = deepcopy(image).convert("RGBA")
+
+    draw = ImageDraw.Draw(source_img)
+    x_bottom_right = x_top_left + width + 5
+    y_bottom_right = y_top_left + height + 5
+    start_point = (x_top_left - 5, y_top_left - 5)
+    end_point = (x_bottom_right, y_bottom_right)
+    draw.rectangle((start_point, end_point), outline=color, width=5)
+
+    return np.array(source_img)
+
+
+def get_concat_v(images: List[Image.Image]) -> Image:
+    if len(images) == 1:
+        return images[0]
+    width = max((image.width for image in images))
+    height = sum((image.height for image in images))
+    dst = Image.new('RGB', (width, height))
+    height = 0
+    for image in images:
+        dst.paste(image, (0, height))
+        height += image.height
+    return dst

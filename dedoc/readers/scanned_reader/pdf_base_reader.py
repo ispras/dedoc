@@ -99,7 +99,7 @@ class PdfBase(BaseReader):
             table = Table(metadata=metadata, cells=text_cells, cells_with_property=cells)
             tables.append(table)
 
-        if self.__can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
+        if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
             tmp_dir = os.path.dirname(path)
             file_name = os.path.basename(path)
             attachments += self.attachment_extractor.get_attachments(tmpdir=tmp_dir,
@@ -116,7 +116,7 @@ class PdfBase(BaseReader):
     def _postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:
         return postprocess(document)
 
-    def __can_contain_attachements(self, path: str) -> bool:
+    def _can_contain_attachements(self, path: str) -> bool:
         can_contain_attachments = False
         mime = get_file_mime_type(path)
         if mime in recognized_mimes.pdf_like_format:
