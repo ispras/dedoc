@@ -13,7 +13,7 @@ python-docx==0.8.11
 python-pptx==0.6.21
 requests==2.27.1
 ujson==5.3.0
-Werkzeug==2.0.3
+Werkzeug==2.2.3
 xlrd==1.2.0
 numpy==1.22.3
 PyPDF2==1.26.0
