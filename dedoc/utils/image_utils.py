@@ -2,7 +2,6 @@ from typing import Tuple, List
 import PIL
 import cv2
 import numpy as np
-from PIL import Image
 from scipy.ndimage import maximum_filter
 from copy import deepcopy
 from PIL import Image, ImageDraw

@@ -134,7 +134,7 @@ class TestApiPdfReader(AbstractTestApiDocReader):
                                                                  'области\n')
 
     def test_pdf_with_only_mp_table(self) -> None:
-        file_name = os.path.join("..", "multipage_table.pdf")
+        file_name = os.path.join("..", "tables", "multipage_table.pdf")
         result = self._send_request(file_name)
 
         table_refs = [ann["value"] for ann in result["content"]["structure"]["subparagraphs"][0]["annotations"]
