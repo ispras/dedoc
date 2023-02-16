@@ -57,9 +57,9 @@ def get_manager_config(config: dict) -> dict:
         CSVReader(),
         RawTextReader(config=config),
         JsonReader(),
+        ArchiveReader(config=config),
         TabbyPDFReader(config=config),
-        PdfScanReader(config=config),
-        ArchiveReader(config=config)
+        PdfScanReader(config=config)
     ]
 
     metadata_extractors = [
