@@ -66,7 +66,6 @@ class PdfBase(BaseReader):
         self.attachment_extractor = PDFAttachmentsExtractor(config=config)
         self.archive_reader = ArchiveReader(config=config)
         self.linker = LineObjectLinker(config=config)
-        self.supported_types = {None, "default", "", "other"}
         self.paragraph_extractor = ScanParagraphClassifierExtractor(config=config)
 
     def read(self,

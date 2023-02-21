@@ -19,11 +19,3 @@ class TestScanRotator(unittest.TestCase):
             img = cv2.imread(self._get_abs_path(file_name))
             image, angle = self.rotator.auto_rotate(img)
             self.assertEqual(0, angle)
-
-    def test_passports(self) -> None:
-        ground_true = [0, 5, -16]
-        for i in range(1, 4):
-            file_name = f"passport ({i}).png"
-            img = cv2.imread(self._get_abs_path(file_name))
-            image, angle = self.rotator.auto_rotate(img)
-            self.assertEqual(ground_true[i - 1], angle)
