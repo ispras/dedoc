@@ -2,9 +2,9 @@ import logging
 import os
 from datetime import datetime
 from typing import List, Tuple, Optional
-import numpy as np
+
 import cv2
-from datetime import datetime
+import numpy as np
 
 from dedoc.extensions import recognized_mimes, recognized_extensions
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
