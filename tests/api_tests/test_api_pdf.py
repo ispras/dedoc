@@ -1,6 +1,4 @@
 import os
-import unittest
-
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
@@ -38,8 +36,6 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self.__check_metainfo(result['metadata'], 'application/pdf', file_name)
         self.assertEqual([], result['attachments'])
 
-    # TODO include when add table processing
-    @unittest.skip
     def test_djvu(self) -> None:
         file_name = "example_with_table7.djvu"
         result = self._send_request(file_name, dict(document_type=""))
@@ -51,8 +47,6 @@ class TestApiPdfReader(AbstractTestApiDocReader):
 
         self.__check_metainfo(result['metadata'], 'image/vnd.djvu', file_name)
 
-    # TODO include when add table processing
-    @unittest.skip
     def test_djvu_2(self) -> None:
         file_name = "example_with_table9.djvu"
         result = self._send_request(file_name)
@@ -91,11 +85,11 @@ class TestApiPdfReader(AbstractTestApiDocReader):
 
         self._check_similarity("4.3. п", self._get_by_tree_path(tree, "0.0.1.3.0.2")["text"])
 
-        self._check_similarity("4.4.", self._get_by_tree_path(tree, "0.0.1.3.0.3")["text"])
+        self._check_similarity("4.4. п", self._get_by_tree_path(tree, "0.0.1.3.0.3")["text"])
 
-        self._check_similarity("4.5.", self._get_by_tree_path(tree, "0.0.1.3.0.4")["text"])
+        self._check_similarity("4.5. п", self._get_by_tree_path(tree, "0.0.1.3.0.4")["text"])
 
-        self._check_similarity("4.6.", self._get_by_tree_path(tree, "0.0.1.3.0.5")["text"])
+        self._check_similarity("4.6. п", self._get_by_tree_path(tree, "0.0.1.3.0.5")["text"])
 
         self.__check_metainfo(result['metadata'], 'application/pdf', file_name)
 
@@ -124,10 +118,9 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
         # check, that handwritten text was filtered
-        self.assertIn("№ выдан _, дата выдачи\nт. код подразделения зарегистрированный по адресу:\n",
-                      tree['subparagraphs'][2]['text'])
+        self._check_similarity('ФИО  года рождения, паспорт: серия \n№ выдан _, дата выдачи\n'
+                               'т. код подразделения зарегистрированный по адресу:\n \n', tree['subparagraphs'][3]['text'])
 
-    @unittest.skip
     def test_rotated_image(self) -> None:
         result = self._send_request("orient_1.png", data=dict(need_pdf_table_analysis="false"))
         tree = result["content"]["structure"]
@@ -139,3 +132,21 @@ class TestApiPdfReader(AbstractTestApiDocReader):
                                                                  'и работ, оказываемых и выполняемых\n'
                                                                  'государственными учреждениями Калужской\n'
                                                                  'области\n')
+
+    def test_pdf_with_only_mp_table(self) -> None:
+        file_name = os.path.join("..", "tables", "multipage_table.pdf")
+        result = self._send_request(file_name)
+
+        table_refs = [ann["value"] for ann in result["content"]["structure"]["subparagraphs"][0]["annotations"]
+                      if ann["name"] == "table"]
+
+        self.assertTrue(len(result["content"]["tables"]), len(table_refs))
+        for table in result["content"]["tables"]:
+            self.assertTrue(table["metadata"]["uid"] in table_refs)
+
+    def test_2_columns(self) -> None:
+        file_name = os.path.join("..", "scanned", "example_2_columns.png")
+        result = self._send_request(file_name)
+        tree = result["content"]["structure"]
+        self._check_tree_sanity(tree)
+        self.assertEqual(797, len(self._get_by_tree_path(tree, "0.0")["text"]))

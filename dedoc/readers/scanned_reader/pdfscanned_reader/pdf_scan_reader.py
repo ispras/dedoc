@@ -9,8 +9,8 @@ from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWit
 from dedoc.readers.scanned_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.scanned_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.scanned_reader.pdf_base_reader import PdfBase, ParametersForParseDoc
+from dedoc.readers.scanned_reader.pdfscanned_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.scanned_reader.pdfscanned_reader.ocr.ocr_line_extractor import OCRLineExtractor
-from dedoc.readers.scanned_reader.pdfscanned_reader.ocr_utils import set_ocr_thread_limit
 from dedoc.readers.scanned_reader.pdfscanned_reader.scan_rotator import ScanRotator
 from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
 from dedoc.utils.image_utils import supported_image_types
@@ -24,11 +24,14 @@ class PdfScanReader(PdfBase):
     def __init__(self, *, config: dict) -> None:
         super().__init__(config=config)
         self.scan_rotator = ScanRotator(config=config)
-        # TODO init ColumnsOrientationClassifier
-        # TODO init text detection
+        checkpoint_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../resources/"))
+        self.orientation_classifier = ColumnsOrientationClassifier(on_gpu=False,
+                                                                   checkpoint_path=checkpoint_path,
+                                                                   config=config,
+                                                                   delete_lines=False)
+        # TODO add adaptive binarization
         self.ocr = OCRLineExtractor(config=config)
         self.logger = config.get("logger", logging.getLogger())
-        set_ocr_thread_limit(config['n_jobs'])
 
     def can_read(self,
                  path: str,
@@ -46,7 +49,7 @@ class PdfScanReader(PdfBase):
                           parameters: ParametersForParseDoc,
                           page_number: int,
                           path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
-        # TODO fond: --- Step 1: correct orientation and detect column count ---
+        #  --- Step 1: correct orientation and detect column count ---
         if parameters.is_one_column_document is not None:
             is_one_column_document = parameters.is_one_column_document
             angle = 0
@@ -58,8 +61,17 @@ class PdfScanReader(PdfBase):
         if self.config.get("debug_mode"):
             cv2.imwrite(os.path.join(self.config["path_debug"], "result_orientation.jpg"), rotated_image)
 
-        #  TODO fond: --- Step 2: table detection and recognition ---
-        clean_image, tables = rotated_image, []
+        #  --- Step 2: table detection and recognition ---
+        if parameters.need_pdf_table_analysis:
+            clean_image, tables = self.table_recognizer. \
+                recognize_tables_from_image(image=rotated_image,
+                                            page_number=page_number,
+                                            language=parameters.language,
+                                            orient_analysis_cells=parameters.orient_analysis_cells,
+                                            orient_cell_angle=parameters.orient_cell_angle,
+                                            table_type=parameters.table_type)
+        else:
+            clean_image, tables = rotated_image, []
 
         # --- Step 4: plain text recognition and text style detection ---
         page = self.ocr.split_image2lines(image=clean_image,
@@ -84,7 +96,6 @@ class PdfScanReader(PdfBase):
                 (path.lower().endswith(tuple(recognized_extensions.archive_like_format)) and with_archive))
 
     def _detect_classifier_columns_orientation(self, image: np.ndarray) -> Tuple[int, int]:
-        #  TODO fond: call orientation classifier
-        columns_predict, angle_predict = 0, 0
+        columns_predict, angle_predict = self.orientation_classifier.predict(image)
         self.logger.debug("Predict {}".format(angle_predict))
         return columns_predict, angle_predict
