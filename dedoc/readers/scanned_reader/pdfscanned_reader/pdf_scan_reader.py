@@ -70,7 +70,7 @@ class PdfScanReader(PdfBase):
         if columns is not None:
             self.logger.info(f"Final number of columns: {columns}")
         else:
-            self.logger.info(f"Final number of columns: not detected")
+            self.logger.info("Final number of columns: not detected")
 
         rotated_image, _ = self.scan_rotator.auto_rotate(image, angle)
 
