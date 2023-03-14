@@ -80,7 +80,7 @@ class PdfBase(BaseReader):
             orient_analysis_cells=param_utils.get_param_orient_analysis_cells(parameters),
             orient_cell_angle=param_utils.get_param_orient_cell_angle(parameters),
             is_one_column_document=param_utils.get_param_is_one_column_document(parameters),
-            document_orientation=param_utils.document_orientation(parameters),
+            document_orientation=param_utils.get_param_document_orientation(parameters),
             document_type=document_type,
             need_header_footers_analysis=param_utils.get_param_need_header_footers_analysis(parameters),
             need_pdf_table_analysis=param_utils.get_param_need_pdf_table_analysis(parameters),

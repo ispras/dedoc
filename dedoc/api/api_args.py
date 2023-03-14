@@ -54,7 +54,7 @@ def init_args(api: Api, file_required: bool = True) -> Any:
                                     "without using an orientation classifier "
                                     "\"auto\" - system predict angle (0, 90, 180, 370) and rotate document, "
                                     "\"no_change\" - do not predict orientation ",
-                               default="auto", choices=["auto", "true"])
+                               default="auto", choices=["auto", "no_change"])
     upload_parser.add_argument("html_fields", type=str, required=False,
                                help="a list of fields for JSON documents to be parsed as HTML documents. "
                                     "It is written as a json string of a list, where each list item is a list of keys "

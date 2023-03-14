@@ -53,6 +53,7 @@ class PdfScanReader(PdfBase):
                           path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
         #  --- Step 1: correct orientation and detect column count ---
         angle = 0
+        columns = None
         if parameters.is_one_column_document is None or parameters.document_orientation is None:
             self.logger.info("Call orientation and columns classifier")
             columns, angle = self._detect_classifier_columns_orientation(image)
@@ -66,7 +67,11 @@ class PdfScanReader(PdfBase):
             angle = 0
 
         self.logger.info(f"Final orientation angle: {angle}")
-        self.logger.info(f"Final number of columns: {columns}")
+        if columns is not None:
+            self.logger.info(f"Final number of columns: {columns}")
+        else:
+            self.logger.info(f"Final number of columns: not detected")
+
         rotated_image, _ = self.scan_rotator.auto_rotate(image, angle)
 
         if self.config.get("debug_mode"):
