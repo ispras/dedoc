@@ -170,7 +170,7 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
 
     def test_pdf_with_tables(self) -> None:
         file_name = "VVP_6_tables.pdf"
-        result = self._send_request(file_name, dict(pdf_with_text_layer="tabby", is_vertical_document="true"))
+        result = self._send_request(file_name, dict(pdf_with_text_layer="tabby", document_orientation="no_change"))
 
         content = result["content"]
         tables = content["tables"]

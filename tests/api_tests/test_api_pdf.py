@@ -151,9 +151,9 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self._check_tree_sanity(tree)
         self.assertEqual(797, len(self._get_by_tree_path(tree, "0.0")["text"]))
 
-    def test_is_vertical_document(self) -> None:
+    def test_document_orientation(self) -> None:
         file_name = "orient_3.png"
-        result = self._send_request(file_name, data=dict(is_vertical_document="auto"))
+        result = self._send_request(file_name, data=dict(document_orientation="auto"))
         tree = result["content"]["structure"]
         self._check_similarity(tree['subparagraphs'][0]['text'], 'Приложение к постановлению\n'
                                                                  'Губернатора Камчатского края\n'
