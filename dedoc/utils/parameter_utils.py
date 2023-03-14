@@ -63,6 +63,16 @@ def get_param_is_one_column_document(parameters: Optional[dict]) -> Optional[boo
         return is_one_column_document.lower() == "true"
 
 
+def get_param_document_orientation(parameters: Optional[dict]) -> Optional[bool]:
+    if parameters is None:
+        return None
+    document_orientation = str(parameters.get("document_orientation", "auto"))
+    if document_orientation.lower() == "no_change":
+        return True
+    else:
+        return None
+
+
 def get_param_project(parameters: Optional[dict]) -> str:
     if parameters is None:
         return "docreader_project"
