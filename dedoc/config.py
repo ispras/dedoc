@@ -51,8 +51,8 @@ _config = dict(
     minimal_cell_cnt_line=5,
     minimal_cell_avg_length_line=10,
 
-    path_cells="/tmp/docreader/debug_tables/imgs/cells/",
-    path_detect="/tmp/docreader/debug_tables/imgs/detect_lines/",
+    path_cells="/tmp/dedoc/debug_tables/imgs/cells/",
+    path_detect="/tmp/dedoc/debug_tables/imgs/detect_lines/",
     rotate_threshold=0.3,
 
     # -------------------------------------------RECOGNIZE SETTINGS-----------------------------------------------------

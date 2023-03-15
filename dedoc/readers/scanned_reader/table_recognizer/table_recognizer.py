@@ -133,8 +133,9 @@ class TableRecognizer(object):
                             max(bbox.x_top_left, 0): min(bbox.x_bottom_right, width)]
         mean = table_image.mean()
         std = table_image.std()
+        # 225 - is not always a border for black and white pixels
         white_mean = (table_image > 225).mean()
-        black_mean = (table_image < 225).mean()
+        black_mean = (table_image < 80).mean()
         table_area = bbox.width * bbox.height
         cells_area = 0
         for row in table.matrix_cells:
@@ -145,8 +146,8 @@ class TableRecognizer(object):
         res = ((white_mean < 0.5) or
                (black_mean > 0.3) or
                (std < 30) or (mean < 150) or
-               (mean < 200 and std < 80) or
-               ratio < 0.65)
+               (mean < 180 and std < 70) or
+               ratio < 0.55)
         return res
 
     def __save_tables(self, tables: List[ScanTable], image: np.ndarray, table_path: Optional[str] = None) -> None:
