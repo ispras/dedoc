@@ -27,6 +27,11 @@ class TzBodyBuilder(AbstractHierarchyLevelBuilder):
         previous_hl = None
         for line, prediction in lines_with_labels:
             if prediction in ("part", "named_item", "item"):
+                # TODO: add analyse tag 'header' if tag exist then analyse what type of header here by using regexps
+                #  (part, named_item, number, NonLetterPrefix.regexp, TzTextFeatures.item_regexp )
+                #  Q: set HL of tag 'header'? A: (need analyse document) in some all headers can have the same HL, in the other document otherside
+                #  I think we must set HL of regular expression
+                #  For Understanding header you need example of doc files.
                 line = self.__handle_item(init_hl_depth, line, prediction, previous_hl=previous_hl)
                 previous_hl = line.hierarchy_level
                 result.append(line)

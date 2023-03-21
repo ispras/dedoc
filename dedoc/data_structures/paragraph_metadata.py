@@ -25,8 +25,16 @@ class ParagraphMetadata(Serializable):
                  page_id: int,
                  line_id: Optional[int],
                  other_fields: Optional[dict] = None) -> None:
-        self.paragraph_type = paragraph_type
+        self.paragraph_type = paragraph_type    # TODO deprecated in the future (when we insert all tags)
         self.predicted_classes = predicted_classes
+        self.tag: Optional[str] = "unknown"     # TODO set of possible tags [list_item, header, link, page_id, footer, toc_item]
+        # Tag can have level: hierarchy_level [level1, level2]:
+        # list level1 > list_item level1
+        # 1) фиксированные для всех документов: toc level1 > toc_item level1 > list level1 > list_item level1
+        #                                       footer level1 > [link level1, page_id level1]
+        # 2) динамичные, различаются от дока к доку: headers can have different levels (Header of document level1 > header of part level1)
+        # So we present 'tag' like Tuple[str, HierarchyLevel]
+
         self.page_id = page_id
         self.line_id = line_id
         if other_fields is not None and len(other_fields) > 0:

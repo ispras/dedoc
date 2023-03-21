@@ -29,6 +29,10 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
         else:
             result = [AbstractBodyHierarchyLevelBuilder.get_body_line(init_hl_depth=init_hl_depth)]
         previous_hl = None
+
+        # TODO add an analyse of headers.
+        # if line.metadata.tag == 'header' -> set hierarchy level (init_hl_depth + line.metadata.tag.hl)
+        # elif prediction == 'named_item' -> this code
         for line, prediction in lines_with_labels:
             if prediction == "named_item":
                 line = self.__handle_named_item(init_hl_depth, line, prediction, previous_hl=previous_hl)
