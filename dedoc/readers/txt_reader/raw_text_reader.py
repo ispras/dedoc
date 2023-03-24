@@ -81,7 +81,7 @@ class RawTextReader(BaseReader):
         return lines
 
     def _get_lines(self, path: str, encoding: str) -> Iterable[Tuple[int, str]]:
-        if path.endswith("txt"):
+        if path.lower().endswith("txt"):
             with codecs.open(path, errors="ignore", encoding=encoding) as file:
                 for line_id, line in enumerate(file):
                     line = normalize('NFC', line).replace("й", "й")  # й replace matter
