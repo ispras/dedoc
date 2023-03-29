@@ -22,8 +22,6 @@ class HierarchyLevel:
         self.can_be_multiline = can_be_multiline
         self.paragraph_type = paragraph_type
 
-        assert paragraph_type == HierarchyLevel.raw_text or (level_1 is not None and level_2 is not None)
-
     def __is_defined(self, other: "HierarchyLevel") -> bool:
         return self.level_1 is not None and self.level_2 is not None and other.level_1 is not None and other.level_2 is not None
 

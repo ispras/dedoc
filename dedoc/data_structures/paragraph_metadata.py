@@ -6,6 +6,7 @@ from typing import Dict, Optional
 from flask_restx import fields, Api, Model
 
 from dedoc.api.models.custom_fields import wild_any_fields, wild_forbid_fields
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.serializable import Serializable
 
 
@@ -25,16 +26,20 @@ class ParagraphMetadata(Serializable):
                  page_id: int,
                  line_id: Optional[int],
                  other_fields: Optional[dict] = None) -> None:
-        self.paragraph_type = paragraph_type    # TODO deprecated in the future (when we insert all tags)
-        self.predicted_classes = predicted_classes
-        self.tag: Optional[str] = "unknown"     # TODO set of possible tags [list_item, header, link, page_id, footer, toc_item]
+        self.paragraph_type = paragraph_type        # TODO: deprecated in the future (when we insert all tags)
+        self.predicted_classes = predicted_classes  # TODO: may by deprecated in the future
+
         # Tag can have level: hierarchy_level [level1, level2]:
         # list level1 > list_item level1
-        # 1) фиксированные для всех документов: toc level1 > toc_item level1 > list level1 > list_item level1
+        # 1) статические для всех документов: toc level1 > toc_item level1 > list level1 > list_item level1
         #                                       footer level1 > [link level1, page_id level1]
         # 2) динамичные, различаются от дока к доку: headers can have different levels (Header of document level1 > header of part level1)
         # So we present 'tag' like Tuple[str, HierarchyLevel]
-
+        # -> Each reader must set tags and their HL
+        # Tag's paragraph_type must get value one of the set [list, list_item, header, footer_link, page_id, footer, toc, toc_item].
+        # Set will be changed in the future
+        # In the future we create class TagHierarchyLevelExtractor, which contain logic of static tags for each document (логика статических тегов)
+        self.tag: HierarchyLevel = HierarchyLevel(None, None, can_be_multiline=False, paragraph_type=HierarchyLevel.unknown)
         self.page_id = page_id
         self.line_id = line_id
         if other_fields is not None and len(other_fields) > 0:

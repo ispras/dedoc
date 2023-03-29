@@ -8,7 +8,7 @@ from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexp
 
 
 class LawStructureUnitBuilder(AbstractStructureUnit):
-    document_types = ["foiv"]
+    document_types = ["law"]
     regexps_item_with_bracket = regexps_item_with_bracket
     regexps_part = regexps_foiv_item
     ends_of_number = AbstractFeatureExtractor.ends_of_number
