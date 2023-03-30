@@ -79,7 +79,7 @@ def change_indent(old_properties: "BaseProperties", tree: BeautifulSoup) -> None
                   "start": 0, "startChars": 0, "left": 0}
     if tree.ind:
         for attribute in attributes:
-            attributes[attribute] = int(tree.ind.get("w:{}".format(attribute), 0))
+            attributes[attribute] = int(float(tree.ind.get("w:{}".format(attribute), 0)))
     else:
         return
     indentation = 0
