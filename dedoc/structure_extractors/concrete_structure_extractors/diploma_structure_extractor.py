@@ -48,14 +48,14 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
     def _replace_toc_lines(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:
         toc_lines = self.toc_extractor.get_toc(lines)
         toc_lines = [toc_item["line"] for toc_item in toc_lines]
-        toc_pages = set(line.metadata.page_id for line in toc_lines)
+        min_toc_line_id = min(line.metadata.line_id for line in toc_lines)
+        max_toc_line_id = max(line.metadata.line_id for line in toc_lines)
 
         lines_wo_toc = []
         for line in lines:
-            if line.metadata.page_id in toc_pages:
-                if line.line.strip().lower() == "содержание":
-                    toc_lines = [line] + toc_lines
-            else:
+            if line.metadata.line_id < min_toc_line_id and line.line.strip().lower() == "содержание":
+                toc_lines = [line] + toc_lines
+            elif not (min_toc_line_id <= line.metadata.line_id <= max_toc_line_id):
                 lines_wo_toc.append(line)
 
         for line in toc_lines:
