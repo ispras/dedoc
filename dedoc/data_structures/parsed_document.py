@@ -4,7 +4,6 @@ from typing import List, Optional
 
 from flask_restx import fields, Api, Model
 
-from dedoc.config import get_config
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.document_metadata import DocumentMetadata
 from dedoc.data_structures.serializable import Serializable
@@ -52,7 +51,7 @@ class ParsedDocument(Serializable):
         return res
 
     @staticmethod
-    def get_api_dict(api: Api, depth: int = 0, name: str = 'ParsedDocument') -> Model:
+    def get_api_dict(api: Api, name: str = 'ParsedDocument') -> Model:
         return api.model(name, {
             'content': fields.Nested(DocumentContent.get_api_dict(api), description='Document content structure'),
             'metadata': fields.Nested(DocumentMetadata.get_api_dict(api),
@@ -66,9 +65,4 @@ class ParsedDocument(Serializable):
             'attachments': fields.List(fields.Nested(api.model('others_ParsedDocument', {})),
                                        description='structure of attachments',
                                        required=False)
-            if depth == get_config()['recursion_deep_attachments']
-            else fields.List(fields.Nested(ParsedDocument.get_api_dict(api,
-                                                                       depth=depth + 1,
-                                                                       name='refParsedDocument' + str(depth)),
-                                           description='Attachment structure',
-                                           required=False))})
+        })

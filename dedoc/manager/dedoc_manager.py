@@ -183,6 +183,7 @@ class DedocManager:
             parameters_copy["is_attached"] = True
             parameters_copy["attachment"] = attachment
             try:
+                # TODO handle nested attachments according to recursion_deep_attachments (https://jira.ispras.ru/browse/TLDR-300)
                 if attachment.need_content_analysis:
                     file_path = os.path.join(tmp_dir, attachment.get_filename_in_path())
                     parsed_file = self.parse_file(file_path,
