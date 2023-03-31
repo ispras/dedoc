@@ -15,8 +15,7 @@ from dedoc.attachments_extractors.utils import create_note
 
 class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
 
-    def __init__(self, *, config: dict, need_content_analysis: bool = False) -> None:
-        super().__init__(need_content_analysis=need_content_analysis)
+    def __init__(self, *, config: dict) -> None:
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
 
@@ -37,7 +36,8 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
             except PdfReadError:
                 self.logger.warning("{} is broken".format(filename))
 
-        return self._content2attach_file(content=attachments, tmpdir=tmpdir)
+        need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+        return self._content2attach_file(content=attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis)
 
     def __get_notes(self, page: PageObject) -> List[Tuple[str, bytes]]:
         attachments = []

@@ -28,7 +28,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
             'test.py'
         ]
 
-        docx_attachment_extractor = DocxAttachmentsExtractor(need_content_analysis=False)
+        docx_attachment_extractor = DocxAttachmentsExtractor()
         extracted = 0
         for i in range(1, 4):
             filename = f'with_attachments_{i}.docx'
@@ -59,7 +59,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
             "database.c"
         ]
 
-        pptx_attachment_extractor = PptxAttachmentsExtractor(need_content_analysis=False)
+        pptx_attachment_extractor = PptxAttachmentsExtractor()
         extracted = 0
         for i in range(1, 3):
             filename = f'with_attachments_{i}.pptx'
@@ -76,7 +76,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
 
     @unittest.skip("skip diagrams")
     def test_docx_diagrams_extraction(self) -> None:
-        docx_attachment_extractor = DocxAttachmentsExtractor(need_content_analysis=True)
+        docx_attachment_extractor = DocxAttachmentsExtractor()
         src_dir = os.path.join(os.path.dirname(__file__), "..", "data", "docx")
         files = [('diagram_1.docx', 1), ('diagram_2.docx', 5)]
         with tempfile.TemporaryDirectory() as tmp_dir:

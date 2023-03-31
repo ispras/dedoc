@@ -15,8 +15,7 @@ from dedoc.data_structures.hierarchy_level import HierarchyLevel
 class DocxReader(BaseReader):
     def __init__(self, *, config: dict) -> None:
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
-        need_content_analysis = config.get("need_content_analysis", True)
-        self.attachment_extractor = DocxAttachmentsExtractor(need_content_analysis=need_content_analysis)
+        self.attachment_extractor = DocxAttachmentsExtractor()
         self.logger = config.get("logger", logging.getLogger())
 
     def can_read(self,

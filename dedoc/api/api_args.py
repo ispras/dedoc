@@ -84,6 +84,12 @@ def init_args(api: Api, file_required: bool = True) -> Any:
                                help="on if you need upload attachments into cloud. On if with_attachments=True and "
                                     "\"cloud_bucket\" not empty",
                                default="false")
+    upload_parser.add_argument("need_content_analysis", type=str, required=False,
+                               help="on if you need to parse the contents of the document attachments",
+                               default="false")
+    upload_parser.add_argument("recursion_deep_attachments", type=str, required=False,
+                               help="the depth on which nested attachments will be parsed if need_content_analysis=true",
+                               default="10")
 
     upload_parser.add_argument("table_type", type=str, required=False, help="pipline for table recognition",
                                default="")

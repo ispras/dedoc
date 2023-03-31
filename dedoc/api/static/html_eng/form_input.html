@@ -41,10 +41,20 @@
                 <p><label><input type="checkbox" name="insert_table" value="true"> insert_table</label></p>
                 <p><label><input type="checkbox" name="handle_invisible_table" value="true"> handle_invisible_table</label></p>
                 <p>pages <input name="pages" type="text" size="8" value=":"> </p>
-                <label><input type="checkbox" name="with_attachments" id="with-attachments-box" value="true">
-                    with_attachments <label id="html-fields">html_fields (only json)
-                        <input name="html_fields" placeholder='[["field1", "field2"], ["one field"]]'/></label>
-                </label>
+
+                <div id="with_attachments_box">
+                    <label><input type="checkbox" name="with_attachments" id="with-attachments-box" value="true">
+                        with_attachments
+                    </label>
+                    <label><input type="checkbox" name="need_content_analysis" id="need-content-analysis-box" value="true">
+                        need_content_analysis
+                    </label>
+                    <label id="recursion_deep_attachments_box">
+                        <b>The depth of extracted attachments</b>
+                        <input name="recursion_deep_attachments" placeholder="10" type="number" size="35" value="10">
+                    </label>
+
+                </div>
                 <p>
                     <label id="pdf_with_text_layer">
                         <select name="pdf_with_text_layer">

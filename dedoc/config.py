@@ -36,11 +36,6 @@ _config = dict(
     logger=logging.getLogger(),
     import_path_init_api_args="dedoc.api.api_args",
 
-    # -------------------------------------------ATTACHMENT ANALYSE-----------------------------------------------------
-    # analyse content of attachments
-    need_content_analysis=True,
-    recursion_deep_attachments=10,
-
     # ----------------------------------------TABLE RECOGNIZER SETTINGS-------------------------------------------------
     min_h_cell=8,
     min_w_cell=20,

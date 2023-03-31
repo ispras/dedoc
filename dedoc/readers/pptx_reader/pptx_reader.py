@@ -18,7 +18,7 @@ from dedoc.readers.utils.hierarchy_level_extractor import HierarchyLevelExtracto
 class PptxReader(BaseReader):
     def __init__(self, *, config: dict) -> None:
         self.hierarchy_level_extractor = HierarchyLevelExtractor()
-        self.attachments_extractor = PptxAttachmentsExtractor(need_content_analysis=config.get("need_content_analysis", True))
+        self.attachments_extractor = PptxAttachmentsExtractor()
 
     def can_read(self,
                  path: str,

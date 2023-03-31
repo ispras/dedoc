@@ -17,8 +17,7 @@ xlrd.xlsx.Element_has_iter = True
 class ExcelReader(BaseReader):
 
     def __init__(self, *, config: dict) -> None:
-        need_content_analysis = config.get("need_content_analysis", True)
-        self.attachment_extractor = ExcelAttachmentsExtractor(need_content_analysis=need_content_analysis)
+        self.attachment_extractor = ExcelAttachmentsExtractor()
 
     def can_read(self,
                  path: str,
