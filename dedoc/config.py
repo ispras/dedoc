@@ -35,6 +35,7 @@ _config = dict(
     # log settings
     logger=logging.getLogger(),
     import_path_init_api_args="dedoc.api.api_args",
+    recursion_deep_attachments=10,
 
     # ----------------------------------------TABLE RECOGNIZER SETTINGS-------------------------------------------------
     min_h_cell=8,
