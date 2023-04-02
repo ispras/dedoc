@@ -17,7 +17,9 @@ from dedoc.readers.archive_reader.archive_reader import ArchiveReader
 from dedoc.readers.csv_reader.csv_reader import CSVReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.readers.excel_reader.excel_reader import ExcelReader
+from dedoc.readers.html_reader.html_reader import HtmlReader
 from dedoc.readers.json_reader.json_reader import JsonReader
+from dedoc.readers.mhtml_reader.mhtml_reader import MhtmlReader
 from dedoc.readers.pptx_reader.pptx_reader import PptxReader
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.readers.scanned_reader.pdfscanned_reader.pdf_scan_reader import PdfScanReader
@@ -55,11 +57,13 @@ def get_manager_config(config: dict) -> dict:
         ExcelReader(config=config),
         PptxReader(config=config),
         CSVReader(),
+        HtmlReader(config=config),
         RawTextReader(config=config),
         JsonReader(),
         ArchiveReader(config=config),
         TabbyPDFReader(config=config),
-        PdfScanReader(config=config)
+        PdfScanReader(config=config),
+        MhtmlReader(config=config)
     ]
 
     metadata_extractors = [
