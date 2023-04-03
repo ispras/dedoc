@@ -24,7 +24,7 @@ class LineWithLocation(LineWithMeta):
 
     def __repr__(self) -> str:
         text = self.line if len(self.line) < 65 else self.line[:62] + "..."
-        return "LineWithLocation({})".format(text)
+        return "LineWithLocation({}, {})".format(text, self.metadata.paragraph_type)
 
     def __str__(self) -> str:
         return self.__repr__()

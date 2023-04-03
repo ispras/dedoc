@@ -2,7 +2,7 @@ from typing import Tuple, List, Optional
 
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.dotted_prefix import DottedPrefix
+from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
 from dedoc.structure_extractors.hierarchy_level_builders.abstract_hierarchy_level_builder import AbstractHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.abstract_body_hierarchy_level_builder import \
     AbstractBodyHierarchyLevelBuilder
@@ -29,6 +29,10 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
         else:
             result = [AbstractBodyHierarchyLevelBuilder.get_body_line(init_hl_depth=init_hl_depth)]
         previous_hl = None
+
+        # TODO add an analyse of headers.
+        # if line.metadata.tag == 'header' -> set hierarchy level (init_hl_depth + line.metadata.tag.hl)
+        # elif prediction == 'named_item' -> this code
         for line, prediction in lines_with_labels:
             if prediction == "named_item":
                 line = self.__handle_named_item(init_hl_depth, line, prediction, previous_hl=previous_hl)
@@ -46,7 +50,7 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
                             line: LineWithMeta,
                             prediction: str,
                             previous_hl: Optional[HierarchyLevel]) -> LineWithMeta:
-        item_depth = self.__get_named_item_depth(line.line.lower().strip())
+        item_depth = get_dotted_item_depth(line.line.lower().strip())
         if item_depth == -1:
             hierarchy_level = HierarchyLevel(init_hl_depth, 0, True, prediction) if previous_hl is None else previous_hl
         else:
@@ -54,11 +58,3 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
         line.set_hierarchy_level(hierarchy_level)
         line.metadata.paragraph_type = hierarchy_level.paragraph_type
         return line
-
-    def __get_named_item_depth(self, text: str) -> int:
-        match = DottedPrefix.regexp.match(text)
-        if match:
-            prefix = DottedPrefix(match.group().strip(), indent=0)
-            return len(prefix.numbers)
-        else:
-            return -1

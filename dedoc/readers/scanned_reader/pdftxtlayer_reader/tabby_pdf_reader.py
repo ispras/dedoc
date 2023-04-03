@@ -1,9 +1,10 @@
+import copy
 import json
 import logging
 import os
 import re
 import subprocess
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Iterable
 import numpy as np
 
 from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
@@ -15,6 +16,7 @@ from dedoc.data_structures.concrete_annotations.linked_text_annotation import Li
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.data_structures.table import Table
@@ -26,6 +28,8 @@ from dedoc.readers.scanned_reader.data_classes.pdf_image_attachment import PdfIm
 from dedoc.readers.scanned_reader.data_classes.tables.location import Location
 from dedoc.readers.scanned_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.scanned_reader.pdf_base_reader import ParametersForParseDoc, PdfBase
+from dedoc.readers.utils.hierarchy_level_extractor import HierarchyLevelExtractor
+from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
 from dedoc.utils.utils import calculate_file_hash
 
 
@@ -83,7 +87,7 @@ class TabbyPDFReader(PdfBase):
                 lines = [line for line in lines if start_page - 1 <= line.metadata.page_id]
 
         lines = self.linker.link_objects(lines=lines, tables=scan_tables, images=[])
-        lines = self.hierarchy_level_extractor.get_hierarchy_level(lines=lines)
+        lines = self.get_tag_hierarchy_level(lines=lines)
         tables = []
         for scan_table in scan_tables:
             metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name)
@@ -189,6 +193,7 @@ class TabbyPDFReader(PdfBase):
             bbox = BBox.from_two_points((bx_top_left, by_top_left), (bx_bottom_right, by_bottom_right))
             metadata = ParagraphMetadata(page_id=page_number, line_id=order, predicted_classes=None,
                                          paragraph_type=meta)
+            metadata.tag = HierarchyLevel(None, None, can_be_multiline=False, paragraph_type=meta)  # None, None because all line without hierarchy
 
             line_with_location = LineWithLocation(line=block_text,
                                                   hierarchy_level=None,
@@ -201,6 +206,73 @@ class TabbyPDFReader(PdfBase):
             lines.append(line_with_location)
 
         return lines
+
+    def get_tag_hierarchy_level(self, lines: Iterable[LineWithMeta]) -> List[LineWithMeta]:
+        previous_line_text = None
+        result = []
+        for line in lines:
+            hierarchy_level_tag = line.metadata.tag
+
+            extracted_level = self.__get_hierarchy_level_single_line(line=line, previous_line_text=previous_line_text)
+
+            if HierarchyLevelExtractor.need_update_level(hierarchy_level_tag, extracted_level):
+                hierarchy_level_tag = extracted_level
+
+            if not hierarchy_level_tag.is_raw_text():
+                previous_line_text = line.line
+
+            # write result
+            hierarchy_level = copy.deepcopy(hierarchy_level_tag)
+            if hierarchy_level.paragraph_type == hierarchy_level.unknown:  # TODO remove when all readers full line.metadat.tag
+                hierarchy_level.paragraph_type = hierarchy_level.raw_text  # TODO remove when all readers full line.metadat.tag
+            line.set_hierarchy_level(hierarchy_level)                      # TODO remove when all readers full line.metadat.tag
+
+            line.metadata.tag = hierarchy_level_tag
+            assert line.hierarchy_level is not None
+            result.append(line)
+
+        return result
+
+    # Here TagHLExtractor is born
+    def __get_hierarchy_level_single_line(self, line: LineWithMeta, previous_line_text: Optional[str]) -> HierarchyLevel:
+
+        line_text = line.line.lower().strip()
+
+        if line.metadata.tag.paragraph_type == "header":
+            return self.get_default_tag_hl_header(line.metadata.tag.level_2 if line.metadata.tag.level_2 else get_dotted_item_depth(line_text))
+
+        else:
+            res = self.get_hierarchy_level_list(line, previous_line_text)
+            assert res is not None
+            return res
+
+    def get_hierarchy_level_list(self, line: LineWithMeta, previous_line_text: Optional[str]) -> HierarchyLevel:
+        # TODO do an analyse litem tag from jar into list structure
+        line_text = line.line.lower().strip()
+
+        dotted_depth = get_dotted_item_depth(line_text)
+        if dotted_depth != -1:
+            return HierarchyLevel(2, dotted_depth, False, paragraph_type=HierarchyLevel.list_item)  # TODO  init_depth, dotted_depth
+
+        elif HierarchyLevelExtractor.bracket_num.match(line_text):
+            line_num = [n for n in line_text.strip().split()[0].split(".") if len(n) > 0]
+            first_item = line_text.split()[0]
+
+            # now we check if tesseract recognize russian б as 6 (bi as six)
+            if (first_item == "6)" and
+                    previous_line_text is not None and
+                    previous_line_text.strip().startswith(("a)", "а)"))):  # here is russian and english letters
+
+                return HierarchyLevel(4, 1, False, paragraph_type=HierarchyLevel.list_item)             # WHY 4, 1 !?
+            return HierarchyLevel(3, len(line_num), False, paragraph_type=HierarchyLevel.list_item)     # WHY 3, 1 !?
+        elif HierarchyLevelExtractor.letter.match(line_text):
+            return HierarchyLevel(4, 1, False, paragraph_type=HierarchyLevel.list_item)                 # WHY 4, 1 again!?
+        return HierarchyLevel.create_raw_text()
+
+    def get_default_tag_hl_header(self, header_depth: Optional[int]) -> HierarchyLevel:
+        if not header_depth or header_depth == -1:
+            header_depth = 1
+        return HierarchyLevel(1, header_depth, True, paragraph_type="named_header")
 
     def __jar_path(self) -> str:
         return os.environ.get("TABBY_JAR", self.default_config["JAR_PATH"])
