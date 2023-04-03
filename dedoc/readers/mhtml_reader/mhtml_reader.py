@@ -41,6 +41,7 @@ class MhtmlReader(BaseReader):
              document_type: Optional[str] = None,
              parameters: Optional[dict] = None) -> UnstructuredDocument:
 
+        parameters = {} if parameters is None else parameters
         save_dir = os.path.dirname(path)
         names_list = self.__extract_files(path=path, save_dir=save_dir)
         names_html = self.__find_html(names_list=names_list)
@@ -54,9 +55,10 @@ class MhtmlReader(BaseReader):
             lines.extend(result.lines)
             tables.extend(result.tables)
 
+        need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
         attachments_names = [os.path.join(os.path.basename(os.path.dirname(file_name)), os.path.basename(file_name))
                              for file_name in names_list if file_name not in names_html]
-        attachments = self.__get_attachments(save_dir=save_dir, names_list=attachments_names)
+        attachments = self.__get_attachments(save_dir=save_dir, names_list=attachments_names, need_content_analysis=need_content_analysis)
 
         return UnstructuredDocument(tables=tables, lines=lines, attachments=attachments)
 
@@ -111,7 +113,7 @@ class MhtmlReader(BaseReader):
                 self.logger.error(e)
         return html_list
 
-    def __get_attachments(self, save_dir: str, names_list: List[str]) -> List[AttachedFile]:
+    def __get_attachments(self, save_dir: str, names_list: List[str], need_content_analysis: bool) -> List[AttachedFile]:
         attachments = []
         for file_name in names_list:
             *_, extension = file_name.rsplit(".", maxsplit=1)
@@ -120,6 +122,6 @@ class MhtmlReader(BaseReader):
             attachment = AttachedFile(original_name=os.path.basename(file_name),
                                       tmp_file_path=os.path.join(save_dir, file_name),
                                       uid="attach_{}".format(uuid.uuid1()),
-                                      need_content_analysis=False)
+                                      need_content_analysis=need_content_analysis)
             attachments.append(attachment)
         return attachments
