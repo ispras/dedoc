@@ -39,7 +39,7 @@ class ParagraphMetadata(Serializable):
         # Tag's paragraph_type must get value one of the set [list, list_item, header, footer_link, page_id, footer, toc, toc_item].
         # Set will be changed in the future
         # In the future we create class TagHierarchyLevelExtractor, which contain logic of static tags for each document (логика статических тегов)
-        self.tag: HierarchyLevel = HierarchyLevel(None, None, can_be_multiline=False, paragraph_type=HierarchyLevel.unknown)
+        self._tag: HierarchyLevel = HierarchyLevel(None, None, can_be_multiline=False, paragraph_type=HierarchyLevel.unknown)
         self.page_id = page_id
         self.line_id = line_id
         if other_fields is not None and len(other_fields) > 0:

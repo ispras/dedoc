@@ -195,7 +195,7 @@ class TabbyPDFReader(PdfBase):
             bbox = BBox.from_two_points((bx_top_left, by_top_left), (bx_bottom_right, by_bottom_right))
             metadata = ParagraphMetadata(page_id=page_number, line_id=order, predicted_classes=None,
                                          paragraph_type=meta)
-            metadata.tag = HierarchyLevel(None, None, can_be_multiline=False, paragraph_type=meta)  # None, None because all line without hierarchy
+            metadata._tag = HierarchyLevel(None, None, can_be_multiline=False, paragraph_type=meta)  # None, None because all line without hierarchy
 
             line_with_location = LineWithLocation(line=block_text,
                                                   hierarchy_level=None,
@@ -213,7 +213,7 @@ class TabbyPDFReader(PdfBase):
         previous_line_text = None
         result = []
         for line in lines:
-            hierarchy_level_tag = line.metadata.tag
+            hierarchy_level_tag = line.metadata._tag
 
             extracted_level = self.__get_hierarchy_level_single_line(line=line, previous_line_text=previous_line_text)
 
@@ -229,7 +229,7 @@ class TabbyPDFReader(PdfBase):
                 hierarchy_level.paragraph_type = hierarchy_level.raw_text  # TODO remove when all readers full line.metadat.tag
             line.set_hierarchy_level(hierarchy_level)                      # TODO remove when all readers full line.metadat.tag
 
-            line.metadata.tag = hierarchy_level_tag
+            line.metadata._tag = hierarchy_level_tag
             assert line.hierarchy_level is not None
             result.append(line)
 
@@ -240,8 +240,8 @@ class TabbyPDFReader(PdfBase):
 
         line_text = line.line.lower().strip()
 
-        if line.metadata.tag.paragraph_type == "header":
-            return self.get_default_tag_hl_header(line.metadata.tag.level_2 if line.metadata.tag.level_2 else get_dotted_item_depth(line_text))
+        if line.metadata._tag.paragraph_type == "header":
+            return self.get_default_tag_hl_header(line.metadata._tag.level_2 if line.metadata._tag.level_2 else get_dotted_item_depth(line_text))
 
         else:
             res = self.get_hierarchy_level_list(line, previous_line_text)

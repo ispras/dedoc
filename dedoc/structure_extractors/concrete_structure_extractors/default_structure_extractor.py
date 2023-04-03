@@ -8,9 +8,9 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
         for line in document.lines:
-            if line.metadata.tag.paragraph_type != HierarchyLevel.unknown:
-                line.metadata.paragraph_type = line.metadata.tag.paragraph_type
-                line.set_hierarchy_level(line.metadata.tag)
+            if line.metadata._tag.paragraph_type != HierarchyLevel.unknown:
+                line.metadata.paragraph_type = line.metadata._tag.paragraph_type
+                line.set_hierarchy_level(line.metadata._tag)
 
             if line.metadata.paragraph_type == line.hierarchy_level.paragraph_type:
                 continue

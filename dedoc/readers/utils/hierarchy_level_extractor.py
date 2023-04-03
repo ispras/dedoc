@@ -56,8 +56,8 @@ class HierarchyLevelExtractor:
             assert res is not None
             return res
 
-        if line.metadata.tag.paragraph_type == "header":
-            return self.get_default_tag_hl_header(line.metadata.tag.level_2 if line.metadata.tag.level_2
+        if line.metadata._tag.paragraph_type == "header":
+            return self.get_default_tag_hl_header(line.metadata._tag.level_2 if line.metadata._tag.level_2
                                                   else self.get_dotted_depth_of_list(line_text))
         else:
             res = self.get_hierarchy_level_list(line, previous_line_text)
