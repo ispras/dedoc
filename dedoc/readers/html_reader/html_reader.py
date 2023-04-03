@@ -39,8 +39,8 @@ class HtmlReader(BaseReader):
              path: str,
              document_type: Optional[str] = None,
              parameters: Optional[dict] = None) -> UnstructuredDocument:
-        if parameters is None:
-            parameters = {}
+
+        parameters = {} if parameters is None else parameters
         with open(path, 'rb') as f:
             soup = BeautifulSoup(f.read(), "html.parser")
 
