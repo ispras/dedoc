@@ -58,6 +58,7 @@ class TabbyPDFReader(PdfBase):
                  extension: str,
                  document_type: str,
                  parameters: Optional[dict] = None) -> bool:
+        parameters = {} if parameters is None else parameters
         return extension.endswith("pdf") and (str(parameters.get("pdf_with_text_layer", "false")).lower() == "tabby")
 
     def _process_one_page(self,
@@ -69,6 +70,7 @@ class TabbyPDFReader(PdfBase):
         return [], [], []
 
     def read(self, path: str, document_type: Optional[str], parameters: Optional[dict]) -> UnstructuredDocument:
+        parameters = {} if parameters is None else parameters
         lines, scan_tables = self.__extract(path=path)
         warnings = []
         document_metadata = None

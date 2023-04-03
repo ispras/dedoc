@@ -30,6 +30,7 @@ class DocxReader(BaseReader):
              path: str,
              document_type: Optional[str] = None,
              parameters: Optional[dict] = None) -> UnstructuredDocument:
+        parameters = {} if parameters is None else parameters
         docx_document = self._parse_document(path=path)
         attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path),
                                                                 filename=os.path.basename(path),
