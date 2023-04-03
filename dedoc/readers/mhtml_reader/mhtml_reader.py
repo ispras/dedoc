@@ -14,7 +14,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.utils.image_utils import supported_image_types
 from dedoc.utils.utils import get_encoding, calculate_file_hash
-from dedoc.common.cloud_api.cloud_api import check_filename_length
+from dedoc.utils.utils import check_filename_length
 from dedoc.readers.html_reader.html_reader import HtmlReader
 
 

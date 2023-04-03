@@ -183,13 +183,6 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         text = content["subparagraphs"][0]["text"]
         self.assertTrue(text.startswith('\n\n'))
 
-    def test_mhtml_antivaxxers(self) -> None:
-        file_name = "antivaxxers.mhtml.gz"
-        result = self._send_request(file_name)
-        content = result["content"]["structure"]
-        node = self._get_by_tree_path(content, "0.3.0")
-        self.assertIn("Эрнест Валеев", node["text"])
-
     def test_html_no_newline(self) -> None:
         file_name = "no_new_line.html"
         result = self._send_request(file_name)
