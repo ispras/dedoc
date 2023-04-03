@@ -43,16 +43,24 @@
                 <p>pages <input name="pages" type="text" size="8" value=":"> </p>
 
                 <div id="with_attachments_box">
-                    <label><input type="checkbox" name="with_attachments" id="with-attachments-box" value="true">
+                    <p>
+                        <label><input type="checkbox" name="with_attachments" id="with-attachments-box" value="true">
                         with_attachments
-                    </label>
-                    <label><input type="checkbox" name="need_content_analysis" id="need-content-analysis-box" value="true">
-                        need_content_analysis
-                    </label>
-                    <label id="recursion_deep_attachments_box">
-                        <b>The depth of extracted attachments</b>
-                        <input name="recursion_deep_attachments" placeholder="10" type="number" size="35" value="10">
-                    </label>
+                        </label>
+                    </p>
+                    <div id="attachments-block">
+                        <p>
+                            <label><input type="checkbox" name="need_content_analysis" id="need-content-analysis-box" value="true">
+                            need_content_analysis
+                            </label>
+                        </p>
+                        <p>
+                            <label id="recursion_deep_attachments_box">
+                            <b>The depth of extracted attachments</b>
+                            <input name="recursion_deep_attachments" placeholder="10" type="number" size="5" value="10">
+                            </label>
+                        </p>
+                    </div>
 
                 </div>
                 <p>
