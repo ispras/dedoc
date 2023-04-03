@@ -32,6 +32,7 @@ class PptxReader(BaseReader):
              path: str,
              document_type: Optional[str] = None,
              parameters: Optional[dict] = None) -> UnstructuredDocument:
+        parameters = {} if parameters is None else parameters
         prs = Presentation(path)
         lines, tables = [], []
 

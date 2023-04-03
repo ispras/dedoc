@@ -73,7 +73,7 @@ class PdfBase(BaseReader):
              path: str,
              document_type: Optional[str],
              parameters: Optional[dict]) -> UnstructuredDocument:
-
+        parameters = {} if parameters is None else parameters
         first_page, last_page = get_page_slice(parameters)
         params_for_parse = ParametersForParseDoc(
             language=param_utils.get_param_language(parameters),
