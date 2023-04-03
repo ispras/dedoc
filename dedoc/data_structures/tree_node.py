@@ -71,7 +71,7 @@ class TreeNode(Serializable):
                                       description="Paragraph meta information"),
             'subparagraphs': fields.List(fields.Nested(api.model('others_TreeNode', {})),
                                          description="Node childes (with type 'TreeNode') of structure tree")
-            if depth == 30
+            if depth == 30  # TODO delete this
             else fields.List(fields.Nested(TreeNode.get_api_dict(api,
                                                                  depth=depth + 1,
                                                                  name='refTreeNode' + str(depth))),
