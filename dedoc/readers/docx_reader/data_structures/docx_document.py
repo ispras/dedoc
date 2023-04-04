@@ -58,7 +58,7 @@ class DocxDocument:
 
         self.footnote_extractor = FootnoteExtractor(self.__get_bs_tree('word/footnotes.xml'))
         self.endnote_extractor = FootnoteExtractor(self.__get_bs_tree('word/endnotes.xml'), key="endnote")
-        self.styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'))
+        self.styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'), logger)
         num_tree = self.__get_bs_tree('word/numbering.xml')
         self.numbering_extractor = NumberingExtractor(num_tree, self.styles_extractor) if num_tree else None
         self.styles_extractor.numbering_extractor = self.numbering_extractor

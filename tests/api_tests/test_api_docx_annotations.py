@@ -11,7 +11,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         annotations = [subparagraph['annotations'] for subparagraph in subparagraphs]
 
         # bold, italic, underlined
-        self.assertIn({'start': 0, 'end': 11, 'name': 'style', 'value': 'body'}, annotations[0])
+        self.assertIn({'start': 0, 'end': 11, 'name': 'style', 'value': 'Body'}, annotations[0])
         self.assertIn({'start': 0, 'end': 12, 'name': 'italic', 'value': 'True'}, annotations[1])
         self.assertIn({'start': 0, 'end': 10, 'name': 'bold', 'value': 'True'}, annotations[2])
         self.assertIn({'start': 0, 'end': 16, 'name': 'underlined', 'value': 'True'}, annotations[3])

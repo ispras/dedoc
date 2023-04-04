@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
-from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
+from dedoc.readers.docx_reader.styles_extractor import StylesExtractor, StyleType
 
 
 class NumberingExtractor:
@@ -73,7 +73,7 @@ class NumberingExtractor:
 
         # change style of the paragraph/run: style -> pPr -> rPr
         if lvl_info.style_id:
-            self.styles_extractor.parse(lvl_info.style_id, paragraph_properties, "numbering")
+            self.styles_extractor.parse(lvl_info.style_id, paragraph_properties, StyleType.NUMBERING)
         if lvl_info.pPr:
             change_paragraph_properties(paragraph_properties, lvl_info.pPr)
         if lvl_info.rPr:

@@ -11,7 +11,7 @@ class ParagraphInfo:
     def __init__(self, paragraph: Paragraph) -> None:
         """
         extracts information from paragraph properties
-        :param paragraph: Paragraph for extracting it's properties
+        :param paragraph: Paragraph for extracting its properties
         """
         self.list_level = paragraph.list_level
         self.style_level = paragraph.style_level
@@ -133,9 +133,3 @@ class ParagraphInfo:
                 result['annotations'].append((annotation_name, annotation[0], annotation[1], annotation[2]))
 
         return result
-
-    def get_text(self) -> str:
-        """
-        :return: text of the paragraph
-        """
-        return self.text
