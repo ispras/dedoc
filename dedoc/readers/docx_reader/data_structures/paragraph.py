@@ -6,7 +6,7 @@ from dedoc.readers.docx_reader.data_structures.run import Run
 from dedoc.readers.docx_reader.footnote_extractor import FootnoteExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
-from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
+from dedoc.readers.docx_reader.styles_extractor import StylesExtractor, StyleType
 
 
 class Paragraph(BaseProperties):
@@ -19,7 +19,7 @@ class Paragraph(BaseProperties):
                  endnote_extractor: FootnoteExtractor,
                  uid: str) -> None:
         """
-        contains information about paragraph properties
+        Contains information about paragraph properties.
         :param xml: BeautifulSoup tree with paragraph properties
         :param styles_extractor: StylesExtractor
         :param numbering_extractor: NumberingExtractor
@@ -28,6 +28,7 @@ class Paragraph(BaseProperties):
         self.footnote_extractor = footnote_extractor
         self.endnote_extractor = endnote_extractor
         self.numbering_extractor = numbering_extractor
+        self.styles_extractor = styles_extractor
         self.runs = []
         self.text = ""
         # level of list of the paragraph is a list item
@@ -35,41 +36,34 @@ class Paragraph(BaseProperties):
         self.style_level = None
         self.style_name = None
 
-        # spacing before and after paragraph
-        self.spacing_before = 0
-        self.spacing_after = 0
-
-        # the maximum spacing: after value for the previous paragraph or before value for the current paragraph
-        self.spacing = 0
+        # spacing before and after paragraph, the maximum spacing: after value for the previous paragraph or before value for the current paragraph
+        self.spacing_before, self.spacing_after, self.spacing = 0, 0, 0
 
         self.xml = xml
         self.footnotes = []
-        super().__init__(styles_extractor)
-        self.parse()
+        super().__init__()
+        self.__parse()
         self.uid = uid
 
-    def parse(self) -> None:
+    def __parse(self) -> None:
         """
-        makes the list of paragraph's runs according to the style hierarchy
+        Makes the list of paragraph's runs according to the style hierarchy: properties in styles -> direct properties (paragraph, character)
+        1) documentDefault (styles.xml)
+        2) tables (styles.xml)
+        3) paragraphs styles (styles.xml)
+        4) numbering styles (styles.xml, numbering.xml)
+        5) characters styles (styles.xml)
+        6) paragraph direct formatting (document.xml)
+        7) numbering direct formatting (document.xml, numbering.xml)
+        8) character direct formatting (document.xml)
         """
-        # hierarchy: properties in styles -> direct properties (paragraph, character)
-        # 1) documentDefault (styles.xml)
-        # 2) tables (styles.xml)
-        # 3) paragraphs styles (styles.xml)
-        # 4) numbering styles (styles.xml, numbering.xml)
-        # 5) characters styles (styles.xml)
-        # 6) paragraph direct formatting (document.xml)
-        # 7) numbering direct formatting (document.xml, numbering.xml)
-        # 8) character direct formatting (document.xml)
-
         # 1) docDefaults
-        self.styles_extractor.parse(None, self, "paragraph")
+        self.styles_extractor.parse(None, self, StyleType.PARAGRAPH)
         # 2) we ignore tables
-
         # 3) paragraph styles
         # 4) numbering styles within styles_extractor
         if self.xml.pStyle:
-            self.styles_extractor.parse(self.xml.pStyle['w:val'], self, "paragraph")
+            self.styles_extractor.parse(self.xml.pStyle['w:val'], self, StyleType.PARAGRAPH)
 
         # 5) character style parsed later for each run
         # 6) paragraph direct formatting
@@ -77,49 +71,52 @@ class Paragraph(BaseProperties):
             change_paragraph_properties(self, self.xml.pPr)
 
         # 7) numbering direct formatting
-        numbering_run = self._get_numbering_formatting()
+        numbering_run = self.__get_numbering_formatting()
         if numbering_run:
             self.runs.append(numbering_run)
 
         # 8) character direct formatting
-        self._make_run_list()
+        self.__make_run_list()
         for run in self.runs:
             self.text = run.text if not self.text else self.text + run.text
 
-        for key, extractor in [("w:footnoteReference", self.footnote_extractor),
-                               ("w:endnoteReference", self.endnote_extractor)]:
+        for key, extractor in [("w:footnoteReference", self.footnote_extractor), ("w:endnoteReference", self.endnote_extractor)]:
             notes = self.xml.find_all(key)
             for footnote in notes:
                 note_id = footnote.get("w:id")
                 if note_id in extractor.id2footnote:
                     self.footnotes.append(extractor.id2footnote[note_id])
 
-    def _get_numbering_formatting(self) -> Optional[Run]:
+    def __get_numbering_formatting(self) -> Optional[Run]:
         """
-        if the paragraph is a list item applies it's properties to the paragraph
-        adds numbering run to the list of paragraph runs
+        If the paragraph is a list item applies its properties to the paragraph.
+        Adds numbering run to the list of paragraph runs.
         :returns: numbering run if there is the text in numbering else None
         """
         if self.xml.numPr and self.numbering_extractor:
             numbering_run = Run(self, self.styles_extractor)
             self.numbering_extractor.parse(self.xml.numPr, self, numbering_run)
+
             if numbering_run.text:
                 if self.xml.pPr.rPr:
                     change_run_properties(numbering_run, self.xml.pPr.rPr)
                 return numbering_run
         return None
 
-    def _make_run_list(self) -> None:
+    def __make_run_list(self) -> None:
         """
-        makes runs of the paragraph and adds them to the paragraph list
+        Make runs of the paragraph and adds them to the paragraph list.
         """
         run_list = self.xml.find_all('w:r')
+
         for run_tree in run_list:
             new_run = Run(self, self.styles_extractor)
+
             if run_tree.rStyle:
-                self.styles_extractor.parse(run_tree.rStyle['w:val'], new_run, "character")
+                self.styles_extractor.parse(run_tree.rStyle['w:val'], new_run, StyleType.CHARACTER)
                 if self.xml.pPr and self.xml.pPr.rPr:
                     change_run_properties(new_run, self.xml.pPr.rPr)
+
             if run_tree.rPr:
                 change_run_properties(new_run, run_tree.rPr)
             new_run.get_text(run_tree)

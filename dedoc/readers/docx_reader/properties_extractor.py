@@ -11,7 +11,7 @@ def check_if_true(value: str) -> bool:
 
 def change_paragraph_properties(old_properties: BaseProperties, tree: BeautifulSoup) -> None:
     """
-    changes old properties indent, size, jc, spacing_before, spacing_after if they were found in tree
+    Changes old properties indent, size, jc, spacing_before, spacing_after if they were found in tree.
     :param old_properties: Paragraph
     :param tree: BeautifulSoup tree with properties
     """
@@ -21,25 +21,23 @@ def change_paragraph_properties(old_properties: BaseProperties, tree: BeautifulS
     change_spacing(old_properties, tree)
 
 
-def change_run_properties(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
+def change_run_properties(old_properties: BaseProperties, tree: BeautifulSoup) -> None:
     """
-    changes old properties: bold, italic, underlined, size if they were found in tree
+    Changes old properties: bold, italic, underlined, size if they were found in tree.
     :param old_properties: Run
     :param tree: BeautifulSoup tree with properties
     """
     change_size(old_properties, tree)
     change_caps(old_properties, tree)
-    # bold
+
     if tree.b:
         b_tag = tree.b.get("w:val", True)
         old_properties.bold = check_if_true(b_tag) if isinstance(b_tag, str) else b_tag
 
-    # italic
     if tree.i:
         i_tag = tree.i.get("w:val", True)
         old_properties.italic = check_if_true(i_tag) if isinstance(i_tag, str) else i_tag
 
-    # underlined
     if tree.u:
         u_tag = tree.u.get("w:val", False)
         if u_tag == 'none':
@@ -47,12 +45,10 @@ def change_run_properties(old_properties: "BaseProperties", tree: BeautifulSoup)
         elif isinstance(u_tag, str):
             old_properties.underlined = True
 
-    # strike
     if tree.strike:
         strike_tag = tree.strike.get("w:val", True)
         old_properties.strike = check_if_true(strike_tag) if isinstance(strike_tag, str) else strike_tag
 
-    # sub and superscript
     if tree.vertAlign:
         sub_super_script = tree.vertAlign.attrs.get("w:val")
         if sub_super_script == "superscript":
@@ -61,27 +57,27 @@ def change_run_properties(old_properties: "BaseProperties", tree: BeautifulSoup)
             old_properties.subscript = True
 
 
-def change_indent(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
+def change_indent(old_properties: BaseProperties, tree: BeautifulSoup) -> None:
     """
-    changes old properties: indent if it was found in tree
+    Changes old properties: indentation if it was found in tree.
+    Indentation is changed according to the following attributes in paragraph properties:
+    - firstLine describes additional indentation to current indentation, if hanging is present firstLine is ignored
+    - firstLineChars differs from firstLine only in measurement (one hundredths of a character unit)
+    - hanging removes indentation from current indentation (analogous hangingChars)
+    - start (startChars) describes classical indentation
+    - left isn't specified in the documentation, F
+    Main measurement 1/1440 of an inch: 1 inch is 12 char units, 1/100 char unit = 1/1200 inch = 1.2 * (1/1440 of an inch)
+
     :param old_properties: Paragraph
     :param tree: BeautifulSoup tree with properties
     """
-    # firstLine describes additional indentation to current indentation, if hanging is present firstLine is ignored
-    # firstLineChars differs from firstLine only in measurement (one hundredths of a character unit)
-    # hanging removes indentation from current indentation (analogous hangingChars)
-    # start describes classical indentation (startChars)
-    # left isn't specified in the documentation, F
-    # main measurement 1/1440 of an inch
-    # 1 inch is 12 char units, 1/100 char unit = 1/1200 inch = 1.2 * (1/1440 of an inch)
-
-    attributes = {"firstLine": 0, "firstLineChars": 0, "hanging": 0, "hangingChars": 0,
-                  "start": 0, "startChars": 0, "left": 0}
-    if tree.ind:
-        for attribute in attributes:
-            attributes[attribute] = int(float(tree.ind.get("w:{}".format(attribute), 0)))
-    else:
+    if not tree.ind:
         return
+
+    attributes = {attribute: 0 for attribute in ["firstLine", "firstLineChars", "hanging", "hangingChars", "start", "startChars", "left"]}
+    for attribute in attributes:
+        attributes[attribute] = int(float(tree.ind.get("w:{}".format(attribute), 0)))
+
     indentation = 0
     if attributes["left"] != 0:
         indentation = attributes["left"]
@@ -92,7 +88,6 @@ def change_indent(old_properties: "BaseProperties", tree: BeautifulSoup) -> None
 
     if attributes["firstLine"] != 0 and attributes["hanging"] == 0:
         indentation += attributes["firstLine"]
-
     if attributes["firstLineChars"] != 0 and attributes["hangingChars"] == 0:
         indentation += attributes["firstLineChars"] / 1.2
 
@@ -104,9 +99,9 @@ def change_indent(old_properties: "BaseProperties", tree: BeautifulSoup) -> None
     old_properties.indentation = indentation
 
 
-def change_size(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
+def change_size(old_properties: BaseProperties, tree: BeautifulSoup) -> None:
     """
-    changes old properties: size if it was found in tree
+    Changes old properties: size if it was found in tree.
     :param old_properties: Paragraph or Run
     :param tree: BeautifulSoup tree with properties
     """
@@ -114,16 +109,16 @@ def change_size(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
         old_properties.size = int(tree.sz.get('w:val', old_properties.size))
 
 
-def change_jc(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
+def change_jc(old_properties: BaseProperties, tree: BeautifulSoup) -> None:
     """
-    changes old_properties: jc (alignment) if tag jc was found in tree
+    Changes old_properties: jc (alignment) if tag jc was found in tree.
+    Alignment values: left, right, center, both, left is default.
     :param old_properties: Paragraph
     :param tree: BeautifulSoup tree with properties
     """
-    # alignment values: left, right, center, both
-    # left is default value
     if not tree.jc:
         return
+
     if tree.bidi:
         bidi_tag = tree.bidi.get('w:val', True)
         right_to_left = check_if_true(bidi_tag) if isinstance(bidi_tag, str) else bidi_tag
@@ -144,9 +139,9 @@ def change_jc(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
         old_properties.jc = 'right'
 
 
-def change_caps(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
+def change_caps(old_properties: BaseProperties, tree: BeautifulSoup) -> None:
     """
-    changes old_properties: caps if tag caps was found in tree
+    Changes old_properties: caps if tag caps was found in tree.
     :param old_properties: Paragraph or Run
     :param tree: BeautifulSoup tree with properties
     """
@@ -157,19 +152,18 @@ def change_caps(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
     old_properties.caps = check_if_true(caps_tag) if isinstance(caps_tag, str) else caps_tag
 
 
-def change_spacing(old_properties: "BaseProperties", tree: BeautifulSoup) -> None:
+def change_spacing(old_properties: BaseProperties, tree: BeautifulSoup) -> None:
     """
-    changes old_properties: spacing_before, spacing_after if tag spacing was found in tree
+    Changes old_properties: spacing_before, spacing_after if tag spacing was found in tree.
+    Spacing is changed according to the following attributes of tag <spacing>:
+    - after / before (measured in twentieths of a point), ignored if afterLines or afterAutospacing are specified
+    - afterAutospacing / beforeAutospacing (we set 0 if specified) if is specified, other attributes are ignored
+    - afterLines / beforeLines (measured in one hundredths of a line)
+    If we have spacing "after" for the previous paragraph and spacing "before" for the next paragraph, we choose maximum between these two values.
+
     :param old_properties: Paragraph
     :param tree: BeautifulSoup tree with properties
     """
-    # tag <spacing> may have the following attributes for spacing between paragraphs:
-    # after / before (measured in twentieths of a point), ignored if afterLines or afterAutospacing are specified
-    # afterAutospacing / beforeAutospacing (we set 0 if specified) if is specified, other attributes are ignored
-    # afterLines / beforeLines (measured in one hundredths of a line)
-
-    # if we have spacing after value for the previous paragraph and spacing before value for the next paragraph
-    # we choose maximum between these two values
     if not tree.spacing:
         return
 

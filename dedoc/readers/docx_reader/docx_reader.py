@@ -18,20 +18,13 @@ class DocxReader(BaseReader):
         self.attachment_extractor = DocxAttachmentsExtractor()
         self.logger = config.get("logger", logging.getLogger())
 
-    def can_read(self,
-                 path: str,
-                 mime: str,
-                 extension: str,
-                 document_type: Optional[str],
-                 parameters: Optional[dict] = None) -> bool:
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str], parameters: Optional[dict] = None) -> bool:
         return extension.lower() in recognized_extensions.docx_like_format or mime in recognized_mimes.docx_like_format
 
-    def read(self,
-             path: str,
-             document_type: Optional[str] = None,
-             parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
         parameters = {} if parameters is None else parameters
-        docx_document = self._parse_document(path=path)
+        docx_document = self.__parse_document(path=path)
+
         attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path),
                                                                 filename=os.path.basename(path),
                                                                 parameters=parameters)
@@ -41,13 +34,9 @@ class DocxReader(BaseReader):
 
     def __fix_lines(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:
         for i, line in enumerate(lines[1:]):
-            if lines[i].hierarchy_level != line.hierarchy_level:
-                continue
-
-            if lines[i].hierarchy_level.paragraph_type != HierarchyLevel.raw_text:
-                continue
-
-            if lines[i].line.endswith('\n'):
+            if lines[i].hierarchy_level != line.hierarchy_level \
+                    or lines[i].hierarchy_level.paragraph_type != HierarchyLevel.raw_text \
+                    or lines[i].line.endswith('\n'):
                 continue
 
             lines[i].set_line(lines[i].line + '\n')
@@ -58,8 +47,6 @@ class DocxReader(BaseReader):
 
         return lines
 
-    def _parse_document(self, path: str) -> DocxDocument:
-        docx_document = DocxDocument(path=path,
-                                     hierarchy_level_extractor=self.hierarchy_level_extractor,
-                                     logger=self.logger)
+    def __parse_document(self, path: str) -> DocxDocument:
+        docx_document = DocxDocument(path=path, hierarchy_level_extractor=self.hierarchy_level_extractor, logger=self.logger)
         return docx_document
