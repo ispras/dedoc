@@ -4,6 +4,7 @@ from typing import Optional
 
 @total_ordering
 class HierarchyLevel:
+    header = "header"
     paragraph = "paragraph"
     raw_text = "raw_text"
     list_item = "list_item"

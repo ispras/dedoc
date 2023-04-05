@@ -82,6 +82,7 @@ class NumberingExtractor:
 
         run_properties.text = text
         paragraph_properties.list_level = self.state.levels_count
+        paragraph_properties.list_shift = self.state.shift
 
     def __get_list_item_text(self, ilvl: str, num_id: str) -> str:
         """
@@ -161,6 +162,7 @@ class NumberingExtractor:
             shift = lvl_info.start
             self.state.numerations_dict[(abstract_num_id, ilvl)] = shift
 
+        self.state.shift = shift - 1
         return self.numbering_formatter.get_text(lvl_info.num_fmt, shift - 1)
 
 
@@ -235,6 +237,7 @@ class NumberingState:
 
         # the number of levels for current list
         self.levels_count = 1
+        self.shift = 0
 
 
 class LevelInfo:

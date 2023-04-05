@@ -25,25 +25,26 @@ class Paragraph(BaseProperties):
         :param numbering_extractor: NumberingExtractor
         :param uid: unique paragraph id based on file hash and paragraph xml
         """
+        self.uid = uid
+        self.xml = xml
         self.footnote_extractor = footnote_extractor
         self.endnote_extractor = endnote_extractor
         self.numbering_extractor = numbering_extractor
         self.styles_extractor = styles_extractor
+        self.footnotes = []
         self.runs = []
+        self.runs_ids = []  # list of (start, end) inside the paragraph text
         self.text = ""
-        # level of list of the paragraph is a list item
-        self.list_level = None
-        self.style_level = None
-        self.style_name = None
+
+        self.list_level = None  # level of nested list if the paragraph is a list item
+        self.list_shift = None  # the position of list item in the list
+        self.style_level, self.style_name = None, None
 
         # spacing before and after paragraph, the maximum spacing: after value for the previous paragraph or before value for the current paragraph
         self.spacing_before, self.spacing_after, self.spacing = 0, 0, 0
 
-        self.xml = xml
-        self.footnotes = []
         super().__init__()
         self.__parse()
-        self.uid = uid
 
     def __parse(self) -> None:
         """
@@ -78,7 +79,11 @@ class Paragraph(BaseProperties):
         # 8) character direct formatting
         self.__make_run_list()
         for run in self.runs:
+            self.runs_ids.append((len(self.text), len(self.text + run.text)))
             self.text = run.text if not self.text else self.text + run.text
+
+        if hasattr(self, "caps") and self.caps:
+            self.text = self.text.upper()
 
         for key, extractor in [("w:footnoteReference", self.footnote_extractor), ("w:endnoteReference", self.endnote_extractor)]:
             notes = self.xml.find_all(key)
