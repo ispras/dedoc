@@ -36,25 +36,33 @@ from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.utils.utils import calculate_file_hash
 
 
+class Counter:
+
+    def __init__(self, body: BeautifulSoup, logger: logging.Logger) -> None:
+        self.logger = logger
+        self.total_paragraph_number = sum([len(p.find_all('w:p')) for p in body if p.name != 'p' and p.name != "tbl"])
+        self.total_paragraph_number += len([p for p in body if p.name == 'p'])
+        self.current_paragraph_number = 0
+        self.checkpoint_time = time.time()
+
+    def inc(self) -> None:
+        self.current_paragraph_number += 1
+        current_time = time.time()
+        if current_time - self.checkpoint_time > 3:
+            self.logger.info(f"Processed {self.current_paragraph_number} paragraphs from {self.total_paragraph_number}")
+            self.checkpoint_time = current_time
+
+
 class DocxDocument:
     def __init__(self, path: str, hierarchy_level_extractor: HierarchyLevelExtractor, logger: logging.Logger) -> None:
+        self.logger = logger
         self.path = path
         self.path_hash = calculate_file_hash(path=path)
 
         self.document_bs_tree = self.__get_bs_tree('word/document.xml')
         if self.document_bs_tree is None:
-            # for some of microsoft word documents
             self.document_bs_tree = self.__get_bs_tree('word/document2.xml')
-
         self.body = self.document_bs_tree.body if self.document_bs_tree else None
-
-        # information for logging
-        self.logger = logger
-        self.total_paragraph_number = sum([len(p.find_all('w:p'))
-                                           for p in self.body if p.name != 'p' and p.name != "tbl"])
-        self.total_paragraph_number += len([p for p in self.body if p.name == 'p'])
-        self.current_paragraph_number = 0
-        self.checkpoint_time = time.time()
 
         self.footnote_extractor = FootnoteExtractor(self.__get_bs_tree('word/footnotes.xml'))
         self.endnote_extractor = FootnoteExtractor(self.__get_bs_tree('word/endnotes.xml'), key="endnote")
@@ -63,90 +71,66 @@ class DocxDocument:
         self.numbering_extractor = NumberingExtractor(num_tree, self.styles_extractor) if num_tree else None
         self.styles_extractor.numbering_extractor = self.numbering_extractor
 
-        rels = self.__get_bs_tree('word/_rels/document.xml.rels')
-        if rels is None:
-            rels = self.__get_bs_tree('word/_rels/document2.xml.rels')
-        self.images_rels = self.__get_images_rels(rels)
-
-        self.paragraph_list = []
-        # { paragraph number in self.paragraph_list : list of uids }
-        self.table_refs = defaultdict(list)
-        self.image_refs = defaultdict(list)
-        self.diagram_refs = defaultdict(list)
-        self.table_uids = []
-        self._uids_set = set()
-        self.tables = []
-        # the previous paragraph for spacing calculation
-        self.prev_paragraph = None
         self.table_ref_reg = re.compile(r"^[Тт](аблица|абл?\.) ")
-        self.lines = self._process_lines(hierarchy_level_extractor=hierarchy_level_extractor)
+        self.tables = []
+        self.lines = self.__get_lines(hierarchy_level_extractor=hierarchy_level_extractor, logger=logger)
 
-    def __get_bs_tree(self, filename: str) -> Optional[BeautifulSoup]:
+    def __get_lines(self, hierarchy_level_extractor: HierarchyLevelExtractor, logger: logging.Logger) -> List[LineWithMeta]:
         """
-        gets xml bs tree from the given file inside the self.path
-        :param filename: name of file to extract the tree
-        :return: BeautifulSoup tree or None if file wasn't found
+        Get list of LineWithMeta with annotations, links to the images and tables.
+        Fill tables if they exist in the document.
+        1. Get paragraphs in the inner representation, tables, images and diagrams.
+        2. Convert paragraphs into list with LineWithMeta with annotations
+
+        :return: list of document lines with annotations
         """
-        try:
-            with zipfile.ZipFile(self.path) as document:
-                return BeautifulSoup(document.read(filename), 'xml')
-        except KeyError:
-            return None
-        except zipfile.BadZipFile:
-            raise BadFileFormatException("Bad docx file:\n file_name = {}. Seems docx is broken".format(
-                os.path.basename(self.path)
-            ))
+        # { paragraph index in paragraph_list : list of uids }
+        table_refs, image_refs, diagram_refs = defaultdict(list), defaultdict(list), defaultdict(list)
+        cnt = Counter(self.body, logger)
+        uids_set = set()
+        prev_paragraph = None
+        paragraph_list = []
 
-    def __get_paragraph_uid(self, paragraph_xml: BeautifulSoup) -> str:
-        xml_hash = hashlib.md5(paragraph_xml.encode()).hexdigest()
-        raw_uid = '{}_{}'.format(self.path_hash, xml_hash)
-        uid = raw_uid
-        n = 0
-        while uid in self._uids_set:
-            n += 1
-            uid = raw_uid + "_{}".format(n)
-        self._uids_set.add(uid)
-        return uid
+        for paragraph_xml in self.body:
+            if paragraph_xml.name == 'tbl':
+                self.__handle_table_xml(paragraph_xml, paragraph_list, table_refs, uids_set, cnt)
+                continue
 
-    def __xml2paragraph(self, paragraph_xml: BeautifulSoup) -> Paragraph:
-        uid = self.__get_paragraph_uid(paragraph_xml=paragraph_xml)
-        paragraph = Paragraph(xml=paragraph_xml,
-                              styles_extractor=self.styles_extractor,
-                              numbering_extractor=self.numbering_extractor,
-                              footnote_extractor=self.footnote_extractor,
-                              endnote_extractor=self.endnote_extractor,
-                              uid=uid)
-        if self.prev_paragraph is None:
-            paragraph.spacing = paragraph.spacing_before
-        else:
-            paragraph.spacing = max(self.prev_paragraph.spacing_after, paragraph.spacing_before)
-        self.prev_paragraph = paragraph
+            if paragraph_xml.pict:  # diagrams are saved using docx_attachments_extractor
+                self.__handle_diagrams_xml(paragraph_xml, paragraph_list, diagram_refs, uids_set, cnt)
+                continue
 
-        self.current_paragraph_number += 1
-        current_time = time.time()
-        if current_time - self.checkpoint_time > 3:
-            self.logger.info("Processed {} paragraphs from {}".format(self.current_paragraph_number,
-                                                                      self.total_paragraph_number))
-            self.checkpoint_time = current_time
-        return paragraph
+            if paragraph_xml.name != 'p':
+                for subparagraph_xml in paragraph_xml.find_all('w:p'):  # TODO check what to add
+                    prev_paragraph = paragraph = self.__xml2paragraph(subparagraph_xml, prev_paragraph, uids_set, cnt)
+                    paragraph_list.append(paragraph)
+                continue
 
-    def __get_images_rels(self, rels: BeautifulSoup) -> Dict[str, str]:
-        media_ids = dict()
-        for rel in rels.find_all('Relationship'):
-            if rel["Target"].startswith('media/'):
-                media_ids[rel["Id"]] = rel["Target"][6:]
+            prev_paragraph = paragraph = self.__xml2paragraph(paragraph_xml, prev_paragraph, uids_set, cnt)
+            paragraph_list.append(paragraph)
 
-        return media_ids
+            images = paragraph_xml.find_all('pic:pic')
+            if images:
+                self.__handle_images_xml(images, paragraph_list, image_refs, uids_set, cnt)
 
-    def _get_lines_with_meta(self, hierarchy_level_extractor: HierarchyLevelExtractor) -> List[LineWithMeta]:
+        return self.__paragraphs2lines(hierarchy_level_extractor, paragraph_list, image_refs, table_refs, diagram_refs)
+
+    def __paragraphs2lines(self,
+                           hierarchy_level_extractor: HierarchyLevelExtractor,
+                           paragraph_list: List[Paragraph],
+                           image_refs: dict,
+                           table_refs: dict,
+                           diagram_refs: dict) -> List[LineWithMeta]:
         """
+        Convert list of paragraphs into list of LineWithMeta.
+        Add all annotations to the lines.
         :param hierarchy_level_extractor: extractor of hierarchy level
         :return: list of LineWithMeta
         """
         lines_with_meta = []
         paragraph_id = 0
 
-        for i, paragraph in enumerate(self.paragraph_list):
+        for i, paragraph in enumerate(paragraph_list):
             # line with meta:
             # {"text": "",
             #  "type": ""("paragraph" ,"list_item", "raw_text", "style_header"),
@@ -154,15 +138,11 @@ class DocxDocument:
             #  "annotations": [["size", start, end, size], ["bold", start, end, "True"], ...]}
             paragraph_properties = ParagraphInfo(paragraph)
             line_with_meta = paragraph_properties.get_info()
-
             text = line_with_meta["text"]
 
             paragraph_type = line_with_meta["type"]
             level = line_with_meta["level"]
-            if level:
-                hierarchy_level = HierarchyLevel(level[0], level[1], False, paragraph_type)
-            else:
-                hierarchy_level = HierarchyLevel.create_raw_text()
+            hl = HierarchyLevel(level[0], level[1], False, paragraph_type) if level else HierarchyLevel.create_raw_text()
 
             annotations_class = [AlignmentAnnotation,
                                  BoldAnnotation,
@@ -183,95 +163,107 @@ class DocxDocument:
             for footnote in paragraph.footnotes:
                 annotations.append(LinkedTextAnnotation(start=0, end=len(line_with_meta), value=footnote))
 
-            for object_dict in [self.image_refs, self.diagram_refs]:
+            for object_dict in [image_refs, diagram_refs]:
                 if i in object_dict:
                     for object_uid in object_dict[i]:
                         annotation = AttachAnnotation(attach_uid=object_uid, start=0, end=len(text))
                         annotations.append(annotation)
 
-            if i in self.table_refs:
-                for table_uid in self.table_refs[i]:
+            if i in table_refs:
+                for table_uid in table_refs[i]:
                     annotation = TableAnnotation(name=table_uid, start=0, end=len(text))
                     annotations.append(annotation)
 
             paragraph_id += 1
-            metadata = ParagraphMetadata(paragraph_type=paragraph_type,
-                                         predicted_classes=None,
-                                         page_id=0,
-                                         line_id=paragraph_id)
+            metadata = ParagraphMetadata(paragraph_type=paragraph_type, predicted_classes=None, page_id=0, line_id=paragraph_id)
 
-            lines_with_meta.append(LineWithMeta(line=text,
-                                                hierarchy_level=hierarchy_level,
-                                                metadata=metadata,
-                                                annotations=annotations,
-                                                uid=paragraph.uid))
+            lines_with_meta.append(LineWithMeta(line=text, hierarchy_level=hl, metadata=metadata, annotations=annotations, uid=paragraph.uid))
 
         lines_with_meta = hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
         return lines_with_meta
 
-    def get_paragraph_xml_list(self) -> List[Paragraph]:
-        return self.paragraph_list
-
-    def get_document_bs_tree(self) -> BeautifulSoup:
-        return self.document_bs_tree
-
-    def _process_lines(self, hierarchy_level_extractor: HierarchyLevelExtractor) -> List[LineWithMeta]:
+    def __get_bs_tree(self, filename: str) -> Optional[BeautifulSoup]:
         """
-        :return: list of document lines with annotations
+        Gets xml bs tree from the given file inside the self.path.
+        :param filename: name of file to extract the tree
+        :return: BeautifulSoup tree or None if file wasn't found
         """
+        try:
+            with zipfile.ZipFile(self.path) as document:
+                return BeautifulSoup(document.read(filename), 'xml')
+        except KeyError:
+            return None
+        except zipfile.BadZipFile:
+            raise BadFileFormatException("Bad docx file:\n file_name = {}. Seems docx is broken".format(os.path.basename(self.path)))
 
-        for paragraph_xml in self.body:
-            if paragraph_xml.name == 'tbl':
-                self._handle_table_xml(paragraph_xml)
-                continue
+    def __xml2paragraph(self, paragraph_xml: BeautifulSoup, prev_paragraph: Optional[Paragraph], uids_set: set, cnt: Counter) -> Paragraph:
+        uid = self.__get_paragraph_uid(paragraph_xml=paragraph_xml, uids_set=uids_set)
+        paragraph = Paragraph(xml=paragraph_xml,
+                              styles_extractor=self.styles_extractor,
+                              numbering_extractor=self.numbering_extractor,
+                              footnote_extractor=self.footnote_extractor,
+                              endnote_extractor=self.endnote_extractor,
+                              uid=uid)
+        paragraph.spacing = paragraph.spacing_before if prev_paragraph is None else max(prev_paragraph.spacing_after, paragraph.spacing_before)
+        cnt.inc()
+        return paragraph
 
-            if paragraph_xml.name != 'p':
-                # TODO check what to add
-                self.paragraph_list += map(self.__xml2paragraph, paragraph_xml.find_all('w:p'))
-                continue
+    def __get_paragraph_uid(self, paragraph_xml: BeautifulSoup, uids_set: set) -> str:
+        xml_hash = hashlib.md5(paragraph_xml.encode()).hexdigest()
+        raw_uid = '{}_{}'.format(self.path_hash, xml_hash)
+        uid = raw_uid
+        n = 0
+        while uid in uids_set:
+            n += 1
+            uid = raw_uid + "_{}".format(n)
+        uids_set.add(uid)
+        return uid
 
-            # diagrams are saved using docx_attachments_extractor
-            if paragraph_xml.pict:
-                self._handle_diagrams_xml(paragraph_xml)
-                continue
-
-            paragraph = self.__xml2paragraph(paragraph_xml)
-            self.paragraph_list.append(paragraph)
-
-            images = paragraph_xml.find_all('pic:pic')
-            if images:
-                self._handle_images_xml(images)
-
-        return self._get_lines_with_meta(hierarchy_level_extractor=hierarchy_level_extractor)
-
-    def _handle_table_xml(self, paragraph_xml: BeautifulSoup) -> None:
-        table = DocxTable(paragraph_xml, self.styles_extractor)
+    def __handle_table_xml(self, xml: BeautifulSoup, paragraph_list: List[Paragraph], table_refs: dict, uids_set: set, cnt: Counter) -> None:
+        table = DocxTable(xml, self.styles_extractor)
         self.tables.append(table.to_table())
         table_uid = table.uid
-        while len(self.paragraph_list) > 0:
-            if self.paragraph_list[-1].text.strip() == "":
-                self.paragraph_list.pop()
+
+        self.__prepare_paragraph_list(paragraph_list, uids_set, cnt)
+
+        if len(paragraph_list) >= 2 and self.table_ref_reg.match(paragraph_list[-2].text):
+            table_refs[len(paragraph_list) - 2].append(table_uid)
+        else:
+            table_refs[len(paragraph_list) - 1].append(table_uid)
+
+    def __handle_images_xml(self, xmls: List[BeautifulSoup], paragraph_list: List[Paragraph], image_refs: dict, uids_set: set, cnt: Counter) -> None:
+        rels = self.__get_bs_tree('word/_rels/document.xml.rels')
+        if rels is None:
+            rels = self.__get_bs_tree('word/_rels/document2.xml.rels')
+        images_rels = self.__get_images_rels(rels)
+
+        self.__prepare_paragraph_list(paragraph_list, uids_set, cnt)
+
+        for image_xml in xmls:
+            blips = image_xml.find_all("a:blip")
+            image_uid = images_rels[blips[0]["r:embed"]]
+            image_refs[len(paragraph_list) - 1].append(image_uid)
+
+    def __handle_diagrams_xml(self, xml: BeautifulSoup, paragraph_list: List[Paragraph], diagram_refs: dict, uids_set: set, cnt: Counter) -> None:
+        diagram_uid = hashlib.md5(xml.encode()).hexdigest()
+        self.__prepare_paragraph_list(paragraph_list, uids_set, cnt)
+        diagram_refs[len(paragraph_list) - 1].append(diagram_uid)
+
+    def __get_images_rels(self, rels: BeautifulSoup) -> Dict[str, str]:
+        media_ids = dict()
+        for rel in rels.find_all('Relationship'):
+            if rel["Target"].startswith('media/'):
+                media_ids[rel["Id"]] = rel["Target"][6:]
+
+        return media_ids
+
+    def __prepare_paragraph_list(self, paragraph_list: List[Paragraph], uids_set: set, cnt: Counter) -> None:
+        while len(paragraph_list) > 0:
+            if paragraph_list[-1].text.strip() == "":
+                paragraph_list.pop()
             else:
                 break
-        if not self.paragraph_list:
-            empty_paragraph_xml = BeautifulSoup('<w:p></w:p>').body.contents[0]
-            empty_paragraph = self.__xml2paragraph(empty_paragraph_xml)
-            self.paragraph_list.append(empty_paragraph)
-        if len(self.paragraph_list) >= 2 and self.table_ref_reg.match(self.paragraph_list[-2].text):
-            self.table_refs[len(self.paragraph_list) - 2].append(table_uid)
-        else:
-            self.table_refs[len(self.paragraph_list) - 1].append(table_uid)
 
-    def _handle_images_xml(self, images_xml: List[BeautifulSoup]) -> None:
-        for image_xml in images_xml:
-            blips = image_xml.find_all("a:blip")
-            image_uid = self.images_rels[blips[0]["r:embed"]]
-            self.image_refs[len(self.paragraph_list) - 1].append(image_uid)
-
-    def _handle_diagrams_xml(self, diagram_xml: BeautifulSoup) -> None:
-        diagram_uid = hashlib.md5(diagram_xml.encode()).hexdigest()
-        if not self.paragraph_list:
-            empty_paragraph_xml = BeautifulSoup('<w:p></w:p>').body.contents[0]
-            empty_paragraph = self.__xml2paragraph(empty_paragraph_xml)
-            self.paragraph_list.append(empty_paragraph)
-        self.diagram_refs[len(self.paragraph_list) - 1].append(diagram_uid)
+        if not paragraph_list:
+            empty_paragraph = self.__xml2paragraph(BeautifulSoup('<w:p></w:p>').body.contents[0], None, uids_set, cnt)
+            paragraph_list.append(empty_paragraph)

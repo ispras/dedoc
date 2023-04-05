@@ -252,7 +252,7 @@ class TestAnyDocReader(unittest.TestCase):
         path = self._get_path("diagram_2.docx")
         result = any_doc_reader.read(path)
 
-        for i in [0, 24]:
+        for i in [0, 22]:
             annotation_found = False
             for annotation in result.lines[i].annotations:
                 if annotation.name == "attachment":
