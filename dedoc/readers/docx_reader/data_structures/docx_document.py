@@ -2,55 +2,25 @@ import hashlib
 import logging
 import os
 import re
-import time
 import zipfile
 from collections import defaultdict
-from typing import Optional, List, Dict
+from typing import Optional, List
+
 from bs4 import BeautifulSoup
 
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
-from dedoc.data_structures.concrete_annotations.alignment_annotation import AlignmentAnnotation
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
-from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
-from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
-from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
-from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
-from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
-from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
-from dedoc.data_structures.concrete_annotations.strike_annotation import StrikeAnnotation
-from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
-from dedoc.data_structures.concrete_annotations.subscript_annotation import SubscriptAnnotation
-from dedoc.data_structures.concrete_annotations.superscript_annotation import SuperscriptAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
-from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.readers.docx_reader.data_structures.line_with_meta_converter import LineWithMetaConverter
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
-from dedoc.readers.docx_reader.data_structures.paragraph_info import ParagraphInfo
 from dedoc.readers.docx_reader.data_structures.table import DocxTable
+from dedoc.readers.docx_reader.data_structures.utils import Counter
 from dedoc.readers.docx_reader.footnote_extractor import FootnoteExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.readers.utils.hierarchy_level_extractor import HierarchyLevelExtractor
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.utils.utils import calculate_file_hash
-
-
-class Counter:
-
-    def __init__(self, body: BeautifulSoup, logger: logging.Logger) -> None:
-        self.logger = logger
-        self.total_paragraph_number = sum([len(p.find_all('w:p')) for p in body if p.name != 'p' and p.name != "tbl"])
-        self.total_paragraph_number += len([p for p in body if p.name == 'p'])
-        self.current_paragraph_number = 0
-        self.checkpoint_time = time.time()
-
-    def inc(self) -> None:
-        self.current_paragraph_number += 1
-        current_time = time.time()
-        if current_time - self.checkpoint_time > 3:
-            self.logger.info(f"Processed {self.current_paragraph_number} paragraphs from {self.total_paragraph_number}")
-            self.checkpoint_time = current_time
 
 
 class DocxDocument:
@@ -70,14 +40,15 @@ class DocxDocument:
         num_tree = self.__get_bs_tree('word/numbering.xml')
         self.numbering_extractor = NumberingExtractor(num_tree, self.styles_extractor) if num_tree else None
         self.styles_extractor.numbering_extractor = self.numbering_extractor
+        self.hierarchy_level_extractor = hierarchy_level_extractor  # TODO delete this
 
         self.table_ref_reg = re.compile(r"^[Тт](аблица|абл?\.) ")
         self.tables = []
-        self.lines = self.__get_lines(hierarchy_level_extractor=hierarchy_level_extractor, logger=logger)
+        self.lines = self.__get_lines(logger=logger)
 
-    def __get_lines(self, hierarchy_level_extractor: HierarchyLevelExtractor, logger: logging.Logger) -> List[LineWithMeta]:
+    def __get_lines(self, logger: logging.Logger) -> List[LineWithMeta]:
         """
-        Get list of LineWithMeta with annotations, links to the images and tables.
+        Get list of LineWithMeta with annotations, references to the images, diagrams and tables.
         Fill tables if they exist in the document.
         1. Get paragraphs in the inner representation, tables, images and diagrams.
         2. Convert paragraphs into list with LineWithMeta with annotations
@@ -106,80 +77,41 @@ class DocxDocument:
                     paragraph_list.append(paragraph)
                 continue
 
-            prev_paragraph = paragraph = self.__xml2paragraph(paragraph_xml, prev_paragraph, uids_set, cnt)
-            paragraph_list.append(paragraph)
-
+            paragraph_list.append(self.__xml2paragraph(paragraph_xml, prev_paragraph, uids_set, cnt))
             images = paragraph_xml.find_all('pic:pic')
             if images:
                 self.__handle_images_xml(images, paragraph_list, image_refs, uids_set, cnt)
+            prev_paragraph = paragraph_list[-1]
 
-        return self.__paragraphs2lines(hierarchy_level_extractor, paragraph_list, image_refs, table_refs, diagram_refs)
+        return self.__paragraphs2lines(paragraph_list, image_refs, table_refs, diagram_refs)
 
-    def __paragraphs2lines(self,
-                           hierarchy_level_extractor: HierarchyLevelExtractor,
-                           paragraph_list: List[Paragraph],
-                           image_refs: dict,
-                           table_refs: dict,
-                           diagram_refs: dict) -> List[LineWithMeta]:
+    def __paragraphs2lines(self, paragraph_list: List[Paragraph], image_refs: dict, table_refs: dict, diagram_refs: dict) -> List[LineWithMeta]:
         """
         Convert list of paragraphs into list of LineWithMeta.
         Add all annotations to the lines.
-        :param hierarchy_level_extractor: extractor of hierarchy level
         :return: list of LineWithMeta
         """
         lines_with_meta = []
         paragraph_id = 0
 
         for i, paragraph in enumerate(paragraph_list):
-            # line with meta:
-            # {"text": "",
-            #  "type": ""("paragraph" ,"list_item", "raw_text", "style_header"),
-            #  "level": (1,1) or None (hierarchy_level),
-            #  "annotations": [["size", start, end, size], ["bold", start, end, "True"], ...]}
-            paragraph_properties = ParagraphInfo(paragraph)
-            line_with_meta = paragraph_properties.get_info()
-            text = line_with_meta["text"]
-
-            paragraph_type = line_with_meta["type"]
-            level = line_with_meta["level"]
-            hl = HierarchyLevel(level[0], level[1], False, paragraph_type) if level else HierarchyLevel.create_raw_text()
-
-            annotations_class = [AlignmentAnnotation,
-                                 BoldAnnotation,
-                                 IndentationAnnotation,
-                                 ItalicAnnotation,
-                                 SizeAnnotation,
-                                 SpacingAnnotation,
-                                 StrikeAnnotation,
-                                 StyleAnnotation,
-                                 SubscriptAnnotation,
-                                 SuperscriptAnnotation,
-                                 UnderlinedAnnotation]
-            dict2annotations = {annotation.name: annotation for annotation in annotations_class}
-
-            annotations = []
-            for annotation in line_with_meta["annotations"]:
-                annotations.append(dict2annotations[annotation[0]](*annotation[1:]))
-            for footnote in paragraph.footnotes:
-                annotations.append(LinkedTextAnnotation(start=0, end=len(line_with_meta), value=footnote))
+            line = LineWithMetaConverter(paragraph, paragraph_id).line
 
             for object_dict in [image_refs, diagram_refs]:
                 if i in object_dict:
                     for object_uid in object_dict[i]:
-                        annotation = AttachAnnotation(attach_uid=object_uid, start=0, end=len(text))
-                        annotations.append(annotation)
+                        annotation = AttachAnnotation(attach_uid=object_uid, start=0, end=len(line))
+                        line.annotations.append(annotation)
 
             if i in table_refs:
                 for table_uid in table_refs[i]:
-                    annotation = TableAnnotation(name=table_uid, start=0, end=len(text))
-                    annotations.append(annotation)
+                    annotation = TableAnnotation(name=table_uid, start=0, end=len(line))
+                    line.annotations.append(annotation)
 
             paragraph_id += 1
-            metadata = ParagraphMetadata(paragraph_type=paragraph_type, predicted_classes=None, page_id=0, line_id=paragraph_id)
+            lines_with_meta.append(line)
 
-            lines_with_meta.append(LineWithMeta(line=text, hierarchy_level=hl, metadata=metadata, annotations=annotations, uid=paragraph.uid))
-
-        lines_with_meta = hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
+        lines_with_meta = self.hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
         return lines_with_meta
 
     def __get_bs_tree(self, filename: str) -> Optional[BeautifulSoup]:
@@ -235,7 +167,11 @@ class DocxDocument:
         rels = self.__get_bs_tree('word/_rels/document.xml.rels')
         if rels is None:
             rels = self.__get_bs_tree('word/_rels/document2.xml.rels')
-        images_rels = self.__get_images_rels(rels)
+
+        images_rels = dict()
+        for rel in rels.find_all('Relationship'):
+            if rel["Target"].startswith('media/'):
+                images_rels[rel["Id"]] = rel["Target"][6:]
 
         self.__prepare_paragraph_list(paragraph_list, uids_set, cnt)
 
@@ -248,14 +184,6 @@ class DocxDocument:
         diagram_uid = hashlib.md5(xml.encode()).hexdigest()
         self.__prepare_paragraph_list(paragraph_list, uids_set, cnt)
         diagram_refs[len(paragraph_list) - 1].append(diagram_uid)
-
-    def __get_images_rels(self, rels: BeautifulSoup) -> Dict[str, str]:
-        media_ids = dict()
-        for rel in rels.find_all('Relationship'):
-            if rel["Target"].startswith('media/'):
-                media_ids[rel["Id"]] = rel["Target"][6:]
-
-        return media_ids
 
     def __prepare_paragraph_list(self, paragraph_list: List[Paragraph], uids_set: set, cnt: Counter) -> None:
         while len(paragraph_list) > 0:
