@@ -23,7 +23,7 @@ class DocxReader(BaseReader):
 
     def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
         parameters = {} if parameters is None else parameters
-        docx_document = self.__parse_document(path=path)
+        docx_document = self._parse_document(path=path)
 
         attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path),
                                                                 filename=os.path.basename(path),
@@ -47,6 +47,6 @@ class DocxReader(BaseReader):
 
         return lines
 
-    def __parse_document(self, path: str) -> DocxDocument:
+    def _parse_document(self, path: str) -> DocxDocument:
         docx_document = DocxDocument(path=path, hierarchy_level_extractor=self.hierarchy_level_extractor, logger=self.logger)
         return docx_document
