@@ -37,7 +37,6 @@ class Paragraph(BaseProperties):
         self.text = ""
 
         self.list_level = None  # level of nested list if the paragraph is a list item
-        self.list_shift = None  # the position of list item in the list
         self.style_level, self.style_name = None, None
 
         # spacing before and after paragraph, the maximum spacing: after value for the previous paragraph or before value for the current paragraph

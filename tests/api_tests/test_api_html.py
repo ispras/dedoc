@@ -35,11 +35,11 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         self.assertEqual("", node["text"].strip()[:30])
 
         node = self._get_by_tree_path(tree, "0.0")
-        self.assertEqual("html_header", node["metadata"]["paragraph_type"])
+        self.assertEqual("header", node["metadata"]["paragraph_type"])
         self.assertEqual("Пример документа", node["text"].strip()[:30])
 
-        node = self._get_by_tree_path(tree, "0.1")
-        self.assertEqual("named_header", node["metadata"]["paragraph_type"])
+        node = self._get_by_tree_path(tree, "0.0.0")
+        self.assertEqual("header", node["metadata"]["paragraph_type"])
         self.assertEqual("Глава 1", node["text"].strip()[:30])
 
         node = self._get_by_tree_path(tree, "0.1.0")
@@ -47,7 +47,7 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         self.assertEqual("Какие то определения", node["text"].strip()[:30])
 
         node = self._get_by_tree_path(tree, "0.1.1")
-        self.assertEqual("named_header", node["metadata"]["paragraph_type"])
+        self.assertEqual("header", node["metadata"]["paragraph_type"])
         self.assertEqual("Статья 1", node["text"].strip()[:30])
 
         node = self._get_by_tree_path(tree, "0.1.1.0")
@@ -59,7 +59,7 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         self.assertIn({'start': 32, 'end': 42, 'name': 'italic', 'value': 'True'}, node["annotations"])
 
         node = self._get_by_tree_path(tree, "0.1.2")
-        self.assertEqual("named_header", node["metadata"]["paragraph_type"])
+        self.assertEqual("header", node["metadata"]["paragraph_type"])
         self.assertEqual("Статья 2", node["text"].strip()[:30])
 
         node = self._get_by_tree_path(tree, "0.1.2.0")
@@ -161,7 +161,7 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         node = self._get_by_tree_path(content, "0.0")
         text = node["text"]
         self.assertEqual("Support", text.strip())
-        self.assertEqual("html_header", node["metadata"]["paragraph_type"])
+        self.assertEqual("header", node["metadata"]["paragraph_type"])
 
         node = self._get_by_tree_path(content, "0.0.0")
         text = node["text"]

@@ -18,9 +18,7 @@ class HeaderHierarchyLevelBuilder(AbstractHierarchyLevelBuilder):
         hl = HierarchyLevel.create_root()
         return hl, hl
 
-    def get_lines_with_hierarchy(self,
-                                 lines_with_labels: List[Tuple[LineWithMeta, str]],
-                                 init_hl_depth: int = 2) -> List[LineWithMeta]:
+    def get_lines_with_hierarchy(self, lines_with_labels: List[Tuple[LineWithMeta, str]], init_hl_depth: int = 2) -> List[LineWithMeta]:
         result = []
         # detect begin of body
         previous_hl = HierarchyLevel.create_root()
@@ -35,11 +33,9 @@ class HeaderHierarchyLevelBuilder(AbstractHierarchyLevelBuilder):
             self._postprocess_roman(hierarchy_level, line)
 
             metadata = deepcopy(line.metadata)
-            metadata.predicted_classes = None
-            metadata.paragraph_type = hierarchy_level.paragraph_type
+            metadata.hierarchy_level = hierarchy_level
             line = LineWithMeta(
                 line=line.line,
-                hierarchy_level=hierarchy_level,
                 metadata=metadata,
                 annotations=line.annotations,
                 uid=line.uid

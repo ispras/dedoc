@@ -6,7 +6,7 @@ import docx
 from docx.opc.exceptions import PackageNotFoundError
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.metadata_extractors.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
+from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
 class DocxMetadataExtractor(BaseMetadataExtractor):

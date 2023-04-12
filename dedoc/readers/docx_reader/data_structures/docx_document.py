@@ -12,19 +12,18 @@ from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.readers.docx_reader.data_structures.line_with_meta_converter import LineWithMetaConverter
+from dedoc.readers.docx_reader.line_with_meta_converter import LineWithMetaConverter
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
 from dedoc.readers.docx_reader.data_structures.table import DocxTable
 from dedoc.readers.docx_reader.data_structures.utils import Counter
 from dedoc.readers.docx_reader.footnote_extractor import FootnoteExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
-from dedoc.readers.utils.hierarchy_level_extractor import HierarchyLevelExtractor
 from dedoc.utils.utils import calculate_file_hash
 
 
 class DocxDocument:
-    def __init__(self, path: str, hierarchy_level_extractor: HierarchyLevelExtractor, logger: logging.Logger) -> None:
+    def __init__(self, path: str, logger: logging.Logger) -> None:
         self.logger = logger
         self.path = path
         self.path_hash = calculate_file_hash(path=path)
@@ -40,7 +39,6 @@ class DocxDocument:
         num_tree = self.__get_bs_tree('word/numbering.xml')
         self.numbering_extractor = NumberingExtractor(num_tree, self.styles_extractor) if num_tree else None
         self.styles_extractor.numbering_extractor = self.numbering_extractor
-        self.hierarchy_level_extractor = hierarchy_level_extractor  # TODO delete this
 
         self.table_ref_reg = re.compile(r"^[Тт](аблица|абл?\.) ")
         self.tables = []
@@ -109,7 +107,6 @@ class DocxDocument:
             paragraph_id += 1
             lines_with_meta.append(line)
 
-        lines_with_meta = self.hierarchy_level_extractor.get_hierarchy_level(lines_with_meta)
         return lines_with_meta
 
     def __get_bs_tree(self, filename: str) -> Optional[BeautifulSoup]:

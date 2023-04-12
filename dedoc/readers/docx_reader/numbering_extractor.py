@@ -82,7 +82,6 @@ class NumberingExtractor:
 
         run_properties.text = text
         paragraph_properties.list_level = self.state.levels_count
-        paragraph_properties.list_shift = self.state.shift
 
     def __get_list_item_text(self, ilvl: str, num_id: str) -> str:
         """
@@ -133,7 +132,6 @@ class NumberingExtractor:
 
         text = lvl_info.lvl_text
         levels = re.findall(r'%\d+', text)
-        self.state.levels_count = len(levels)
         for level in levels:
             # level = '%level'
             level = level[1:]
@@ -151,7 +149,8 @@ class NumberingExtractor:
         """
         abstract_num_id = self.num_dict[num_id].abstract_num_id
         # level = ilvl + 1
-        ilvl = str(int(level) - 1)
+        self.state.levels_count = int(level)
+        ilvl = str(self.state.levels_count - 1)
         lvl_info: LevelInfo = self.num_dict[num_id].level_number2level_info[ilvl]
         if lvl_info.num_fmt == "bullet":
             return lvl_info.lvl_text
@@ -162,7 +161,6 @@ class NumberingExtractor:
             shift = lvl_info.start
             self.state.numerations_dict[(abstract_num_id, ilvl)] = shift
 
-        self.state.shift = shift - 1
         return self.numbering_formatter.get_text(lvl_info.num_fmt, shift - 1)
 
 
@@ -237,7 +235,6 @@ class NumberingState:
 
         # the number of levels for current list
         self.levels_count = 1
-        self.shift = 0
 
 
 class LevelInfo:

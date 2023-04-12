@@ -22,9 +22,7 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
             line = lines_with_labels[0][0]
             page_id = line.metadata.page_id
             line_id = line.metadata.line_id
-            body_line = AbstractBodyHierarchyLevelBuilder.get_body_line(page_id=page_id,
-                                                                        line_id=line_id,
-                                                                        init_hl_depth=init_hl_depth)
+            body_line = AbstractBodyHierarchyLevelBuilder.get_body_line(page_id=page_id, line_id=line_id, init_hl_depth=init_hl_depth)
             result = [body_line]
         else:
             result = [AbstractBodyHierarchyLevelBuilder.get_body_line(init_hl_depth=init_hl_depth)]
@@ -36,12 +34,11 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
         for line, prediction in lines_with_labels:
             if prediction == "named_item":
                 line = self.__handle_named_item(init_hl_depth, line, prediction, previous_hl=previous_hl)
-                previous_hl = line.hierarchy_level
+                previous_hl = line.metadata.hierarchy_level
                 result.append(line)
             else:
-                line.set_hierarchy_level(HierarchyLevel.create_raw_text())
-                line.metadata.paragraph_type = prediction
-                line.hierarchy_level.paragraph_type = prediction
+                line.metadata.hierarchy_level = HierarchyLevel.create_raw_text()
+                line.metadata.hierarchy_level.line_type = prediction
                 result.append(line)
         return result
 
@@ -55,6 +52,5 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
             hierarchy_level = HierarchyLevel(init_hl_depth, 0, True, prediction) if previous_hl is None else previous_hl
         else:
             hierarchy_level = HierarchyLevel(init_hl_depth + item_depth, 0, True, prediction)
-        line.set_hierarchy_level(hierarchy_level)
-        line.metadata.paragraph_type = hierarchy_level.paragraph_type
+        line.metadata.hierarchy_level = hierarchy_level
         return line

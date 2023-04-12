@@ -29,9 +29,7 @@ class AbstractHierarchyLevelBuilder(abc.ABC):
         return tag in self.starting_line_types and document_type in self.document_types
 
     @abc.abstractmethod
-    def get_lines_with_hierarchy(self,
-                                 lines_with_labels: List[Tuple[LineWithMeta, str]],
-                                 init_hl_depth: int) -> List[LineWithMeta]:
+    def get_lines_with_hierarchy(self, lines_with_labels: List[Tuple[LineWithMeta, str]], init_hl_depth: int) -> List[LineWithMeta]:
         """
         is a major function for extraction hierarchy level
         for each LineWithMeta with label (predicted class from classifier)
@@ -41,7 +39,7 @@ class AbstractHierarchyLevelBuilder(abc.ABC):
 
     @staticmethod
     def _postprocess_roman(hierarchy_level: HierarchyLevel, line: LineWithMeta) -> LineWithMeta:
-        if hierarchy_level.paragraph_type == "subsection" and LawTextFeatures.roman_regexp.match(line.line):
+        if hierarchy_level.line_type == "subsection" and LawTextFeatures.roman_regexp.match(line.line):
             match = LawTextFeatures.roman_regexp.match(line.line)
             prefix = line.line[match.start(): match.end()]
             suffix = line.line[match.end():]

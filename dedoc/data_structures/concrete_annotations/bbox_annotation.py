@@ -1,4 +1,3 @@
-
 import json
 
 from dedoc.data_structures.annotation import Annotation

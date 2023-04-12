@@ -1,5 +1,3 @@
-
-
 from collections import OrderedDict
 from typing import List, Optional
 
@@ -7,7 +5,7 @@ from flask_restx import fields, Api, Model
 
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.serializable import Serializable
 from dedoc.structure_constructors.annotation_merger import AnnotationMerger
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
@@ -19,9 +17,8 @@ class TreeNode(Serializable):
                  node_id: str,
                  text: str,
                  annotations: List[Annotation],
-                 metadata: ParagraphMetadata,
+                 metadata: LineMetadata,
                  subparagraphs: List["TreeNode"],
-                 hierarchy_level: HierarchyLevel,
                  parent: Optional["TreeNode"]) -> None:
         """
         TreeNode helps to represent document as recursive tree structure. It has parent node (None for root ot the tree)
@@ -31,7 +28,6 @@ class TreeNode(Serializable):
         :param annotations: some metadata related to the part of the text (as font size)
         :param metadata: metadata refers to entire node (as node type)
         :param subparagraphs: list of child of this node
-        :param hierarchy_level: helps to define the position of this node in the document tree
         :param parent: parent node (None for root, not none for other nodes)
         """
         self.node_id = node_id
@@ -39,16 +35,15 @@ class TreeNode(Serializable):
         self.annotations = annotations
         self.metadata = metadata
         self.subparagraphs = subparagraphs
-        self.hierarchy_level = hierarchy_level
         self.parent = parent
 
-    def to_dict(self, old_version: bool) -> dict:
+    def to_dict(self) -> dict:
         res = OrderedDict()
         res["node_id"] = self.node_id
         res["text"] = self.text
-        res["annotations"] = [annotation.to_dict(old_version) for annotation in self.annotations]
-        res["metadata"] = self.metadata.to_dict(old_version)
-        res["subparagraphs"] = [node.to_dict(old_version) for node in self.subparagraphs]
+        res["annotations"] = [annotation.to_dict() for annotation in self.annotations]
+        res["metadata"] = self.metadata.to_dict()
+        res["subparagraphs"] = [node.to_dict() for node in self.subparagraphs]
         return res
 
     @staticmethod
@@ -63,18 +58,12 @@ class TreeNode(Serializable):
                                      ),
             'text': fields.String(description="text of node", required=True, example="Закон"),
             'annotations': fields.List(fields.Nested(Annotation.get_api_dict(api),
-                                                     description="Text annotations "
-                                                                 "(font, size, bold, italic and etc)")),
-            'metadata': fields.Nested(ParagraphMetadata.get_api_dict(api),
-                                      skip_none=True,
-                                      allow_null=False,
-                                      description="Paragraph meta information"),
+                                                     description="Text annotations (font, size, bold, italic and etc)")),
+            'metadata': fields.Nested(LineMetadata.get_api_dict(api), skip_none=True, allow_null=False, description="Line meta information"),
             'subparagraphs': fields.List(fields.Nested(api.model('others_TreeNode', {})),
                                          description="Node childes (with type 'TreeNode') of structure tree")
             if depth == 30  # TODO delete this
-            else fields.List(fields.Nested(TreeNode.get_api_dict(api,
-                                                                 depth=depth + 1,
-                                                                 name='refTreeNode' + str(depth))),
+            else fields.List(fields.Nested(TreeNode.get_api_dict(api, depth=depth + 1, name='refTreeNode' + str(depth))),
                              description="Node childes (with type 'TreeNode') of structure tree")
         })
 
@@ -95,17 +84,11 @@ class TreeNode(Serializable):
             annotations.extend(TreeNode.__shift_annotations(line=line, text_length=text_length))
             text_length += len(line.line)
         text = "".join(texts)
-        metadata = ParagraphMetadata(
-            paragraph_type="root",
-            page_id=page_id,
-            line_id=line_id,
-            predicted_classes=None)
         return TreeNode("0",
                         text,
                         annotations=annotations,
-                        metadata=metadata,
+                        metadata=LineMetadata(page_id=page_id, line_id=line_id, hierarchy_level=HierarchyLevel.create_root()),
                         subparagraphs=[],
-                        hierarchy_level=HierarchyLevel.create_root(),
                         parent=None)
 
     def add_child(self, line: LineWithMeta) -> "TreeNode":
@@ -120,7 +103,6 @@ class TreeNode(Serializable):
             annotations=line.annotations,
             metadata=line.metadata,
             subparagraphs=[],
-            hierarchy_level=line.hierarchy_level,
             parent=self
         )
         self.subparagraphs.append(new_node)

@@ -5,7 +5,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.line_metadata import LineMetadata
 
 
 class TablePatcher:
@@ -21,15 +21,15 @@ class TablePatcher:
         """
         tables_dict = {table.metadata.uid: table for table in document.tables if not table.metadata.is_inserted}
         paragraphs = []
-        hierarchy_level = max((line.hierarchy_level.level_1 for line in document.lines
-                               if not line.hierarchy_level.is_raw_text()), default=0)
+        hierarchy_level = max((line.metadata.hierarchy_level.level_1 for line in document.lines
+                               if not line.metadata.hierarchy_level.is_raw_text()), default=0)
         for line in document.lines:
-            if line.hierarchy_level.is_raw_text():
+            if line.metadata.hierarchy_level.is_raw_text():
                 hierarchy_level_raw_text = HierarchyLevel(level_1=hierarchy_level + 1,
                                                           level_2=0,
-                                                          can_be_multiline=line.hierarchy_level.can_be_multiline,
-                                                          paragraph_type=HierarchyLevel.raw_text)
-                line.set_hierarchy_level(hierarchy_level_raw_text)
+                                                          can_be_multiline=line.metadata.hierarchy_level.can_be_multiline,
+                                                          line_type=HierarchyLevel.raw_text)
+                line.metadata.hierarchy_level = hierarchy_level_raw_text
             paragraphs.append(line)
             for annotation in line.annotations:
                 if annotation.name == TableAnnotation.name:
@@ -65,17 +65,10 @@ class TablePatcher:
             level_1=hierarchy_level + 2,  # table hierarchy is lower than raw text
             level_2=0,
             can_be_multiline=False,
-            paragraph_type="table"
+            line_type="table"
         )
-        metadata = ParagraphMetadata(paragraph_type="table",
-                                     predicted_classes=None,
-                                     page_id=table.metadata.page_id,
-                                     line_id=None)
-        return LineWithMeta(line="",
-                            hierarchy_level=hierarchy_level_new,
-                            metadata=metadata,
-                            annotations=[],
-                            uid="table_{}".format(table.metadata.uid))
+        metadata = LineMetadata(hierarchy_level=hierarchy_level_new, page_id=table.metadata.page_id, line_id=None)
+        return LineWithMeta(line="", metadata=metadata, annotations=[], uid="table_{}".format(table.metadata.uid))
 
     @staticmethod
     def _create_row_line(table: Table, hierarchy_level: int) -> LineWithMeta:
@@ -83,16 +76,10 @@ class TablePatcher:
             level_1=hierarchy_level + 3,
             level_2=0,
             can_be_multiline=False,
-            paragraph_type="table_row"
+            line_type="table_row"
         )
-        metadata = ParagraphMetadata(paragraph_type="table_row",
-                                     predicted_classes=None,
-                                     page_id=table.metadata.page_id,
-                                     line_id=None)
-        return LineWithMeta(line="",
-                            hierarchy_level=hierarchy_level_new,
-                            metadata=metadata,
-                            annotations=[])
+        metadata = LineMetadata(hierarchy_level=hierarchy_level_new, page_id=table.metadata.page_id, line_id=None)
+        return LineWithMeta(line="", metadata=metadata, annotations=[])
 
     @staticmethod
     def _create_cell_line(table: Table, hierarchy_level: int, cell: str) -> LineWithMeta:
@@ -100,13 +87,7 @@ class TablePatcher:
             level_1=hierarchy_level + 4,
             level_2=0,
             can_be_multiline=False,
-            paragraph_type="table_cell"
+            line_type="table_cell"
         )
-        metadata = ParagraphMetadata(paragraph_type="table_cell",
-                                     predicted_classes=None,
-                                     page_id=table.metadata.page_id,
-                                     line_id=None)
-        return LineWithMeta(line=cell,
-                            hierarchy_level=hierarchy_level_new,
-                            metadata=metadata,
-                            annotations=[])
+        metadata = LineMetadata(hierarchy_level=hierarchy_level_new, page_id=table.metadata.page_id, line_id=None)
+        return LineWithMeta(line=cell, metadata=metadata, annotations=[])

@@ -7,7 +7,7 @@ import pandas as pd
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_features_extractor import ListFeaturesExtractor
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.non_letter_prefix import NonLetterPrefix
+from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
 from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.utils_feature_extractor import normalization_by_min_max
 from dedoc.utils.utils import flatten
@@ -25,7 +25,7 @@ class TzTextFeatures(AbstractFeatureExtractor):
             re.compile(r"^\s*[IVX]+"),  # roman numerals
             # https://stackoverflow.com/questions/267399/how-do-you-match-only-valid-
             # roman-numerals-with-a-regular-expression
-            NonLetterPrefix.regexp,
+            BulletPrefix.regexp,
             self.named_item_regexp
         ]
         self.end_regexp = [

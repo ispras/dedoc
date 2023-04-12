@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.metadata_extractors.concreat_metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
+from dedoc.metadata_extractors.concrete_metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 
 
 class MetadataExtractorComposition:

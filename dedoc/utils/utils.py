@@ -13,7 +13,7 @@ from dateutil.parser import parse
 from charset_normalizer import from_bytes
 
 from dedoc.data_structures.document_content import DocumentContent
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.tree_node import TreeNode
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
@@ -137,14 +137,8 @@ def get_empty_content() -> DocumentContent:
         structure=TreeNode(node_id="0",
                            text="",
                            annotations=[],
-                           metadata=ParagraphMetadata(
-                               paragraph_type=HierarchyLevel.root,
-                               predicted_classes=None,
-                               page_id=0,
-                               line_id=0,
-                           ),
+                           metadata=LineMetadata(page_id=0, line_id=0, hierarchy_level=HierarchyLevel.create_root()),
                            subparagraphs=[],
-                           hierarchy_level=HierarchyLevel.create_root(),
                            parent=None)
     )
 

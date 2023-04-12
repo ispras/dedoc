@@ -32,7 +32,7 @@ class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, ab
         previous_hl = HierarchyLevel(level_1=init_hl_depth,  # 2
                                      level_2=0,
                                      can_be_multiline=True,
-                                     paragraph_type='application')
+                                     line_type='application')
 
         lines_with_labels[0] = lines_with_labels[0][0], "application"
         previous_line_start_of_application = False
@@ -54,14 +54,12 @@ class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, ab
             self._postprocess_roman(hierarchy_level, line)
 
             metadata = deepcopy(line.metadata)
-            metadata.predicted_classes = None
-            metadata.paragraph_type = hierarchy_level.paragraph_type
             hierarchy_level = copy.deepcopy(hierarchy_level)
             if line_id == 0:
                 hierarchy_level.can_be_multiline = False
+            metadata.hierarchy_level = hierarchy_level
             line = LineWithMeta(
                 line=line.line,
-                hierarchy_level=hierarchy_level,
                 metadata=metadata,
                 annotations=line.annotations,
                 uid=line.uid
@@ -91,7 +89,7 @@ class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, ab
                                                               previous_hl=previous_hl)
         elif label == "footer":
             return HierarchyLevel(None, None, False, HierarchyLevel.raw_text), None
-        elif label == "raw_text" and previous_hl is not None and previous_hl.paragraph_type == "chapter":
+        elif label == "raw_text" and previous_hl is not None and previous_hl.line_type == "chapter":
             return previous_hl, previous_hl
 
         elif label == "raw_text" and previous_hl is None:
@@ -103,7 +101,7 @@ class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, ab
         elif label in ("application", "header", "raw_text"):
             if label == "application" or (label == "raw_text" and
                                           previous_hl is not None and
-                                          previous_hl.paragraph_type == "application"):
+                                          previous_hl.line_type == "application"):
                 hl = HierarchyLevel(init_hl_depth, 0, True, "application")
                 return hl, hl
             else:

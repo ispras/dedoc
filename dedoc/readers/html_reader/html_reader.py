@@ -7,7 +7,7 @@ from typing import Optional, List, Union
 from bs4 import BeautifulSoup
 from bs4.element import Tag, Doctype, Comment
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
@@ -24,21 +24,12 @@ class HtmlReader(BaseReader):
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
         self.postprocessor = HtmlLinePostprocessing()
-
         self.tag_annotation_parser = HtmlTagAnnotationParser()
 
-    def can_read(self,
-                 path: str,
-                 mime: str,
-                 extension: str,
-                 document_type: Optional[str],
-                 parameters: Optional[dict] = None) -> bool:
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str], parameters: Optional[dict] = None) -> bool:
         return extension.lower() in [".html", ".shtml"] or mime in ["text/html"]
 
-    def read(self,
-             path: str,
-             document_type: Optional[str] = None,
-             parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
 
         parameters = {} if parameters is None else parameters
         with open(path, 'rb') as f:
@@ -71,10 +62,7 @@ class HtmlReader(BaseReader):
         elif tag.name in HtmlTags.block_tags:
             block_lines = self.__read_blocks(block=tag, path_hash=uid)
         elif tag.name in HtmlTags.list_tags:
-            block_lines = self.__read_list(lst=tag,
-                                           uid=tag_uid,
-                                           path_hash=uid,
-                                           handle_invisible_table=handle_invisible_table)
+            block_lines = self.__read_list(lst=tag, uid=tag_uid, path_hash=uid, handle_invisible_table=handle_invisible_table)
         else:
             block_lines = self.__handle_single_tag(tag, uid)
         for line in block_lines:
@@ -89,11 +77,11 @@ class HtmlReader(BaseReader):
             return []
 
         annotations = self.tag_annotation_parser.parse(tag=tag)
-        header_level = int(tag.name[1:]) if tag.name in HtmlTags.header_tags else 0
-        paragraph_type = HierarchyLevel.raw_text if header_level == 0 else "html_header"
+        header_level = int(tag.name[1:]) if tag.name in HtmlTags.header_tags else -1
+        line_type = HierarchyLevel.unknown if header_level == -1 else HierarchyLevel.header
         tag_uid = hashlib.md5((uid + text).encode()).hexdigest()
         line = self.__make_line(line=text,
-                                paragraph_type=paragraph_type,
+                                line_type=line_type,
                                 header_level=header_level,
                                 uid=tag_uid,
                                 path_hash=uid,
@@ -121,22 +109,23 @@ class HtmlReader(BaseReader):
         if not block.strip() and ignore_space:
             return []
         uid = hashlib.md5(block.encode()).hexdigest()
-        line = self.__make_line(block, HierarchyLevel.raw_text, 0, uid=uid, path_hash=path_hash)
+        line = self.__make_line(block, HierarchyLevel.unknown, 0, uid=uid, path_hash=path_hash)
         return [line]
 
     def __make_line(self, line: str,
-                    paragraph_type: str,
+                    line_type: str,
                     header_level: int = 0,
                     uid: str = None,
                     path_hash: str = None,
                     annotations: List = None) -> LineWithMeta:
         if annotations is None:
             annotations = []
-        metadata = ParagraphMetadata(paragraph_type=paragraph_type, predicted_classes=None, page_id=0, line_id=None)
 
-        level = None if header_level == 0 else HierarchyLevel(1, header_level, False, paragraph_type=paragraph_type)
+        level = None if header_level == -1 else HierarchyLevel(1, header_level, False, line_type=line_type)
+        metadata = LineMetadata(page_id=0, line_id=None, tag_hierarchy_level=level)  # TODO line_id
+
         uid = "{}_{}".format(path_hash, uid)
-        return LineWithMeta(line=line, hierarchy_level=level, metadata=metadata, annotations=annotations, uid=uid)
+        return LineWithMeta(line=line, metadata=metadata, annotations=annotations, uid=uid)
 
     def __get_li_header(self, list_type: str, index: int) -> LineWithMeta:
         end = ') ' if list_type in ["a", 'A'] else '. '
@@ -154,11 +143,8 @@ class HtmlReader(BaseReader):
             header = header + end
         else:
             header = str(index + 1) + end
-        metadata = ParagraphMetadata(paragraph_type="list_item", predicted_classes=None, page_id=0, line_id=0)
-        header_line = LineWithMeta(line=header,
-                                   hierarchy_level=HierarchyLevel(2, 1, False, paragraph_type="list_item"),
-                                   metadata=metadata,
-                                   annotations=[])
+        metadata = LineMetadata(tag_hierarchy_level=HierarchyLevel(2, 1, False, line_type=HierarchyLevel.list_item), page_id=0, line_id=0)
+        header_line = LineWithMeta(line=header, metadata=metadata, annotations=[])
         return header_line
 
     def __read_list(self, lst: Tag, uid: str, path_hash: str, handle_invisible_table: bool) -> List[LineWithMeta]:
@@ -186,14 +172,15 @@ class HtmlReader(BaseReader):
         lines = []
         header_line = self.__get_li_header(list_type=list_type, index=item_index)
         block_lines = self.__handle_block(item, uid=path_hash, handle_invisible_table=handle_invisible_table)
-        hl_depth = header_line.hierarchy_level.level_1
+        hl_depth = header_line.metadata.tag_hierarchy_level.level_1
         for line in block_lines:
-            if line.hierarchy_level is None:
+            if line.metadata.tag_hierarchy_level is None:
                 header_line += line
             else:
                 # Handle complex and nested lists
                 lines.append(header_line)
-                line.hierarchy_level.level_1 += hl_depth
+                if line.metadata.tag_hierarchy_level.level_1 is not None:
+                    line.metadata.tag_hierarchy_level.level_1 += hl_depth
                 header_line = line
         lines.append(header_line)
         return lines
@@ -226,7 +213,7 @@ class HtmlReader(BaseReader):
             if text.strip() != "":
                 tag_uid = hashlib.md5((uid + text).encode()).hexdigest()
                 line = self.__make_line(line=text,
-                                        paragraph_type=HierarchyLevel.raw_text,
+                                        line_type=HierarchyLevel.unknown,
                                         uid=tag_uid,
                                         path_hash=path_hash)
                 result.append(line)

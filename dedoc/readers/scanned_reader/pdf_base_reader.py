@@ -12,7 +12,6 @@ from pdf2image import convert_from_path
 from pdf2image.exceptions import PDFPageCountError, PDFSyntaxError
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
-from dedoc.readers.utils.hierarchy_level_extractor import HierarchyLevelExtractor
 import dedoc.utils.parameter_utils as param_utils
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -60,7 +59,6 @@ class PdfBase(BaseReader):
 
     def __init__(self, config: dict) -> None:
         self.table_recognizer = TableRecognizer(config=config)
-        self.hierarchy_level_extractor = HierarchyLevelExtractor()
         self.metadata_extractor = LineMetadataExtractor(config=config)
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
@@ -165,7 +163,6 @@ class PdfBase(BaseReader):
             all_lines = list(flatten(lines))
         mp_tables = self.table_recognizer.convert_to_multipages_tables(unref_tables, lines_with_meta=all_lines)
         all_lines_with_links = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=attachments)
-        all_lines_with_links = self.hierarchy_level_extractor.get_hierarchy_level(lines=all_lines_with_links)
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 

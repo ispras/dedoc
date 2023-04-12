@@ -39,34 +39,25 @@ class ParsedDocument(Serializable):
     def set_metadata(self, metadata: DocumentMetadata) -> None:
         self.metadata = metadata
 
-    def to_dict(self, old_version: bool) -> dict:
+    def to_dict(self) -> dict:
         res = OrderedDict()
         res["version"] = self.version
         res["warnings"] = self.warnings
-        res["content"] = self.content.to_dict(old_version) if self.content is not None else []
-        res["metadata"] = self.metadata.to_dict(old_version)
+        res["content"] = self.content.to_dict() if self.content is not None else []
+        res["metadata"] = self.metadata.to_dict()
         if self.attachments is not None:
-            res["attachments"] = [attachment.to_dict(old_version) for attachment in self.attachments]
+            res["attachments"] = [attachment.to_dict() for attachment in self.attachments]
         return res
 
     @staticmethod
     def get_api_dict(api: Api, depth: int = 0, name: str = 'ParsedDocument') -> Model:
         return api.model(name, {
             'content': fields.Nested(DocumentContent.get_api_dict(api), description='Document content structure'),
-            'metadata': fields.Nested(DocumentMetadata.get_api_dict(api),
-                                      allow_null=False,
-                                      skip_none=True,
-                                      description='Document meta information'),
-            'version': fields.String(description='the version of the program that parsed this document',
-                                     example="2020.07.11"),
-            'warnings': fields.List(fields.String(description='list of warnings and possible errors',
-                                    example="DOCX: seems that document corrupted")),
-            'attachments': fields.List(fields.Nested(api.model('others_ParsedDocument', {})),
-                                       description='structure of attachments',
-                                       required=False)
+            'metadata': fields.Nested(DocumentMetadata.get_api_dict(api), allow_null=False, skip_none=True, description='Document meta information'),
+            'version': fields.String(description='the version of the program that parsed this document', example="2020.07.11"),
+            'warnings': fields.List(fields.String(description='list of warnings and possible errors', example="DOCX: seems that document corrupted")),
+            'attachments': fields.List(fields.Nested(api.model('others_ParsedDocument', {})), description='structure of attachments', required=False)
             if depth == 10  # TODO delete this
-            else fields.List(fields.Nested(ParsedDocument.get_api_dict(api,
-                                                                       depth=depth + 1,
-                                                                       name='refParsedDocument' + str(depth)),
+            else fields.List(fields.Nested(ParsedDocument.get_api_dict(api, depth=depth + 1, name='refParsedDocument' + str(depth)),
                                            description='Attachment structure',
                                            required=False))})

@@ -149,5 +149,7 @@ class StylesExtractor:
         :param style_name: name of the style
         :returns: level if style name begins with heading else None
         """
-        match = self.style_regexp.match(style_name.lower())
-        return int(match.groups()[0]) - 1 if match else None
+        if style_name.lower().strip() == "title":
+            return 1
+        match = self.style_regexp.match(style_name.lower())  # e.g. Heading 1
+        return int(match.groups()[0]) + 1 if match else None

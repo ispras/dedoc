@@ -4,9 +4,10 @@ from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
 class TestApiDocxAnnotations(AbstractTestApiDocReader):
+    data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "annotation_docx")
 
     def test_example_1(self) -> None:
-        result = self._send_request("annotation_docx/example_1.docx", data={"structure_type": "linear"})
+        result = self._send_request("example_1.docx", data={"structure_type": "linear"})
         subparagraphs = result['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in subparagraphs]
 
@@ -32,7 +33,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertIn({'start': 0, 'end': 11, 'name': 'strike', 'value': 'True'}, annotations[15])
 
     def test_example_2(self) -> None:
-        result = self._send_request("annotation_docx/example_2.docx", data={"structure_type": "linear"})
+        result = self._send_request("example_2.docx", data={"structure_type": "linear"})
         subparagraphs = result['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in subparagraphs]
 
@@ -62,7 +63,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertIn({'start': 0, 'end': 51, 'name': 'italic', 'value': 'True'}, annotations[51])
 
     def test_spacing_1(self) -> None:
-        result = self._send_request("annotation_docx/spacing_libreoffice.docx", data={"structure_type": "linear"})
+        result = self._send_request("spacing_libreoffice.docx", data={"structure_type": "linear"})
         subparagraphs = result['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in subparagraphs]
 
@@ -76,7 +77,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertIn({'start': 0, 'end': 9, 'name': 'spacing', 'value': '0'}, annotations[7])
 
     def test_spacing_2(self) -> None:
-        result = self._send_request("annotation_docx/spacing_microsoft_word.docx", data={"structure_type": "linear"})
+        result = self._send_request("spacing_microsoft_word.docx", data={"structure_type": "linear"})
         subparagraphs = result['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in subparagraphs]
 
@@ -91,7 +92,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'}, annotations[8])
 
     def test_identation(self) -> None:
-        result = self._send_request("annotation_docx/indentation_libreoffice.docx", data={"structure_type": "linear"})
+        result = self._send_request("indentation_libreoffice.docx", data={"structure_type": "linear"})
         subparagraphs = result['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in subparagraphs]
         self.assertIn({'start': 0, 'end': 188, 'name': 'indentation', 'value': '360.0'}, annotations[5])
@@ -101,7 +102,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertIn({'start': 0, 'end': 65, 'name': 'indentation', 'value': '786.0'}, annotations[20])
 
     def test_table_refs(self) -> None:
-        result = self._send_request("annotation_docx/table_refs.docx", data={"structure_type": "linear"})
+        result = self._send_request("table_refs.docx", data={"structure_type": "linear"})
         subparagraphs = result['content']['structure']['subparagraphs']
         for i in [0, 2, 4, 6, 9]:
             annotations = subparagraphs[i]['annotations']
@@ -125,7 +126,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self._check_superscript(file_name)
 
     def _check_superscript(self, file_name: str) -> None:
-        result = self._send_request(os.path.join("docx", file_name), data={"structure_type": "tree"})
+        result = self._send_request(os.path.join("..", "docx", file_name), data={"structure_type": "tree"})
         content = result["content"]["structure"]
         subparagraph = content["subparagraphs"][0]
         annotations = subparagraph["annotations"]

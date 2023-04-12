@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from dedoc.metadata_extractors.concreat_metadata_extractors.docx_metadata_extractor import DocxMetadataExtractor
+from dedoc.metadata_extractors.concrete_metadata_extractors.docx_metadata_extractor import DocxMetadataExtractor
 
 
 class TestMetadataExtractor(unittest.TestCase):
