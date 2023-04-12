@@ -6,16 +6,15 @@ from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnot
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.line_metadata import LineMetadata
 
 
 def _make_line(line: str, annotations: List[Annotation]) -> LineWithMeta:
-    meta = ParagraphMetadata(paragraph_type="raw_text", predicted_classes=None, page_id=0, line_id=0)
-    line = LineWithMeta(line=line, hierarchy_level=None, metadata=meta, annotations=annotations)
+    line = LineWithMeta(line=line, metadata=LineMetadata(page_id=0, line_id=0), annotations=annotations)
     return line
 
 
-class TestLineSplit(unittest.TestCase):
+class TestLineSum(unittest.TestCase):
 
     empty = _make_line("", [])
     italic_line = _make_line("italic", [ItalicAnnotation(0, 6, "True")])

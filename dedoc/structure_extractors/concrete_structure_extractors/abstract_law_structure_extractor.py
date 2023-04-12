@@ -132,7 +132,7 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
         return result
 
     def _postprocess_roman(self, hierarchy_level: HierarchyLevel, line: LineWithMeta) -> LineWithMeta:
-        if hierarchy_level.paragraph_type == "subsection" and LawTextFeatures.roman_regexp.match(line.line):
+        if hierarchy_level.line_type == "subsection" and LawTextFeatures.roman_regexp.match(line.line):
             match = LawTextFeatures.roman_regexp.match(line.line)
             prefix = line.line[match.start(): match.end()]
             suffix = line.line[match.end():]

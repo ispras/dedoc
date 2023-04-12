@@ -9,6 +9,7 @@ class TestApiArchiveReader(AbstractTestApiDocReader):
         return os.path.join(self.data_directory_path, "archives", file_name)
 
     def __check_response(self, result: dict) -> None:
+        # TODO analyse can_be_multiline value and check paragraph_extractor for scanned reader
         self.assertEqual(result['attachments'], [])
         content = result['content']
         tree = content["structure"]
@@ -17,15 +18,9 @@ class TestApiArchiveReader(AbstractTestApiDocReader):
         text = node["text"].strip().split("\n")
         self.assertEqual("Первая строка Первого файла", text[0])
         self.assertEqual("Вторая строка Первого файла", text[1])
-
-        node = self._get_by_tree_path(tree, "0.1")
-        text = node["text"].strip().split("\n")
-        self.assertEqual("'Третья Строка третьего файла", text[0])
-        self.assertEqual("Первая строка второго файла", text[1])
-
-        node = self._get_by_tree_path(tree, "0.2")
-        text = node["text"].strip().split("\n")
-        self.assertEqual("Вторая строка второго файла", text[0])
+        self.assertEqual("'Третья Строка третьего файла", text[2])
+        self.assertEqual("Первая строка второго файла", text[3])
+        self.assertEqual("Вторая строка второго файла", text[4])
 
         tables = content["tables"]
         self.assertEqual(1, len(tables))
@@ -139,9 +134,9 @@ class TestApiArchiveReader(AbstractTestApiDocReader):
         file_name = "tz-led-png.zip"
         result = self._send_request(file_name, dict(with_attachments="True"))
         par = result["content"]["structure"]
-        self.assertEqual('1. ОБЩИЕ СВЕДЕНИЯ\n', self._get_by_tree_path(par, "0.7.0")["text"])
-        self.assertEqual('2. ОСНОВНЫЕ ТРЕБОВАНИЯ\n', self._get_by_tree_path(par, "0.7.1")["text"])
-        self.assertEqual('3. ОБОРУДОВАНИЕ\n', self._get_by_tree_path(par, "0.7.2")["text"])
+        self.assertEqual('1. ОБЩИЕ СВЕДЕНИЯ\n', self._get_by_tree_path(par, "0.1.0")["text"])
+        self.assertEqual('2. ОСНОВНЫЕ ТРЕБОВАНИЯ\n', self._get_by_tree_path(par, "0.1.1")["text"])
+        self.assertEqual('3. ОБОРУДОВАНИЕ\n', self._get_by_tree_path(par, "0.1.2")["text"])
 
     def test_broken_archive(self) -> None:
         file_name = "broken.zip"

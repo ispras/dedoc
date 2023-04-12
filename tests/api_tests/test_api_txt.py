@@ -14,7 +14,7 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         _ = self._send_request(file_name)
 
     def test_text(self) -> None:
-        file_name = "doc_001.txt"
+        file_name = "example.txt"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]
         self.assertEqual(content["subparagraphs"][1]["text"].rstrip(),
@@ -24,7 +24,7 @@ class TestApiTxtReader(AbstractTestApiDocReader):
 
     @unittest.skip("due to tag analysis added")
     def test_text_pretty_json(self) -> None:
-        file_name = "doc_001.txt"
+        file_name = "example.txt"
         result = self._send_request(file_name, data={"structure_type": "tree", "return_format": "pretty_json"})
         content = result["content"]["structure"]
         self.assertEqual(content["subparagraphs"][1]["text"].rstrip(),
@@ -34,7 +34,7 @@ class TestApiTxtReader(AbstractTestApiDocReader):
 
     @unittest.skip("due to tag analysis added")
     def test_text_bad_return_format(self) -> None:
-        file_name = "doc_001.txt"
+        file_name = "example.txt"
         result = self._send_request(file_name, data={"structure_type": "tree", "return_format": "broken"})
         content = result["content"]["structure"]
         self.assertEqual(content["subparagraphs"][1]["text"].rstrip(),

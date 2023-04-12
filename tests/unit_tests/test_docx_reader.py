@@ -4,10 +4,11 @@ import unittest
 from tempfile import TemporaryDirectory
 
 from dedoc.config import get_config
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 
 
-class TestAnyDocReader(unittest.TestCase):
+class TestDocxReader(unittest.TestCase):
 
     directory = os.path.join(os.path.dirname(__file__), "..", "data", "docx")
     tmpdir = None
@@ -21,66 +22,65 @@ class TestAnyDocReader(unittest.TestCase):
         super().tearDown()
 
     def test_docx(self) -> None:
-        any_doc_reader = DocxReader(config=get_config())
+        docx_reader = DocxReader(config=get_config())
         path = self._get_path("example.docx")
-        result = any_doc_reader.read(path)
+        result = docx_reader.read(path)
         lines = result.lines
-        self.assertEqual("Пример документа", lines[0].line)
-        self.assertEqual("Глава 1", lines[1].line)
-        self.assertEqual("Статья 1", lines[3].line)
-        self.assertEqual("Статья 2", lines[5].line)
+        self.assertEqual("Пример документа", lines[0].line.strip())
+        self.assertEqual("Глава 1", lines[1].line.strip())
+        self.assertEqual("Статья 1", lines[3].line.strip())
+        self.assertEqual("Статья 2", lines[5].line.strip())
         self.assertEqual("Дадим пояснения", lines[6].line.strip())
 
-        self.assertEqual("1.2.1. Поясним за непонятное", lines[7].line)
-        self.assertEqual("1.2.2. Поясним за понятное", lines[8].line)
+        self.assertEqual("1.2.1. Поясним за непонятное", lines[7].line.strip())
+        self.assertEqual("1.2.2. Поясним за понятное", lines[8].line.strip())
         self.assertEqual("а) это даже ежу понятно", lines[9].line.strip())
         self.assertEqual("б) это ежу не понятно", lines[10].line.strip())
 
-        self.assertEqual("1.2.3.", lines[11].line)
+        self.assertEqual("1.2.3.", lines[11].line.strip())
 
     def test_structure_docx(self) -> None:
-        any_doc_reader = DocxReader(config=get_config())
+        docx_reader = DocxReader(config=get_config())
         path = self._get_path("header_test.docx")
-        result = any_doc_reader.read(path)
+        result = docx_reader.read(path)
         lines = result.lines
 
-        self.assertEqual("Глава 543", lines[0].line)
-        self.assertEqual("Какой-то текст.", lines[1].line)
+        self.assertEqual("Глава 543", lines[0].line.strip())
+        self.assertEqual("Какой-то текст.", lines[1].line.strip())
 
-        self.assertEqual("1. Текстового", lines[2].line)
-        self.assertEqual("2. Текстового", lines[3].line)
-        self.assertEqual("3. Еще текстового", lines[4].line)
-        self.assertEqual("4. Пам", lines[5].line)
+        self.assertEqual("1. Текстового", lines[2].line.strip())
+        self.assertEqual("2. Текстового", lines[3].line.strip())
+        self.assertEqual("3. Еще текстового", lines[4].line.strip())
+        self.assertEqual("4. Пам", lines[5].line.strip())
 
-        self.assertEqual("4.1. авп", lines[6].line)
-        self.assertEqual("4.2. текстового", lines[7].line)
-        self.assertEqual("4.3. п", lines[8].line)
-        self.assertEqual("4.4. п", lines[9].line)
-        self.assertEqual("4.5. п", lines[10].line)
-        self.assertEqual("4.6. п", lines[11].line)
+        self.assertEqual("4.1. авп", lines[6].line.strip())
+        self.assertEqual("4.2. текстового", lines[7].line.strip())
+        self.assertEqual("4.3. п", lines[8].line.strip())
+        self.assertEqual("4.4. п", lines[9].line.strip())
+        self.assertEqual("4.5. п", lines[10].line.strip())
+        self.assertEqual("4.6. п", lines[11].line.strip())
 
     def test_tz_file(self) -> None:
-        any_doc_reader = DocxReader(config=get_config())
+        docx_reader = DocxReader(config=get_config())
         path = self._get_path("tz.docx")
-        result = any_doc_reader.read(path)
+        result = docx_reader.read(path)
         lines = result.lines
 
-        self.assertEqual("Техническое задание\nна оказание услуг по созданию системы защиты персональных данных \n",
-                         lines[0].line)
+        self.assertEqual("Техническое задание\nна оказание услуг по созданию системы защиты персональных данных \n", lines[0].line)
 
     def test_docx_without_numbering(self) -> None:
-        any_doc_reader = DocxReader(config=get_config())
+        docx_reader = DocxReader(config=get_config())
         path = self._get_path("without_numbering.docx")
         try:
-            result = any_doc_reader.read(path)
+            result = docx_reader.read(path)
         except AttributeError:
             result = None
         self.assertTrue(result is not None)
 
     def test_docx_table_location(self) -> None:
-        any_doc_reader = DocxReader(config=get_config())
+        docx_reader = DocxReader(config=get_config())
         path = self._get_path("example.docx")
-        result = any_doc_reader.read(path)
+        result = docx_reader.read(path)
         lines, tables = result.lines, result.tables
         first_table_uid = tables[0].metadata.uid
         second_table_uid = tables[1].metadata.uid
@@ -100,23 +100,23 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertTrue(found)
 
     def test_caps_letters1(self) -> None:
-        any_doc_reader = DocxReader(config=get_config())
+        docx_reader = DocxReader(config=get_config())
         path = self._get_path("caps_1.docx")
-        result = any_doc_reader.read(path)
+        result = docx_reader.read(path)
         self.assertEqual('ШИЖМАШ МОГАЙ ЛИЕШ ГЫН?	', result.lines[2].line)
         self.assertEqual('АНАСТАСИЯ АЙГУЗИНА', result.lines[3].line)
 
     def test_caps_letters2(self) -> None:
-        any_doc_reader = DocxReader(config=get_config())
+        docx_reader = DocxReader(config=get_config())
         path = self._get_path("caps_2.docx")
-        result = any_doc_reader.read(path)
+        result = docx_reader.read(path)
         self.assertEqual('И. Одар "Таргылтыш"\n', result.lines[0].line)
         self.assertEqual('I глава\n', result.lines[2].line)
 
     def test_justification(self) -> None:
-        any_doc_reader = DocxReader(config=get_config())
+        docx_reader = DocxReader(config=get_config())
         path = self._get_path("justification.docx")
-        result = any_doc_reader.read(path)
+        result = docx_reader.read(path)
         answers = [(15, "left"), (16, "center"), (17, "both"), (18, "right")]
         for answer in answers:
             for annotation in result.lines[answer[0]].annotations:
@@ -124,12 +124,12 @@ class TestAnyDocReader(unittest.TestCase):
                     self.assertEqual(answer[1], annotation.value)
 
     def test_numeration(self) -> None:
-        any_doc_reader = DocxReader(config=get_config())
+        docx_reader = DocxReader(config=get_config())
         path = self._get_path("numeration.docx")
-        result = any_doc_reader.read(path)
+        result = docx_reader.read(path)
         lines = result.lines
-        self.assertEqual("5. Test numeration", lines[1].line)
-        self.assertEqual("5.1 text", lines[2].line)
+        self.assertEqual("5. Test numeration", lines[1].line.strip())  # it's header that isn't tagged
+        self.assertEqual("5.1 text", lines[2].line.strip())  # it's raw text that isn't tagged
         self.assertEqual("5.2 text. ", lines[3].line)
         self.assertEqual("5.2.1.\tlist. ", lines[4].line)
         self.assertEqual("5.2.2.\tlist", lines[5].line)
@@ -140,9 +140,9 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual("5.5.\tlist", lines[13].line)
 
     def test_tables(self) -> None:
-        any_doc_reader = DocxReader(config=get_config())
+        docx_reader = DocxReader(config=get_config())
         path = self._get_path("merged_cells.docx")
-        result = any_doc_reader.read(path)
+        result = docx_reader.read(path)
 
         self.assertEqual("Merged sells", result.tables[0].cells[0][0])
         self.assertEqual("Merged sells", result.tables[0].cells[0][1])
@@ -181,9 +181,9 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual("v2", result.tables[1].cells[2][5])
 
     def test_merged_tables(self) -> None:
-        any_doc_reader = DocxReader(config=get_config())
+        docx_reader = DocxReader(config=get_config())
         path = self._get_path("merged_cells.docx")
-        result = any_doc_reader.read(path)
+        result = docx_reader.read(path)
 
         hidden_cells_table_1 = [(0, 1), (0, 3), (2, 3), (3, 0), (3, 1), (3, 3)]
         for i, j in hidden_cells_table_1:
@@ -221,7 +221,7 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual(result.tables[1].metadata.cell_properties[1][0].colspan, 2)
 
         path = self._get_path("big_table_with_merged_cells.docx")
-        result = any_doc_reader.read(path)
+        result = docx_reader.read(path)
         hidden_cells_big_table = [(0, 1), (0, 2), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (3, 1), (3, 2), (3, 3), (4, 0), (4, 1), (4, 2), (4, 3), (5, 0), (5, 1), (5, 2), (5, 3), (5, 6), (5, 7), (5, 8), (5, 9)]
         for i, j in hidden_cells_big_table:
             self.assertTrue(result.tables[0].metadata.cell_properties[i][j].invisible)
@@ -240,9 +240,9 @@ class TestAnyDocReader(unittest.TestCase):
         self.assertEqual(result.tables[0].metadata.cell_properties[3][0].colspan, 4)
 
     def test_diagram_annotation(self) -> None:
-        any_doc_reader = DocxReader(config=get_config())
+        docx_reader = DocxReader(config=get_config())
         path = self._get_path("diagram_1.docx")
-        result = any_doc_reader.read(path)
+        result = docx_reader.read(path)
 
         for annotation in result.lines[0].annotations:
             if annotation.name == "attachment":
@@ -250,7 +250,7 @@ class TestAnyDocReader(unittest.TestCase):
             break
 
         path = self._get_path("diagram_2.docx")
-        result = any_doc_reader.read(path)
+        result = docx_reader.read(path)
 
         for i in [0, 22]:
             annotation_found = False
@@ -258,6 +258,21 @@ class TestAnyDocReader(unittest.TestCase):
                 if annotation.name == "attachment":
                     annotation_found = True
             self.assertTrue(annotation_found)
+
+    def test_tags(self) -> None:
+        docx_reader = DocxReader(config=get_config())
+        path = self._get_path("with_tags.docx")
+        result = docx_reader.read(path)
+
+        for i in [0, 1, 2, 9, 18, 20, 22, 24]:
+            tag_hierarchy_level = result.lines[i].metadata.tag_hierarchy_level
+            self.assertIsNotNone(tag_hierarchy_level)
+            self.assertEqual(tag_hierarchy_level.line_type, HierarchyLevel.header)
+
+        for i in list(range(4, 9)) + list(range(12, 18)):
+            tag_hierarchy_level = result.lines[i].metadata.tag_hierarchy_level
+            self.assertIsNotNone(tag_hierarchy_level)
+            self.assertEqual(tag_hierarchy_level.line_type, HierarchyLevel.list_item)
 
     def _get_path(self, file_name: str) -> str:
         path_in = os.path.join(self.directory, file_name)

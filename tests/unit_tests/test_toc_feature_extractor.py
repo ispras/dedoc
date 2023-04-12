@@ -26,20 +26,19 @@ class TestTOCFeatureExtractor(unittest.TestCase):
     def test_toc_extractor(self) -> None:
         toc = self.feature_extractor.get_toc(document=self.document.lines)
         self.assertIn("5", toc[0]["page"])
-        self.assertEqual("1.\xa0\xa0\xa0\xa0\xa0Общие сведения	5", toc[0]["line"].line)
+        self.assertEqual("1.\xa0\xa0\xa0\xa0\xa0Общие сведения	5", toc[0]["line"].line.strip())
         self.assertIn("5", toc[1]["page"])
-        self.assertEqual("1.1.\xa0Основание для выполнения	5", toc[1]["line"].line)
+        self.assertEqual("1.1.\xa0Основание для выполнения	5", toc[1]["line"].line.strip())
         self.assertIn("6", toc[2]["page"])
-        self.assertEqual("1.2.\xa0Наименование услуг	6", toc[2]["line"].line)
+        self.assertEqual("1.2.\xa0Наименование услуг	6", toc[2]["line"].line.strip())
 
         self.assertIn("26", toc[13]["page"])
         self.assertEqual("4.2.\xa0Требования к оказанию услуг по обследованию подсистем ИВС Росстата, разработке "
                          "актов классификации, моделей угроз и нарушителя безопасности информации	26",
-                         toc[13]["line"].line)
+                         toc[13]["line"].line.strip())
 
         self.assertIn("40", toc[26]["page"])
-        self.assertEqual("9.\xa0Перечень материалов, передаваемых Заказчику	40",
-                         toc[26]["line"].line)
+        self.assertEqual("9.\xa0Перечень материалов, передаваемых Заказчику	40", toc[26]["line"].line.strip())
 
         self.assertEqual(27, len(toc))
 

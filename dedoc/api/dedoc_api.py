@@ -125,7 +125,7 @@ class UploadFile(Resource):
             elif return_format == "tree":
                 return json2tree(paragraph=document_tree.content.structure)
             elif return_format in ("ujson", "json"):
-                return ujson.dumps(document_tree.to_dict(old_version=False))
+                return ujson.dumps(document_tree.to_dict())
             elif str(parameters.get("return_format", "json")).lower() == "collapsed_tree":
                 return json2collapsed_tree(paragraph=document_tree.content.structure)
             else:

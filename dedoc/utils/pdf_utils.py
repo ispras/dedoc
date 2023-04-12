@@ -29,8 +29,8 @@ def get_page_image(path: str, page_id: int) -> Optional[Image]:
 
 def postprocess(document: UnstructuredDocument) -> UnstructuredDocument:
     for line in document.lines:
-        if line.hierarchy_level.is_raw_text():
-            line.hierarchy_level.can_be_multiline = not getattr(line.metadata, "new_paragraph", False)
+        if line.metadata.tag_hierarchy_level.is_raw_text():
+            line.metadata.tag_hierarchy_level.can_be_multiline = not getattr(line.metadata, "new_paragraph", False)
     return document
 
 

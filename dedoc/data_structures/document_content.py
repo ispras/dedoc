@@ -1,5 +1,3 @@
-
-
 from collections import OrderedDict
 from typing import List
 
@@ -23,17 +21,15 @@ class DocumentContent(Serializable):
         self.structure = structure
         self.warnings = warnings if warnings is not None else []
 
-    def to_dict(self, old_version: bool) -> dict:
+    def to_dict(self) -> dict:
         res = OrderedDict()
-        res["structure"] = self.structure.to_dict(old_version)
-        res["tables"] = [table.to_dict(old_version) for table in self.tables]
+        res["structure"] = self.structure.to_dict()
+        res["tables"] = [table.to_dict() for table in self.tables]
         return res
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
         return api.model('DocumentContent', {
-            'structure': fields.Nested(TreeNode.get_api_dict(api),
-                                       readonly=True,
-                                       description='document content structure'),
+            'structure': fields.Nested(TreeNode.get_api_dict(api), readonly=True, description='document content structure'),
             'tables': fields.List(fields.Nested(Table.get_api_dict(api), description="tables structure"))
         })

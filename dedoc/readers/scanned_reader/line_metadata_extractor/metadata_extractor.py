@@ -8,8 +8,7 @@ from dedoc.data_structures.concrete_annotations.indentation_annotation import In
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.data_structures.concrete_annotations.color_annotation import ColorAnnotation
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.scanned_reader.data_classes.page_with_bboxes import PageWithBBox
 from dedoc.readers.scanned_reader.data_classes.tables.location import Location
@@ -22,8 +21,7 @@ class LineMetadataExtractor:
     def __init__(self, default_spacing: int = 50, *, config: dict) -> None:
         self.config = config
         dirname = os.path.dirname(__file__)
-        path_model = os.path.abspath(os.path.join(dirname, "..", "..", "..", "..", "resources",
-                                                  "font_classifier.pth"))
+        path_model = os.path.abspath(os.path.join(dirname, "..", "..", "..", "..", "resources", "font_classifier.pth"))
         self.font_type_classifier = FontTypeClassifier(path_model)
         self.default_spacing = default_spacing
 
@@ -37,9 +35,7 @@ class LineMetadataExtractor:
 
         return page_with_fonts
 
-    def extract_metadata_and_set_annotations(self,
-                                             page_with_lines: PageWithBBox,
-                                             call_classifier: bool = True) -> List[LineWithLocation]:
+    def extract_metadata_and_set_annotations(self, page_with_lines: PageWithBBox, call_classifier: bool = True) -> List[LineWithLocation]:
         """
         Take page with extracted lines and bboxes and determine line type as bold, italic, text alignment and so on
         Image should be rotated properly, it can be in grayscale or rgb
@@ -62,13 +58,9 @@ class LineMetadataExtractor:
         return lines
 
     def get_line_with_meta(self, bbox: TextWithBBox) -> LineWithLocation:
-        metadata = ParagraphMetadata(paragraph_type=HierarchyLevel.unknown,
-                                     predicted_classes=None,
-                                     page_id=bbox.page_num,
-                                     line_id=bbox.line_num)
+        metadata = LineMetadata(page_id=bbox.page_num, line_id=bbox.line_num)
 
         line = LineWithLocation(line=bbox.text,
-                                hierarchy_level=None,
                                 metadata=metadata,
                                 annotations=bbox.annotations,
                                 uid=bbox.uid,
@@ -138,12 +130,8 @@ class LineMetadataExtractor:
 
         return page
 
-    def __get_paragraph_metadata(self, bbox: TextWithBBox, page_with_lines: PageWithBBox) -> ParagraphMetadata:
-        return ParagraphMetadata(paragraph_type="unknown",
-                                 predicted_classes=None,
-                                 page_id=page_with_lines.page_num,
-                                 line_id=bbox.line_num,
-                                 )
+    def __get_line_metadata(self, bbox: TextWithBBox, page_with_lines: PageWithBBox) -> LineMetadata:
+        return LineMetadata(page_id=page_with_lines.page_num, line_id=bbox.line_num)
 
     def __get_font_size(self, bbox: TextWithBBox, image_height: int) -> int:
         """

@@ -3,7 +3,7 @@ from unittest import TestCase
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.tree_node import TreeNode
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
@@ -12,14 +12,10 @@ class TestTreeNode(TestCase):
 
     def test_root_annotations(self) -> None:
         lines = [LineWithMeta(line="bold text\n",
-                              hierarchy_level=HierarchyLevel.create_root(),
-                              metadata=ParagraphMetadata(paragraph_type="root", predicted_classes=None, page_id=0,
-                                                         line_id=0),
+                              metadata=LineMetadata(hierarchy_level=HierarchyLevel.create_root(), page_id=0, line_id=0),
                               annotations=[BoldAnnotation(start=0, end=10, value="True")]),
                  LineWithMeta(line="italic text\n",
-                              hierarchy_level=HierarchyLevel.create_root(),
-                              metadata=ParagraphMetadata(paragraph_type="root", predicted_classes=None, page_id=0,
-                                                         line_id=1),
+                              metadata=LineMetadata(hierarchy_level=HierarchyLevel.create_root(), page_id=0, line_id=1),
                               annotations=[ItalicAnnotation(start=0, end=12, value="True")]),
                  ]
         node = TreeNode.create(lines=lines)

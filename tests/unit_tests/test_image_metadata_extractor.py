@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from dedoc.metadata_extractors.concreat_metadata_extractors.image_metadata_extractor import ImageMetadataExtractor
+from dedoc.metadata_extractors.concrete_metadata_extractors.image_metadata_extractor import ImageMetadataExtractor
 from tests.test_utils import get_test_config
 
 

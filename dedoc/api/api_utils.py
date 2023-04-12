@@ -6,6 +6,7 @@ from dedoc.data_structures.concrete_annotations.strike_annotation import StrikeA
 from dedoc.data_structures.concrete_annotations.subscript_annotation import SubscriptAnnotation
 from dedoc.data_structures.concrete_annotations.superscript_annotation import SuperscriptAnnotation
 from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.tree_node import TreeNode
 
@@ -33,7 +34,7 @@ def _node2tree(paragraph: 'TreeNode', depth: int, depths: Set[int] = None) -> st
     node_result = []
 
     node_result.append("  {} {} ".format(
-        space, paragraph.metadata.paragraph_type + "&nbsp" + paragraph.node_id))
+        space, paragraph.metadata.hierarchy_level.line_type + "&nbsp" + paragraph.node_id))
     for text in __prettify_text(paragraph.text):
         space = [space_symbol] * 4 * (depth - 1) + 4 * [space_symbol]
         space = "".join(space)
@@ -94,7 +95,7 @@ def json2tree(paragraph: 'TreeNode') -> str:
         space = [space_symbol] * 4 * (depth - 1) + 4 * ["-"]
         space = __add_vertical_line(depths, space)
         node_result.append("<p> <tt> <em>  {} {} </em> </tt> </p>".format(
-            space, node.metadata.paragraph_type + "&nbsp" + node.node_id))
+            space, node.metadata.line_type + "&nbsp" + node.node_id))
         for text in __prettify_text(node.text):
             space = [space_symbol] * 4 * (depth - 1) + 4 * [space_symbol]
             space = __add_vertical_line(depths, space)
@@ -123,9 +124,9 @@ def json2html(text: str,
 
     ptext = __annotations2html(paragraph, table2id)
 
-    if paragraph.metadata.paragraph_type in ["header", "root"]:
+    if paragraph.metadata.hierarchy_level.line_type in [HierarchyLevel.header, HierarchyLevel.root]:
         ptext = "<strong>{}</strong>".format(ptext.strip())
-    elif paragraph.metadata.paragraph_type == "list_item":
+    elif paragraph.metadata.hierarchy_level.line_type == HierarchyLevel.list_item:
         ptext = "<em>{}</em>".format(ptext.strip())
     else:
         ptext = ptext.strip()
@@ -133,7 +134,7 @@ def json2html(text: str,
     text += "<p> {tab} {text}     <sub> id = {id} ; type = {type} </sub></p>".format(
         tab="&nbsp;" * tabs,
         text=ptext,
-        type=str(paragraph.metadata.paragraph_type),
+        type=str(paragraph.metadata.hierarchy_level.line_type),
         id=paragraph.node_id
     )
 

@@ -1,5 +1,3 @@
-import re
-
 from dedoc.data_structures.concrete_annotations.alignment_annotation import AlignmentAnnotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
@@ -13,8 +11,8 @@ from dedoc.data_structures.concrete_annotations.subscript_annotation import Subs
 from dedoc.data_structures.concrete_annotations.superscript_annotation import SuperscriptAnnotation
 from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
 from dedoc.structure_constructors.annotation_merger import AnnotationMerger
 
@@ -55,29 +53,15 @@ class LineWithMetaConverter:
                     annotations.append(self.dict2annotation[property_name](start=start, end=end, value=str(property_value)))
         annotations = self.annotation_merger.merge_annotations(annotations, paragraph.text)
 
-        hl = self.__get_hierarchy_level(paragraph)
-        metadata = ParagraphMetadata(paragraph_type=HierarchyLevel.unknown, predicted_classes=None, page_id=0, line_id=paragraph_id)
-        # metadata._tag = self.__get_tag(paragraph) TODO use this
-        return LineWithMeta(line=paragraph.text, hierarchy_level=hl, metadata=metadata, annotations=annotations, uid=paragraph.uid)
+        metadata = LineMetadata(page_id=0, line_id=paragraph_id, tag_hierarchy_level=self.__get_tag(paragraph))
+        return LineWithMeta(line=paragraph.text, metadata=metadata, annotations=annotations, uid=paragraph.uid)
 
     def __get_tag(self, paragraph: Paragraph) -> HierarchyLevel:
-        if paragraph.list_level is not None and paragraph.list_shift is not None:
-            return HierarchyLevel(paragraph.list_level, paragraph.list_shift, False, HierarchyLevel.list_item)
-
+        # TODO toc, toc_item, bullet_list
         if paragraph.style_level is not None:
-            return HierarchyLevel(paragraph.style_level, 0, False, HierarchyLevel.header)
+            return HierarchyLevel(1, paragraph.style_level, False, HierarchyLevel.header)
+
+        if paragraph.list_level is not None:
+            return HierarchyLevel(2, paragraph.list_level, False, HierarchyLevel.list_item)
 
         return HierarchyLevel(None, None, False, HierarchyLevel.unknown)
-
-    def __get_hierarchy_level(self, paragraph: Paragraph) -> HierarchyLevel:
-        # TODO remove this
-        if paragraph.list_level is not None:
-            return HierarchyLevel(2, paragraph.list_level + 1, False, HierarchyLevel.list_item)
-        if paragraph.style_level is not None:
-            return HierarchyLevel(paragraph.style_level, 0, False, "style_header")
-        if re.match(r"^(Глава|Параграф)\s*(\d\\.)*(\d\\.?)?", paragraph.text):
-            return HierarchyLevel(0, 0, False, HierarchyLevel.paragraph)
-        if re.match(r"^(Статья|Пункт)\s*(\d\\.)*(\d\\.?)?", paragraph.text):
-            return HierarchyLevel(1, 0, False, HierarchyLevel.paragraph)
-
-        return HierarchyLevel.create_raw_text()

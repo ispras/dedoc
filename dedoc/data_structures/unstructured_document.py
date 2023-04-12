@@ -1,5 +1,3 @@
-
-
 from typing import List, Optional
 
 from dedoc.data_structures.attached_file import AttachedFile

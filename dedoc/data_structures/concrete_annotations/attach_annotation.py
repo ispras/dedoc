@@ -1,4 +1,3 @@
-
 from flask_restx import Model, Api, fields
 
 from dedoc.data_structures.annotation import Annotation

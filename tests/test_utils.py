@@ -3,7 +3,7 @@ import os
 import signal
 from typing import Union, List, Optional, Any
 
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.readers.scanned_reader.data_classes.bbox import BBox
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.scanned_reader.data_classes.tables.location import Location
@@ -40,13 +40,7 @@ def create_line_by_coordinates(x_top_left: int,
     location = Location(bbox=bbox, page_number=page)
     line = LineWithLocation(
         line="Some text",
-        hierarchy_level=None,
-        metadata=ParagraphMetadata(
-            paragraph_type="raw_text",
-            predicted_classes=None,
-            page_id=page,
-            line_id=0
-        ),
+        metadata=LineMetadata(page_id=page, line_id=0),
         annotations=[],
         location=location)
     return line

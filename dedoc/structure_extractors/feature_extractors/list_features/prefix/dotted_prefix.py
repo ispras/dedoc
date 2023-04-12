@@ -10,7 +10,7 @@ class DottedPrefix(LinePrefix):
 
     def __init__(self, prefix: str, indent: float) -> None:
         super().__init__(prefix, indent=indent)
-        self.numbers = [int(_) for _ in self.prefix.split(".") if len(_) > 0]
+        self.numbers = [int(n) for n in self.prefix.split(".") if len(n) > 0]
 
     def predecessor(self, other: "DottedPrefix") -> bool:
         if not isinstance(other, DottedPrefix):

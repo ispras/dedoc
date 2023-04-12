@@ -6,7 +6,7 @@ from PyPDF2 import PdfFileReader
 from PyPDF2.utils import PdfReadError
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.metadata_extractors.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
+from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.utils.utils import convert_datetime
 
 

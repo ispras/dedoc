@@ -34,7 +34,7 @@ class TextWithBBox(Serializable):
     def __repr__(self) -> str:
         return self.__str__()
 
-    def to_dict(self, old_version: bool = False) -> dict:
+    def to_dict(self) -> dict:
         res = OrderedDict()
         res["uid"] = self.uid
         res["_uid"] = self.uid

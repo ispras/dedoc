@@ -5,7 +5,7 @@ from dedoc.structure_extractors.feature_extractors.list_features.prefix.bracket_
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.dotted_prefix import DottedPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.empty_prefix import EmptyPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.letter_prefix import LetterPrefix
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.non_letter_prefix import NonLetterPrefix
+from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.prefix import LinePrefix
 
 
@@ -31,7 +31,7 @@ class TestPrefix(unittest.TestCase):
         self._check_if_valid(valid_prefix=self.valid_letter, prefix_class=LetterPrefix)
 
     def test_non_letter_is_valid(self) -> None:
-        self._check_if_valid(valid_prefix=self.valid_non_letter, prefix_class=NonLetterPrefix)
+        self._check_if_valid(valid_prefix=self.valid_non_letter, prefix_class=BulletPrefix)
 
     def _check_if_valid(self, valid_prefix: List[str], prefix_class: Type[LinePrefix]) -> None:
         message_template = "assume `{prefix}` is {status} for {clazz} prefix"
@@ -49,7 +49,7 @@ class TestPrefix(unittest.TestCase):
                         BracketPrefix("1)", 0),
                         EmptyPrefix("some prefix"),
                         LetterPrefix("a)", 0),
-                        NonLetterPrefix("-", 0)]
+                        BulletPrefix("-", 0)]
         for first in mixed_prefix:
             for second in mixed_prefix:
                 if first != second:
@@ -57,10 +57,10 @@ class TestPrefix(unittest.TestCase):
                     self.assertFalse(second.predecessor(first))
 
     def test_non_letter_predecessor(self) -> None:
-        prefix_star_1 = NonLetterPrefix("*", 0)
-        prefix_star_2 = NonLetterPrefix("*", 0)
-        prefix_minus_1 = NonLetterPrefix("-", 0)
-        prefix_minus_2 = NonLetterPrefix("-", 0)
+        prefix_star_1 = BulletPrefix("*", 0)
+        prefix_star_2 = BulletPrefix("*", 0)
+        prefix_minus_1 = BulletPrefix("-", 0)
+        prefix_minus_2 = BulletPrefix("-", 0)
         self.assertTrue(prefix_star_1.predecessor(prefix_star_2))
         self.assertTrue(prefix_star_2.predecessor(prefix_star_1))
 
@@ -205,7 +205,7 @@ class TestPrefix(unittest.TestCase):
         self.assertFalse(one.predecessor(two))
 
     def test_dotted_list_regexp(self) -> None:
-        self.assertTrue(NonLetterPrefix.regexp.fullmatch(' -'))
-        self.assertTrue(NonLetterPrefix.regexp.fullmatch('*'))
-        self.assertTrue(NonLetterPrefix.regexp.fullmatch('     ©'))
-        self.assertTrue(NonLetterPrefix.regexp.fullmatch('     ©   ') is None)
+        self.assertTrue(BulletPrefix.regexp.fullmatch(' -'))
+        self.assertTrue(BulletPrefix.regexp.fullmatch('*'))
+        self.assertTrue(BulletPrefix.regexp.fullmatch('     ©'))
+        self.assertTrue(BulletPrefix.regexp.fullmatch('     ©   ') is None)

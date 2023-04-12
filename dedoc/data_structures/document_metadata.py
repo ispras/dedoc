@@ -1,4 +1,3 @@
-
 import uuid
 from collections import OrderedDict
 
@@ -12,8 +11,7 @@ class DocumentMetadata(Serializable):
     """
         holds information about document metadata.
         :param uid: document unique identifier (useful for attached files)
-        :param file_name: original document name (before rename and conversion, so it can contain non-ascii symbols,
-        spaces and so on)
+        :param file_name: original document name (before rename and conversion, so it can contain non-ascii symbols, spaces and so on)
         :param size: size of the original file in bytes
         :param modified_time: time of the last modification in unix time format (seconds since the epoch)
         :param created_time: time of the creation in unixtime
@@ -53,7 +51,7 @@ class DocumentMetadata(Serializable):
             setattr(self, key, value)
             self.other_fields[key] = value
 
-    def to_dict(self, old_version: bool) -> dict:
+    def to_dict(self) -> dict:
         res = OrderedDict()
         res["uid"] = self.uid
         res["file_name"] = self.file_name
@@ -71,16 +69,12 @@ class DocumentMetadata(Serializable):
     @staticmethod
     def get_api_dict(api: Api) -> Model:
         return api.model('DocumentMetadata', {
-            "uid": fields.String(description='unique document identifier',
-                                 example="doc_uid_auto_ba73d76a-326a-11ec-8092-417272234cb0"),
+            "uid": fields.String(description='unique document identifier', example="doc_uid_auto_ba73d76a-326a-11ec-8092-417272234cb0"),
             'file_name': fields.String(description='file name', example="example.odt"),
             'size': fields.Integer(description='file size in bytes', example="20060"),
-            'modified_time': fields.Integer(description='modification time of the document in the format UnixTime',
-                                            example="1590579805"),
-            'created_time': fields.Integer(description='creation time of the document in the format UnixTime',
-                                           example="1590579805"),
-            'access_time': fields.Integer(description='file access time in format UnixTime',
-                                          example="1590579805"),
+            'modified_time': fields.Integer(description='modification time of the document in the format UnixTime', example="1590579805"),
+            'created_time': fields.Integer(description='creation time of the document in the format UnixTime', example="1590579805"),
+            'access_time': fields.Integer(description='file access time in format UnixTime', example="1590579805"),
             'file_type': fields.String(description='mime-type file', example="application/vnd.oasis.opendocument.text"),
             '[a-z]*': wild_any_fields
         })

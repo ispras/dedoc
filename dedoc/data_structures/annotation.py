@@ -1,5 +1,3 @@
-
-
 from collections import OrderedDict
 
 from flask_restx import Api, Model, fields
@@ -39,15 +37,12 @@ class Annotation(Serializable):
     def __repr__(self) -> str:
         return "{name}(...)".format(name=self.name.capitalize())
 
-    def to_dict(self, old_version: bool) -> dict:
+    def to_dict(self) -> dict:
         res = OrderedDict()
         res["start"] = self.start
         res["end"] = self.end
-        if old_version:
-            res["value"] = self.name + ":" + self.value
-        else:
-            res["name"] = self.name
-            res["value"] = self.value
+        res["name"] = self.name
+        res["value"] = self.value
         return res
 
     @staticmethod
@@ -57,8 +52,7 @@ class Annotation(Serializable):
         return api.model('Annotation', {
             'start': fields.Integer(description='annotation start index', required=True, example=0),
             'end': fields.Integer(description='annotation end index', required=True, example=4),
-            'name': fields.String(description='annotation name', required=True, example='bold',
-                                  enum=names),
+            'name': fields.String(description='annotation name', required=True, example='bold', enum=names),
             'value': fields.String(description='annotation value. For example, it may be font size value for size type '
                                                'or type of alignment for alignment type',
                                    required=True,

@@ -35,12 +35,7 @@ class PdfScanReader(PdfBase):
         self.ocr = OCRLineExtractor(config=config)
         self.logger = config.get("logger", logging.getLogger())
 
-    def can_read(self,
-                 path: str,
-                 mime: str,
-                 extension: str,
-                 document_type: str,
-                 parameters: Optional[dict] = None) -> bool:
+    def can_read(self, path: str, mime: str, extension: str, document_type: str, parameters: Optional[dict] = None) -> bool:
         parameters = {} if parameters is None else parameters
         with_archive = parameters.get("archive_as_single_file", "true").lower() == "true"
         return self.__check_mime(mime, with_archive) or self.__check_path(path, with_archive) or \

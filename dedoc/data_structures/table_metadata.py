@@ -1,4 +1,3 @@
-
 from collections import OrderedDict
 from typing import Optional, List
 from flask_restx import fields, Api, Model
@@ -23,12 +22,12 @@ class TableMetadata(Serializable):
         self.is_inserted = is_inserted
         self.cell_properties = cell_properties
 
-    def to_dict(self, old_version: bool) -> dict:
+    def to_dict(self) -> dict:
         res = OrderedDict()
         res["uid"] = self.uid
         res["page_id"] = self.page_id
         res["is_inserted"] = self.is_inserted
-        res["cell_properties"] = [[cell_prop.to_dict(old_version) for cell_prop in row_prop]
+        res["cell_properties"] = [[cell_prop.to_dict() for cell_prop in row_prop]
                                   for row_prop in self.cell_properties] if self.cell_properties else None
         return res
 
@@ -39,8 +38,7 @@ class TableMetadata(Serializable):
             'uid': fields.String(description="table unique id"),
             'is_inserted': fields.Boolean(description="was the table inserted into document body"),
             'cell_properties': fields.List(fields.List(fields.Nested(CellProperty.get_api_dict(api),
-                                                                     description="cell properties, colspan, rowspan, "
-                                                                                 "etc",
+                                                                     description="cell properties, colspan, rowspan, etc",
                                                                      allow_null=True,
                                                                      skip_none=True)))
         })

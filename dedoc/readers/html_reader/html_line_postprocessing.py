@@ -2,14 +2,10 @@ from typing import List
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.readers.utils.hierarchy_level_extractor import HierarchyLevelExtractor
 from dedoc.readers.html_reader.html_tags import HtmlTags
 
 
 class HtmlLinePostprocessing:
-
-    def __init__(self) -> None:
-        self.hierarchy_level_extractor = HierarchyLevelExtractor()
 
     def postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:
         lines = self.__lines_postprocessing(document.lines)
@@ -17,13 +13,10 @@ class HtmlLinePostprocessing:
         return document
 
     def __lines_postprocessing(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:
-        lines = self.hierarchy_level_extractor.get_hierarchy_level(lines)
         lines = self.__add_newlines(lines)
         lines = self.__fix_special_symbols(lines)
         for line_id, line in enumerate(lines):
             line.metadata.line_id = line_id
-            if line.hierarchy_level.paragraph_type == "named_header":
-                line.metadata.paragraph_type = line.hierarchy_level.paragraph_type
         return lines
 
     def __add_newlines(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:

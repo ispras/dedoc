@@ -3,10 +3,8 @@ import shutil
 import tempfile
 import unittest
 
-from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import \
-    DocxAttachmentsExtractor
-from dedoc.attachments_extractors.concrete_attachments_extractors.pptx_attachments_extractor import \
-    PptxAttachmentsExtractor
+from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
+from dedoc.attachments_extractors.concrete_attachments_extractors.pptx_attachments_extractor import PptxAttachmentsExtractor
 
 
 class TestAttachmentsExtractor(unittest.TestCase):

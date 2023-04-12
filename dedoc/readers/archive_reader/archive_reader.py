@@ -28,12 +28,7 @@ class ArchiveReader(BaseReader):
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
 
-    def can_read(self,
-                 path: str,
-                 mime: str,
-                 extension: str,
-                 document_type: Optional[str],
-                 parameters: Optional[dict] = None) -> bool:
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str], parameters: Optional[dict] = None) -> bool:
         if parameters is None:
             parameters = {}
 
@@ -45,10 +40,7 @@ class ArchiveReader(BaseReader):
 
         return False
 
-    def read(self,
-             path: str,
-             document_type: Optional[str] = None,
-             parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         function return empty content of zip, all content will inside attachments
         """

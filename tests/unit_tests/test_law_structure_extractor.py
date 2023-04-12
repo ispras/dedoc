@@ -6,7 +6,7 @@ from collections import defaultdict
 from typing import List
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
@@ -28,35 +28,35 @@ class TestLawStructureExtractor(unittest.TestCase):
 
     def test_item(self) -> None:
         hl, _ = self.body_builder._line_2level(text="1) пункт первый", label="structure_unit", init_hl_depth=self.depth)
-        self.assertEqual("item", hl.paragraph_type)
+        self.assertEqual("item", hl.line_type)
         hl, _ = self.body_builder._line_2level(text="3) пункт первый", label="structure_unit", init_hl_depth=self.depth)
-        self.assertEqual("item", hl.paragraph_type)
+        self.assertEqual("item", hl.line_type)
         hl, _ = self.body_builder._line_2level(text="1000) пункт первый", label="structure_unit",
                                                init_hl_depth=self.depth)
-        self.assertEqual("item", hl.paragraph_type)
+        self.assertEqual("item", hl.line_type)
         hl, _ = self.body_builder._line_2level(text="1.1.3) пункт первый", label="structure_unit",
                                                init_hl_depth=self.depth)
-        self.assertEqual("item", hl.paragraph_type)
+        self.assertEqual("item", hl.line_type)
 
     def test_subitem(self) -> None:
         hl, _ = self.body_builder._line_2level(text="а) пункт первый", label="structure_unit", init_hl_depth=self.depth)
-        self.assertEqual("subitem", hl.paragraph_type)
+        self.assertEqual("subitem", hl.line_type)
         hl, _ = self.body_builder._line_2level(text="б) пункт первый", label="structure_unit", init_hl_depth=self.depth)
-        self.assertEqual("subitem", hl.paragraph_type)
+        self.assertEqual("subitem", hl.line_type)
         hl, _ = self.body_builder._line_2level(text="ё) пункт первый", label="structure_unit", init_hl_depth=self.depth)
-        self.assertEqual("subitem", hl.paragraph_type)
+        self.assertEqual("subitem", hl.line_type)
 
     def test_article_part(self) -> None:
         hl, _ = self.body_builder._line_2level(text="1. пункт первый", label="structure_unit", init_hl_depth=self.depth)
-        self.assertEqual("articlePart", hl.paragraph_type)
+        self.assertEqual("articlePart", hl.line_type)
         hl, _ = self.body_builder._line_2level(text="2. пункт первый", label="structure_unit", init_hl_depth=self.depth)
-        self.assertEqual("articlePart", hl.paragraph_type)
+        self.assertEqual("articlePart", hl.line_type)
         hl, _ = self.body_builder._line_2level(text="1.2.1. пункт первый", label="structure_unit",
                                                init_hl_depth=self.depth)
-        self.assertEqual("articlePart", hl.paragraph_type)
+        self.assertEqual("articlePart", hl.line_type)
         hl, _ = self.body_builder._line_2level(text="1.2.1.2. пункт первый", label="structure_unit",
                                                init_hl_depth=self.depth)
-        self.assertEqual("articlePart", hl.paragraph_type)
+        self.assertEqual("articlePart", hl.line_type)
 
     def test_begin_application(self) -> None:
         application_starts = ["Утвержден", "УТВЕРЖДЕНО \n", "Приложение №1\n", "Приложение № 45\n", "Утверждено    \n",
@@ -87,11 +87,8 @@ class TestLawStructureExtractor(unittest.TestCase):
             self.assertEqual(number[:res.start()], without_ends[num])
 
     def __get_line(self, hierarchy_level: HierarchyLevel, text: str) -> LineWithMeta:
-        metadata = ParagraphMetadata(page_id=0,
-                                     line_id=0,
-                                     paragraph_type=hierarchy_level.paragraph_type,
-                                     predicted_classes=None)
-        return LineWithMeta(line=text, hierarchy_level=hierarchy_level, metadata=metadata, annotations=[])
+        metadata = LineMetadata(page_id=0, line_id=0, hierarchy_level=hierarchy_level)
+        return LineWithMeta(line=text, metadata=metadata, annotations=[])
 
     def __check_one_postprocess(self, text: str, text_expected: str) -> None:
         hierarchy_level = HierarchyLevel(4, 0, True, "subsection")

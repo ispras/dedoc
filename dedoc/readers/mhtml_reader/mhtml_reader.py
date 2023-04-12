@@ -28,18 +28,10 @@ class MhtmlReader(BaseReader):
         self.mhtml_extensions = tuple(self.mhtml_extensions)
         self.html_reader = HtmlReader(config=config)
 
-    def can_read(self,
-                 path: str,
-                 mime: str,
-                 extension: str,
-                 document_type: Optional[str],
-                 parameters: Optional[dict] = None) -> bool:
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str], parameters: Optional[dict] = None) -> bool:
         return extension.lower().endswith(tuple(self.mhtml_extensions))
 
-    def read(self,
-             path: str,
-             document_type: Optional[str] = None,
-             parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
 
         parameters = {} if parameters is None else parameters
         save_dir = os.path.dirname(path)
@@ -49,9 +41,7 @@ class MhtmlReader(BaseReader):
         lines = []
         tables = []
         for html_file in names_html:
-            result = self.html_reader.read(path=html_file,
-                                           parameters=parameters,
-                                           document_type=document_type)
+            result = self.html_reader.read(path=html_file, parameters=parameters, document_type=document_type)
             lines.extend(result.lines)
             tables.extend(result.tables)
 
@@ -77,8 +67,7 @@ class MhtmlReader(BaseReader):
                 continue
             content_type = part.get("Content-type", "")
             content_location = part['Content-Location']
-            content_name = os.path.basename(urlparse(content_location).path) or \
-                '{}.html'.format(os.path.basename(os.path.splitext(path)[0]))
+            content_name = os.path.basename(urlparse(content_location).path) or '{}.html'.format(os.path.basename(os.path.splitext(path)[0]))
             if content_type == "text/html" and not content_name.endswith(".html"):
                 content_name += ".html"
 
