@@ -13,6 +13,7 @@ from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
+from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
 from dedoc.utils.utils import calculate_file_hash, get_encoding
 
 
@@ -31,8 +32,7 @@ class RawTextReader(BaseReader):
         lines = self._get_lines_with_meta(path=path, encoding=encoding)
         encoding_warning = "encoding is {}".format(encoding)
         result = UnstructuredDocument(lines=lines, tables=[], attachments=[], warnings=[encoding_warning])
-        # return self._postprocess(result) TODO
-        return result
+        return self._postprocess(result)
 
     def __get_encoding(self, path: str, parameters: dict) -> str:
         if parameters.get("encoding"):
@@ -45,17 +45,24 @@ class RawTextReader(BaseReader):
         file_hash = calculate_file_hash(path=path)
         number_of_empty_lines = 0
         previous_log_time = time.time()
+        prev_line = None
+
         for line_id, line in self._get_lines(path=path, encoding=encoding):
             if time.time() - previous_log_time > 5:
                 self.logger.info("done {} lines".format(line_id))
                 previous_log_time = time.time()
+
             metadata = LineMetadata(page_id=0, line_id=line_id)
             uid = "txt_{}_{}".format(file_hash, line_id)
             spacing_annotation_value = str(int(100 * (0.5 if number_of_empty_lines == 0 else number_of_empty_lines)))
             spacing_annotation = SpacingAnnotation(start=0, end=len(line), value=spacing_annotation_value)
             indent_annotation = self._get_indent_annotation(line)
+
             line_with_meta = LineWithMeta(line=line, metadata=metadata, annotations=[spacing_annotation, indent_annotation], uid=uid)
+            line_with_meta.metadata.tag_hierarchy_level = DefaultStructureExtractor.get_list_hl_with_regexp(line_with_meta, prev_line)
+            prev_line = line_with_meta
             lines.append(line_with_meta)
+
             if line.isspace():
                 number_of_empty_lines += 1
             else:

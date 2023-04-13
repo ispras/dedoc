@@ -42,15 +42,15 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         self.assertEqual("header", node["metadata"]["paragraph_type"])
         self.assertEqual("Глава 1", node["text"].strip()[:30])
 
-        node = self._get_by_tree_path(tree, "0.1.0")
+        node = self._get_by_tree_path(tree, "0.0.0.0")
         self.assertEqual("raw_text", node["metadata"]["paragraph_type"])
         self.assertEqual("Какие то определения", node["text"].strip()[:30])
 
-        node = self._get_by_tree_path(tree, "0.1.1")
+        node = self._get_by_tree_path(tree, "0.0.0.1")
         self.assertEqual("header", node["metadata"]["paragraph_type"])
         self.assertEqual("Статья 1", node["text"].strip()[:30])
 
-        node = self._get_by_tree_path(tree, "0.1.1.0")
+        node = self._get_by_tree_path(tree, "0.0.0.1.0")
         self.assertEqual("raw_text", node["metadata"]["paragraph_type"])
         self.assertEqual("Определим определения  \nТекст ", node["text"].strip()[:30])
         self.assertIn({'start': 1, 'end': 31, 'name': 'bold', 'value': 'True'}, node["annotations"])
@@ -58,19 +58,19 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         self.assertIn({'start': 42, 'end': 45, 'name': 'underlined', 'value': 'True'}, node["annotations"])
         self.assertIn({'start': 32, 'end': 42, 'name': 'italic', 'value': 'True'}, node["annotations"])
 
-        node = self._get_by_tree_path(tree, "0.1.2")
+        node = self._get_by_tree_path(tree, "0.0.0.2")
         self.assertEqual("header", node["metadata"]["paragraph_type"])
         self.assertEqual("Статья 2", node["text"].strip()[:30])
 
-        node = self._get_by_tree_path(tree, "0.1.2.0")
+        node = self._get_by_tree_path(tree, "0.0.0.2.0")
         self.assertEqual("raw_text", node["metadata"]["paragraph_type"])
         self.assertEqual("Дадим пояснения", node["text"].strip()[:30])
 
-        node = self._get_by_tree_path(tree, "0.1.2.1")
+        node = self._get_by_tree_path(tree, "0.0.0.2.1")
         self.assertEqual("list", node["metadata"]["paragraph_type"])
         self.assertEqual("", node["text"].strip()[:30])
 
-        node = self._get_by_tree_path(tree, "0.1.2.1.0")
+        node = self._get_by_tree_path(tree, "0.0.0.2.1.0")
         self.assertEqual("list_item", node["metadata"]["paragraph_type"])
         self.assertEqual("1.2.1.  Поясним за непонятное", node["text"].strip()[:30])
         bold = [annotation for annotation in node["annotations"] if annotation["name"] == BoldAnnotation.name]
@@ -79,23 +79,23 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         self.assertEqual("Поясним", node["text"][first["start"]: first["end"]].strip())
         self.assertEqual("непонятное", node["text"][second["start"]: second["end"]].strip())
 
-        node = self._get_by_tree_path(tree, "0.1.2.1.1")
+        node = self._get_by_tree_path(tree, "0.0.0.2.1.1")
         self.assertEqual("list_item", node["metadata"]["paragraph_type"])
         self.assertEqual("1.2.2. Поясним за понятное", node["text"].strip()[:30])
 
-        node = self._get_by_tree_path(tree, "0.1.2.1.1.0")
+        node = self._get_by_tree_path(tree, "0.0.0.2.1.1.0")
         self.assertEqual("list", node["metadata"]["paragraph_type"])
         self.assertEqual("", node["text"].strip()[:30])
 
-        node = self._get_by_tree_path(tree, "0.1.2.1.1.0.0")
+        node = self._get_by_tree_path(tree, "0.0.0.2.1.1.0.0")
         self.assertEqual("list_item", node["metadata"]["paragraph_type"])
         self.assertEqual("a) это даже ежу понятно", node["text"].strip()[:30])
 
-        node = self._get_by_tree_path(tree, "0.1.2.1.1.0.1")
+        node = self._get_by_tree_path(tree, "0.0.0.2.1.1.0.1")
         self.assertEqual("list_item", node["metadata"]["paragraph_type"])
         self.assertEqual("b) это ежу не понятно", node["text"].strip()[:30])
 
-        node = self._get_by_tree_path(tree, "0.1.2.1.2")
+        node = self._get_by_tree_path(tree, "0.0.0.2.1.2")
         self.assertEqual("list_item", node["metadata"]["paragraph_type"])
         self.assertEqual("1.2.3.", node["text"].strip()[:30])
 

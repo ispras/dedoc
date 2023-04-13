@@ -24,40 +24,14 @@ class LineMetadata(Serializable):
                  tag_hierarchy_level: Optional[HierarchyLevel] = None,
                  hierarchy_level: Optional[HierarchyLevel] = None,
                  other_fields: Optional[dict] = None) -> None:
-        # Tag can have level: hierarchy_level [level1, level2]:
-        # list level1 > list_item level1
-        # 1) статические для всех документов: toc level1 > toc_item level1 > list level1 > list_item level1
-        #                                       footer level1 > [link level1, page_id level1]
-        # 2) динамичные, различаются от дока к доку: headers can have different levels (Header of document level1 > header of part level1)
-        # So we present 'tag' like Tuple[str, HierarchyLevel]
-        # -> Each reader must set tags and their HL
-        # Tag's paragraph_type must get value one of the set [list, list_item, header, footer_link, page_id, footer, toc, toc_item].
-        # Set will be changed in the future
-        # In the future we create class TagHierarchyLevelExtractor, which contain logic of static tags for each document (логика статических тегов)
-        self._tag_hierarchy_level = HierarchyLevel(None, None, can_be_multiline=False, line_type=HierarchyLevel.unknown) \
+        self.tag_hierarchy_level = HierarchyLevel(None, None, can_be_multiline=False, line_type=HierarchyLevel.unknown) \
             if tag_hierarchy_level is None else tag_hierarchy_level
-        self._hierarchy_level = hierarchy_level
+        self.hierarchy_level = hierarchy_level
         self.page_id = page_id
         self.line_id = line_id
         if other_fields is not None and len(other_fields) > 0:
             self.extend_other_fields(other_fields)
         self.__other_fields = {}
-
-    @property
-    def hierarchy_level(self) -> HierarchyLevel:
-        return self._hierarchy_level
-
-    @hierarchy_level.setter
-    def hierarchy_level(self, value):
-        self._hierarchy_level = value
-
-    @property
-    def tag_hierarchy_level(self) -> HierarchyLevel:
-        return self._tag_hierarchy_level
-
-    @tag_hierarchy_level.setter
-    def tag_hierarchy_level(self, value):
-        self._tag_hierarchy_level = value
 
     def extend_other_fields(self, new_fields: dict) -> None:
         assert (new_fields is not None)
@@ -80,9 +54,11 @@ class LineMetadata(Serializable):
     @staticmethod
     def get_api_dict(api: Api) -> Model:
         return api.model('LineMetadata', {
-            'paragraph_type': fields.String(description="line type (header, list_item, list) and etc.", required=True, example="header"),
+            'paragraph_type': fields.String(description="paragraph type (header, list_item, list) and etc.", required=True, example="header"),
             'page_id': fields.Integer(description="page number of begin paragraph", required=False, example=0),
             'line_id': fields.Integer(description="line number of begin paragraph", required=True, example=13),
             '_*': wild_forbid_fields,  # don't get private fields
+            'tag_hierarchy_level': wild_forbid_fields,
+            'hierarchy_level': wild_forbid_fields,
             '[a-z]*': wild_any_fields
         })

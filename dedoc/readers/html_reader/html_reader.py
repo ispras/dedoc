@@ -77,8 +77,8 @@ class HtmlReader(BaseReader):
             return []
 
         annotations = self.tag_annotation_parser.parse(tag=tag)
-        header_level = int(tag.name[1:]) if tag.name in HtmlTags.header_tags else -1
-        line_type = HierarchyLevel.unknown if header_level == -1 else HierarchyLevel.header
+        header_level = int(tag.name[1:]) if tag.name in HtmlTags.header_tags else 0
+        line_type = HierarchyLevel.unknown if header_level == 0 else HierarchyLevel.header
         tag_uid = hashlib.md5((uid + text).encode()).hexdigest()
         line = self.__make_line(line=text,
                                 line_type=line_type,
@@ -121,7 +121,7 @@ class HtmlReader(BaseReader):
         if annotations is None:
             annotations = []
 
-        level = None if header_level == -1 else HierarchyLevel(1, header_level, False, line_type=line_type)
+        level = None if header_level == 0 else HierarchyLevel(1, header_level, False, line_type=line_type)
         metadata = LineMetadata(page_id=0, line_id=None, tag_hierarchy_level=level)  # TODO line_id
 
         uid = "{}_{}".format(path_hash, uid)
@@ -174,13 +174,12 @@ class HtmlReader(BaseReader):
         block_lines = self.__handle_block(item, uid=path_hash, handle_invisible_table=handle_invisible_table)
         hl_depth = header_line.metadata.tag_hierarchy_level.level_1
         for line in block_lines:
-            if line.metadata.tag_hierarchy_level is None:
+            if line.metadata.tag_hierarchy_level.is_unknown():
                 header_line += line
             else:
                 # Handle complex and nested lists
                 lines.append(header_line)
-                if line.metadata.tag_hierarchy_level.level_1 is not None:
-                    line.metadata.tag_hierarchy_level.level_1 += hl_depth
+                line.metadata.tag_hierarchy_level.level_1 += hl_depth
                 header_line = line
         lines.append(header_line)
         return lines

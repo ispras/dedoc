@@ -57,7 +57,7 @@ class JsonReader(BaseReader):
             line = self.__handle_one_element(depth=depth,
                                              value=value,
                                              line_type=key,
-                                             line_type_meta=HierarchyLevel.unknown)
+                                             line_type_meta=key)
             result.append(line)
             if not self.__is_flat(value):
                 stack.append((element, depth))
