@@ -35,18 +35,18 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
 
     def __get_hl_with_tag(self, line: LineWithMeta) -> HierarchyLevel:
         assert line.metadata.tag_hierarchy_level is not None
-        level_2 = line.metadata.tag_hierarchy_level.level_2
+        level_1, level_2 = line.metadata.tag_hierarchy_level.level_1, line.metadata.tag_hierarchy_level.level_2
 
-        if line.metadata.tag_hierarchy_level.level_1 is None or line.metadata.tag_hierarchy_level.level_2 is None:
+        if level_1 is None or level_2 is None:
             return HierarchyLevel(None, None, True, line.metadata.tag_hierarchy_level.line_type)
 
         if line.metadata.tag_hierarchy_level.line_type == HierarchyLevel.header:
             return HierarchyLevel(level_1=1, level_2=level_2, can_be_multiline=False, line_type=HierarchyLevel.header)
 
         if line.metadata.tag_hierarchy_level.line_type == HierarchyLevel.list_item:
-            return HierarchyLevel(level_1=2, level_2=level_2, can_be_multiline=False, line_type=HierarchyLevel.list_item)
+            return HierarchyLevel(level_1=level_1, level_2=level_2, can_be_multiline=False, line_type=HierarchyLevel.list_item)
 
-        return HierarchyLevel(None, None, True, line.metadata.tag_hierarchy_level.line_type)
+        return HierarchyLevel(level_1, level_2, True, line.metadata.tag_hierarchy_level.line_type)
 
     @staticmethod
     def get_list_hl_with_regexp(line: LineWithMeta, previous_line: Optional[LineWithMeta]) -> HierarchyLevel:

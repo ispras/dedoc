@@ -62,16 +62,9 @@ def marshal_with_wrapper(model: Model,
                     response=func(*args, **kwargs),
                     status=200,
                     mimetype='text/html;charset=utf-8')
-            elif serializer in ("json", "ujson"):
+            else:
                 return app.response_class(
                     response=func(*args, **kwargs),
-                    status=200,
-                    mimetype='application/json')
-            else:
-                func2 = api.marshal_with(model, **other)(func)
-                ob = func2(*args, **kwargs)
-                return app.response_class(
-                    response=json.dumps(obj=ob, ensure_ascii=False, indent=2),
                     status=200,
                     mimetype='application/json')
 
@@ -103,7 +96,7 @@ def check_on_unnecessary(request: Request, from_parser: dict) -> List[str]:
 class UploadFile(Resource):
     @api.doc('parsed document', model=ParsedDocument.get_api_dict(api))
     @marshal_with_wrapper(ParsedDocument.get_api_dict(api), request, skip_none=True)
-    def post(self) -> Union[str, ParsedDocument]:
+    def post(self) -> str:
         if request.method == 'POST':
             if 'file' not in request.files or request.files['file'] is None or request.files['file'].filename == "":
                 raise MissingFileException("Error: Missing content in request_post file parameter",
@@ -119,18 +112,16 @@ class UploadFile(Resource):
             document_tree.warnings.extend(warnings)
             return_format = str(parameters.get("return_format", "json")).lower()
             if return_format == "html":
-                return json2html(text="", paragraph=document_tree.content.structure,
-                                 tables=document_tree.content.tables,
-                                 tabs=0)
+                return json2html(text="", paragraph=document_tree.content.structure, tables=document_tree.content.tables, tabs=0)
             elif return_format == "tree":
                 return json2tree(paragraph=document_tree.content.structure)
             elif return_format in ("ujson", "json"):
                 return ujson.dumps(document_tree.to_dict())
-            elif str(parameters.get("return_format", "json")).lower() == "collapsed_tree":
+            elif return_format == "collapsed_tree":
                 return json2collapsed_tree(paragraph=document_tree.content.structure)
             else:
                 logger.info("Send result. File {} with parameters {}".format(file.filename, parameters))
-                return document_tree
+                return json.dumps(document_tree.to_dict(), ensure_ascii=False, indent=2)
 
 
 @api.route('/static_file')

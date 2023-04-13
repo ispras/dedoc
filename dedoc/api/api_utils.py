@@ -95,7 +95,7 @@ def json2tree(paragraph: 'TreeNode') -> str:
         space = [space_symbol] * 4 * (depth - 1) + 4 * ["-"]
         space = __add_vertical_line(depths, space)
         node_result.append("<p> <tt> <em>  {} {} </em> </tt> </p>".format(
-            space, node.metadata.line_type + "&nbsp" + node.node_id))
+            space, node.metadata.hierarchy_level.line_type + "&nbsp" + node.node_id))
         for text in __prettify_text(node.text):
             space = [space_symbol] * 4 * (depth - 1) + 4 * [space_symbol]
             space = __add_vertical_line(depths, space)

@@ -198,8 +198,7 @@ class TabbyPDFReader(PdfBase):
                                                   uid=uid,
                                                   location=Location(bbox=bbox, page_number=page_number),
                                                   order=order)
-            tag_hierarchy_level = self.__get_tag(line_with_location, prev_line, meta)
-            line_with_location.metadata.tag_hierarchy_level = tag_hierarchy_level
+            line_with_location.metadata.tag_hierarchy_level = self.__get_tag(line_with_location, prev_line, meta)
             prev_line = line_with_location
 
             lines.append(line_with_location)
