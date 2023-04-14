@@ -37,7 +37,7 @@ class TestListFeatures(TestCase):
 
     def test_dotted(self) -> None:
         line = self._get_line_with_meta("1 some text")
-        self.assertEqual(DottedPrefix("1", 10), self.feature_extractor._get_prefix(line))
+        self.assertEqual(EmptyPrefix(indent=10), self.feature_extractor._get_prefix(line))
 
         line = self._get_line_with_meta("1. some text")
         self.assertEqual(DottedPrefix("1.", 10), self.feature_extractor._get_prefix(line))

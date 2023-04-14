@@ -14,13 +14,14 @@ class TestApiArchiveReader(AbstractTestApiDocReader):
         content = result['content']
         tree = content["structure"]
         self._check_tree_sanity(tree)
-        node = self._get_by_tree_path(tree, "0.0")
-        text = node["text"].strip().split("\n")
+        text = self._get_by_tree_path(tree, "0.0")["text"].strip().split("\n")
         self.assertEqual("Первая строка Первого файла", text[0])
         self.assertEqual("Вторая строка Первого файла", text[1])
-        self.assertEqual("'Третья Строка третьего файла", text[2])
-        self.assertEqual("Первая строка второго файла", text[3])
-        self.assertEqual("Вторая строка второго файла", text[4])
+        text = self._get_by_tree_path(tree, "0.1")["text"].strip().split("\n")
+        self.assertEqual("'Третья Строка третьего файла", text[0])
+        self.assertEqual("Первая строка второго файла", text[1])
+        text = self._get_by_tree_path(tree, "0.2")["text"].strip().split("\n")
+        self.assertEqual("Вторая строка второго файла", text[0])
 
         tables = content["tables"]
         self.assertEqual(1, len(tables))
@@ -134,14 +135,13 @@ class TestApiArchiveReader(AbstractTestApiDocReader):
         file_name = "tz-led-png.zip"
         result = self._send_request(file_name, dict(with_attachments="True"))
         par = result["content"]["structure"]
-        self.assertEqual('1. ОБЩИЕ СВЕДЕНИЯ\n', self._get_by_tree_path(par, "0.1.0")["text"])
-        self.assertEqual('2. ОСНОВНЫЕ ТРЕБОВАНИЯ\n', self._get_by_tree_path(par, "0.1.1")["text"])
-        self.assertEqual('3. ОБОРУДОВАНИЕ\n', self._get_by_tree_path(par, "0.1.2")["text"])
+        self.assertEqual('1. ОБЩИЕ СВЕДЕНИЯ\n', self._get_by_tree_path(par, "0.7.0")["text"])
+        self.assertEqual('2. ОСНОВНЫЕ ТРЕБОВАНИЯ\n', self._get_by_tree_path(par, "0.7.1")["text"])
+        self.assertEqual('3. ОБОРУДОВАНИЕ\n', self._get_by_tree_path(par, "0.7.2")["text"])
 
     def test_broken_archive(self) -> None:
         file_name = "broken.zip"
         result = self._send_request(file_name, dict(with_attachments="True"))
         self.assertEqual(len(result['attachments']), 7)
-        english_doc = [doc for doc in result['attachments']
-                       if doc["metadata"]["file_name"].startswith("english_doc")][0]
+        english_doc = [doc for doc in result['attachments'] if doc["metadata"]["file_name"].startswith("english_doc")][0]
         self.check_english_doc(english_doc)

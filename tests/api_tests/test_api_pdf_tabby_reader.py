@@ -31,7 +31,7 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         with open(self._get_abs_path(file_name.replace(".pdf", ".txt"))) as file:
             self.assertEqual(file.read(), "".join(texts))
 
-    @unittest.skip("due to tag analysis added. Here we need analyse no tags and use reqexps")
+    @unittest.skip("TODO: check tags extraction in this document")
     def test_article(self) -> None:
         file_name = "../pdf_auto/0004057v1.pdf"
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
@@ -39,7 +39,7 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         tree = content["structure"]
         self._check_tree_sanity(tree)
         node = self._get_by_tree_path(tree, "0.0")
-        self.assertIn("UWB@FinTOC-2019 Shared Task: Financial Document Title Detection", node["text"])
+        self.assertIn("UWB@FinTOC-2019 Shared Task: Financial Document Title Detection", node["text"][0])
         node = self._get_by_tree_path(tree, "0.11")
         self.assertIn("The shared task consists of two subtasks:", node["text"])
         node = self._get_by_tree_path(tree, "0.20")
@@ -47,7 +47,6 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         node = self._get_by_tree_path(tree, "0.39")
         self.assertIn("4 Issues", node["text"])
 
-    @unittest.skip("due to tag analysis added")
     def test_presentation(self) -> None:
         file_name = "line_classifier.pdf"
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))

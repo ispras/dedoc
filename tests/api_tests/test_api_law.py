@@ -21,17 +21,12 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         self.assertEqual([], content["tables"])
         structure = content["structure"]
         self.__test_law_tree_sanity(structure)
-        expected_text = """№ 206002-2016-16922
-от 18.07.16
-ЛЕНИНГРАДСКАЯ ОБЛАСТЬ
-ОБЛАСТНОЙ ЗАКОН
-Об экологическом образовании, просвещении и формировании
-экологической культуры в Ленинградской области
-(Принят Законодательным собранием Ленинградской области
-29 июня 2016 года)"""
+        expected_text = "№ 206002-2016-16922\nот 18.07.16\nЛЕНИНГРАДСКАЯ ОБЛАСТЬ\nОБЛАСТНОЙ ЗАКОН\n" \
+                        "Об экологическом образовании, просвещении и формировании\n" \
+                        "экологической культуры в Ленинградской области\n" \
+                        "(Принят Законодательным собранием Ленинградской области\n29 июня 2016 года)"
         expected_text = "\n".join(map(str.strip, expected_text.split("\n")))
-        self.assertEqual(expected_text,
-                         "\n".join(filter(lambda t: t, map(str.strip, structure["text"].strip().split("\n")))))
+        self.assertEqual(expected_text, "\n".join(filter(lambda t: t, map(str.strip, structure["text"].strip().split("\n")))))
         self.assertEqual("Глава 1. Общие положения", self._get_by_tree_path(structure, "0.0.0")["text"].strip())
 
     def _get_body(self, document_tree: dict) -> dict:
@@ -40,8 +35,7 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         return body
 
     def _get_applications(self, document_tree: dict) -> List[dict]:
-        applications = [node for node in document_tree["subparagraphs"]
-                        if node["metadata"]["paragraph_type"] == "application"]
+        applications = [node for node in document_tree["subparagraphs"] if node["metadata"]["paragraph_type"] == "application"]
         return applications
 
     def _check_ukrf(self, file_name: str) -> None:
@@ -192,7 +186,7 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         self.assertEqual("1)", item1["text"])
         self.assertEqual("item", item1["metadata"]["paragraph_type"])
 
-    @unittest.skip("TODO fix this. Here text of 1.0 on equel level with 1.1")
+    @unittest.skip("TODO fix this. Here text of 1.0 on equal level with 1.1")
     def test_law_paragraphs(self) -> None:
         file_name = "minsport_24.12.2013_1112.txt"
         result = self._send_request(file_name, dict(document_type="law"), expected_code=200)

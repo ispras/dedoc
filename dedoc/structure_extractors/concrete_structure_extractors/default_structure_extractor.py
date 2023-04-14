@@ -21,8 +21,9 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
         previous_line = None
 
         for line in document.lines:
+            assert line.metadata.tag_hierarchy_level is not None
 
-            if line.metadata.tag_hierarchy_level is None or line.metadata.tag_hierarchy_level.line_type == HierarchyLevel.unknown:
+            if line.metadata.tag_hierarchy_level.line_type == HierarchyLevel.unknown:
                 line.metadata.hierarchy_level = self.get_list_hl_with_regexp(line, previous_line)
             else:
                 line.metadata.hierarchy_level = self.__get_hl_with_tag(line)
@@ -38,7 +39,7 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
         level_1, level_2 = line.metadata.tag_hierarchy_level.level_1, line.metadata.tag_hierarchy_level.level_2
 
         if level_1 is None or level_2 is None:
-            return HierarchyLevel(None, None, True, line.metadata.tag_hierarchy_level.line_type)
+            return line.metadata.tag_hierarchy_level
 
         if line.metadata.tag_hierarchy_level.line_type == HierarchyLevel.header:
             return HierarchyLevel(level_1=1, level_2=level_2, can_be_multiline=False, line_type=HierarchyLevel.header)
@@ -46,7 +47,7 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
         if line.metadata.tag_hierarchy_level.line_type == HierarchyLevel.list_item:
             return HierarchyLevel(level_1=level_1, level_2=level_2, can_be_multiline=False, line_type=HierarchyLevel.list_item)
 
-        return HierarchyLevel(level_1, level_2, True, line.metadata.tag_hierarchy_level.line_type)
+        return line.metadata.tag_hierarchy_level
 
     @staticmethod
     def get_list_hl_with_regexp(line: LineWithMeta, previous_line: Optional[LineWithMeta]) -> HierarchyLevel:
@@ -72,4 +73,5 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
         if prefix.name == BulletPrefix.name:  # bullet list
             return HierarchyLevel(5, 1, False, line_type=HierarchyLevel.list_item)  # TODO make bullet list
 
-        return HierarchyLevel.create_raw_text()  # no match for any list has been found
+        # no match for any list has been found
+        return HierarchyLevel(None, None, line.metadata.tag_hierarchy_level.can_be_multiline, HierarchyLevel.raw_text)

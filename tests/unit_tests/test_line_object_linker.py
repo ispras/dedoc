@@ -1,13 +1,11 @@
 import unittest
-from typing import List
 
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
-
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.scanned_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
+from dedoc.readers.scanned_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
 from dedoc.readers.scanned_reader.utils.line_object_linker import LineObjectLinker
 from tests.test_utils import get_test_config, create_line_by_coordinates
-from dedoc.readers.scanned_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
 
 
 class TestLineObjectLinker(unittest.TestCase):
@@ -35,10 +33,3 @@ class TestLineObjectLinker(unittest.TestCase):
         self.assertEqual(self.metadata_extractor.default_spacing, self._get_spacing(line3))
         self.assertEqual(150, self._get_spacing(line4))
         self.assertEqual(self.metadata_extractor.default_spacing, self._get_spacing(line5))
-
-    def __get_predictions(self, lines: List[LineWithLocation]) -> List[bool]:
-        result = []
-        self.paragraph_extractor.extract(lines)
-        for line_id, line in enumerate(lines):
-            result.append(line.metadata.new_paragraph)  # noqa
-        return result

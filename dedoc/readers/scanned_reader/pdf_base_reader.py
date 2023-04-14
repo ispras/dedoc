@@ -20,7 +20,8 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes, recognized_extensions
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils.pdf_utils import get_page_slice, postprocess, get_pdf_page_count
+from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
+from dedoc.utils.pdf_utils import get_page_slice, get_pdf_page_count
 from dedoc.utils.utils import get_file_mime_type, splitext_
 from dedoc.readers.archive_reader.archive_reader import ArchiveReader
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
@@ -67,10 +68,7 @@ class PdfBase(BaseReader):
         self.linker = LineObjectLinker(config=config)
         self.paragraph_extractor = ScanParagraphClassifierExtractor(config=config)
 
-    def read(self,
-             path: str,
-             document_type: Optional[str],
-             parameters: Optional[dict]) -> UnstructuredDocument:
+    def read(self, path: str, document_type: Optional[str], parameters: Optional[dict]) -> UnstructuredDocument:
         parameters = {} if parameters is None else parameters
         first_page, last_page = get_page_slice(parameters)
         params_for_parse = ParametersForParseDoc(
@@ -101,19 +99,10 @@ class PdfBase(BaseReader):
         if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
             tmp_dir = os.path.dirname(path)
             file_name = os.path.basename(path)
-            attachments += self.attachment_extractor.get_attachments(tmpdir=tmp_dir,
-                                                                     filename=file_name,
-                                                                     parameters=parameters)
+            attachments += self.attachment_extractor.get_attachments(tmpdir=tmp_dir, filename=file_name, parameters=parameters)
 
-        result = UnstructuredDocument(lines=lines,
-                                      tables=tables,
-                                      attachments=attachments,
-                                      warnings=warnings,
-                                      metadata=other_fields)
+        result = UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=warnings, metadata=other_fields)
         return self._postprocess(result)
-
-    def _postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:
-        return postprocess(document)
 
     def _can_contain_attachements(self, path: str) -> bool:
         can_contain_attachments = False
@@ -122,14 +111,11 @@ class PdfBase(BaseReader):
             can_contain_attachments = True
         return can_contain_attachments
 
-    def _parse_document(self,
-                        path: str,
-                        parameters: ParametersForParseDoc
-                        ) -> Tuple[List[LineWithMeta],
-                                   List[ScanTable],
-                                   List[PdfImageAttachment],
-                                   List[str],
-                                   Optional[dict]]:
+    def _parse_document(self, path: str, parameters: ParametersForParseDoc) -> Tuple[List[LineWithMeta],
+                                                                                     List[ScanTable],
+                                                                                     List[PdfImageAttachment],
+                                                                                     List[str],
+                                                                                     Optional[dict]]:
         first_page = 0 if parameters.first_page is None else parameters.first_page
         last_page = math.inf if parameters.last_page is None else parameters.last_page
         images = self._get_images(path)
@@ -163,6 +149,12 @@ class PdfBase(BaseReader):
             all_lines = list(flatten(lines))
         mp_tables = self.table_recognizer.convert_to_multipages_tables(unref_tables, lines_with_meta=all_lines)
         all_lines_with_links = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=attachments)
+
+        prev_line = None
+        for line in all_lines_with_links:
+            line.metadata.tag_hierarchy_level = DefaultStructureExtractor.get_list_hl_with_regexp(line, prev_line)
+            prev_line = line
+
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
@@ -197,11 +189,7 @@ class PdfBase(BaseReader):
         return partially_parsed, self._process_one_page(image, parameters, page_number, path)
 
     @abstractmethod
-    def _process_one_page(self,
-                          image: np.ndarray,
-                          parameters: ParametersForParseDoc,
-                          page_number: int,
-                          path: str) \
+    def _process_one_page(self, image: np.ndarray, parameters: ParametersForParseDoc, page_number: int, path: str) \
             -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
         pass
 

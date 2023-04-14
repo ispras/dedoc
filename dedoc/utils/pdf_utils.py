@@ -4,8 +4,6 @@ from PIL.Image import Image
 from PyPDF2 import PdfFileReader
 from pdf2image import convert_from_path
 
-from dedoc.data_structures.unstructured_document import UnstructuredDocument
-
 
 def get_pdf_page_count(path: str) -> Optional[int]:
     try:
@@ -25,13 +23,6 @@ def get_page_image(path: str, page_id: int) -> Optional[Image]:
     """
     images = convert_from_path(path, first_page=page_id + 1, last_page=page_id + 1)
     return images[0] if len(images) > 0 else None
-
-
-def postprocess(document: UnstructuredDocument) -> UnstructuredDocument:
-    for line in document.lines:
-        if line.metadata.tag_hierarchy_level.is_raw_text():
-            line.metadata.tag_hierarchy_level.can_be_multiline = not getattr(line.metadata, "new_paragraph", False)
-    return document
 
 
 def get_page_slice(parameters: Dict[str, Any]) -> Tuple[Optional[int], Optional[int]]:

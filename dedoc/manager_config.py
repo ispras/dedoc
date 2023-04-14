@@ -88,7 +88,7 @@ def get_manager_config(config: dict) -> dict:
             DiplomaStructureExtractor(path=os.path.join(classifiers_path, "diploma_classifier.pkl.gz"), config=config),
         TzStructureExtractor.document_type:
             TzStructureExtractor(path=os.path.join(classifiers_path, "tz_classifier.pkl.gz"),
-                                 txt_path=os.path.join(classifiers_path, "tz_classifier_txt.pkl.gz"),
+                                 txt_path=os.path.join(classifiers_path, "tz_txt_classifier.pkl.gz"),
                                  config=config),
         ClassifyingLawStructureExtractor.document_type: ClassifyingLawStructureExtractor(extractors=law_extractors, config=config)
     }
