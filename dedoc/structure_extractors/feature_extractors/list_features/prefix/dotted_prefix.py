@@ -5,7 +5,7 @@ from dedoc.structure_extractors.feature_extractors.list_features.prefix.prefix i
 
 class DottedPrefix(LinePrefix):
 
-    regexp = re.compile(r'^\s*(\d+\.?)+\d?\s*')
+    regexp = re.compile(r'^\s*(\d+\.)+(\d+)?\s*')
     name = "dotted"
 
     def __init__(self, prefix: str, indent: float) -> None:

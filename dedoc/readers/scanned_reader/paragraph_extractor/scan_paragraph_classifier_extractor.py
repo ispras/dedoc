@@ -49,5 +49,5 @@ class ScanParagraphClassifierExtractor(object):
         for label, line in zip(labels, lines_with_links):
             if line.line.strip() == "":
                 label = "not_paragraph"
-            line.metadata.extend_other_fields({"new_paragraph": label == "paragraph"})
+            line.metadata.tag_hierarchy_level.can_be_multiline = label != "paragraph"
         return lines_with_links

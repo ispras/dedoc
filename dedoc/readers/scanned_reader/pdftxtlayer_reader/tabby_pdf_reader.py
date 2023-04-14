@@ -103,12 +103,8 @@ class TabbyPDFReader(PdfBase):
             attachments += self.attachment_extractor.get_attachments(tmpdir=tmp_dir, filename=file_name, parameters=parameters)
 
         lines = [line for line_group in lines for line in line_group.split("\n")]
-        lines_with_paragraphs = self.paragraph_extractor.extract(lines)
-        result = UnstructuredDocument(lines=lines_with_paragraphs,
-                                      tables=tables,
-                                      attachments=attachments,
-                                      warnings=warnings,
-                                      metadata=document_metadata)
+        lines = self.paragraph_extractor.extract(lines)
+        result = UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=warnings, metadata=document_metadata)
 
         return self._postprocess(result)
 
@@ -214,7 +210,7 @@ class TabbyPDFReader(PdfBase):
         if line_type == "litem":  # TODO automatic list depth and merge list items from multiple lines
             return DefaultStructureExtractor.get_list_hl_with_regexp(line, prev_line)
 
-        return HierarchyLevel(None, None, False, line_type)
+        return HierarchyLevel(None, None, True, line_type)
 
     def __jar_path(self) -> str:
         return os.environ.get("TABBY_JAR", self.default_config["JAR_PATH"])

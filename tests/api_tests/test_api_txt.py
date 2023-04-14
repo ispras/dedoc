@@ -1,5 +1,4 @@
 import os
-import unittest
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 from tests.test_utils import get_by_tree_path
@@ -52,9 +51,14 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         with open(self._get_abs_path(file_name)) as file_in:
             self.assertEqual(file_in.read(), content["subparagraphs"][0]["text"])
 
-    @unittest.skip("due to tag analysis added")
     def test_paragraphs(self) -> None:
         file_name = "football.txt"
+        result = self._send_request(file_name, data={"structure_type": "tree"})
+        content = result["content"]["structure"]["subparagraphs"]
+        self.__check_football(content)
+
+    def test_paragraphs_gz(self) -> None:
+        file_name = "football.txt.gz"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]["subparagraphs"]
         self.__check_football(content)
@@ -66,13 +70,6 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         for line_id, line in enumerate(content.split("\n")):
             if line.strip() != "":
                 self.assertEqual("Line number {:09d}".format(line_id), line)
-
-    @unittest.skip("due to tag analysis added")
-    def test_paragraphs_gz(self) -> None:
-        file_name = "football.txt.gz"
-        result = self._send_request(file_name, data={"structure_type": "tree"})
-        content = result["content"]["structure"]["subparagraphs"]
-        self.__check_football(content)
 
     def __check_football(self, content: dict) -> None:
         self.assertEqual(4, len(content))

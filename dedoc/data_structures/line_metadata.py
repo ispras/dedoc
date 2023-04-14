@@ -24,7 +24,7 @@ class LineMetadata(Serializable):
                  tag_hierarchy_level: Optional[HierarchyLevel] = None,
                  hierarchy_level: Optional[HierarchyLevel] = None,
                  other_fields: Optional[dict] = None) -> None:
-        self.tag_hierarchy_level = HierarchyLevel(None, None, can_be_multiline=False, line_type=HierarchyLevel.unknown) \
+        self.tag_hierarchy_level = HierarchyLevel(None, None, can_be_multiline=True, line_type=HierarchyLevel.unknown) \
             if tag_hierarchy_level is None else tag_hierarchy_level
         self.hierarchy_level = hierarchy_level
         self.page_id = page_id

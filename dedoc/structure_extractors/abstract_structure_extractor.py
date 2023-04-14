@@ -23,8 +23,7 @@ class AbstractStructureExtractor(ABC):
         """
         pass
 
-    def _postprocess(self, lines: List[LineWithMeta], paragraph_type: List[str], regexps: List,
-                     excluding_regexps: List) -> List[LineWithMeta]:
+    def _postprocess(self, lines: List[LineWithMeta], paragraph_type: List[str], regexps: List, excluding_regexps: List) -> List[LineWithMeta]:
         """
         The function searches for which of regular expressions (for regexps parameters) the string matches.
         If there is match, then additional node is creating.
@@ -53,12 +52,12 @@ class AbstractStructureExtractor(ABC):
                             match_excluding = excluding_regexps[num].search(line.line[start:end])
                             end = match_excluding.start() if match_excluding else end
 
-                        result.append(LineWithMeta(line=line.line[start: end],
+                        result.append(LineWithMeta(line=line.line[start:end],
                                                    metadata=line.metadata,
                                                    annotations=self._select_annotations(line.annotations, start, end),
                                                    uid=line.uid))
                         metadata = deepcopy(line.metadata)
-                        metadata.hierarchy_level.line_type = HierarchyLevel.raw_text
+                        metadata.hierarchy_level = HierarchyLevel.create_raw_text()
 
                         rest_text = line.line[end:]
                         if len(rest_text) > 0:

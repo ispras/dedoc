@@ -33,9 +33,5 @@ class LawStructureExtractor(AbstractLawStructureExtractor):
     def _postprocess_lines(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:
         return self._postprocess(lines=lines,
                                  paragraph_type=["item", "articlePart", "subitem"],
-                                 regexps=[self.regexps_item,
-                                          self.regexps_part,
-                                          self.regexps_subitem],
-                                 excluding_regexps=[None,
-                                                    self.regexps_ends_of_number,
-                                                    self.regexps_ends_of_number])
+                                 regexps=[self.regexps_item, self.regexps_part, self.regexps_subitem],
+                                 excluding_regexps=[None, self.regexps_ends_of_number, self.regexps_ends_of_number])

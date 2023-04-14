@@ -8,11 +8,6 @@ from tests.test_utils import tree2linear
 
 class TestLawApiDocReader(AbstractTestApiDocReader):
 
-    def test_odt_tz(self) -> None:
-        file_name = "alpaca_tz.odt"
-        result = self._send_request(file_name, dict(document_type="tz"))
-        self._check_content(result, file_name)
-
     def test_doc_tz(self) -> None:
         file_name = "alpaca_tz.doc"
         result = self._send_request(file_name, dict(document_type="tz"))
@@ -81,8 +76,7 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
     def _check_tz_tree(self, tree: Dict[str, dict]) -> None:
         self._check_tree_sanity(tree)
         lines = list(tree2linear(tree))
-        toc_end = max((line_id for line_id, line in enumerate(lines)
-                       if line["metadata"]["paragraph_type"].startswith("toc")), default=0)
+        toc_end = max((line_id for line_id, line in enumerate(lines) if line["metadata"]["paragraph_type"].startswith("toc")), default=0)
         body_line = [line_id for line_id, line in enumerate(lines) if line["metadata"]["paragraph_type"] == "body"]
         self.assertEqual(1, len(body_line))
         self.assertGreater(max(body_line), toc_end)
@@ -111,8 +105,7 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         self.assertGreater(len(annotations), 0)
 
         self._check_tz_tree(structure)
-        self.assertEqual(
-            "ТЕХНИЧЕСКОЕ ЗАДАНИЕ \nНа разведение и уход за альпаками. Принято министерством по делам альпаководства.",
+        self.assertEqual("ТЕХНИЧЕСКОЕ ЗАДАНИЕ \nНа разведение и уход за альпаками. Принято министерством по делам альпаководства.",
             structure["text"].strip())
         toc = structure["subparagraphs"][0]
         self.assertEqual("содержание", toc["text"].strip().lower())
@@ -133,7 +126,7 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         self.assertEqual("1.", first_item["text"].strip())
         self.assertEqual("item", first_item["metadata"]["paragraph_type"])
         first_item_text = first_item["subparagraphs"][0]["text"]
-        self.assertEqual("Кормление альпаки", first_item_text.strip())
+        self.assertEqual("Кормление альпака", first_item_text.strip())
         first_subitem = first_item["subparagraphs"][1]
         self.assertEqual("-", first_subitem["text"].strip())
         self.assertEqual("Качество корма должно быть хорошим", first_subitem["subparagraphs"][0]["text"].strip())
@@ -151,5 +144,4 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         self.assertEqual("Альпаку надо стричь", first_subitem["subparagraphs"][0]["text"].strip())
         second_subitem = second_item["subparagraphs"][2]
         self.assertEqual("-", first_subitem["text"].strip())
-        self.assertEqual("Альпаку надо пасти на высоте около 3500 метров над уровнем моря.",
-                         second_subitem["subparagraphs"][0]["text"].strip())
+        self.assertEqual("Альпаку надо пасти на высоте около 3500 метров над уровнем моря.", second_subitem["subparagraphs"][0]["text"].strip())

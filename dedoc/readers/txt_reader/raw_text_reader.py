@@ -47,7 +47,7 @@ class RawTextReader(BaseReader):
         previous_log_time = time.time()
         prev_line = None
 
-        for line_id, line in self._get_lines(path=path, encoding=encoding):
+        for line_id, line in self.__get_lines(path=path, encoding=encoding):
             if time.time() - previous_log_time > 5:
                 self.logger.info("done {} lines".format(line_id))
                 previous_log_time = time.time()
@@ -56,7 +56,7 @@ class RawTextReader(BaseReader):
             uid = "txt_{}_{}".format(file_hash, line_id)
             spacing_annotation_value = str(int(100 * (0.5 if number_of_empty_lines == 0 else number_of_empty_lines)))
             spacing_annotation = SpacingAnnotation(start=0, end=len(line), value=spacing_annotation_value)
-            indent_annotation = self._get_indent_annotation(line)
+            indent_annotation = self.__get_indent_annotation(line)
 
             line_with_meta = LineWithMeta(line=line, metadata=metadata, annotations=[spacing_annotation, indent_annotation], uid=uid)
             line_with_meta.metadata.tag_hierarchy_level = DefaultStructureExtractor.get_list_hl_with_regexp(line_with_meta, prev_line)
@@ -70,7 +70,7 @@ class RawTextReader(BaseReader):
 
         return lines
 
-    def _get_lines(self, path: str, encoding: str) -> Iterable[Tuple[int, str]]:
+    def __get_lines(self, path: str, encoding: str) -> Iterable[Tuple[int, str]]:
         if path.lower().endswith("txt"):
             with codecs.open(path, errors="ignore", encoding=encoding) as file:
                 for line_id, line in enumerate(file):
@@ -92,13 +92,15 @@ class RawTextReader(BaseReader):
         return space_this.end() - space_this.start()
 
     def __is_paragraph(self, line: LineWithMeta, previous_line: Optional[LineWithMeta]) -> bool:
-        if not line.metadata.tag_hierarchy_level.can_be_multiline and line.metadata.tag_hierarchy_level.line_type != HierarchyLevel.raw_text:
+        if not line.metadata.tag_hierarchy_level.can_be_multiline and \
+                line.metadata.tag_hierarchy_level.line_type not in (HierarchyLevel.raw_text, HierarchyLevel.unknown):
             return True
         space_this = self.__get_starting_spacing(line)
         space_prev = self.__get_starting_spacing(previous_line)
-        return (line.metadata.tag_hierarchy_level.is_raw_text() and not line.line.isspace() and space_this - space_prev >= 2)
+        return line.metadata.tag_hierarchy_level.line_type in (HierarchyLevel.raw_text, HierarchyLevel.unknown) \
+            and not line.line.isspace() and space_this - space_prev >= 2
 
-    def _postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:  # TODO
+    def _postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:
         previous_line = None
         for line in document.lines:
             is_paragraph = self.__is_paragraph(line=line, previous_line=previous_line)
@@ -106,7 +108,7 @@ class RawTextReader(BaseReader):
             previous_line = line
         return document
 
-    def _get_indent_annotation(self, line: str) -> IndentationAnnotation:
+    def __get_indent_annotation(self, line: str) -> IndentationAnnotation:
         space_group = self.space_regexp.match(line)
         if space_group is None:
             return IndentationAnnotation(start=0, end=len(line), value="0")
