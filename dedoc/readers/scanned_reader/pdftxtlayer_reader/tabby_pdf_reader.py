@@ -44,8 +44,7 @@ class TabbyPDFReader(PdfBase):
         self.logger = config.get("logger", logging.getLogger())
         self.tabby_java_version = "2.0.0"
         self.jar_name = "ispras_tbl_extr.jar"
-        jar_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "resources", "jars")
-        self.jar_dir = os.path.abspath(jar_dir)
+        self.jar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "tabbypdf", "jars"))
         self.java_not_found_error = (
             "`java` command is not found from this Python process."
             "Please ensure Java is installed and PATH is set for `java`"

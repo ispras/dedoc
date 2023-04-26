@@ -1,5 +1,3 @@
-import json
-import os
 import re
 from typing import List, Dict
 
@@ -8,6 +6,7 @@ from bs4 import BeautifulSoup
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor, StyleType
+from dedoc.readers.docx_reader.windows_font_mapping import windows_mapping
 
 
 class NumberingExtractor:
@@ -258,8 +257,6 @@ class LevelInfo:
 class AbstractNum:
 
     suffix_dict = dict(nothing="", space=" ", tab="\t")
-    with open(os.path.join(os.path.dirname(__file__), "..", "..", "..", "resources", "windows_font_mapping.json"), "r") as f:
-        windows_mapping = json.load(f)
 
     def __init__(self, tree: BeautifulSoup, styles_extractor: StylesExtractor) -> None:
         """
@@ -294,7 +291,7 @@ class AbstractNum:
             if lvl.lvlText and lvl.lvlText['w:val']:  # lvlText (val="some text %num some text")
                 # some characters in bullets are displayed incorrectly, replace them with the unicode equivalent
                 hex_text = hex(ord(lvl.lvlText['w:val'][0]))
-                level_info.lvl_text = self.windows_mapping.get(hex_text, lvl.lvlText['w:val'])
+                level_info.lvl_text = windows_mapping.get(hex_text, lvl.lvlText['w:val'])
 
             if lvl.isLgl:
                 level_info.num_fmt = 'decimal'
