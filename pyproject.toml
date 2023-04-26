@@ -4,18 +4,44 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dedoc"
+authors = [
+    {name = "Dedoc team", email = "dedoc@ispras.ru"}
+]
+maintainers = [
+    {name = "Oksana Belyaeva", email = "belyaeva@ispras.ru"},
+    {name = "Andrew Perminov", email = "perminov@ispras.ru"},
+    {name = "Anastasiya Bogatenkova", email = "bogatenkova.anastasiya@mail.ru"}
+]
+classifiers=[
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3 :: Only",
+]
 
 description = "Extract content and logical tree structure from textual documents"
-dynamic = ["dependencies", "version", "readme"]
-requires-python = ">=3.8"
+keywords = ["document analysis", "logical structure extraction", "OCR", "deep learning", "computer vision"]
+readme="README.md"
+license = {file = "LICENSE.txt"}
+dynamic = ["dependencies", "version"]
+requires-python = ">=3.6"
 
 [tool.setuptools.dynamic]
 version = {file = "VERSION"}
 dependencies = {file = ["requirements.txt"]}
-readme = {file = ["README.md"]}
 
-[tool.setuptools]
-packages = ["dedoc"]
+[tool.setuptools.packages.find]
+where = ["dedoc"]
+include = ["dedoc*"]
+exclude = ["dedoc.scripts*"]
+
+[project.optional-dependencies]
+torch = ["torch>=1.11.0", "torchvision>=0.12.0"]
 
 [project.scripts]
 dedoc = "dedoc.main:main"
+
+[project.urls]
+homepage = "https://github.com/ispras/dedoc"
+repository = "https://github.com/ispras/dedoc.git"
