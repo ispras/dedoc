@@ -10,7 +10,7 @@ class DiplomaLineTypeClassifier(AbstractPickledLineTypeClassifier):
 
     def __init__(self, path: str, *, config: dict) -> None:
         super().__init__(config=config)
-        self.classifier, feature_extractor_parameters = self.load(path)
+        self.classifier, feature_extractor_parameters = self.load("diploma", path)
         self.feature_extractor = DiplomaFeatureExtractor()
 
     def predict(self, lines: List[LineWithMeta]) -> List[str]:

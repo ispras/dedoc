@@ -2,6 +2,8 @@ import gzip
 import os
 import pickle
 from typing import List
+
+from huggingface_hub import hf_hub_download
 from xgboost import XGBClassifier
 
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
@@ -19,7 +21,6 @@ class ScanParagraphClassifierExtractor(object):
         path = os.path.join(dirname, "..", "..", "..", "..", "resources", "paragraph_classifier.pkl.gz")
         self.path = os.path.abspath(path)
         self.config = config
-        assert os.path.isfile(self.path), "file does not exist {}".format(self.path)
         self._feature_extractor = None
         self._classifier = None
 
@@ -36,6 +37,9 @@ class ScanParagraphClassifierExtractor(object):
         return self._classifier
 
     def _unpickle(self) -> None:
+        if not os.path.isfile(self.path):
+            self.path = hf_hub_download(repo_id="dedoc/paragraph_classifier", filename="model.pkl.gz")
+
         with gzip.open(self.path) as file:
             self._classifier, parameters = pickle.load(file)
             self._feature_extractor = ParagraphFeatureExtractor(**parameters, config=self.config)
