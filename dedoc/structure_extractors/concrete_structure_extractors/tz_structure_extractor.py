@@ -16,8 +16,8 @@ class TzStructureExtractor(AbstractStructureExtractor):
         self.header_builder = HeaderHierarchyLevelBuilder()
         self.body_builder = TzBodyBuilder()
         self.toc_builder = TocBuilder()
-        self.classifier = TzLineTypeClassifier(path=path, config=config)
-        self.txt_classifier = TzLineTypeClassifier(path=txt_path, config=config)
+        self.classifier = TzLineTypeClassifier(classifier_type="tz", path=path, config=config)
+        self.txt_classifier = TzLineTypeClassifier(classifier_type="tz_txt", path=txt_path, config=config)
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
         if document.metadata.get("file_type") in recognized_mimes.txt_like_format:

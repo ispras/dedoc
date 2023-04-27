@@ -4,6 +4,7 @@ from typing import Tuple, Optional
 import numpy as np
 import torch
 from PIL import Image
+from huggingface_hub import hf_hub_download
 from torchvision import transforms
 from torchvision.transforms.functional import resize
 import cv2
@@ -65,6 +66,9 @@ class ColumnsOrientationClassifier(object):
 
     def _load_weights(self, net: ClassificationModelTorch) -> None:
         path_checkpoint = path.join(self.checkpoint_path, "scan_orientation_efficient_net_b0.pth")
+        if not path.isfile(path_checkpoint):
+            path_checkpoint = hf_hub_download(repo_id="dedoc/scan_orientation_efficient_net_b0", filename="model.pth")
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             net.load_state_dict(torch.load(path_checkpoint, map_location=self.location))

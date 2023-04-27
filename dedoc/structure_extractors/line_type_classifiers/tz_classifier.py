@@ -11,9 +11,9 @@ from dedoc.structure_extractors.line_type_classifiers.abstract_pickled_classifie
 
 class TzLineTypeClassifier(AbstractPickledLineTypeClassifier):
 
-    def __init__(self, path: str, *, config: dict) -> None:
+    def __init__(self, classifier_type: str, path: str, *, config: dict) -> None:
         super().__init__(config=config)
-        self.classifier, feature_extractor_parameters = self.load(path)
+        self.classifier, feature_extractor_parameters = self.load(classifier_type, path)
         self.feature_extractor = TzTextFeatures(**feature_extractor_parameters)
 
     def predict(self, lines: List[LineWithMeta]) -> List[str]:

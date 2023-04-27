@@ -11,9 +11,9 @@ from dedoc.structure_extractors.line_type_classifiers.abstract_pickled_classifie
 
 class LawLineTypeClassifier(AbstractPickledLineTypeClassifier):
 
-    def __init__(self, path: str, *, config: dict) -> None:
+    def __init__(self, classifier_type: str, path: str, *, config: dict) -> None:
         super().__init__(config=config)
-        self.classifier, feature_extractor_parameters = self.load(path)
+        self.classifier, feature_extractor_parameters = self.load(classifier_type, path)
         self.feature_extractor = LawTextFeatures(**feature_extractor_parameters)
         self.regexp_application_begin = re.compile(
             r"^(\'|\")?((приложение)|(утвержден)[оаы]?){1}(( )*([№n]?( )*(\d){1,3})?( )*)"

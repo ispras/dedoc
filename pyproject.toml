@@ -32,7 +32,7 @@ version = {file = "VERSION"}
 dependencies = {file = ["requirements.txt"]}
 
 [tool.setuptools.packages.find]
-where = ["dedoc"]
+where = ["."]
 include = ["dedoc*"]
 exclude = ["dedoc.scripts*"]
 
