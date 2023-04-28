@@ -18,9 +18,11 @@ logging.basicConfig(stream=sys.stdout,
 DEBUG_MODE = False
 
 _config = dict(
+    # -----------------------------------------RESOURCES PATH SETTINGS----------------------------------------------------
+    resources_path=os.path.join(os.path.expanduser('~'), ".cache", "dedoc", "resources"),
     # -----------------------------------------COMMON DEBUG SETTINGS----------------------------------------------------
     debug_mode=DEBUG_MODE,
-    path_debug="/tmp/dedoc",
+    path_debug=os.path.join(os.path.abspath(os.sep), "tmp", "dedoc"),
 
     # --------------------------------------------JOBLIB SETTINGS-------------------------------------------------------
     # number of parallel jobs in some tasks as OCR
@@ -46,8 +48,8 @@ _config = dict(
     minimal_cell_cnt_line=5,
     minimal_cell_avg_length_line=10,
 
-    path_cells="/tmp/docreader/debug_tables/imgs/cells/",
-    path_detect="/tmp/docreader/debug_tables/imgs/detect_lines/",
+    path_cells=os.path.join(os.path.abspath(os.sep), "tmp", "docreader", "debug_tables", "imgs", "cells"),
+    path_detect=os.path.join(os.path.abspath(os.sep), "tmp", "docreader", "debug_tables", "imgs", "detect_lines"),
     rotate_threshold=0.3,
 
     # -------------------------------------------RECOGNIZE SETTINGS-----------------------------------------------------

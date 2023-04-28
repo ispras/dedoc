@@ -4,12 +4,12 @@ from typing import Tuple, Optional
 import numpy as np
 import torch
 from PIL import Image
-from huggingface_hub import hf_hub_download
 from torchvision import transforms
 from torchvision.transforms.functional import resize
 import cv2
 from os import path
 
+from dedoc.download_models import download_from_hub
 from dedoc.readers.scanned_reader.pdfscanned_reader.columns_orientation_classifier.model import ClassificationModelTorch
 from dedoc.readers.scanned_reader.table_recognizer.table_utils.img_processing import \
     __detect_horizontal_and_vertical_lines as detect_horizontal_and_vertical_lines
@@ -67,7 +67,10 @@ class ColumnsOrientationClassifier(object):
     def _load_weights(self, net: ClassificationModelTorch) -> None:
         path_checkpoint = path.join(self.checkpoint_path, "scan_orientation_efficient_net_b0.pth")
         if not path.isfile(path_checkpoint):
-            path_checkpoint = hf_hub_download(repo_id="dedoc/scan_orientation_efficient_net_b0", filename="model.pth")
+            download_from_hub(out_dir=self.checkpoint_path,
+                              out_name="scan_orientation_efficient_net_b0.pth",
+                              repo_name="scan_orientation_efficient_net_b0",
+                              hub_name="model.pth")
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")

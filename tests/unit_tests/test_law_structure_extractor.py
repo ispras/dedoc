@@ -18,11 +18,7 @@ from tests.test_utils import get_test_config, TestTimeout
 
 class TestLawStructureExtractor(unittest.TestCase):
 
-    structure_extractor = LawStructureExtractor(path=os.path.join(os.path.dirname(__file__), "..", "..",
-                                                                  "resources", "line_type_classifiers", "law_classifier.pkl.gz"),
-                                                txt_path=os.path.join(os.path.dirname(__file__), "..", "..",
-                                                                      "resources", "line_type_classifiers", "law_txt_classifier.pkl.gz"),
-                                                config=get_test_config())
+    structure_extractor = LawStructureExtractor(config=get_test_config())
     body_builder = BodyLawHierarchyLevelBuilder()
     depth = 2
 

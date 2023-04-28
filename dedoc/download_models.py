@@ -4,27 +4,40 @@ import shutil
 
 from huggingface_hub import hf_hub_download
 
+from dedoc.config import get_config
+
+
+def download_from_hub(out_dir: str, out_name: str, repo_name: str, hub_name: str) -> None:
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.realpath(hf_hub_download(repo_id=f"dedoc/{repo_name}", filename=hub_name))
+    shutil.move(path, os.path.join(out_dir, out_name))
+
 
 def download(resources_path: str) -> None:
-    os.makedirs(resources_path, exist_ok=True)
 
-    path = os.path.realpath(hf_hub_download(repo_id="dedoc/scan_orientation_efficient_net_b0", filename="model.pth"))
-    shutil.move(path, os.path.join(resources_path, "scan_orientation_efficient_net_b0.pth"))
+    download_from_hub(out_dir=resources_path,
+                      out_name="scan_orientation_efficient_net_b0.pth",
+                      repo_name="scan_orientation_efficient_net_b0",
+                      hub_name="model.pth")
 
-    path = os.path.realpath(hf_hub_download(repo_id="dedoc/font_classifier", filename="model.pth"))
-    shutil.move(path, os.path.join(resources_path, "font_classifier.pth"))
+    download_from_hub(out_dir=resources_path,
+                      out_name="font_classifier.pth",
+                      repo_name="font_classifier",
+                      hub_name="model.pth")
 
-    path = os.path.realpath(hf_hub_download(repo_id="dedoc/paragraph_classifier", filename="model.pkl.gz"))
-    shutil.move(path, os.path.join(resources_path, "paragraph_classifier.pkl.gz"))
+    download_from_hub(out_dir=resources_path,
+                      out_name="paragraph_classifier.pkl.gz",
+                      repo_name="paragraph_classifier",
+                      hub_name="model.pkl.gz")
 
     line_clf_resources_path = os.path.join(resources_path, "line_type_classifiers")
-    os.makedirs(line_clf_resources_path, exist_ok=True)
     for classifier_type in ("diploma", "law", "law_txt", "tz", "tz_txt"):
-        path = os.path.realpath(hf_hub_download(repo_id="dedoc/line_type_classifiers", filename=f"{classifier_type}.pkl.gz"))
-        shutil.move(path, os.path.join(line_clf_resources_path, f"{classifier_type}_classifier.pkl.gz"))
+        download_from_hub(out_dir=line_clf_resources_path,
+                          out_name=f"{classifier_type}_classifier.pkl.gz",
+                          repo_name="line_type_classifiers",
+                          hub_name=f"{classifier_type}.pkl.gz")
 
 
 if __name__ == "__main__":
-    # make the resources directory inside with project root (near the dedoc package)
-    resources_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "resources")
+    resources_path = get_config()["resources_path"]
     download(resources_path)
