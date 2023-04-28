@@ -17,8 +17,8 @@ from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexp
 class LawStructureExtractor(AbstractLawStructureExtractor):
     document_type = "law"
 
-    def __init__(self, path: str, txt_path: str, *, config: dict) -> None:
-        super().__init__(path=path, txt_path=txt_path, config=config)
+    def __init__(self, *, config: dict) -> None:
+        super().__init__(config=config)
         self.hierarchy_level_builders = [HeaderHierarchyLevelBuilder(),
                                          BodyLawHierarchyLevelBuilder(),
                                          CellarHierarchyLevelBuilder(),

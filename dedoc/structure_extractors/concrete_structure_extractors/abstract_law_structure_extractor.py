@@ -1,6 +1,8 @@
+import os
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 
+from dedoc.config import get_config
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
@@ -13,9 +15,10 @@ from dedoc.structure_extractors.line_type_classifiers.law_classifier import LawL
 
 class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
 
-    def __init__(self, path: str, txt_path: str, *, config: dict) -> None:
-        self.classifier = LawLineTypeClassifier(classifier_type="law", path=path, config=config)
-        self.txt_classifier = LawLineTypeClassifier(classifier_type="law_txt", path=txt_path, config=config)
+    def __init__(self, *, config: dict) -> None:
+        path = os.path.join(get_config()["resources_path"], "line_type_classifiers")
+        self.classifier = LawLineTypeClassifier(classifier_type="law", path=os.path.join(path, "law_classifier.pkl.gz"), config=config)
+        self.txt_classifier = LawLineTypeClassifier(classifier_type="law_txt", path=os.path.join(path, "law_txt_classifier.pkl.gz"), config=config)
         self.hierarchy_level_builders = [StubHierarchyLevelBuilder()]
         self.hl_type = "law"
         self.init_hl_depth = 1

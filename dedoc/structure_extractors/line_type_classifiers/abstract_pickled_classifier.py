@@ -5,8 +5,8 @@ from abc import ABC
 from typing import Tuple
 
 from xgboost import XGBClassifier
-from huggingface_hub import hf_hub_download
 
+from dedoc.download_models import download_from_hub
 from dedoc.structure_extractors.line_type_classifiers.abstract_line_type_classifier import AbstractLineTypeClassifier
 
 
@@ -17,7 +17,9 @@ class AbstractPickledLineTypeClassifier(AbstractLineTypeClassifier, ABC):
 
     def load(self, classifier_type: str, path: str) -> Tuple[XGBClassifier, dict]:
         if not os.path.isfile(path):
-            path = hf_hub_download(repo_id="dedoc/line_type_classifiers", filename=f"{classifier_type}.pkl.gz")
+            out_dir, out_name = os.path.split(path)
+            download_from_hub(out_dir=out_dir, out_name=out_name, repo_name="line_type_classifiers", hub_name=f"{classifier_type}.pkl.gz")
+
         with gzip.open(path) as file:
             classifier, feature_extractor_parameters = pickle.load(file)
         return classifier, feature_extractor_parameters

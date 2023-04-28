@@ -4,6 +4,7 @@ from typing import List, Optional
 from numpy import median
 import numpy as np
 
+from dedoc.config import get_config
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
@@ -20,8 +21,7 @@ class LineMetadataExtractor:
 
     def __init__(self, default_spacing: int = 50, *, config: dict) -> None:
         self.config = config
-        dirname = os.path.dirname(__file__)
-        path_model = os.path.abspath(os.path.join(dirname, "..", "..", "..", "..", "resources", "font_classifier.pth"))
+        path_model = os.path.join(get_config()["resources_path"], "font_classifier.pth")
         self.font_type_classifier = FontTypeClassifier(path_model)
         self.default_spacing = default_spacing
 

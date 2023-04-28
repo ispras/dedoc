@@ -3,10 +3,10 @@ from collections import namedtuple
 from typing import Any
 
 import torch
-from huggingface_hub import hf_hub_download
 from torchvision.transforms import ToTensor
 
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
+from dedoc.download_models import download_from_hub
 from dedoc.readers.scanned_reader.data_classes.page_with_bboxes import PageWithBBox
 from dedoc.utils.image_utils import get_bbox_from_image
 
@@ -27,7 +27,8 @@ class FontTypeClassifier:
             return self._model
 
         if not os.path.isfile(self.model_path):
-            self.model_path = hf_hub_download(repo_id="dedoc/font_classifier", filename="model.pth")
+            out_dir, out_name = os.path.split(self.model_path)
+            download_from_hub(out_dir=out_dir, out_name=out_name, repo_name="font_classifier", hub_name="model.pth")
 
         with open(self.model_path, "rb") as file:
             self._model = torch.load(f=file).eval()

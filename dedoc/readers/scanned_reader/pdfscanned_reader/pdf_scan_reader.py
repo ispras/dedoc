@@ -6,6 +6,7 @@ from typing import List, Tuple, Optional
 import cv2
 import numpy as np
 
+from dedoc.config import get_config
 from dedoc.extensions import recognized_mimes, recognized_extensions
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.scanned_reader.data_classes.pdf_image_attachment import PdfImageAttachment
@@ -26,7 +27,7 @@ class PdfScanReader(PdfBase):
     def __init__(self, *, config: dict) -> None:
         super().__init__(config=config)
         self.scan_rotator = ScanRotator(config=config)
-        checkpoint_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../resources/"))
+        checkpoint_path = get_config()["resources_path"]
         self.orientation_classifier = ColumnsOrientationClassifier(on_gpu=False,
                                                                    checkpoint_path=checkpoint_path,
                                                                    config=config,

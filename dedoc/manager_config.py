@@ -1,5 +1,3 @@
-import os
-
 from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
 from dedoc.converters.concrete_converters.docx_converter import DocxConverter
 from dedoc.converters.concrete_converters.excel_converter import ExcelConverter
@@ -73,23 +71,14 @@ def get_manager_config(config: dict) -> dict:
         BaseMetadataExtractor()
     ]
 
-    classifiers_path = os.path.join(os.path.dirname(__file__), "..", "resources", "line_type_classifiers")
     law_extractors = {
-        FoivLawStructureExtractor.document_type: FoivLawStructureExtractor(path=os.path.join(classifiers_path, "law_classifier.pkl.gz"),
-                                                                           txt_path=os.path.join(classifiers_path, "law_txt_classifier.pkl.gz"),
-                                                                           config=config),
-        LawStructureExtractor.document_type: LawStructureExtractor(path=os.path.join(classifiers_path, "law_classifier.pkl.gz"),
-                                                                   txt_path=os.path.join(classifiers_path, "law_txt_classifier.pkl.gz"),
-                                                                   config=config)
+        FoivLawStructureExtractor.document_type: FoivLawStructureExtractor(config=config),
+        LawStructureExtractor.document_type: LawStructureExtractor(config=config)
     }
     structure_extractors = {
         DefaultStructureExtractor.document_type: DefaultStructureExtractor(),
-        DiplomaStructureExtractor.document_type:
-            DiplomaStructureExtractor(path=os.path.join(classifiers_path, "diploma_classifier.pkl.gz"), config=config),
-        TzStructureExtractor.document_type:
-            TzStructureExtractor(path=os.path.join(classifiers_path, "tz_classifier.pkl.gz"),
-                                 txt_path=os.path.join(classifiers_path, "tz_txt_classifier.pkl.gz"),
-                                 config=config),
+        DiplomaStructureExtractor.document_type: DiplomaStructureExtractor(config=config),
+        TzStructureExtractor.document_type: TzStructureExtractor(config=config),
         ClassifyingLawStructureExtractor.document_type: ClassifyingLawStructureExtractor(extractors=law_extractors, config=config)
     }
 
