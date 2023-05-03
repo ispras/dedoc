@@ -1,4 +1,4 @@
-import importlib
+import importlib.metadata
 import json
 import os
 from functools import wraps
@@ -173,7 +173,8 @@ def handle_missing_file_exception(error: DedocException) -> Tuple[dict, int]:
 
 
 version_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "VERSION"))
-manager = DedocThreadedManager.from_config(config=config, version=open(version_file_path).read().strip())
+version = open(version_file_path).read().strip() if os.path.isfile(version_file_path) else importlib.metadata.version("dedoc")
+manager = DedocThreadedManager.from_config(config=config, version=version)
 
 
 # ==================== Utils API functions =======================

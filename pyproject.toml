@@ -37,7 +37,7 @@ include = ["dedoc*"]
 exclude = ["dedoc.scripts*"]
 
 [project.optional-dependencies]
-torch = ["torch>=1.11.0", "torchvision>=0.12.0"]
+torch = ["torch~=1.11.0", "torchvision~=0.12.0"]
 
 [project.scripts]
 dedoc = "dedoc.main:main"
