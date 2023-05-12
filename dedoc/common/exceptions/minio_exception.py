@@ -1,14 +1,22 @@
+from typing import Optional
+from dedoc.common.exceptions.dedoc_exception import DedocException
 
 
-class MinioException(Exception):
+class MinioException(DedocException):
+    """
+    raise if there is no file in minio
+    """
 
-    def __init__(self, message: str, status_code: int, *args: object) -> None:
-        super().__init__(*args)
-        self.message = message
-        self.status_code = status_code
+    def __init__(self,
+                 msg: str,
+                 msg_api: Optional[str] = None,
+                 filename: Optional[str] = None,
+                 version: Optional[str] = None) -> None:
+        super(MinioException, self).__init__(msg_api=msg_api, msg=msg, filename=filename, version=version)
 
     def __str__(self) -> str:
-        return f"MinioException({self.status_code}, {self.message})"
+        return "MinioException({})".format(self.msg)
 
-    def __repr__(self) -> str:
-        return str(self)
+    @property
+    def code(self) -> int:
+        return 404

@@ -39,14 +39,15 @@ class ParsedDocument(Serializable):
     def set_metadata(self, metadata: DocumentMetadata) -> None:
         self.metadata = metadata
 
-    def to_dict(self) -> dict:
+    def to_dict(self, depth: int = 0) -> dict:
         res = OrderedDict()
         res["version"] = self.version
         res["warnings"] = self.warnings
         res["content"] = self.content.to_dict() if self.content is not None else []
         res["metadata"] = self.metadata.to_dict()
-        if self.attachments is not None:
-            res["attachments"] = [attachment.to_dict() for attachment in self.attachments]
+        res["attachments"] = [attachment.to_dict(depth=depth + 1) for attachment in self.attachments] \
+            if self.attachments is not None and depth < 10 else []
+
         return res
 
     @staticmethod
