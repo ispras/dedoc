@@ -1,0 +1,6 @@
+from .abstract_structure_constructor import AbstractStructureConstructor
+from .concrete_structure_constructors.linear_constructor import LinearConstructor
+from .concrete_structure_constructors.tree_constructor import TreeConstructor
+from .structure_constructor_composition import StructureConstructorComposition
+
+__all__ = ['AbstractStructureConstructor', 'LinearConstructor', 'TreeConstructor', 'StructureConstructorComposition']

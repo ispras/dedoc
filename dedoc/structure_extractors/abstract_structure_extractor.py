@@ -12,14 +12,25 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 
 class AbstractStructureExtractor(ABC):
     """
-    This class adds additional information to the given unstructured document (list of lines).
-    Types of lines and their levels in the document are added
+    This class adds additional information to the given unstructured document (list of lines) received from some of the readers.
+    Types of lines (paragraph_type) and their levels (hierarchy_level) in the document are added.
+
+    The hierarchy level of the line shows the importance of the line in the document: the more important the line is, the less level value it has.
+    Look at the class :class:`dedoc.data_structures.HierarchyLevel` for more information.
+
+    The paragraph type of the line should be one of the predefined types for some certain document domain, e.g. header, list_item, raw_text, etc.
+    Each concrete structure extractor defines the rules of structuring: the levels and possible types of the lines.
     """
 
     @abstractmethod
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
         """
-        Take as an input the document from some reader, finds lines types and their hierarchy levels and adds them
+        This method extracts structure for the document content received from some reader:
+        it finds lines types and their hierarchy levels and adds them to the lines' metadata.
+
+        :param document: document content that has been received from some of the readers
+        :param parameters: additional parameters for document parsing
+        :return: document content with added additional information about lines types and hierarchy levels
         """
         pass
 
@@ -29,11 +40,12 @@ class AbstractStructureExtractor(ABC):
         If there is match, then additional node is creating.
         To filter out garbage (extra letters, spaces, etc.),
         the excluding_regexps is applied after for the matched substring (for example: "1.П"->"1.", "4.7.\t"->"4.7.")
-        :param lines: input line
-        :param paragraph_type: list of paragraph type
-        :param regexps: list of regular pattern according to list of paragraph_type
-        :param excluding_regexps: list of filtering garbage regular pattern according to list of paragraph_type
-        :return: new post-processed LineWithMetas
+
+        :param lines: input lines
+        :param paragraph_type: list of paragraph types
+        :param regexps: list of regular pattern according to the list of paragraph types
+        :param excluding_regexps: list of filtering garbage regular pattern according to list of paragraph types
+        :return: new post-processed list of LineWithMeta
         """
         result = []
         for line in lines:

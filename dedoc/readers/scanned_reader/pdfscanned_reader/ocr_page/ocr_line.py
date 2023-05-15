@@ -1,6 +1,6 @@
 from typing import List
 
-from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.data_structures.bbox import BBox
 from dedoc.readers.scanned_reader.pdfscanned_reader.ocr_page.ocr_tuple import OcrElement
 from dedoc.readers.scanned_reader.pdfscanned_reader.ocr_page.ocr_word import OcrWord
 

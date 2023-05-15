@@ -14,13 +14,25 @@ from dedoc.readers.base_reader import BaseReader
 
 
 class PptxReader(BaseReader):
-    def __init__(self, *, config: dict) -> None:
+    """
+    This class is used for parsing documents with .pptx extension.
+    Please use :class:`~dedoc.converters.PptxConverter` for getting pptx file from similar formats.
+    """
+    def __init__(self) -> None:
         self.attachments_extractor = PptxAttachmentsExtractor()
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: str, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, path: str, mime: str, extension: str, document_type: str = None, parameters: Optional[dict] = None) -> bool:
+        """
+        Check if the document extension is suitable for this reader.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        """
         return extension.lower() in recognized_extensions.pptx_like_format or mime in recognized_mimes.pptx_like_format
 
     def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        The method return document content with all document's lines, tables and attachments.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+        """
         parameters = {} if parameters is None else parameters
         prs = Presentation(path)
         lines, tables = [], []

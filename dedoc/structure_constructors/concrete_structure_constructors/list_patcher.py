@@ -2,7 +2,7 @@ import re
 from typing import List
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.structure_constructors.concreat_structure_constructors.list_item import ListItem
+from dedoc.structure_constructors.concrete_structure_constructors.list_item import ListItem
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 

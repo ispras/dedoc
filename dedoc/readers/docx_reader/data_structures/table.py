@@ -76,7 +76,7 @@ class DocxTable:
             result_cells.append(cells_text)
             prev_row = cells_text
 
-        return Table(cells=result_cells, metadata=TableMetadata(page_id=None, uid=self.uid), cells_with_property=cell_property_list)
+        return Table(cells=result_cells, metadata=TableMetadata(page_id=None, uid=self.uid), cells_properties=cell_property_list)
 
     def __get_cell_text(self, cell: BeautifulSoup) -> str:
         cell_text = ""

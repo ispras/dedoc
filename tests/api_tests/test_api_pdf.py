@@ -3,7 +3,7 @@ import os
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
-from dedoc.utils.image_utils import supported_image_types
+from dedoc.utils import supported_image_types
 
 
 class TestApiPdfReader(AbstractTestApiDocReader):

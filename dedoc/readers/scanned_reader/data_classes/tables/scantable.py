@@ -3,7 +3,7 @@ from collections import OrderedDict
 from typing import List, Any
 import numpy as np
 
-from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.data_structures.bbox import BBox
 from dedoc.readers.scanned_reader.data_classes.tables.cell import Cell
 from dedoc.readers.scanned_reader.data_classes.tables.location import Location
 

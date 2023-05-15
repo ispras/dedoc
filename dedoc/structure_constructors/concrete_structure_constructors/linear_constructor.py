@@ -9,11 +9,16 @@ from dedoc.structure_constructors.abstract_structure_constructor import Abstract
 
 
 class LinearConstructor(AbstractStructureConstructor):
-
-    def __init__(self) -> None:
-        pass
+    """
+    This class is used to form a simple basic document structure representation as a list of document lines.
+    The result contains the empty root node with the consecutive list of all document lines as its children.
+    """
 
     def structure_document(self, document: UnstructuredDocument, version: str, structure_type: Optional[str] = None) -> ParsedDocument:
+        """
+        Build the linear structure representation for the given document intermediate representation.
+        To get the information about the parameters look at the documentation of :class:`~dedoc.structure_constructors.AbstractStructureConstructor`.
+        """
         lines = document.lines
         tree = TreeNode.create(lines=[])
         for line in lines:

@@ -4,7 +4,7 @@ import uuid
 from typing import List
 import numpy as np
 
-from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.data_structures.bbox import BBox
 from dedoc.readers.scanned_reader.data_classes.tables.cell import Cell
 from dedoc.readers.scanned_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.scanned_reader.data_classes.tables.table_tree import TableTree

@@ -15,9 +15,17 @@ from dedoc.structure_extractors.line_type_classifiers.diploma_classifier import 
 
 
 class DiplomaStructureExtractor(AbstractStructureExtractor):
+    """
+    This class is used for extraction structure from russian diplomas, master dissertations, thesis, etc.
+
+    TODO structure description.
+    """
     document_type = "diploma"
 
     def __init__(self, *, config: dict) -> None:
+        """
+        :param config: some configuration for document parsing
+        """
         self.toc_extractor = TOCFeatureExtractor()
         self.header_builder = HeaderHierarchyLevelBuilder()
         self.toc_builder = TocBuilder()
@@ -27,6 +35,11 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
         self.footnote_start_regexp = re.compile(r"^\d+ ")
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
+        """
+        Extract diploma structure from the given document and add additional information to the lines' metadata.
+        To get the information about the method's parameters look at the documentation of the class \
+        :class:`~dedoc.structure_extractors.AbstractStructureExtractor`.
+        """
         lines = self._replace_toc_lines(document.lines)
         lines = self._replace_footnote_lines(lines)
         self._add_page_id_lines(lines)

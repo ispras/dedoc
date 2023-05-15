@@ -12,11 +12,32 @@ from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
 class TreeConstructor(AbstractStructureConstructor):
+    """
+    This class is used to form a basic hierarchical document structure representation as a tree.
 
-    def __init__(self) -> None:
-        pass
+    The structure is built according to the lines' hierarchy levels and their types:
+        - lines with hierarchy level (0, 0) are merged and become a root of the document;
+        - lines with a type `list_item` become children of a new empty auxiliary node `list`;
+        - each line is added as a separate tree node in the document hierarchy according to its hierarchy level:
+            - if the level of the current line is less then the previous line level, the current line becomes its child;
+            - else the line becomes a child of the first line which have less hierarchy level that the current line has.
+
+    Hierarchy levels of the lines are compared lexicographically.
+
+    **Example:**
+        - **root line (0, 0)**
+            - **first child line (1, 0)**
+                - **line (2, 0)**
+                    - **line (2, 1)**
+                - **line (2, 0)**
+            - **second child line (1, 0)**
+    """
 
     def structure_document(self, document: UnstructuredDocument, version: str, structure_type: Optional[str] = None) -> ParsedDocument:
+        """
+        Build the tree structure representation for the given document intermediate representation.
+        To get the information about the parameters look at the documentation of :class:`~dedoc.structure_constructors.AbstractStructureConstructor`.
+        """
         document_name, not_document_name = self.__get_document_name(document.lines)
         not_document_name = self.__add_lists(not_document_name)
         tree = TreeNode.create(lines=document_name)

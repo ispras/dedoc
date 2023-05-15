@@ -3,7 +3,7 @@ from collections import namedtuple
 from typing import List, Iterator, Iterable
 import numpy as np
 
-from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.data_structures.bbox import BBox
 from dedoc.readers.scanned_reader.data_classes.page_with_bboxes import PageWithBBox
 from dedoc.readers.scanned_reader.data_classes.text_with_bbox import TextWithBBox
 from dedoc.readers.scanned_reader.pdfscanned_reader.ocr_utils import \

@@ -10,10 +10,19 @@ from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extrac
 
 
 class DocxMetadataExtractor(BaseMetadataExtractor):
+    """
+    This class is used to extract metadata from docx documents.
+    It expands metadata retrieved by :class:`~dedoc.metadata_extractors.BaseMetadataExtractor`.
 
-    def __init__(self) -> None:
-        super().__init__()
-
+    In addition to them, the following fields can be added to the metadata other fields:
+        - document subject;
+        - keywords;
+        - category;
+        - comments;
+        - author;
+        - author who last modified the file;
+        - created, modified and last printed date.
+    """
     def can_extract(self,
                     document: UnstructuredDocument,
                     directory: str,
@@ -22,6 +31,10 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
                     original_filename: str,
                     parameters: Optional[dict] = None,
                     other_fields: Optional[dict] = None) -> bool:
+        """
+        Check if the document has .docx extension.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        """
         return converted_filename.endswith("docx")
 
     def add_metadata(self,
@@ -33,6 +46,10 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
                      version: str,
                      parameters: dict = None,
                      other_fields: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        Add the predefined list of metadata for the docx documents.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        """
         if parameters is None:
             parameters = {}
         file_path = os.path.join(directory, converted_filename)
