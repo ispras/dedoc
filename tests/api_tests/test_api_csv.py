@@ -1,4 +1,5 @@
 import os
+import unittest
 from typing import List
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
@@ -53,7 +54,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, dict(different_param="some value"))
 
         self.assertIn("delimiter is ','", result["warnings"])
-        self.assertIn("parameter \"different_param\" is not supported", result["warnings"])
+        self.assertIn("encoding is ascii", result["warnings"])
 
         tables = result["content"]["tables"]
         table = tables[0]["cells"]

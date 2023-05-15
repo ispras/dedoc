@@ -22,7 +22,7 @@ class TestApi(AbstractTestApiDocReader):
         self.assertIn("metadata", result)
 
     def test_send_wo_file(self) -> None:
-        self._send_request_wo_file(expected_code=400)
+        self._send_request_wo_file(expected_code=422)
 
     def test_version(self) -> None:
         version = self.__get_version()

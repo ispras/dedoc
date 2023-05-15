@@ -8,6 +8,7 @@ from threading import Thread
 from time import sleep
 from typing import Optional, Dict
 
+from fastapi import UploadFile
 from werkzeug.datastructures import FileStorage
 
 from dedoc.configuration_manager import get_manager_config
@@ -110,7 +111,7 @@ class DedocThreadedManager(object):
         self.logger = logger
         self.config = config
 
-    def parse_file(self, file: FileStorage, parameters: Dict[str, str]) -> ParsedDocument:
+    def parse_file(self, file: UploadFile, parameters: Dict[str, str]) -> ParsedDocument:
         original_filename = file.filename.split("/")[-1]
         self.logger.info("Get file {}".format(original_filename))
         filename = get_unique_name(original_filename)
@@ -119,7 +120,9 @@ class DedocThreadedManager(object):
         if self.tmp_dir is None:
             with tempfile.TemporaryDirectory() as tmp_dir:
                 tmp_path = os.path.join(tmp_dir, filename)
-                file.save(tmp_path)
+                with open(tmp_path, "wb") as df:
+                    shutil.copyfileobj(file.file, df)
+
                 return self.__parse_file(
                     tmp_dir=tmp_dir,
                     filename=filename,
@@ -128,7 +131,8 @@ class DedocThreadedManager(object):
                 )
 
         tmp_path = os.path.join(self.tmp_dir, filename)
-        file.save(tmp_path)
+        with open(tmp_path, "wb") as df:
+            shutil.copyfileobj(file.file, df)
         return self.__parse_file(
             tmp_dir=self.tmp_dir,
             filename=filename,

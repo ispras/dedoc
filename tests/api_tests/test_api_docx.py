@@ -106,7 +106,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self._send_request("broken.docx", expected_code=415)
 
     def test_send_wo_file(self) -> None:
-        self._send_request_wo_file(expected_code=400)
+        self._send_request_wo_file(expected_code=422)
 
     def test_return_html(self) -> None:
         file_name = "example.doc"
