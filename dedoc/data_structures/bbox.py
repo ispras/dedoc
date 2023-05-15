@@ -6,7 +6,9 @@ from dedoc.data_structures.serializable import Serializable
 
 class BBox(Serializable):
     """
-    Box around some page object, our coordinate system starts from top left corner
+    Bounding box around some page object, the coordinate system starts from top left corner.
+    """
+    """
 
     0------------------------------------------------------------------------------------------------> x
     |                                   BBox
@@ -22,6 +24,14 @@ class BBox(Serializable):
     V y
     """
     def __init__(self, x_top_left: int, y_top_left: int, width: int, height: int) -> None:
+        """
+        The following parameters should have values of pixels number.
+
+        :param x_top_left: x coordinate of the bbox top left corner
+        :param y_top_left: y coordinate of the bbox top left corner
+        :param width: bounding box width
+        :param height: bounding box height
+        """
         self.x_top_left = x_top_left
         self.y_top_left = y_top_left
         self.width = width
@@ -43,10 +53,19 @@ class BBox(Serializable):
 
     @property
     def square(self) -> int:
+        """
+        Square of the bbox.
+        """
         return self.height * self.width
 
     @staticmethod
     def from_two_points(top_left: Tuple[int, int], bottom_right: Tuple[int, int]) -> "BBox":
+        """
+        Make the bounding box from two points.
+
+        :param top_left: (x, y) point of the bbox top left corner
+        :param bottom_right: (x, y) point of the bbox bottom right corner
+        """
         x_top_left, y_top_left = top_left
         x_bottom_right, y_bottom_right = bottom_right
         return BBox(x_top_left=x_top_left,
@@ -54,7 +73,13 @@ class BBox(Serializable):
                     width=x_bottom_right - x_top_left,
                     height=y_bottom_right - y_top_left)
 
-    def have_intesection_with_box(self, box: "BBox", threshold: float = 0.3) -> bool:
+    def have_intersection_with_box(self, box: "BBox", threshold: float = 0.3) -> bool:
+        """
+        Check if the current bounding box has the intersection with another one.
+
+        :param box: another bounding box to check intersection with
+        :param threshold: the lowest value of the intersection over union used get boolean result
+        """
         # determine the (x, y)-coordinates of the intersection rectangle
         xA = max(self.x_top_left, box.x_top_left)
         yA = max(self.y_top_left, box.y_top_left)
@@ -67,7 +92,7 @@ class BBox(Serializable):
         box_b_area = float(box.width * box.height)
         # compute the intersection over union by taking the intersection
         # area and dividing it by the sum of prediction + ground-truth
-        # areas - the interesection area
+        # areas - the intersection area
         percent_intersection = inter_a_area / box_b_area if box_b_area > 0 else 0
         # return the intersection over union value
         return percent_intersection > threshold

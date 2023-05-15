@@ -14,7 +14,7 @@ from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
-from dedoc.structure_constructors.annotation_merger import AnnotationMerger
+from dedoc.utils.annotation_merger import AnnotationMerger
 
 
 class LineWithMetaConverter:

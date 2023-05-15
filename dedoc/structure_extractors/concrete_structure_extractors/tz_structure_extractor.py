@@ -13,9 +13,17 @@ from dedoc.structure_extractors.line_type_classifiers.tz_classifier import TzLin
 
 
 class TzStructureExtractor(AbstractStructureExtractor):
+    """
+    This class is used for extraction structure from technical tasks.
+
+    TODO structure description.
+    """
     document_type = "tz"
 
     def __init__(self, *, config: dict) -> None:
+        """
+        :param config: some configuration for document parsing
+        """
         self.header_builder = HeaderHierarchyLevelBuilder()
         self.body_builder = TzBodyBuilder()
         self.toc_builder = TocBuilder()
@@ -24,6 +32,11 @@ class TzStructureExtractor(AbstractStructureExtractor):
         self.txt_classifier = TzLineTypeClassifier(classifier_type="tz_txt", path=os.path.join(path, "tz_txt_classifier.pkl.gz"), config=config)
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
+        """
+        Extract technical task structure from the given document and add additional information to the lines' metadata.
+        To get the information about the method's parameters look at the documentation of the class \
+        :class:`~dedoc.structure_extractors.AbstractStructureExtractor`.
+        """
         if document.metadata.get("file_type") in recognized_mimes.txt_like_format:
             predictions = self.txt_classifier.predict(document.lines)
         else:

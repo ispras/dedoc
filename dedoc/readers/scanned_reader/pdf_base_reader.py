@@ -35,8 +35,6 @@ from dedoc.readers.scanned_reader.utils.header_footers_analysis import footer_he
 from dedoc.readers.scanned_reader.table_recognizer.table_recognizer import TableRecognizer
 from dedoc.utils.utils import flatten
 
-# TODO delete parameter is_one_column_document_list
-# TODO change TextLocalization on AdaptiveBinarization
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", ["orient_analysis_cells",
                                                              "orient_cell_angle",
@@ -55,10 +53,12 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", ["orient_analysis_ce
 
 class PdfBase(BaseReader):
     """
-     Base Class Pdf Extractor
+    Base class for pdf documents parsing.
     """
-
     def __init__(self, config: dict) -> None:
+        """
+        :param config: configuration of the reader, e.g. logger for logging
+        """
         self.table_recognizer = TableRecognizer(config=config)
         self.metadata_extractor = LineMetadataExtractor(config=config)
         self.config = config
@@ -68,7 +68,12 @@ class PdfBase(BaseReader):
         self.linker = LineObjectLinker(config=config)
         self.paragraph_extractor = ScanParagraphClassifierExtractor(config=config)
 
-    def read(self, path: str, document_type: Optional[str], parameters: Optional[dict]) -> UnstructuredDocument:
+    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        The method return document content with all document's lines, tables and attachments.
+        This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+        """
         parameters = {} if parameters is None else parameters
         first_page, last_page = get_page_slice(parameters)
         params_for_parse = ParametersForParseDoc(
@@ -93,7 +98,7 @@ class PdfBase(BaseReader):
             metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name)
             cells = [[cell for cell in row] for row in scan_table.matrix_cells]
             text_cells = [[cell.text for cell in row] for row in scan_table.matrix_cells]
-            table = Table(metadata=metadata, cells=text_cells, cells_with_property=cells)
+            table = Table(metadata=metadata, cells=text_cells, cells_properties=cells)
             tables.append(table)
 
         if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):

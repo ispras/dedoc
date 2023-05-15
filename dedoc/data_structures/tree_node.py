@@ -7,12 +7,15 @@ from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.serializable import Serializable
-from dedoc.structure_constructors.annotation_merger import AnnotationMerger
+from dedoc.utils.annotation_merger import AnnotationMerger
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
 class TreeNode(Serializable):
-
+    """
+    TreeNode helps to represent document as recursive tree structure.
+    It has parent node (None for root ot the tree) and list of children nodes (empty list for list node).
+    """
     def __init__(self,
                  node_id: str,
                  text: str,
@@ -21,10 +24,8 @@ class TreeNode(Serializable):
                  subparagraphs: List["TreeNode"],
                  parent: Optional["TreeNode"]) -> None:
         """
-        TreeNode helps to represent document as recursive tree structure. It has parent node (None for root ot the tree)
-        and list of children nodes (empty list for list node)
         :param node_id: node id is unique in one document
-        :param text: text of node
+        :param text: text of the node
         :param annotations: some metadata related to the part of the text (as font size)
         :param metadata: metadata refers to entire node (as node type)
         :param subparagraphs: list of child of this node
@@ -70,7 +71,8 @@ class TreeNode(Serializable):
     @staticmethod
     def create(lines: List[LineWithMeta] = None) -> "TreeNode":
         """
-        Creates a root node with given text
+        Creates a root node with given text.
+
         :param lines: this lines should be the title of the document (or should be empty for documents without title)
         :return: root of the document tree
         """
@@ -93,7 +95,8 @@ class TreeNode(Serializable):
 
     def add_child(self, line: LineWithMeta) -> "TreeNode":
         """
-        Create a new tree node - children of the given node from given line. Return newly created node
+        Create a new tree node - children of the given node from given line. Return newly created node.
+
         :param line: Line with meta, new node will be built from this line
         :return: return created node (child of the self)
         """
@@ -110,9 +113,9 @@ class TreeNode(Serializable):
 
     def add_text(self, line: LineWithMeta) -> None:
         """
-        add the text and annotations from given line, text is separated with \n
+        Add the text and annotations from given line, text is separated with aa len line symbol.
+
         :param line: line with text to add
-        :return:
         """
         text_length = len(self.text)
         new_annotations = self.__shift_annotations(line, text_length)
@@ -133,7 +136,7 @@ class TreeNode(Serializable):
 
     def get_root(self) -> "TreeNode":
         """
-        :return: return root of the tree
+        :return: root of the tree
         """
         node = self
         while node.parent is not None:

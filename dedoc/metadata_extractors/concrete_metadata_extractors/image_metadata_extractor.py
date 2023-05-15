@@ -12,8 +12,27 @@ from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extrac
 
 
 class ImageMetadataExtractor(BaseMetadataExtractor):
+    """
+    This class is used to extract metadata from images.
+    It expands metadata retrieved by :class:`~dedoc.metadata_extractors.BaseMetadataExtractor`.
 
+    In addition to them, the following fields can be added to the metadata other fields:
+        - date time, date time digitized, date time original;
+        - digital zoom ratio;
+        - exif image height, image width and version;
+        - light source;
+        - make;
+        - model;
+        - orientation;
+        - resolution unit;
+        - software;
+        - subject distance range;
+        - user comment.
+    """
     def __init__(self, *, config: dict) -> None:
+        """
+        :param config: configuration of the extractor, e.g. logger for logging
+        """
         self.logger = config.get("logger", logging.getLogger())
         super().__init__()
         self.keys = {
@@ -42,6 +61,10 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
                     original_filename: str,
                     parameters: dict = None,
                     other_fields: Optional[dict] = None) -> bool:
+        """
+        Check if the document has image-like extension (".png", ".jpg", ".jpeg").
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        """
         return filename.lower().endswith((".png", ".jpg", ".jpeg"))
 
     def add_metadata(self,
@@ -53,6 +76,10 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
                      version: str,
                      parameters: dict = None,
                      other_fields: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        Add the predefined list of metadata for images.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        """
         result = super().add_metadata(document=document,
                                       directory=directory,
                                       filename=filename,
@@ -105,11 +132,8 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
             exif_dict = piexif.load(image.info["exif"]).get("Exif", {}) if "exif" in image.info else {}
             exif = {ExifTags.TAGS[k]: v for k, v in exif_dict.items() if k in ExifTags.TAGS}
             encoded_dict = {key_renamed: encode_function(exif.get(key))
-                            for key, (key_renamed, encode_function) in self.keys.items() if key in exif
-                            }
-            encoded_dict = {k: v for k, v in encoded_dict.items() if k is not None
-                            if v is not None
-                            }
+                            for key, (key_renamed, encode_function) in self.keys.items() if key in exif}
+            encoded_dict = {k: v for k, v in encoded_dict.items() if k is not None if v is not None}
             return encoded_dict
         except Exception as e:  # noqa
             self.logger.debug(e)

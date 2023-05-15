@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.line_metadata import LineMetadata
-from dedoc.structure_constructors.concreat_structure_constructors.list_patcher import ListPatcher
+from dedoc.structure_constructors.concrete_structure_constructors.list_patcher import ListPatcher
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 

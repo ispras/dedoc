@@ -9,15 +9,7 @@ from dedoc.data_structures.serializable import Serializable
 
 class DocumentMetadata(Serializable):
     """
-        holds information about document metadata.
-        :param uid: document unique identifier (useful for attached files)
-        :param file_name: original document name (before rename and conversion, so it can contain non-ascii symbols, spaces and so on)
-        :param size: size of the original file in bytes
-        :param modified_time: time of the last modification in unix time format (seconds since the epoch)
-        :param created_time: time of the creation in unixtime
-        :param access_time: time of the last acess to the file in unixtime
-        :param file_type: mime type of the file
-        :param other_fields: additional fields of user metadata
+    This class holds information about document metadata.
     """
 
     def __init__(self,
@@ -29,6 +21,16 @@ class DocumentMetadata(Serializable):
                  file_type: str,
                  other_fields: dict = None,
                  uid: str = None) -> None:
+        """
+        :param uid: document unique identifier (useful for attached files)
+        :param file_name: original document name (before rename and conversion, so it can contain non-ascii symbols, spaces and so on)
+        :param size: size of the original file in bytes
+        :param modified_time: time of the last modification in unix time format (seconds since the epoch)
+        :param created_time: time of the creation in unixtime
+        :param access_time: time of the last access to the file in unixtime
+        :param file_type: mime type of the file
+        :param other_fields: additional fields of user metadata
+        """
         self.file_name = file_name
         self.size = size
         self.modified_time = modified_time
@@ -44,6 +46,11 @@ class DocumentMetadata(Serializable):
         self.uid = uid  # noqa
 
     def extend_other_fields(self, new_fields: dict) -> None:
+        """
+        Add new attributes to the class and to the other_fields dictionary.
+
+        :param new_fields: fields to add
+        """
         assert (new_fields is not None)
         assert (len(new_fields) > 0)
 

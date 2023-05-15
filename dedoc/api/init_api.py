@@ -1,10 +1,9 @@
 import os
-from dedoc.config import Configuration
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from dedoc.config import get_config
 
-config = Configuration.getInstance().getConfig()
-
+config = get_config()
 PORT = config["api_port"]
 
 if "static_files_dirs" in config and config["static_files_dirs"] != {}:

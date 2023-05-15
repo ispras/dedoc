@@ -1,15 +1,7 @@
-#  change config and manager config here if you want
-# new_config = ...
-# new_manager_config = ...
-# set_manager_config(new_manager_config)
-# set_config(new_config)
+import argparse
 
-# 1 - set configuration of service
+from dedoc.config import Configuration
 from dedoc.configuration_manager import ConfigurationManager
-
-ConfigurationManager().getInstance()
-
-# 2 - run service
 from dedoc.api.dedoc_api import run_api, get_api  # noqa
 
 
@@ -18,4 +10,12 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    parser_config = argparse.ArgumentParser()
+    parser_config.add_argument("-c", "--config_path", help="path to configuration file")
+    parser_config.add_argument("-m", "--module", help="Only for tests")
+    parser_config.add_argument("-f", "--test_files", metavar="VALUE", nargs='*', help="Only for tests")
+    parser_config.add_argument('-v', "--unitest_verbose_mode", nargs='?', help="to enable verbose mode of unittest. Only for tests")
+    args_config = parser_config.parse_args()
+    ConfigurationManager().getInstance()
+    Configuration.getInstance().getConfig(args_config)
     main()

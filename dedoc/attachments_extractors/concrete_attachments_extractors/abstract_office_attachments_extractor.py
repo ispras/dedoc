@@ -12,11 +12,12 @@ from dedoc.data_structures.attached_file import AttachedFile
 
 class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
     """
-    Extract attachments from files of Microsoft Office format like docx, pptx, xlsx
+    Extract attachments from files of Microsoft Office format like docx, pptx, xlsx.
     """
     def __parse_ole_contents(self, stream: bytes) -> Tuple[str, bytes]:
         """
-        Parse the binary content of olefile
+        Parse the binary content of olefile.
+
         :param stream: binary content of olefile
         :return: tuple of (name of original file and binary file content)
         """
@@ -64,8 +65,7 @@ class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
 
         with zipfile.ZipFile(os.path.join(tmpdir, filename), 'r') as zfile:
             files = zfile.namelist()
-            attachments = [file for file in files if file.startswith((f"{attachments_dir}/media/",
-                                                                      f"{attachments_dir}/embeddings/"))]
+            attachments = [file for file in files if file.startswith((f"{attachments_dir}/media/", f"{attachments_dir}/embeddings/"))]
 
             for attachment in attachments:
                 original_name = os.path.split(attachment)[-1]

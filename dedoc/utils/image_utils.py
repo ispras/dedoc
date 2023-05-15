@@ -6,7 +6,7 @@ from scipy.ndimage import maximum_filter
 from copy import deepcopy
 from PIL import Image, ImageDraw
 
-from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.data_structures.bbox import BBox
 
 
 def get_highest_pixel_frequency(image: np.ndarray) -> int:
@@ -84,32 +84,6 @@ def crop_image_text(image: np.ndarray) -> np.ndarray:
     else:
         image_crop = image
     return image_crop
-
-
-supported_image_types = {"bmp",
-                         "dib",
-                         "eps",
-                         "gif",
-                         "hdr",
-                         "jfif",
-                         "jp2",
-                         "jpe",
-                         "jpeg",
-                         "jpg",
-                         "pbm",
-                         "pcx",
-                         "pgm",
-                         "pic",
-                         "png",
-                         "pnm",
-                         "ppm",
-                         "ras",
-                         "sgi",
-                         "sr",
-                         "tiff",
-                         "webp",
-                         "j2k"}
-supported_image_types = {prefix + image_format for image_format in supported_image_types for prefix in [".", ""]}
 
 
 def draw_rectangle(image: PIL.Image,

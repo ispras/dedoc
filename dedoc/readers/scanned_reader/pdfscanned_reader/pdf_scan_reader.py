@@ -16,15 +16,18 @@ from dedoc.readers.scanned_reader.pdfscanned_reader.columns_orientation_classifi
 from dedoc.readers.scanned_reader.pdfscanned_reader.ocr.ocr_line_extractor import OCRLineExtractor
 from dedoc.readers.scanned_reader.pdfscanned_reader.scan_rotator import ScanRotator
 from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
-from dedoc.utils.image_utils import supported_image_types
+from dedoc.utils import supported_image_types
 
 
 class PdfScanReader(PdfBase):
     """
-     Class Pdf без текстового слоя (сканы)
+    This class allows extract content from the .pdf documents without a textual layer (not copyable documents),
+    as well as from images (scanned documents).
     """
-
     def __init__(self, *, config: dict) -> None:
+        """
+        :param config: configuration of the reader, e.g. logger for logging
+        """
         super().__init__(config=config)
         self.scan_rotator = ScanRotator(config=config)
         checkpoint_path = get_config()["resources_path"]
@@ -36,7 +39,11 @@ class PdfScanReader(PdfBase):
         self.ocr = OCRLineExtractor(config=config)
         self.logger = config.get("logger", logging.getLogger())
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: str, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        """
+        Check if the document extension is suitable for this reader, i.e. it has .pdf extension or it is an image.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        """
         parameters = {} if parameters is None else parameters
         with_archive = parameters.get("archive_as_single_file", "true").lower() == "true"
         return self.__check_mime(mime, with_archive) or self.__check_path(path, with_archive) or \

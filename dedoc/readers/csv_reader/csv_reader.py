@@ -10,21 +10,25 @@ from dedoc.utils.utils import get_encoding
 
 
 class CSVReader(BaseReader):
+    """
+    This class allows to parse files with the following extensions: .csv, .tsv.
+    """
     def __init__(self) -> None:
         self.default_separator = ","
 
-    def can_read(self,
-                 path: str,
-                 mime: str,
-                 extension: str,
-                 document_type: Optional[str],
-                 parameters: Optional[dict] = None) -> bool:
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        """
+        Check if the document extension is suitable for this reader.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        """
         return extension.lower() in recognized_extensions.csv_like_format
 
-    def read(self,
-             path: str,
-             document_type: Optional[str] = None,
-             parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        The method will place all extracted content inside tables of the :class:`~dedoc.data_structures.UnstructuredDocument`.
+        The lines and attachments remain empty.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+        """
         delimiter = parameters.get("delimiter")
         if delimiter is None:
             delimiter = "\t" if path.endswith(".tsv") else self.default_separator

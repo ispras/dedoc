@@ -15,6 +15,11 @@ from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexp
 
 
 class LawStructureExtractor(AbstractLawStructureExtractor):
+    """
+    This class is used for extraction structure from common laws.
+
+    TODO structure description.
+    """
     document_type = "law"
 
     def __init__(self, *, config: dict) -> None:

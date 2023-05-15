@@ -14,8 +14,16 @@ from dedoc.structure_extractors.line_type_classifiers.law_classifier import LawL
 
 
 class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
+    """
+    This class is used for extraction structure from laws.
+
+    TODO structure description.
+    """
 
     def __init__(self, *, config: dict) -> None:
+        """
+        :param config: some configuration for document parsing
+        """
         path = os.path.join(get_config()["resources_path"], "line_type_classifiers")
         self.classifier = LawLineTypeClassifier(classifier_type="law", path=os.path.join(path, "law_classifier.pkl.gz"), config=config)
         self.txt_classifier = LawLineTypeClassifier(classifier_type="law_txt", path=os.path.join(path, "law_txt_classifier.pkl.gz"), config=config)
@@ -24,6 +32,11 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
         self.init_hl_depth = 1
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
+        """
+        Extract law structure from the given document and add additional information to the lines' metadata.
+        To get the information about the method's parameters look at the documentation of the class \
+        :class:`~dedoc.structure_extractors.AbstractStructureExtractor`.
+        """
         if document.metadata.get("file_type") in recognized_mimes.txt_like_format:
             predictions = self.txt_classifier.predict(document.lines)
         else:

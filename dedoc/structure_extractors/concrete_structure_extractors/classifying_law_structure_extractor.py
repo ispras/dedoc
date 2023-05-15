@@ -8,8 +8,7 @@ from typing import List, Dict, Iterable, Optional
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
-from dedoc.structure_extractors.concrete_structure_extractors.foiv_law_structure_extractor import \
-    FoivLawStructureExtractor
+from dedoc.structure_extractors.concrete_structure_extractors.foiv_law_structure_extractor import FoivLawStructureExtractor
 from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
 
 
@@ -49,9 +48,17 @@ class LawDocType(Enum):
 
 
 class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
+    """
+    This class is used to dynamically classify laws into two types: laws and foiv.
+    The specific extractors are called according to the classifying results.
+    """
     document_type = "law"
 
     def __init__(self, extractors: Dict[str, AbstractStructureExtractor], *, config: dict) -> None:
+        """
+        :param extractors: mapping law_type -> structure extractor, defined for certain law types
+        :param config: configuration of the extractor, e.g. logger for logging
+        """
         self.extractors = extractors
         self.logger = config.get("logger", logging.getLogger())
 
@@ -83,7 +90,7 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
         self.main_templates[LawDocType.definition] = {r"\b{}\b".format(definition_ws)}
 
         directive_ws = self.__add_whitespace_match("директива")
-        self.main_templates[LawDocType.directive] = {r"\b{}\b".format(directive_ws)}  # TODO нет данных
+        self.main_templates[LawDocType.directive] = {r"\b{}\b".format(directive_ws)}  # TODO no data
 
         code_ws = self.__add_whitespace_match("кодекс")
         self.main_templates[LawDocType.code] = {r"\b{}\b".format(code_ws)}
@@ -98,6 +105,11 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
         self.main_templates[LawDocType.instruction] = {r"\b{}\b".format(instruction_ws)}
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
+        """
+        Classify law kind and extract structure according to the specific law format.
+        To get the information about the method's parameters look at the documentation of the class \
+        :class:`~dedoc.structure_extractors.AbstractStructureExtractor`.
+        """
         selected_extractor = self._predict_extractor(lines=document.lines)
         result = selected_extractor.extract_structure(document, parameters)
         warning = "Use {} classifier".format(selected_extractor.document_type)

@@ -13,11 +13,21 @@ from dedoc.structure_extractors.feature_extractors.list_features.prefix.prefix i
 
 
 class DefaultStructureExtractor(AbstractStructureExtractor):
+    """
+    This class corresponds the basic structure extraction from the documents.
+
+    TODO structure description.
+    """
     document_type = "other"
 
     prefix_list: List[LinePrefix] = [DottedPrefix, BracketPrefix, LetterPrefix, BulletPrefix]
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
+        """
+        Extract basic structure from the given document and add additional information to the lines' metadata.
+        To get the information about the method's parameters look at the documentation of the class \
+        :class:`~dedoc.structure_extractors.AbstractStructureExtractor`.
+        """
         previous_line = None
 
         for line in document.lines:

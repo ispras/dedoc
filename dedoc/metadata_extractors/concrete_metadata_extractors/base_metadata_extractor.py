@@ -2,13 +2,21 @@ import os
 from typing import Optional
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.metadata_extractors.concrete_metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
+from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 from dedoc.utils.utils import get_file_mime_type
 
 
 class BaseMetadataExtractor(AbstractMetadataExtractor):
     """
-    Base class for metadata extractor. Inheritor should implement two methods: can_extract and add_metadata
+    This metadata extractor allows to extract metadata from the documents of any format.
+
+    It returns the following information about the given file:
+        - file name;
+        - file type (MIME);
+        - file size in bytes;
+        - time when the file was last accessed;
+        - time when the file was created;
+        - time when the file was last modified.
     """
 
     def can_extract(self,
@@ -20,15 +28,8 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
                     parameters: Optional[dict] = None,
                     other_fields: Optional[dict] = None) -> bool:
         """
-        check if this extractor can handle given file. Return True if can handle and False otherwise
-
-        :type document: document content
-        :type directory: path to directory where original file and converted file are located
-        :type filename: name of file after rename (for example 23141.doc)
-        :type converted_filename: name of file after rename and conversion (for example 23141.docx)
-        :type original_filename: file name before rename
-        :type parameters: additional parameters
-        :type other_fields: other fields
+        This extractor can handle any file so the method always returns True.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
         """
         return True
 
@@ -42,15 +43,8 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
                      parameters: Optional[dict] = None,
                      other_fields: Optional[dict] = None) -> UnstructuredDocument:
         """
-        add metadata to doc. Use this method only if this extractor can_extract this file
-
-        :type document: document content
-        :type directory: path to directory where original file and converted file are located
-        :type filename: name of file after rename (for example 23141.doc)
-        :type converted_filename: name of file after rename and conversion (for example 23141.docx)
-        :type original_filename: file name before rename
-        :type parameters: additional parameters
-        :type other_fields: other fields
+        Gets the basic meta-information about the file.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
         """
         if parameters is None:
             parameters = {}

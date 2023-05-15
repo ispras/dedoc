@@ -12,27 +12,40 @@ from bs4 import BeautifulSoup
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils.image_utils import supported_image_types
+from dedoc.utils import supported_image_types
 from dedoc.utils.utils import get_encoding, calculate_file_hash
 from dedoc.utils.utils import check_filename_length
 from dedoc.readers.html_reader.html_reader import HtmlReader
 
 
 class MhtmlReader(BaseReader):
-
+    """
+    This reader can process files with the following extensions: .mhtml, .mht, .mhtml.gz, .mht.gz
+    """
     def __init__(self, *, config: dict) -> None:
+        """
+        :param config: configuration of the reader, e.g. logger for logging
+        """
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
         self.mhtml_extensions = [".mhtml", ".mht"]
-        self.mhtml_extensions += ["{}.gz".format(extension) for extension in self.mhtml_extensions]
+        self.mhtml_extensions += [f"{extension}.gz" for extension in self.mhtml_extensions]
         self.mhtml_extensions = tuple(self.mhtml_extensions)
         self.html_reader = HtmlReader(config=config)
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str], parameters: Optional[dict] = None) -> bool:
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        """
+        Check if the document extension is suitable for this reader.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        """
         return extension.lower().endswith(tuple(self.mhtml_extensions))
 
     def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
-
+        """
+        The method return document content with all document's lines, tables and attachments.
+        This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+        """
         parameters = {} if parameters is None else parameters
         save_dir = os.path.dirname(path)
         names_list = self.__extract_files(path=path, save_dir=save_dir)

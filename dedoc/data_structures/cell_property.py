@@ -8,10 +8,12 @@ from dedoc.data_structures.serializable import Serializable
 
 
 class CellProperty(Serializable):
+    """
+    This class holds information about the table cell.
+    """
     def __init__(self, cell: Any) -> None:
         """
-        That class holds information about table cell.
-        :param cell: a cell class.
+        :param cell: class which should contain the following attributes: colspan, rowspan, invisible.
         """
         self.colspan = cell.colspan
         self.rowspan = cell.rowspan

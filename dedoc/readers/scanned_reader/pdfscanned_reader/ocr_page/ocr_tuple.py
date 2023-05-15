@@ -1,6 +1,6 @@
 from typing import Dict, Iterable
 
-from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.data_structures.bbox import BBox
 
 
 class OcrElement:

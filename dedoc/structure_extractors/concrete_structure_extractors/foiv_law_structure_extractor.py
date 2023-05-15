@@ -12,6 +12,11 @@ from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexp
 
 
 class FoivLawStructureExtractor(AbstractLawStructureExtractor):
+    """
+    This class is used for extraction structure from foiv type of law.
+
+    TODO structure description.
+    """
     document_type = "foiv_law"
 
     def __init__(self, *, config: dict) -> None:

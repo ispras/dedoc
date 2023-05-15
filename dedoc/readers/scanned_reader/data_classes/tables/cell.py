@@ -2,7 +2,7 @@ import uuid
 from collections import OrderedDict
 from typing import Optional
 
-from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.data_structures.bbox import BBox
 
 
 class Cell:
