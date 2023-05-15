@@ -12,14 +12,30 @@ from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
 class DocxReader(BaseReader):
+    """
+    This class is used for parsing documents with .docx extension.
+    Please use :class:`~dedoc.converters.DocxConverter` for getting docx file from similar formats.
+    """
     def __init__(self, *, config: dict) -> None:
+        """
+        :param config: configuration of the reader, e.g. logger for logging
+        """
         self.attachment_extractor = DocxAttachmentsExtractor()
         self.logger = config.get("logger", logging.getLogger())
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str], parameters: Optional[dict] = None) -> bool:
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        """
+        Check if the document extension is suitable for this reader.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        """
         return extension.lower() in recognized_extensions.docx_like_format or mime in recognized_mimes.docx_like_format
 
     def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        The method return document content with all document's lines, tables and attachments.
+        This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+        """
         parameters = {} if parameters is None else parameters
         docx_document = self._parse_document(path=path)
         attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path), filename=os.path.basename(path), parameters=parameters)

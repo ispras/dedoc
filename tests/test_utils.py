@@ -4,7 +4,7 @@ import signal
 from typing import Union, List, Optional, Any
 
 from dedoc.data_structures.line_metadata import LineMetadata
-from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.data_structures.bbox import BBox
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.scanned_reader.data_classes.tables.location import Location
 

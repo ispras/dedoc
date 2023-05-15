@@ -3,14 +3,21 @@ import json
 from dedoc.data_structures.annotation import Annotation
 from flask_restx import fields, Api, Model
 
-from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.data_structures.bbox import BBox
 
 
 class BBoxAnnotation(Annotation):
-
+    """
+    Coordinates of the line's bounding box (in pixels) - for pdf documents.
+    """
     name = "bounding box"
 
     def __init__(self, start: int, end: int, value: BBox) -> None:
+        """
+        :param start: start of the annotated text (usually zero)
+        :param end: end of the annotated text (usually end of the line)
+        :param value: bounding box where line is located
+        """
         try:
             BBox(value.x_top_left, value.y_top_left, value.width, value.height)
         except ValueError:
@@ -24,5 +31,5 @@ class BBoxAnnotation(Annotation):
             'end': fields.Integer(description='annotation end index', required=True, example=4),
             'value': fields.String(description='bounding box of text chunk',
                                    required=True,
-                                   example="True")
+                                   example='{"x_top_left": 0, "y_top_left": 0, "width": 70, "height": 20}')
         })

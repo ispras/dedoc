@@ -11,8 +11,24 @@ from dedoc.utils.utils import convert_datetime
 
 
 class PdfMetadataExtractor(BaseMetadataExtractor):
+    """
+    This class is used to extract metadata from pdf documents.
+    It expands metadata retrieved by :class:`~dedoc.metadata_extractors.BaseMetadataExtractor`.
 
+    In addition to them, the following fields can be added to the metadata other fields:
+        - producer;
+        - creator;
+        - author;
+        - title;
+        - subject;
+        - keywords;
+        - creation date;
+        - modification date.
+    """
     def __init__(self, *, config: dict) -> None:
+        """
+        :param config: configuration of the extractor, e.g. logger for logging
+        """
         super().__init__()
         self.keys = {
             "/Producer": "producer",
@@ -38,6 +54,10 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
                     original_filename: str,
                     parameters: dict = None,
                     other_fields: Optional[dict] = None) -> bool:
+        """
+        Check if the document has .pdf extension.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        """
         return filename.lower().endswith(".pdf")
 
     def add_metadata(self,
@@ -49,6 +69,10 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
                      version: str,
                      parameters: dict = None,
                      other_fields: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        Add the predefined list of metadata for the pdf documents.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        """
         result = super().add_metadata(document=document,
                                       directory=directory,
                                       filename=filename,

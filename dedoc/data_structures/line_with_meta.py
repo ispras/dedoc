@@ -4,22 +4,22 @@ from uuid import uuid1
 
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.line_metadata import LineMetadata
-from dedoc.structure_constructors.annotation_merger import AnnotationMerger
+from dedoc.utils.annotation_merger import AnnotationMerger
 
 
 class LineWithMeta(Sized):
-
+    """
+    Structural unit of document - line (or paragraph) of text and its metadata.
+    One LineWithMeta should not contain text from different logical parts of the document
+    (for example, document title and raw text of the document should not be in the same line).
+    Still the logical part of the document may be represented by more than one line (for example, document title may consist of many lines).
+    """
     def __init__(self, line: str, metadata: LineMetadata, annotations: List[Annotation], uid: str = None) -> None:
         """
-        Structural unit of document - line (or paragraph) of text and its metadata. One LineWithMeta should not contain
-        text from different logical parts of the document (for example document title and raw text of document should not
-        lay in the same line) One the other one logical part of the document may be represented by more than one line
-        (for example document title may consist of many lines).
-
         :param line: raw text of the document line
-        :param metadata: metadata (related to the entire line, as type of the line or page number)
-        :param annotations: metadata refers to some part of the text, for example font size of font type and so on.
-        :param uid: unique identifier of the line.
+        :param metadata: metadata (related to the entire line, as line or page number, its hierarchy level)
+        :param annotations: metadata that refers to some part of the text, for example, font size, font type, etc.
+        :param uid: unique identifier of the line
         """
 
         self._line = line
@@ -34,7 +34,9 @@ class LineWithMeta(Sized):
     def split(self, sep: str) -> List["LineWithMeta"]:
         """
         Split this line into a list of lines, keep annotations consistent.
-        This method does not remove any text from the line
+        This method does not remove any text from the line.
+
+        :param sep: separator for splitting
         """
         if not sep:
             raise ValueError("empty separator")
@@ -73,7 +75,7 @@ class LineWithMeta(Sized):
 
     def __extract_annotations_by_slice(self, start: int, stop: int) -> List[Annotation]:
         """
-        Extract annotations for given slice
+        Extract annotations for given slice.
         """
         assert start >= 0
         assert stop >= 0

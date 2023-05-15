@@ -7,15 +7,16 @@ from dedoc.data_structures.cell_property import CellProperty
 
 
 class TableMetadata(Serializable):
-
+    """
+    This class holds the information about the table location in the document and information about cell properties.
+    """
     def __init__(self, page_id: Optional[int], uid: str = "", is_inserted: bool = False,
                  cell_properties: Optional[List[List[CellProperty]]] = None) -> None:
         """
-        Holds the information about the table location in the document and information about cell properties
-        :param page_id: number of page where table starts
-        :uid: unique id of table
-        :was_inserted: if table was already inserted into paragraphs list
-        :cell_properties: content different property of each cell
+        :param page_id: number of the page where table starts
+        :param uid: unique identifier of the table
+        :param is_inserted: indicator if table was already inserted into paragraphs list
+        :param cell_properties: information about rowspan, colspan and invisibility of each cell
         """
         self.page_id = page_id
         self.uid = uid

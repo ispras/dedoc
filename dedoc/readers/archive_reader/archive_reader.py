@@ -22,13 +22,22 @@ from dedoc.utils.utils import get_file_mime_type, save_data_to_unique_file
 
 
 class ArchiveReader(BaseReader):
-
+    """
+    This reader allows to get archived files as attachments of the :class:`~dedoc.data_structures.UnstructuredDocument`.
+    Documents with the following extensions can be parsed: .zip, .tar, .tar.gz, .rar, .7z.
+    """
     def __init__(self, *, config: dict) -> None:
-        super().__init__()
+        """
+        :param config: configuration of the reader, e.g. logger for logging
+        """
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str], parameters: Optional[dict] = None) -> bool:
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        """
+        Check if the document extension is suitable for this reader.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        """
         if parameters is None:
             parameters = {}
 
@@ -42,7 +51,8 @@ class ArchiveReader(BaseReader):
 
     def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
-        function return empty content of zip, all content will inside attachments
+        The method return empty content of archive, all content will be placed inside attachments.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         attachments = self.__get_attachments(path=path)
         return UnstructuredDocument(lines=[], tables=[], attachments=attachments)

@@ -5,7 +5,7 @@ from uuid import uuid1
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.serializable import Serializable
 from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
-from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.data_structures.bbox import BBox
 
 
 class TextWithBBox(Serializable):

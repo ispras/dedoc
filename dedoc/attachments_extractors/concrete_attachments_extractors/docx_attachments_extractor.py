@@ -2,24 +2,52 @@ import hashlib
 import os
 import tempfile
 import zipfile
-from typing import List
+from typing import List, Optional
 from bs4 import BeautifulSoup
 
-from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_office_attachments_extractor import \
-    AbstractOfficeAttachmentsExtractor
+from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_office_attachments_extractor import AbstractOfficeAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.utils.utils import splitext_
 
 
 class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
     """
-    Extract attachments from docx files
+    Extract attachments from docx files.
     """
+    def can_extract(self, extension: str, mime: str, parameters: Optional[dict] = None) -> bool:
+        """
+        Checks if this extractor can get attachments from the document (it should have .docx extension)
+        """
+        return extension.lower() in recognized_extensions.docx_like_format or mime in recognized_mimes.docx_like_format
+
+    def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[AttachedFile]:
+        """
+        Get attachments from the given docx document.
+
+        Look to the :class:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor` documentation to get the information about \
+        the methods' parameters.
+        """
+        result = []
+        name, ext = splitext_(filename)
+
+        if ext.lower() != '.docx':
+            return []
+
+        with zipfile.ZipFile(os.path.join(tmpdir, filename), 'r') as zfile:
+            diagram_attachments = self.__extract_diagrams(zfile)
+            need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+            result += self._content2attach_file(content=diagram_attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis)
+
+        result += self._get_attachments(tmpdir=tmpdir, filename=filename, parameters=parameters, attachments_dir="word")
+        return result
 
     def __extract_diagrams(self, document: zipfile.ZipFile) -> List[tuple]:
         """
-        creates files for diagram: for each paragraph with diagram one file
-        :returns: list files with diagrams
+        Creates files for diagram: separate file for each paragraph with diagram.
+
+        :param document: archive with docx document
+        :returns: list of files with diagrams
         """
         result = []
         try:
@@ -54,25 +82,4 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
                         new_d.write(os.path.join(tmpdir, filename), arcname=filename)
                 with open(os.path.join(tmpdir, diagram_name), "rb") as f:
                     result.append((diagram_name, f.read()))
-        return result
-
-    def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[AttachedFile]:
-        """
-        :param tmpdir: directory where file is located
-        :param filename: Name of the file from which you should extract attachments
-        :param parameters: dict with different parameters for extracting
-        :return: list of lists (name of original file and binary file content)
-        """
-        result = []
-        name, ext = splitext_(filename)
-
-        if ext.lower() != '.docx':
-            return []
-
-        with zipfile.ZipFile(os.path.join(tmpdir, filename), 'r') as zfile:
-            diagram_attachments = self.__extract_diagrams(zfile)
-            need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
-            result += self._content2attach_file(content=diagram_attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis)
-
-        result += self._get_attachments(tmpdir=tmpdir, filename=filename, parameters=parameters, attachments_dir="word")
         return result

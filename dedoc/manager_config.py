@@ -23,17 +23,13 @@ from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.readers.scanned_reader.pdfscanned_reader.pdf_scan_reader import PdfScanReader
 from dedoc.readers.scanned_reader.pdftxtlayer_reader.tabby_pdf_reader import TabbyPDFReader
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
-from dedoc.structure_constructors.concreat_structure_constructors.linear_constructor import LinearConstructor
-from dedoc.structure_constructors.concreat_structure_constructors.tree_constructor import TreeConstructor
+from dedoc.structure_constructors.concrete_structure_constructors.linear_constructor import LinearConstructor
+from dedoc.structure_constructors.concrete_structure_constructors.tree_constructor import TreeConstructor
 from dedoc.structure_constructors.structure_constructor_composition import StructureConstructorComposition
-from dedoc.structure_extractors.concrete_structure_extractors.classifying_law_structure_extractor import \
-    ClassifyingLawStructureExtractor
-from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import \
-    DefaultStructureExtractor
-from dedoc.structure_extractors.concrete_structure_extractors.diploma_structure_extractor import \
-    DiplomaStructureExtractor
-from dedoc.structure_extractors.concrete_structure_extractors.foiv_law_structure_extractor import \
-    FoivLawStructureExtractor
+from dedoc.structure_extractors.concrete_structure_extractors.classifying_law_structure_extractor import ClassifyingLawStructureExtractor
+from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
+from dedoc.structure_extractors.concrete_structure_extractors.diploma_structure_extractor import DiplomaStructureExtractor
+from dedoc.structure_extractors.concrete_structure_extractors.foiv_law_structure_extractor import FoivLawStructureExtractor
 from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
 from dedoc.structure_extractors.concrete_structure_extractors.tz_structure_extractor import TzStructureExtractor
 from dedoc.structure_extractors.structure_extractor_composition import StructureExtractorComposition
@@ -52,8 +48,8 @@ def get_manager_config(config: dict) -> dict:
     ]
     readers = [
         DocxReader(config=config),
-        ExcelReader(config=config),
-        PptxReader(config=config),
+        ExcelReader(),
+        PptxReader(),
         CSVReader(),
         HtmlReader(config=config),
         RawTextReader(config=config),
@@ -87,8 +83,8 @@ def get_manager_config(config: dict) -> dict:
         reader=ReaderComposition(readers=readers),
         structure_extractor=StructureExtractorComposition(extractors=structure_extractors, default_key="other"),
         structure_constructor=StructureConstructorComposition(
-            extractors={"linear": LinearConstructor(), "tree": TreeConstructor()},
-            default_extractor=TreeConstructor()
+            constructors={"linear": LinearConstructor(), "tree": TreeConstructor()},
+            default_constructor=TreeConstructor()
         ),
         document_metadata_extractor=MetadataExtractorComposition(extractors=metadata_extractors),
         attachments_extractor=AttachmentsHandler(config=config)

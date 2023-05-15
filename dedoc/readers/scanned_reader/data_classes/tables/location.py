@@ -3,7 +3,7 @@ from collections import OrderedDict
 from functools import total_ordering
 from typing import Tuple, Dict, Any
 
-from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.data_structures.bbox import BBox
 
 
 @total_ordering

@@ -6,15 +6,19 @@ from dedoc.data_structures.serializable import Serializable
 
 
 class Annotation(Serializable):
+    """
+    Base class for text annotations of all kinds.
+    Annotation is the piece of information about the text line: it's appearance or links to another document object.
+    Look to the concrete kind of annotations to get mode examples.
+    """
 
     def __init__(self, start: int, end: int, name: str, value: str) -> None:
         """
         Some kind of text information about symbols between start and end.
-        For example Annotation(1, 13, "italic", "True")
-        says that text between 1st and 13st symbol was writen in italic
+        For example Annotation(1, 13, "italic", "True") says that text between 1st and 13th symbol was writen in italic.
 
-        :param start: annotated text start
-        :param end: annotated text end
+        :param start: start of the annotated text
+        :param end: end of the annotated text (end isn't included)
         :param name: annotation's name
         :param value: information about annotated text
         """
@@ -29,10 +33,7 @@ class Annotation(Serializable):
         return self.name == o.name and self.value == o.value and self.start == o.start and self.end == o.end
 
     def __str__(self) -> str:
-        return "{name}({start}:{end}, {value})".format(name=self.name.capitalize(),
-                                                       start=self.start,
-                                                       end=self.end,
-                                                       value=self.value)
+        return "{name}({start}:{end}, {value})".format(name=self.name.capitalize(), start=self.start, end=self.end, value=self.value)
 
     def __repr__(self) -> str:
         return "{name}(...)".format(name=self.name.capitalize())

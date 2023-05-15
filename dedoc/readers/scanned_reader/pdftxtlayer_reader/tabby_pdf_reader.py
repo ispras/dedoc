@@ -9,6 +9,7 @@ import numpy as np
 
 from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
 from dedoc.common.exceptions.tabby_pdf_error import TabbyPdfError
+from dedoc.data_structures.bbox import BBox
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
@@ -22,7 +23,6 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.readers.scanned_reader.data_classes.bbox import BBox
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.scanned_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.scanned_reader.data_classes.tables.location import Location
@@ -35,10 +35,14 @@ from dedoc.utils.utils import calculate_file_hash
 
 class TabbyPDFReader(PdfBase):
     """
-     Pdf extractor based on TabbyPDF
+    This class allows extract content from the .pdf documents with a textual layer (copyable documents).
+    It uses java code to get the result.
     """
 
     def __init__(self, *, config: dict) -> None:
+        """
+        :param config: configuration of the reader, e.g. logger for logging
+        """
         super().__init__(config=config)
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
@@ -51,24 +55,20 @@ class TabbyPDFReader(PdfBase):
         )
         self.default_config = {"JAR_PATH": os.path.join(self.jar_dir, self.jar_name)}
 
-    def can_read(self,
-                 path: str,
-                 mime: str,
-                 extension: str,
-                 document_type: str,
-                 parameters: Optional[dict] = None) -> bool:
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        """
+        Check if the document extension is suitable for this reader, i.e. it has .pdf extension and a textual layer.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        """
         parameters = {} if parameters is None else parameters
         return extension.endswith("pdf") and (str(parameters.get("pdf_with_text_layer", "false")).lower() == "tabby")
 
-    def _process_one_page(self,
-                          image: np.ndarray,
-                          parameters: ParametersForParseDoc,
-                          page_number: int,
-                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
-
-        return [], [], []
-
-    def read(self, path: str, document_type: Optional[str], parameters: Optional[dict]) -> UnstructuredDocument:
+    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        The method return document content with all document's lines, tables and attachments.
+        This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+        """
         parameters = {} if parameters is None else parameters
         lines, scan_tables = self.__extract(path=path)
         warnings = []
@@ -234,3 +234,11 @@ class TabbyPDFReader(PdfBase):
         response = output.decode('UTF-8')
         document = json.loads(response) if response else {}
         return document
+
+    def _process_one_page(self,
+                          image: np.ndarray,
+                          parameters: ParametersForParseDoc,
+                          page_number: int,
+                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
+
+        return [], [], []

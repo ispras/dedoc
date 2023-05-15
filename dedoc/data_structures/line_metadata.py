@@ -10,12 +10,7 @@ from dedoc.data_structures.serializable import Serializable
 
 class LineMetadata(Serializable):
     """
-    That class holds information about document node metadata, such as type or location
-    :param hierarchy_level: special characteristic of line, helps to construct tree-structured representation from
-    flat list of lines, define the nesting level of the line. The lower the level of the hierarchy, the closer it is to the root.
-    :param page_id: Page where paragraph starts. The numeration starts from page 0.
-    :param line_id: Line number where paragraph starts.  The numeration starts from page 0.
-    :param other_fields: additional fields of user metadata
+    This class holds information about document node (and document line) metadata, such as page number or line level in a document hierarchy.
     """
 
     def __init__(self,
@@ -24,6 +19,15 @@ class LineMetadata(Serializable):
                  tag_hierarchy_level: Optional[HierarchyLevel] = None,
                  hierarchy_level: Optional[HierarchyLevel] = None,
                  other_fields: Optional[dict] = None) -> None:
+        """
+        :param page_id: page number where paragraph starts, the numeration starts from page 0
+        :param line_id: line number inside the entire document, the numeration starts from line 0
+        :param tag_hierarchy_level: the hierarchy level of the line with its type directly extracted by some of the readers
+            (usually information got from tags e.g. in docx or html readers)
+        :param hierarchy_level: the hierarchy level of the line extracted by some of the structure extractors - the result type and level of the line.
+            The lower the level of the hierarchy, the closer it is to the root, it's used to construct document tree.
+        :param other_fields: additional fields of user metadata
+        """
         self.tag_hierarchy_level = HierarchyLevel(None, None, can_be_multiline=True, line_type=HierarchyLevel.unknown) \
             if tag_hierarchy_level is None else tag_hierarchy_level
         self.hierarchy_level = hierarchy_level
@@ -34,6 +38,11 @@ class LineMetadata(Serializable):
         self.__other_fields = {}
 
     def extend_other_fields(self, new_fields: dict) -> None:
+        """
+        Add new attributes to the class and to the other_fields dictionary.
+
+        :param new_fields: fields to add
+        """
         assert (new_fields is not None)
         assert (len(new_fields) > 0)
 

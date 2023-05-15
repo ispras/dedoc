@@ -9,11 +9,24 @@ from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
 class JsonReader(BaseReader):
-
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str], parameters: Optional[dict] = None) -> bool:
+    """
+    This reader allows handle json files.
+    """
+    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        """
+        Check if the document extension is suitable for this reader (it has .json extension).
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        """
         return extension.lower().endswith(".json")
 
     def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        The method return document content with all document's lines and attachments, tables remain empty.
+        This reader considers json lists as list items and adds this information to the `tag_hierarchy_level`
+        of :class:`~dedoc.data_structures.LineMetadata`.
+        The dictionaries are processed by creating key line with type `key` and value line as a child.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+        """
         with open(path) as file:
             json_data = json.load(file)
         stack = [(json_data, 1)]

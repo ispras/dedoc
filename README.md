@@ -8,6 +8,7 @@ Dedoc is an open universal system for converting documents to a unified output f
 Dedoc is implemented in Python and works with semi-structured data formats (DOC/DOCX, ODT, XLS/XLSX, CSV, TXT, JSON) and none-structured data formats like images (PNG, JPG etc.), archives (ZIP, RAR etc.), PDF and HTML formats. Document structure extraction is fully automatic regardless of input data type. Metadata and text formatting is also extracted automatically. 
 
 In 2022, the system won a grant to support the development of promising AI projects from the [Innovation Assistance Foundation (Фонд содействия инновациям)](https://fasie.ru/).
+
 ## Dedoc provides:
 * Extensibility due to a flexible addition of new document formats and to an easy change of an output data format. 
 * Support for extracting document structure out of nested documents having different formats. 

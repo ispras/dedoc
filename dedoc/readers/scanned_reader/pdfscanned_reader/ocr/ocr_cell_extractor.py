@@ -4,7 +4,7 @@ from typing import List, Tuple, Iterator, Optional
 import numpy as np
 from PIL import Image
 
-from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.data_structures.bbox import BBox
 from dedoc.readers.scanned_reader.data_classes.text_with_bbox import TextWithBBox
 from dedoc.readers.scanned_reader.pdfscanned_reader.ocr.ocr_line_extractor import OCRLineExtractor
 from dedoc.readers.scanned_reader.pdfscanned_reader.ocr_utils import get_cell_text_by_ocr
