@@ -5,12 +5,12 @@ from dedoc.structure_extractors.feature_extractors.list_features.prefix.prefix i
 
 class DottedPrefix(LinePrefix):
 
-    regexp = re.compile(r'^\s*(\d+\.?)+\d?\s*')
+    regexp = re.compile(r'^\s*(\d+\.)+(\d+)?\s*')
     name = "dotted"
 
     def __init__(self, prefix: str, indent: float) -> None:
         super().__init__(prefix, indent=indent)
-        self.numbers = [int(_) for _ in self.prefix.split(".") if len(_) > 0]
+        self.numbers = [int(n) for n in self.prefix.split(".") if len(n) > 0]
 
     def predecessor(self, other: "DottedPrefix") -> bool:
         if not isinstance(other, DottedPrefix):

@@ -23,8 +23,7 @@ class AbstractStructureExtractor(ABC):
         """
         pass
 
-    def _postprocess(self, lines: List[LineWithMeta], paragraph_type: List[str], regexps: List,
-                     excluding_regexps: List) -> List[LineWithMeta]:
+    def _postprocess(self, lines: List[LineWithMeta], paragraph_type: List[str], regexps: List, excluding_regexps: List) -> List[LineWithMeta]:
         """
         The function searches for which of regular expressions (for regexps parameters) the string matches.
         If there is match, then additional node is creating.
@@ -38,9 +37,9 @@ class AbstractStructureExtractor(ABC):
         """
         result = []
         for line in lines:
-            if line.hierarchy_level.is_raw_text() and len(line.line) == 0:  # skip empty raw text
+            if line.metadata.hierarchy_level.is_raw_text() and len(line.line) == 0:  # skip empty raw text
                 continue
-            if line.hierarchy_level.paragraph_type in paragraph_type:
+            if line.metadata.hierarchy_level.line_type in paragraph_type:
                 matched = False
                 for num, regexp in enumerate(regexps):
                     match = regexp.match(line.line)
@@ -53,23 +52,17 @@ class AbstractStructureExtractor(ABC):
                             match_excluding = excluding_regexps[num].search(line.line[start:end])
                             end = match_excluding.start() if match_excluding else end
 
-                        result.append(LineWithMeta(line=line.line[start: end],
-                                                   hierarchy_level=line.hierarchy_level,
+                        result.append(LineWithMeta(line=line.line[start:end],
                                                    metadata=line.metadata,
                                                    annotations=self._select_annotations(line.annotations, start, end),
                                                    uid=line.uid))
                         metadata = deepcopy(line.metadata)
-                        metadata.predicted_classes = None
-                        metadata.paragraph_type = "raw_text"
+                        metadata.hierarchy_level = HierarchyLevel.create_raw_text()
 
                         rest_text = line.line[end:]
                         if len(rest_text) > 0:
                             annotations = self._select_annotations(line.annotations, end, len(line.line))
-                            result.append(LineWithMeta(line=rest_text,
-                                                       hierarchy_level=HierarchyLevel.create_raw_text(),
-                                                       metadata=metadata,
-                                                       annotations=annotations,
-                                                       uid=line.uid + "_split"))
+                            result.append(LineWithMeta(line=rest_text, metadata=metadata, annotations=annotations, uid=line.uid + "_split"))
                         break
                 if not matched:
                     result.append(line)

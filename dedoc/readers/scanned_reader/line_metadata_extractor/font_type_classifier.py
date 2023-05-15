@@ -1,8 +1,12 @@
+import os
 from collections import namedtuple
+from typing import Any
+
 import torch
 from torchvision.transforms import ToTensor
 
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
+from dedoc.download_models import download_from_hub
 from dedoc.readers.scanned_reader.data_classes.page_with_bboxes import PageWithBBox
 from dedoc.utils.image_utils import get_bbox_from_image
 
@@ -14,9 +18,23 @@ class FontTypeClassifier:
 
     def __init__(self, model_path: str) -> None:
         super().__init__()
-        with open(model_path, "rb") as file:
-            self.model = torch.load(f=file).eval()
-            self.model.requires_grad_(False)
+        self._model = None
+        self.model_path = model_path
+
+    @property
+    def model(self) -> Any:
+        if self._model is not None:
+            return self._model
+
+        if not os.path.isfile(self.model_path):
+            out_dir, out_name = os.path.split(self.model_path)
+            download_from_hub(out_dir=out_dir, out_name=out_name, repo_name="font_classifier", hub_name="model.pth")
+
+        with open(self.model_path, "rb") as file:
+            self._model = torch.load(f=file).eval()
+            self._model.requires_grad_(False)
+
+        return self._model
 
     def predict_annotations(self, page: PageWithBBox) -> PageWithBBox:
         if len(page.bboxes) == 0:

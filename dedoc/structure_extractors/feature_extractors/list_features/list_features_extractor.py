@@ -6,11 +6,11 @@ import pandas as pd
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
+from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_prefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.bracket_prefix import BracketPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.dotted_prefix import DottedPrefix
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.empty_prefix import EmptyPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.letter_prefix import LetterPrefix
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.non_letter_prefix import NonLetterPrefix
+from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.prefix import LinePrefix
 
 
@@ -27,7 +27,7 @@ class ListFeaturesExtractor(AbstractFeatureExtractor):
         super().__init__()
         self.window_size = window_size
         self.prefix_list = prefix_list if prefix_list is not None \
-            else [NonLetterPrefix, LetterPrefix, BracketPrefix, DottedPrefix]
+            else [BulletPrefix, LetterPrefix, BracketPrefix, DottedPrefix]
 
     def parameters(self) -> dict:
         return {"window_size": self.window_size}
@@ -87,14 +87,7 @@ class ListFeaturesExtractor(AbstractFeatureExtractor):
         return abs(this_indent - other_indent) <= 0.1 * std + eps
 
     def _get_prefix(self, line: LineWithMeta) -> LinePrefix:
-        text = line.line.strip().lower()
-        indent = self._get_indentation(line)
-
-        for Prefix in self.prefix_list:
-            match = Prefix.regexp.match(text)
-            if match:
-                return Prefix(match.group().strip(), indent=indent)
-        return EmptyPrefix(indent=indent)
+        return get_prefix(self.prefix_list, line)
 
     def _get_window(self, indents: np.ndarray, prefixes: List[LinePrefix], line_id: int, doc_size: int) -> Window:
         assert line_id < doc_size

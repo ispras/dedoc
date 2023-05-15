@@ -8,7 +8,8 @@ RUN pip3 install -r requirements.txt
 
 RUN mkdir /dedoc_root
 ADD dedoc /dedoc_root/dedoc
-ADD resources /dedoc_root/resources
+RUN python3 /dedoc_root/dedoc/download_models.py
+
 ADD tests /dedoc_root/tests
 ADD VERSION /dedoc_root
 

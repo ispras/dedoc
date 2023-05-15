@@ -1,6 +1,8 @@
+import os
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 
+from dedoc.config import get_config
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
@@ -13,9 +15,10 @@ from dedoc.structure_extractors.line_type_classifiers.law_classifier import LawL
 
 class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
 
-    def __init__(self, path: str, txt_path: str, *, config: dict) -> None:
-        self.classifier = LawLineTypeClassifier(path=path, config=config)
-        self.txt_classifier = LawLineTypeClassifier(path=txt_path, config=config)
+    def __init__(self, *, config: dict) -> None:
+        path = os.path.join(get_config()["resources_path"], "line_type_classifiers")
+        self.classifier = LawLineTypeClassifier(classifier_type="law", path=os.path.join(path, "law_classifier.pkl.gz"), config=config)
+        self.txt_classifier = LawLineTypeClassifier(classifier_type="law_txt", path=os.path.join(path, "law_txt_classifier.pkl.gz"), config=config)
         self.hierarchy_level_builders = [StubHierarchyLevelBuilder()]
         self.hl_type = "law"
         self.init_hl_depth = 1
@@ -132,7 +135,7 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
         return result
 
     def _postprocess_roman(self, hierarchy_level: HierarchyLevel, line: LineWithMeta) -> LineWithMeta:
-        if hierarchy_level.paragraph_type == "subsection" and LawTextFeatures.roman_regexp.match(line.line):
+        if hierarchy_level.line_type == "subsection" and LawTextFeatures.roman_regexp.match(line.line):
             match = LawTextFeatures.roman_regexp.match(line.line)
             prefix = line.line[match.start(): match.end()]
             suffix = line.line[match.end():]

@@ -1,7 +1,10 @@
+import os
+
+from dedoc.config import get_config
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.non_letter_prefix import NonLetterPrefix
+from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
 from dedoc.structure_extractors.feature_extractors.tz_feature_extractor import TzTextFeatures
 from dedoc.structure_extractors.hierarchy_level_builders.header_builder.header_hierarchy_level_builder import HeaderHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.toc_builder.toc_builder import TocBuilder
@@ -12,12 +15,13 @@ from dedoc.structure_extractors.line_type_classifiers.tz_classifier import TzLin
 class TzStructureExtractor(AbstractStructureExtractor):
     document_type = "tz"
 
-    def __init__(self, path: str, txt_path: str, *, config: dict) -> None:
+    def __init__(self, *, config: dict) -> None:
         self.header_builder = HeaderHierarchyLevelBuilder()
         self.body_builder = TzBodyBuilder()
         self.toc_builder = TocBuilder()
-        self.classifier = TzLineTypeClassifier(path=path, config=config)
-        self.txt_classifier = TzLineTypeClassifier(path=txt_path, config=config)
+        path = os.path.join(get_config()["resources_path"], "line_type_classifiers")
+        self.classifier = TzLineTypeClassifier(classifier_type="tz", path=os.path.join(path, "tz_classifier.pkl.gz"), config=config)
+        self.txt_classifier = TzLineTypeClassifier(classifier_type="tz_txt", path=os.path.join(path, "tz_txt_classifier.pkl.gz"), config=config)
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
         if document.metadata.get("file_type") in recognized_mimes.txt_like_format:
@@ -51,6 +55,6 @@ class TzStructureExtractor(AbstractStructureExtractor):
 
         document.lines = self._postprocess(lines=header_lines + toc_lines + body_lines,
                                            paragraph_type=["item"],
-                                           regexps=[NonLetterPrefix.regexp, TzTextFeatures.number_regexp, TzTextFeatures.item_regexp],
+                                           regexps=[BulletPrefix.regexp, TzTextFeatures.number_regexp, TzTextFeatures.item_regexp],
                                            excluding_regexps=[None, TzTextFeatures.ends_of_number, TzTextFeatures.ends_of_number])
         return document

@@ -13,10 +13,7 @@ class LinearConstructor(AbstractStructureConstructor):
     def __init__(self) -> None:
         pass
 
-    def structure_document(self,
-                           document: UnstructuredDocument,
-                           version: str,
-                           structure_type: Optional[str] = None) -> ParsedDocument:
+    def structure_document(self, document: UnstructuredDocument, version: str, structure_type: Optional[str] = None) -> ParsedDocument:
         lines = document.lines
         tree = TreeNode.create(lines=[])
         for line in lines:

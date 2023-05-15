@@ -28,8 +28,8 @@ class TestApiDocReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, data={"structure_type": "tree"})
         nodes = result["content"]["structure"]["subparagraphs"]
         self.assertEqual(len(nodes), 2)
-        self.assertEqual("Пример документа", nodes[0]["text"])
-        self.assertEqual("Какие то определения", nodes[1]["subparagraphs"][0]["text"])
+        self.assertEqual("Пример документа", nodes[0]["text"].split("\n")[0])
+        self.assertEqual("1.2.1. Поясним за непонятное", nodes[1]["subparagraphs"][0]["text"].strip())
 
     def test_incorrect_structure(self) -> None:
         file_name = "example.docx"

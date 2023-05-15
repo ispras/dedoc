@@ -5,7 +5,7 @@ from uuid import uuid1
 
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
 from dedoc.structure_extractors.hierarchy_level_builders.abstract_hierarchy_level_builder import AbstractHierarchyLevelBuilder
@@ -32,17 +32,13 @@ class AbstractBodyHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
         page_id = page_id
         line_id = line_id
         return LineWithMeta(line="",
-                            hierarchy_level=HierarchyLevel(init_hl_depth, 0, False, "body"),
-                            metadata=ParagraphMetadata(paragraph_type="body",
-                                                       predicted_classes=None,
-                                                       page_id=page_id,
-                                                       line_id=line_id),
+                            metadata=LineMetadata(hierarchy_level=HierarchyLevel(init_hl_depth, 0, False, "body"),
+                                                  page_id=page_id,
+                                                  line_id=line_id),
                             annotations=[],
                             uid=line_uid)
 
-    def get_lines_with_hierarchy(self,
-                                 lines_with_labels: List[Tuple[LineWithMeta, str]],
-                                 init_hl_depth: int = 2) -> List[LineWithMeta]:
+    def get_lines_with_hierarchy(self, lines_with_labels: List[Tuple[LineWithMeta, str]], init_hl_depth: int = 2) -> List[LineWithMeta]:
         result = []
         # detect begin of body
         is_body_begun = False
@@ -51,27 +47,21 @@ class AbstractBodyHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
         for line, label in lines_with_labels:
 
             # postprocessing of others units
-            hierarchy_level, previous_hl = self._line_2level(text=line.line,
-                                                             label=label,
-                                                             init_hl_depth=init_hl_depth,
-                                                             previous_hl=previous_hl)
-
+            hierarchy_level, previous_hl = self._line_2level(text=line.line, label=label, init_hl_depth=init_hl_depth, previous_hl=previous_hl)
             self._postprocess_roman(hierarchy_level, line)
 
             hierarchy_level = deepcopy(hierarchy_level)
             if len(line.line.strip()) == 0:
                 hierarchy_level.can_be_multiline = True
             metadata = deepcopy(line.metadata)
-            metadata.predicted_classes = None
-            metadata.paragraph_type = hierarchy_level.paragraph_type
+            metadata.hierarchy_level = hierarchy_level
 
-            if hierarchy_level.paragraph_type != HierarchyLevel.root and not is_body_begun:
+            if hierarchy_level.line_type != HierarchyLevel.root and not is_body_begun:
                 result.append(self.get_body_line(init_hl_depth=init_hl_depth))
                 is_body_begun = True
 
             line = LineWithMeta(
                 line=line.line,
-                hierarchy_level=hierarchy_level,
                 metadata=metadata,
                 annotations=line.annotations,
                 uid=line.uid
@@ -94,14 +84,12 @@ class AbstractBodyHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
             label = "structure_unit"
 
         if label == "structure_unit":
-            return self.structure_unit_builder.structure_unit(text=text,
-                                                              init_hl_depth=init_hl_depth,
-                                                              previous_hl=previous_hl)
+            return self.structure_unit_builder.structure_unit(text=text, init_hl_depth=init_hl_depth, previous_hl=previous_hl)
         if label == "footer":
             return HierarchyLevel(None, None, False, HierarchyLevel.raw_text), None
         if label == "raw_text":
             if previous_hl is not None:
-                if previous_hl.paragraph_type in ["application", "chapter"]:
+                if previous_hl.line_type in ["application", "chapter"]:
                     return previous_hl, previous_hl
             return HierarchyLevel(None, None, False, HierarchyLevel.raw_text), None
 

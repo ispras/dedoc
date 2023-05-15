@@ -1,4 +1,3 @@
-
 from collections import OrderedDict
 from typing import Any
 
@@ -18,7 +17,7 @@ class CellProperty(Serializable):
         self.rowspan = cell.rowspan
         self.invisible = cell.invisible
 
-    def to_dict(self, old_version: bool) -> dict:
+    def to_dict(self) -> dict:
         res = OrderedDict()
         res["colspan"] = int(np.int8(self.colspan))
         res["rowspan"] = int(np.int8(self.rowspan))
@@ -30,6 +29,5 @@ class CellProperty(Serializable):
         return api.model('CellProperty', {
             'colspan': fields.Integer(description='attribute of union column count'),
             'rowspan': fields.Integer(description='attribute of union row count'),
-            'invisible': fields.Boolean(description='flag for cell display (for example: if invisible==true then " '
-                                                    'style=\"display: none\")'),
+            'invisible': fields.Boolean(description='flag for cell display (for example: if invisible==true then style=\"display: none\")'),
         })

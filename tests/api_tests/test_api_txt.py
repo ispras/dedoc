@@ -13,29 +13,26 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         _ = self._send_request(file_name)
 
     def test_text(self) -> None:
-        file_name = "doc_001.txt"
+        file_name = "example.txt"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]
-        self.assertEqual(content["subparagraphs"][1]["text"].rstrip(),
-                         '     Статья 1. Сфера действия настоящёго Федерального закона')
+        self.assertEqual(content["subparagraphs"][0]["text"].rstrip(), 'Пример документа')
 
         self._check_metainfo(result['metadata'], 'text/plain', file_name)
 
     def test_text_pretty_json(self) -> None:
-        file_name = "doc_001.txt"
+        file_name = "example.txt"
         result = self._send_request(file_name, data={"structure_type": "tree", "return_format": "pretty_json"})
         content = result["content"]["structure"]
-        self.assertEqual(content["subparagraphs"][1]["text"].rstrip(),
-                         '     Статья 1. Сфера действия настоящёго Федерального закона')
+        self.assertEqual(content["subparagraphs"][0]["text"].rstrip(), 'Пример документа')
 
         self._check_metainfo(result['metadata'], 'text/plain', file_name)
 
     def test_text_bad_return_format(self) -> None:
-        file_name = "doc_001.txt"
+        file_name = "example.txt"
         result = self._send_request(file_name, data={"structure_type": "tree", "return_format": "broken"})
         content = result["content"]["structure"]
-        self.assertEqual(content["subparagraphs"][1]["text"].rstrip(),
-                         '     Статья 1. Сфера действия настоящёго Федерального закона')
+        self.assertEqual(content["subparagraphs"][0]["text"].rstrip(), 'Пример документа')
 
         self._check_metainfo(result['metadata'], 'text/plain', file_name)
 
@@ -60,6 +57,12 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         content = result["content"]["structure"]["subparagraphs"]
         self.__check_football(content)
 
+    def test_paragraphs_gz(self) -> None:
+        file_name = "football.txt.gz"
+        result = self._send_request(file_name, data={"structure_type": "tree"})
+        content = result["content"]["structure"]["subparagraphs"]
+        self.__check_football(content)
+
     def test_large_file(self) -> None:
         file_name = "large_text.txt.gz"
         result = self._send_request(file_name, data={"structure_type": "tree"})
@@ -67,12 +70,6 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         for line_id, line in enumerate(content.split("\n")):
             if line.strip() != "":
                 self.assertEqual("Line number {:09d}".format(line_id), line)
-
-    def test_paragraphs_gz(self) -> None:
-        file_name = "football.txt.gz"
-        result = self._send_request(file_name, data={"structure_type": "tree"})
-        content = result["content"]["structure"]["subparagraphs"]
-        self.__check_football(content)
 
     def __check_football(self, content: dict) -> None:
         self.assertEqual(4, len(content))

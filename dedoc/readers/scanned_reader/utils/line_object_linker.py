@@ -4,9 +4,8 @@ from typing import List, Union, Dict
 
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
-
 from dedoc.readers.scanned_reader.data_classes.bbox import BBox
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.scanned_reader.data_classes.pdf_image_attachment import PdfImageAttachment
@@ -37,11 +36,10 @@ class LineObjectLinker:
         @return:
         """
         if len(lines) == 0:
-            metadata = ParagraphMetadata(paragraph_type=HierarchyLevel.raw_text,
-                                         predicted_classes=None,
-                                         page_id=0,
-                                         line_id=0)
-            lines = [LineWithLocation(line="", hierarchy_level=HierarchyLevel.create_raw_text(),
+            metadata = LineMetadata(tag_hierarchy_level=HierarchyLevel.create_raw_text(),
+                                    page_id=0,
+                                    line_id=0)
+            lines = [LineWithLocation(line="",
                                       metadata=metadata,
                                       annotations=[],
                                       location=Location(page_number=0, bbox=BBox(0, 0, 1, 1)))]

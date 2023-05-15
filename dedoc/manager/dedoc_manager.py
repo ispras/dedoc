@@ -13,7 +13,7 @@ from dedoc.converters.file_converter import FileConverterComposition
 from dedoc.data_structures.document_metadata import DocumentMetadata
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.metadata_extractors.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
+from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.structure_constructors.structure_constructor_composition import StructureConstructorComposition
@@ -183,6 +183,7 @@ class DedocManager:
             parameters_copy["is_attached"] = True
             parameters_copy["attachment"] = attachment
             try:
+                # TODO handle nested attachments according to recursion_deep_attachments (https://jira.ispras.ru/browse/TLDR-300)
                 if attachment.need_content_analysis:
                     file_path = os.path.join(tmp_dir, attachment.get_filename_in_path())
                     parsed_file = self.parse_file(file_path,

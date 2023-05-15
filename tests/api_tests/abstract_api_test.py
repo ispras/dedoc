@@ -1,9 +1,9 @@
 import json
 import os
 import requests
-
-from tests.api_tests.content_checker import ContentChecker
 from dedoc.utils.utils import similarity as utils_similarity
+from tests.api_tests.content_checker import ContentChecker
+from tests.test_utils import tree2linear
 
 
 class AbstractTestApiDocReader(ContentChecker):
@@ -71,3 +71,15 @@ class AbstractTestApiDocReader(ContentChecker):
 
         result = json.loads(r.content.decode())
         return result
+
+    def _test_table_refs(self, content: dict) -> None:
+        tree = content["structure"]
+        tables = content['tables']
+        lines = tree2linear(tree)
+        annotations = []
+        for line in lines:
+            for annotation in line["annotations"]:
+                if annotation["name"] == "table":
+                    annotations.append(annotation["value"])
+        tables_uids = {table["metadata"]["uid"] for table in tables}
+        self.assertSetEqual(set(tables_uids), set(annotations))

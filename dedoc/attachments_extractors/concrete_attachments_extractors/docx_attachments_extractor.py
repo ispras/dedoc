@@ -71,7 +71,8 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
 
         with zipfile.ZipFile(os.path.join(tmpdir, filename), 'r') as zfile:
             diagram_attachments = self.__extract_diagrams(zfile)
-            result += self._content2attach_file(content=diagram_attachments, tmpdir=tmpdir, need_content_analysis=False)
+            need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+            result += self._content2attach_file(content=diagram_attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis)
 
         result += self._get_attachments(tmpdir=tmpdir, filename=filename, parameters=parameters, attachments_dir="word")
         return result

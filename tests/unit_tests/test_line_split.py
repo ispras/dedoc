@@ -5,7 +5,7 @@ from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
@@ -249,14 +249,8 @@ class TestLineSplit(unittest.TestCase):
             self.assertEqual(BoldAnnotation.name, annotation.name)
 
     def _get_line(self, line: str, annotations: List[Annotation]) -> LineWithMeta:
-        metadata = ParagraphMetadata(paragraph_type=HierarchyLevel.raw_text,
-                                     predicted_classes=None,
-                                     page_id=0,
-                                     line_id=1)
-        line = LineWithMeta(line=line,
-                            hierarchy_level=HierarchyLevel.create_raw_text(),
-                            metadata=metadata,
-                            annotations=annotations)
+        metadata = LineMetadata(hierarchy_level=HierarchyLevel.create_raw_text(), page_id=0, line_id=1)
+        line = LineWithMeta(line=line, metadata=metadata, annotations=annotations)
         return line
 
     def _get_line_for_slice(self) -> LineWithMeta:

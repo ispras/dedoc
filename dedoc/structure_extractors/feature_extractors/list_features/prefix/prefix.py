@@ -27,6 +27,7 @@ class LinePrefix(abc.ABC):
     False
     """
     name = ""
+    regexp = None
 
     def __init__(self, prefix: str, indent: float) -> None:
         assert self.is_valid(prefix), "`{}` is invalid prefix for this {} type".format(prefix, self.name)

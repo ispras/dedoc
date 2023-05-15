@@ -1,12 +1,7 @@
 import numpy as np
 import pytesseract
-import os
 
 from dedoc.readers.scanned_reader.pdfscanned_reader.ocr_page.ocr_page import OcrPage
-
-
-def set_ocr_thread_limit(n_jobs: int) -> None:
-    os.environ['OMP_THREAD_LIMIT'] = str(n_jobs)
 
 
 def get_cell_text_by_ocr(img_cell: np.ndarray, language: str) -> str:

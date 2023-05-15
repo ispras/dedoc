@@ -1,8 +1,8 @@
 import unittest
-from typing import List
+from typing import List, Optional
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.paragraph_metadata import ParagraphMetadata
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.structure_constructors.concreat_structure_constructors.list_patcher import ListPatcher
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
@@ -13,10 +13,10 @@ class TestListPatcher(unittest.TestCase):
     def __get_text(self, lines: List[LineWithMeta]) -> List[str]:
         return [line.line for line in lines]
 
-    def __get_line(self, text: str, level1: int, level2: int, hl: str = "list") -> LineWithMeta:
+    def __get_line(self, text: str, level1: Optional[int], level2: Optional[int], hl: str = "list") -> LineWithMeta:
         hierarchy_level = HierarchyLevel(level1, level2, False, hl)
-        metadata = ParagraphMetadata("list_item", None, 0, None)
-        return LineWithMeta(text, hierarchy_level=hierarchy_level, metadata=metadata, annotations=[])
+        metadata = LineMetadata(line_id=None, page_id=0, hierarchy_level=hierarchy_level)
+        return LineWithMeta(text, metadata=metadata, annotations=[])
 
     def test_correct_list(self) -> None:
         line1 = self.__get_line("1  item", 1, 0)

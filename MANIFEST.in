@@ -1,0 +1,3 @@
+include dedoc/api/static/*/*
+include dedoc/readers/scanned_reader/pdftxtlayer_reader/tabbypdf/jars/*
+include docs/*

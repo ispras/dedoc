@@ -1,7 +1,7 @@
 import os
 import uuid
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.utils.utils import save_data_to_unique_file
@@ -11,10 +11,6 @@ class AbstractAttachmentsExtractor(ABC):
     """
     AbstractAttachmentsExtractor is responsible for extracting attached files from PDF or docx file types
     """
-
-    def __init__(self, need_content_analysis: bool) -> None:
-        self.need_content_analysis = need_content_analysis
-        super().__init__()
 
     @abstractmethod
     def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[AttachedFile]:
@@ -40,9 +36,7 @@ class AbstractAttachmentsExtractor(ABC):
     def _content2attach_file(self,
                              content: List[Tuple[str, bytes]],
                              tmpdir: str,
-                             need_content_analysis: Optional[bool] = None) -> List[AttachedFile]:
-        if need_content_analysis is None:
-            need_content_analysis = self.need_content_analysis
+                             need_content_analysis: bool) -> List[AttachedFile]:
         attachments = []
         for original_name, contents in content:
             tmp_file_name = save_data_to_unique_file(directory=tmpdir,

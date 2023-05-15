@@ -41,17 +41,35 @@
                 <p><label><input type="checkbox" name="insert_table" value="true"> insert_table</label></p>
                 <p><label><input type="checkbox" name="handle_invisible_table" value="true"> handle_invisible_table</label></p>
                 <p>pages <input name="pages" type="text" size="8" value=":"> </p>
-                <label><input type="checkbox" name="with_attachments" id="with-attachments-box" value="true">
-                    with_attachments <label id="html-fields">html_fields (only json)
-                        <input name="html_fields" placeholder='[["field1", "field2"], ["one field"]]'/></label>
-                </label>
+
+                <div id="with_attachments_box">
+                    <p>
+                        <label><input type="checkbox" name="with_attachments" id="with-attachments-box" value="true">
+                        with_attachments
+                        </label>
+                    </p>
+                    <div id="attachments-block">
+                        <p>
+                            <label><input type="checkbox" name="need_content_analysis" id="need-content-analysis-box" value="true">
+                            need_content_analysis
+                            </label>
+                        </p>
+                        <p>
+                            <label id="recursion_deep_attachments_box">
+                            <b>The depth of extracted attachments</b>
+                            <input name="recursion_deep_attachments" placeholder="10" type="number" size="5" value="10">
+                            </label>
+                        </p>
+                    </div>
+
+                </div>
                 <p>
                     <label id="pdf_with_text_layer">
                         <select name="pdf_with_text_layer">
                             <option value="true">true</option>
-                            <option value="false" selected>false</option>
+                            <option value="false">false</option>
                             <option value="auto">auto</option>
-                            <option value="auto_tabby">auto_tabby</option>
+                            <option value="auto_tabby" selected>auto_tabby</option>
                             <option value="tabby">tabby</option>
                         </select> pdf_with_text_layer
                     </label>
@@ -63,6 +81,12 @@
                             <option value="false">false</option>
                             <option value="auto" selected>auto</option>
                         </select> is_one_column_document
+                    </label></p>
+                <p><label id="document_orientation">
+                        <select name="document_orientation">
+                            <option value="no_change">no_change</option>
+                            <option value="auto" selected>auto</option>
+                        </select> document_orientation
                     </label></p>
                 <p><label><input type="checkbox" name="archive_as_single_file" value="true"> archive_as_single_file</label></p>
                 <p><label><input type="checkbox" name="orient_analysis_cells" id="orient_analysis_cells" value="true"> orient_analysis_cells</label></p>
@@ -93,8 +117,8 @@
                 <p>
                     <label>
                     <select name="structure_type">
-                        <option value="linear" selected>linear</option>
-                        <option value="tree">tree</option>
+                        <option value="linear">linear</option>
+                        <option value="tree" selected>tree</option>
                     </select>
                     </label> structure_type
                 </p>
@@ -103,9 +127,9 @@
                 <p>
                 <label id="language">
                     <select name="language">
-                        <option value="rus" selected>rus</option>
+                        <option value="rus">rus</option>
                         <option value="eng">eng</option>
-                        <option value="rus+eng">rus+eng</option>
+                        <option value="rus+eng" selected>rus+eng</option>
                     </select> language
                 </label>
                 </p>

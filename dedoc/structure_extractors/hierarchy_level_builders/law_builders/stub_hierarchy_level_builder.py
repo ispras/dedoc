@@ -15,8 +15,6 @@ class StubHierarchyLevelBuilder(AbstractHierarchyLevelBuilder):
                      previous_hl: HierarchyLevel = None) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:
         pass
 
-    def get_lines_with_hierarchy(self,
-                                 lines_with_labels: List[Tuple[LineWithMeta, str]],
-                                 init_hl_depth: int) -> List[LineWithMeta]:
+    def get_lines_with_hierarchy(self, lines_with_labels: List[Tuple[LineWithMeta, str]], init_hl_depth: int) -> List[LineWithMeta]:
         lines = [line for line, _ in lines_with_labels]
         return lines

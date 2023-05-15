@@ -1,5 +1,3 @@
-import os
-
 from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
 from dedoc.converters.concrete_converters.docx_converter import DocxConverter
 from dedoc.converters.concrete_converters.excel_converter import ExcelConverter
@@ -8,16 +6,18 @@ from dedoc.converters.concrete_converters.png_converter import PNGConverter
 from dedoc.converters.concrete_converters.pptx_converter import PptxConverter
 from dedoc.converters.concrete_converters.txt_converter import TxtConverter
 from dedoc.converters.file_converter import FileConverterComposition
-from dedoc.metadata_extractors.concreat_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
-from dedoc.metadata_extractors.concreat_metadata_extractors.docx_metadata_extractor import DocxMetadataExtractor
-from dedoc.metadata_extractors.concreat_metadata_extractors.image_metadata_extractor import ImageMetadataExtractor
-from dedoc.metadata_extractors.concreat_metadata_extractors.pdf_metadata_extractor import PdfMetadataExtractor
+from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
+from dedoc.metadata_extractors.concrete_metadata_extractors.docx_metadata_extractor import DocxMetadataExtractor
+from dedoc.metadata_extractors.concrete_metadata_extractors.image_metadata_extractor import ImageMetadataExtractor
+from dedoc.metadata_extractors.concrete_metadata_extractors.pdf_metadata_extractor import PdfMetadataExtractor
 from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
 from dedoc.readers.archive_reader.archive_reader import ArchiveReader
 from dedoc.readers.csv_reader.csv_reader import CSVReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.readers.excel_reader.excel_reader import ExcelReader
+from dedoc.readers.html_reader.html_reader import HtmlReader
 from dedoc.readers.json_reader.json_reader import JsonReader
+from dedoc.readers.mhtml_reader.mhtml_reader import MhtmlReader
 from dedoc.readers.pptx_reader.pptx_reader import PptxReader
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.readers.scanned_reader.pdfscanned_reader.pdf_scan_reader import PdfScanReader
@@ -55,11 +55,13 @@ def get_manager_config(config: dict) -> dict:
         ExcelReader(config=config),
         PptxReader(config=config),
         CSVReader(),
+        HtmlReader(config=config),
         RawTextReader(config=config),
         JsonReader(),
+        ArchiveReader(config=config),
         TabbyPDFReader(config=config),
         PdfScanReader(config=config),
-        ArchiveReader(config=config)
+        MhtmlReader(config=config)
     ]
 
     metadata_extractors = [
@@ -69,23 +71,14 @@ def get_manager_config(config: dict) -> dict:
         BaseMetadataExtractor()
     ]
 
-    classifiers_path = os.path.join(os.path.dirname(__file__), "..", "resources", "line_type_classifiers")
     law_extractors = {
-        FoivLawStructureExtractor.document_type: FoivLawStructureExtractor(path=os.path.join(classifiers_path, "law_classifier.pkl.gz"),
-                                                                           txt_path=os.path.join(classifiers_path, "law_txt_classifier.pkl.gz"),
-                                                                           config=config),
-        LawStructureExtractor.document_type: LawStructureExtractor(path=os.path.join(classifiers_path, "law_classifier.pkl.gz"),
-                                                                   txt_path=os.path.join(classifiers_path, "law_txt_classifier.pkl.gz"),
-                                                                   config=config)
+        FoivLawStructureExtractor.document_type: FoivLawStructureExtractor(config=config),
+        LawStructureExtractor.document_type: LawStructureExtractor(config=config)
     }
     structure_extractors = {
         DefaultStructureExtractor.document_type: DefaultStructureExtractor(),
-        DiplomaStructureExtractor.document_type:
-            DiplomaStructureExtractor(path=os.path.join(classifiers_path, "diploma_classifier.pkl.gz"), config=config),
-        TzStructureExtractor.document_type:
-            TzStructureExtractor(path=os.path.join(classifiers_path, "tz_classifier.pkl.gz"),
-                                 txt_path=os.path.join(classifiers_path, "tz_classifier_txt.pkl.gz"),
-                                 config=config),
+        DiplomaStructureExtractor.document_type: DiplomaStructureExtractor(config=config),
+        TzStructureExtractor.document_type: TzStructureExtractor(config=config),
         ClassifyingLawStructureExtractor.document_type: ClassifyingLawStructureExtractor(extractors=law_extractors, config=config)
     }
 

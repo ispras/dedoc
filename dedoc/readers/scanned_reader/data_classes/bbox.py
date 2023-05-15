@@ -72,7 +72,7 @@ class BBox(Serializable):
         # return the intersection over union value
         return percent_intersection > threshold
 
-    def to_dict(self, old_version: bool = False) -> dict:
+    def to_dict(self) -> dict:
         res = OrderedDict()
         res["x_top_left"] = self.x_top_left
         res["y_top_left"] = self.y_top_left

@@ -1,6 +1,12 @@
+import importlib
 import os
 import signal
 from typing import Union, List, Optional, Any
+
+from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.readers.scanned_reader.data_classes.bbox import BBox
+from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
+from dedoc.readers.scanned_reader.data_classes.tables.location import Location
 
 
 def get_full_path(path: str, file: str = __file__) -> str:
@@ -14,6 +20,30 @@ def get_by_tree_path(tree: dict, path: Union[List[int], str]) -> dict:
     for child_id in path:
         tree = tree["subparagraphs"][child_id]
     return tree
+
+
+def get_test_config() -> dict:
+    config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../dedoc/config.py"))
+    spec = importlib.util.spec_from_file_location("config_module", config_path)
+    config_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(config_module)
+    config = config_module._config
+    return config
+
+
+def create_line_by_coordinates(x_top_left: int,
+                               y_top_left: int,
+                               width: int,
+                               height: int,
+                               page: int) -> LineWithLocation:
+    bbox = BBox(x_top_left=x_top_left, y_top_left=y_top_left, width=width, height=height)
+    location = Location(bbox=bbox, page_number=page)
+    line = LineWithLocation(
+        line="Some text",
+        metadata=LineMetadata(page_id=page, line_id=0),
+        annotations=[],
+        location=location)
+    return line
 
 
 class TestTimeout:
@@ -32,3 +62,14 @@ class TestTimeout:
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         signal.alarm(0)
+
+
+def tree2linear(tree: dict) -> List[dict]:
+    lines = []
+    stack = [tree]
+    while len(stack) > 0:
+        line = stack.pop()
+        lines.append(line)
+        stack.extend(line["subparagraphs"])
+    lines.sort(key=lambda line: (line["metadata"]["page_id"], line["metadata"]["line_id"]))
+    return lines

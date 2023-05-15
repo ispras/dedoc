@@ -17,8 +17,7 @@ xlrd.xlsx.Element_has_iter = True
 class ExcelReader(BaseReader):
 
     def __init__(self, *, config: dict) -> None:
-        need_content_analysis = config.get("need_content_analysis", True)
-        self.attachment_extractor = ExcelAttachmentsExtractor(need_content_analysis=need_content_analysis)
+        self.attachment_extractor = ExcelAttachmentsExtractor()
 
     def can_read(self,
                  path: str,
@@ -32,6 +31,7 @@ class ExcelReader(BaseReader):
              path: str,
              document_type: Optional[str] = None,
              parameters: Optional[dict] = None) -> UnstructuredDocument:
+        parameters = {} if parameters is None else parameters
         with xlrd.open_workbook(path) as book:
             sheets_num = book.nsheets
             tables = []

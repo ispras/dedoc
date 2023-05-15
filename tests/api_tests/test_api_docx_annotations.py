@@ -4,14 +4,15 @@ from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
 class TestApiDocxAnnotations(AbstractTestApiDocReader):
+    data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "annotation_docx")
 
     def test_example_1(self) -> None:
-        result = self._send_request("annotation_docx/example_1.docx", data={"structure_type": "linear"})
+        result = self._send_request("example_1.docx", data={"structure_type": "linear"})
         subparagraphs = result['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in subparagraphs]
 
         # bold, italic, underlined
-        self.assertIn({'start': 0, 'end': 11, 'name': 'style', 'value': 'body'}, annotations[0])
+        self.assertIn({'start': 0, 'end': 11, 'name': 'style', 'value': 'Body'}, annotations[0])
         self.assertIn({'start': 0, 'end': 12, 'name': 'italic', 'value': 'True'}, annotations[1])
         self.assertIn({'start': 0, 'end': 10, 'name': 'bold', 'value': 'True'}, annotations[2])
         self.assertIn({'start': 0, 'end': 16, 'name': 'underlined', 'value': 'True'}, annotations[3])
@@ -26,13 +27,13 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertIn({'start': 0, 'end': 29, 'name': 'alignment', 'value': 'both'}, annotations[11])
         # indent
         self.assertIn({'start': 0, 'end': 12, 'name': 'indentation', 'value': '0'}, annotations[12])
-        self.assertIn({'start': 0, 'end': 11, 'name': 'indentation', 'value': '720'}, annotations[13])
-        self.assertIn({'start': 0, 'end': 12, 'name': 'indentation', 'value': '1440'}, annotations[14])
+        self.assertIn({'start': 0, 'end': 11, 'name': 'indentation', 'value': '720.0'}, annotations[13])
+        self.assertIn({'start': 0, 'end': 12, 'name': 'indentation', 'value': '1440.0'}, annotations[14])
         # strike
         self.assertIn({'start': 0, 'end': 11, 'name': 'strike', 'value': 'True'}, annotations[15])
 
     def test_example_2(self) -> None:
-        result = self._send_request("annotation_docx/example_2.docx", data={"structure_type": "linear"})
+        result = self._send_request("example_2.docx", data={"structure_type": "linear"})
         subparagraphs = result['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in subparagraphs]
 
@@ -62,7 +63,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertIn({'start': 0, 'end': 51, 'name': 'italic', 'value': 'True'}, annotations[51])
 
     def test_spacing_1(self) -> None:
-        result = self._send_request("annotation_docx/spacing_libreoffice.docx", data={"structure_type": "linear"})
+        result = self._send_request("spacing_libreoffice.docx", data={"structure_type": "linear"})
         subparagraphs = result['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in subparagraphs]
 
@@ -76,7 +77,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertIn({'start': 0, 'end': 9, 'name': 'spacing', 'value': '0'}, annotations[7])
 
     def test_spacing_2(self) -> None:
-        result = self._send_request("annotation_docx/spacing_microsoft_word.docx", data={"structure_type": "linear"})
+        result = self._send_request("spacing_microsoft_word.docx", data={"structure_type": "linear"})
         subparagraphs = result['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in subparagraphs]
 
@@ -91,17 +92,17 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self.assertIn({'start': 0, 'end': 10, 'name': 'spacing', 'value': '0'}, annotations[8])
 
     def test_identation(self) -> None:
-        result = self._send_request("annotation_docx/indentation_libreoffice.docx", data={"structure_type": "linear"})
+        result = self._send_request("indentation_libreoffice.docx", data={"structure_type": "linear"})
         subparagraphs = result['content']['structure']['subparagraphs']
         annotations = [subparagraph['annotations'] for subparagraph in subparagraphs]
-        self.assertIn({'start': 0, 'end': 188, 'name': 'indentation', 'value': '360'}, annotations[5])
-        self.assertIn({'start': 0, 'end': 152, 'name': 'indentation', 'value': '708'}, annotations[10])
-        self.assertIn({'start': 0, 'end': 0, 'name': 'indentation', 'value': '1429'}, annotations[12])
-        self.assertIn({'start': 0, 'end': 21, 'name': 'indentation', 'value': '709'}, annotations[16])
-        self.assertIn({'start': 0, 'end': 65, 'name': 'indentation', 'value': '786'}, annotations[20])
+        self.assertIn({'start': 0, 'end': 188, 'name': 'indentation', 'value': '360.0'}, annotations[5])
+        self.assertIn({'start': 0, 'end': 152, 'name': 'indentation', 'value': '708.0'}, annotations[10])
+        self.assertIn({'start': 0, 'end': 0, 'name': 'indentation', 'value': '1429.0'}, annotations[12])
+        self.assertIn({'start': 0, 'end': 21, 'name': 'indentation', 'value': '709.0'}, annotations[16])
+        self.assertIn({'start': 0, 'end': 65, 'name': 'indentation', 'value': '786.0'}, annotations[20])
 
     def test_table_refs(self) -> None:
-        result = self._send_request("annotation_docx/table_refs.docx", data={"structure_type": "linear"})
+        result = self._send_request("table_refs.docx", data={"structure_type": "linear"})
         subparagraphs = result['content']['structure']['subparagraphs']
         for i in [0, 2, 4, 6, 9]:
             annotations = subparagraphs[i]['annotations']
@@ -125,7 +126,7 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         self._check_superscript(file_name)
 
     def _check_superscript(self, file_name: str) -> None:
-        result = self._send_request(os.path.join("docx", file_name), data={"structure_type": "tree"})
+        result = self._send_request(os.path.join("..", "docx", file_name), data={"structure_type": "tree"})
         content = result["content"]["structure"]
         subparagraph = content["subparagraphs"][0]
         annotations = subparagraph["annotations"]

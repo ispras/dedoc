@@ -7,38 +7,39 @@ from dedoc.readers.docx_reader.properties_extractor import change_caps
 
 class Run(BaseProperties):
 
-    def __init__(self,
-                 properties: Optional[BaseProperties],
-                 styles_extractor: "StylesExtractor"  # NOQA
-                 ) -> None:
+    def __init__(self, properties: Optional[BaseProperties], styles_extractor: "StylesExtractor") -> None:  # noqa
         """
-        contains information about run properties
-        :param properties: Paragraph or Run for copying it's properties
+        Contains information about run properties.
+        :param properties: Paragraph or Run for copying its properties
         :param styles_extractor: StylesExtractor
         """
 
+        self.name2char = dict(tab="\t", br="\n", cr="\r")
         self.text = ""
-        super().__init__(styles_extractor, properties)
+        self.styles_extractor = styles_extractor
+        super().__init__(properties)
 
     def get_text(self, xml: BeautifulSoup) -> None:
         """
-        makes the text of run
+        Makes the text of run.
         :param xml: BeautifulSoup tree with run properties
         """
         for tag in xml:
-            if tag.name == 't' and tag.text:
+            tag_name = tag.name
+
+            if tag_name in self.name2char:
+                self.text += self.name2char[tag_name]
+                continue
+
+            if tag_name == 't' and tag.text:
                 self.text += tag.text
-            elif tag.name == 'tab':
-                self.text += '\t'
-            elif tag.name == 'br':
-                self.text += '\n'
-            elif tag.name == 'cr':
-                self.text += '\r'
-            elif tag.name == 'sym':
+
+            elif tag_name == 'sym':
                 try:
                     self.text += chr(int("0x" + tag['w:char'], 16))
                 except KeyError:
                     pass
+
         change_caps(self, xml)
         if hasattr(self, "caps") and xml.caps:
             self.text = self.text.upper()
@@ -46,11 +47,7 @@ class Run(BaseProperties):
     def __repr__(self) -> str:
         return "Run({})".format(self.text[:30].replace("\n", r"\n"))
 
-    def __eq__(self,
-               other: "Run") -> bool:
-        """
-        :param other: Run
-        """
+    def __eq__(self, other: "Run") -> bool:
         if not isinstance(other, Run):
             return False
         return (self.size == other.size and

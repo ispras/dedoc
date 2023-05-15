@@ -1,6 +1,5 @@
 import re
 from typing import List, Optional, Tuple, Union
-
 import numpy as np
 from Levenshtein._levenshtein import ratio
 from dedoc.data_structures.line_with_meta import LineWithMeta
