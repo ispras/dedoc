@@ -1,5 +1,7 @@
 # Dedoc
 
+[![Documentation Status](https://readthedocs.org/projects/dedoc/badge/?version=latest)](https://dedoc.readthedocs.io/en/latest/?badge=latest)
+
 ![Dedoc](https://github.com/ispras/dedoc/raw/master/dedoc_logo.png)
 
 Dedoc is an open universal system for converting documents to a unified output format. It extracts a document’s logical structure and content, its tables, text formatting and metadata. The document’s content is represented as a tree storing headings and lists of any level. Dedoc can be integrated in a document contents and structure analysis system as a separate module.
