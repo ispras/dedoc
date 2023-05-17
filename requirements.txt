@@ -37,7 +37,7 @@ fastapi==0.95.1
 uvicorn==0.22.0
 python-logstash-async==2.5.0
 python-multipart==0.0.6
-starlette==0.26.1
+starlette==0.27.0
 # TODO remove all flask
 Flask==2.0.3
 flask_cors==3.0.10
