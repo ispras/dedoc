@@ -8,6 +8,7 @@ import numpy as np
 
 from dedoc.config import get_config
 from dedoc.extensions import recognized_mimes, recognized_extensions
+from dedoc.readers.scanned_reader.adaptive_binarizer import AdaptiveBinarizer
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.scanned_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.scanned_reader.data_classes.tables.scantable import ScanTable
@@ -35,9 +36,11 @@ class PdfScanReader(PdfBase):
                                                                    checkpoint_path=checkpoint_path,
                                                                    config=config,
                                                                    delete_lines=False)
-        # TODO add adaptive binarization
+        self.binarizer = AdaptiveBinarizer()
         self.ocr = OCRLineExtractor(config=config)
         self.logger = config.get("logger", logging.getLogger())
+        if self.config.get("debug_mode") and not os.path.exists(self.config["path_debug"]):
+            os.makedirs(self.config["path_debug"])
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
@@ -76,10 +79,14 @@ class PdfScanReader(PdfBase):
             self.logger.info("Final number of columns: not detected")
 
         rotated_image, _ = self.scan_rotator.auto_rotate(image, angle)
-
         if self.config.get("debug_mode"):
-            time = datetime.now().strftime("%H-%M-%S")
-            cv2.imwrite(os.path.join(self.config["path_debug"], f"{time}_result_orientation.jpg"), rotated_image)
+            self.logger.info(self.config["path_debug"])
+            cv2.imwrite(os.path.join(self.config["path_debug"], f"{datetime.now().strftime('%H-%M-%S')}_result_orientation.jpg"), rotated_image)
+
+        if parameters.need_binarization:
+            rotated_image = self.binarizer.binarize(rotated_image)
+            if self.config.get("debug_mode"):
+                cv2.imwrite(os.path.join(self.config["path_debug"], f"{datetime.now().strftime('%H-%M-%S')}_result_binarization.jpg"), rotated_image)
 
         #  --- Step 2: table detection and recognition ---
         if parameters.need_pdf_table_analysis:

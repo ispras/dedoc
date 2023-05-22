@@ -46,7 +46,7 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", ["orient_analysis_ce
                                                              "need_pdf_table_analysis",
                                                              "first_page",
                                                              "last_page",
-                                                             "need_text_localization",
+                                                             "need_binarization",
                                                              'table_type',
                                                              "is_one_column_document_list"])
 
@@ -87,7 +87,7 @@ class PdfBase(BaseReader):
             need_pdf_table_analysis=param_utils.get_param_need_pdf_table_analysis(parameters),
             first_page=first_page,
             last_page=last_page,
-            need_text_localization=param_utils.get_param_need_text_localization(parameters),
+            need_binarization=param_utils.get_param_need_binarization(parameters),
             table_type=param_utils.get_param_table_type(parameters),
             is_one_column_document_list=param_utils.get_is_one_column_document_list(parameters)
         )

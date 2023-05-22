@@ -94,6 +94,13 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self.assertEqual(exif["exif_image_width"], 1654)
         self.assertEqual(exif["exif_image_height"], 2338)
 
+    def test_image_binarization(self) -> None:
+        result = self._send_request("01_МФО_Наклон.jpg", data=dict(need_binarization="true"))
+
+        self.assertIn("ЦЕНТРАЛЬНЫЙ БАНК РОССИЙСКОЙ ФЕДЕРАЦИИ\n{БАНК РОССИИ)\nСВИДЕТЕЛЬСТВО\nО ВНЕСЕНИИ СВЕДЕНИЙ О ЮРИДИЧЕСКОМ ЛИЦЕ\n"
+                      "В ГОСУДАРСТВЕННЫЙ РЕЕСТР МИКРОФИНАНСОВЫХ ОРГАНИЗАЦИЙ", result['content']['structure']['subparagraphs'][0]['text'])
+        self.assertIn("Е.И Курицына\n(расшифровка подлиси", result['content']['structure']['subparagraphs'][1]['text'])
+
     def test_on_ocr_conf_threshold(self) -> None:
         result = self._send_request("with_trash.jpg", data=dict(structure_type="tree"))
         tree = result["content"]["structure"]
