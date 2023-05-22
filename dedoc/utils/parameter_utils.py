@@ -35,11 +35,11 @@ def get_param_need_pdf_table_analysis(parameters: Optional[dict]) -> bool:
     return need_pdf_table_analysis
 
 
-def get_param_need_text_localization(parameters: Optional[dict]) -> bool:
+def get_param_need_binarization(parameters: Optional[dict]) -> bool:
     if parameters is None:
         return False
-    need_text_localization = parameters.get("need_text_localization", "False").lower() == "true"
-    return need_text_localization
+    need_binarization = parameters.get("need_binarization", "False").lower() == "true"
+    return need_binarization
 
 
 def get_param_orient_cell_angle(parameters: Optional[dict]) -> int:
