@@ -179,7 +179,6 @@ class TestRecognizedTable(AbstractTestApiDocReader):
                 end = annotation["end"]
                 self.assertIn(line["text"][start: end].strip(), expected_lines)
 
-    @unittest.skip("unskip when pdf_with_text_layer=true work")
     def test_false_table(self) -> None:
         file_name = "пример.pdf"
         result = self._send_request(file_name, data={"pdf_with_text_layer": "auto"})
@@ -190,7 +189,6 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         text = self._get_by_tree_path(tree, "0.0")["text"].strip()
         self.assertEqual("Сегодня мы сравним рост разных человеков.", text)
 
-    @unittest.skip("unskip when pdf_with_text_layer=true work")
     def test_false_table2(self) -> None:
         file_name = "not_table.pdf"
         result = self._send_request(file_name, data={"pdf_with_text_layer": "true"})

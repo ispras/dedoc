@@ -22,7 +22,7 @@ class QueryParameters(BaseModel):
     html_fields: Optional[str]
     cloud_bucket: Optional[str]
     need_header_footer_analysis: Optional[str]
-    need_text_localization: Optional[str]
+    need_binarization: Optional[str]
     need_pdf_table_analysis: Optional[str]
     handle_invisible_table: Optional[str]
     return_base64: Optional[str]
@@ -50,7 +50,7 @@ class QueryParameters(BaseModel):
                  html_fields: Optional[str] = Body(description="a list of fields for JSON documents to be parsed as HTML documents. It is written as a json string of a list, where each list item is a list of keys to get the field. Default: ''", default=None),
                  cloud_bucket: Optional[str] = Body(description="a path (bucket) in the cloud storage mime. Default: ''", default=None),
                  need_header_footer_analysis: Optional[str] = Body(description="include header-footer analysis into pdf with text layer. Default: 'false'", default=None),
-                 need_text_localization: Optional[str] = Body(description="include text localization into pdf without a text layer. Default: 'false'", default=None),
+                 need_binarization: Optional[str] = Body(description="include an adaptive binarization into pdf without a text layer. Default: 'false'", default=None),
                  need_pdf_table_analysis: Optional[str] = Body(description="include a table analysis into pdfs. Default: 'true'", default=None),
                  handle_invisible_table: Optional[str] = Body(description="handle table without visible borders as tables in html. Default: 'false'", default=None),
                  return_base64: Optional[str] = Body(description="returns images in base64 format. Default: 'false'", default=None),
@@ -79,7 +79,7 @@ class QueryParameters(BaseModel):
         self.html_fields: str                   = html_fields or ''
         self.cloud_bucket: str                  = cloud_bucket or ''
         self.need_header_footer_analysis: str   = need_header_footer_analysis or 'false'
-        self.need_text_localization: str        = need_text_localization or 'false'
+        self.need_binarization: str             = need_binarization or 'false'
         self.need_pdf_table_analysis: str       = need_pdf_table_analysis or 'true'
         self.handle_invisible_table: str        = handle_invisible_table or 'false'
         self.return_base64: str                 = return_base64 or 'false'

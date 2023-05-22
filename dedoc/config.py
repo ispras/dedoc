@@ -41,8 +41,8 @@ _config = dict(
     minimal_cell_cnt_line=5,
     minimal_cell_avg_length_line=10,
 
-    path_cells=os.path.join(os.path.abspath(os.sep), "tmp", "docreader", "debug_tables", "imgs", "cells"),
-    path_detect=os.path.join(os.path.abspath(os.sep), "tmp", "docreader", "debug_tables", "imgs", "detect_lines"),
+    path_cells=os.path.join(os.path.abspath(os.sep), "tmp", "dedoc", "debug_tables", "imgs", "cells"),
+    path_detect=os.path.join(os.path.abspath(os.sep), "tmp", "dedoc", "debug_tables", "imgs", "detect_lines"),
     rotate_threshold=0.3,
 
     # -------------------------------------------RECOGNIZE SETTINGS-----------------------------------------------------
