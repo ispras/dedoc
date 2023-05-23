@@ -1,7 +1,7 @@
 dedoc.converters
 ================
 
-.. autoclass:: dedoc.converters.Abstractonverter
+.. autoclass:: dedoc.converters.AbstractConverter
     :special-members: __init__
     :members:
 
