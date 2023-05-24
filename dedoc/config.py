@@ -81,10 +81,10 @@ class Configuration(object):
             self.__config = _config
 
     def getConfig(self, args: Optional[Any] = None) -> dict:
-        if self.__config is None:
+        if self.__config is None or args is not None:
             self.__initConfig(args)
         return self.__config
 
 
 def get_config(args: Optional[Any] = None) -> dict:
-    return Configuration().getConfig(args)
+    return Configuration.getInstance().getConfig(args)
