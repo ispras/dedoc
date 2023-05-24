@@ -1,0 +1,35 @@
+name: Publish to PyPI
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - VERSION  # publish only when version has been changed
+
+jobs:
+  # Publish the package to PyPI https://pypi.org
+  pypi-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install build twine
+
+      - name: Build and publish to PyPI  # TODO change to pypi instead of test pypi
+        env:
+          TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}  # TODO delete TEST_ in the name of the variable
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}  # TODO delete TEST_ in the name of the variable
+        run: |
+          python3 -m build -w
+          twine check dist/*
+          twine upload --repository testpypi dist/*

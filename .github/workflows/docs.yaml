@@ -24,4 +24,5 @@ jobs:
         python -m pip install --upgrade --upgrade-strategy eager --no-cache-dir .[torch,docs]
 
     - name: Build documentation
+      # Build the documentation, you can use this command locally
       run: python -m sphinx -T -E -W -b html -d docs/_build/doctrees -D language=en docs/source docs/_build
