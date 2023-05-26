@@ -59,7 +59,8 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
         header_lines = self.header_builder.get_lines_with_hierarchy(lines_with_labels=header_lines, init_hl_depth=0)
         toc_lines = self.toc_builder.get_lines_with_hierarchy(lines_with_labels=toc_lines, init_hl_depth=1)
         body_lines = self.body_builder.get_lines_with_hierarchy(lines_with_labels=body_lines, init_hl_depth=1)
-        document.lines = header_lines + toc_lines + body_lines
+        lines = header_lines + toc_lines + body_lines
+        document.lines = sorted(lines, key=lambda x: (x.metadata.page_id, x.metadata.line_id))
         return document
 
     def _replace_toc_lines(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:
