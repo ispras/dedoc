@@ -45,14 +45,15 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
         self._add_page_id_lines(lines)
 
         # exclude found toc from predicting
+        toc_lines = [line for line in lines if line.metadata.tag_hierarchy_level.line_type == "toc"]
         lines_for_predict = [line for line in lines if line.metadata.tag_hierarchy_level.line_type not in ("toc", "page_id", "footnote")]
-        predictions = self.classifier.predict(lines_for_predict)
+        predictions = self.classifier.predict(lines_for_predict, toc_lines)
         assert len(predictions) == len(lines_for_predict)
         for line, prediction in zip(lines_for_predict, predictions):
             line.metadata.tag_hierarchy_level.line_type = prediction
 
+        toc_lines = [(line, "toc") for line in toc_lines]
         header_lines = [(line, "title") for line in lines if line.metadata.tag_hierarchy_level.line_type == "title"]
-        toc_lines = [(line, "toc") for line in lines if line.metadata.tag_hierarchy_level.line_type == "toc"]
         body_lines = [(line, line.metadata.tag_hierarchy_level.line_type) for line in lines if
                       line.metadata.tag_hierarchy_level.line_type not in ("title", "toc")]
 
