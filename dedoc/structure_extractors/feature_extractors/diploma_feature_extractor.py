@@ -21,7 +21,8 @@ class DiplomaFeatureExtractor(AbstractFeatureExtractor):
         super().__init__()
         self.named_item_keywords = ("аннотация", "abstract", "введение", "заключение", "библиографическийсписок", "списоклитературы")
         self.named_item_start = ("приложени", "глава")
-        self.titles = ("бакалаврскаяработа", "магистерскаядиссертация", "выпускнаяквалификационнаяработа", "курсоваяработа")
+        self.raw_text_keywords = ("рисунок", "таблица")
+        self.titles = ("бакалаврскаяработа", "магистерскаядиссертация", "выпускнаяквалификационнаяработа", "бакалаврскаяработа", "курсоваяработа")
         self.title_keywords = ("автор:", "руководитель:", "научныйруководитель:")
         self.year_regexp = re.compile(r".*20\d\dг\.$")
         self.digits_with_dots_regexp = regexps_digits_with_dots
@@ -93,10 +94,14 @@ class DiplomaFeatureExtractor(AbstractFeatureExtractor):
         yield "is_title_keyword", int(text_wo_spaces in self.title_keywords)
         yield "is_named_item", int(text_wo_spaces in self.named_item_keywords)
         yield "named_item_start", int(text_wo_spaces.startswith(self.named_item_start))
+        yield "is_raw_text", len([word for word in self.raw_text_keywords if word in text_wo_spaces])
 
         match = self.year_regexp.match(text_wo_spaces)
         yield "contains_year", int(match is not None)
         yield from self._start_regexp(line.line, self.start_regexps)
+        yield "percent_number", text_wo_spaces.count("%")
+        yield "brackets_number", sum(c in "()" for c in text_wo_spaces)
+        yield "digits_number", sum(c.isdigit() for c in text_wo_spaces)
 
         yield "is_lower", int(line.line.strip().islower())
 
