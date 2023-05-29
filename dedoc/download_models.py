@@ -15,7 +15,7 @@ model_hash_dict = dict(
     scan_orientation_efficient_net_b0="0160965f8a920d12afacf62b8a5a8a3b365b11ef",
     font_classifier="db4481ad60ab050cbb42079b64f97f9e431feb07",
     paragraph_classifier="00bf989876cec171c1cf9859a6b712af6445e864",
-    line_type_classifiers="c590fa749266e4f5a6cfbcfaf1d1eaea9e99d8e0"
+    line_type_classifiers="2e498d1ec82b72c1a96ba0d25344b71402997013"
 )
 
 
