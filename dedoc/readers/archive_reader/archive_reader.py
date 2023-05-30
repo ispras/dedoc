@@ -34,10 +34,7 @@ class ArchiveReader(BaseReader):
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
-        if extension.lower() in recognized_extensions.archive_like_format or mime in recognized_mimes.archive_like_format:
-            return True
-
-        return False
+        return extension.lower() in recognized_extensions.archive_like_format or mime in recognized_mimes.archive_like_format
 
     def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
