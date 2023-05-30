@@ -1,0 +1,25 @@
+{
+  "title": "Some title",
+  "port": 5555,
+  "debug": false,
+  "labels": [
+    { "label": "raw_text", "color": "#f00" },
+    { "label": "title", "color": "#ffa500" },
+    { "label": "item", "color": "#00f" },
+    { "label": "footer", "color": "#00f080" },
+    { "label": "Other", "color": "#0ff" },
+    { "label": "application", "color":  "#ff00BB"},
+    { "label": "cellar", "color":  "#007d34"}
+  ],
+  "multiclass": false,
+  "input_path": "tasks.json",
+  "image_key": ["task_path"],
+  "default_label_key": ["default_label"],
+  "task_instruction_key": ["additional_info"],
+  "result_key": "labeled",
+  "output_path": "law_classifier_TASK_ID.json",
+  "instruction": "Type some <b>hypertext</b> for label experts!",
+  "templates_dir": "examples",
+  "confirm_required": false,
+  "sampling": "sequential"
+}

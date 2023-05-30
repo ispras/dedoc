@@ -1,0 +1,25 @@
+{
+  "title": "Some title",
+  "port": 5555,
+  "debug": false,
+  "labels": [
+    { "label": "title", "color": "#f00" },
+    { "label": "toc", "color": "#ffa500" },
+    { "label": "footer", "color": "#5f5" },
+    { "label": "part", "color": "#055" },
+    { "label": "item", "color": "#00f" },
+    { "label": "raw_text", "color": "#f0f" },
+    { "label": "other", "color": "#0ff" }
+  ],
+  "multiclass": false,
+  "input_path": "tasks.json",
+  "image_key": ["task_path"],
+  "default_label_key": ["default_label"],
+  "task_instruction_key": ["additional_info"],
+  "result_key": "labeled",
+  "output_path": "tz_classifier_TASK_ID.json",
+  "instruction": "Type some <b>hypertext</b> for label experts!",
+  "templates_dir": "examples",
+  "confirm_required": false,
+  "sampling": "sequential"
+}

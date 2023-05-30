@@ -1,0 +1,26 @@
+{
+  "title": "Labeling",
+  "port": 5555,
+  "debug": false,
+  "labels": [
+    { "label": "title", "color": "#f00" },
+    { "label": "toc", "color": "#ffa500" },
+    { "label": "named_item", "color": "#5f5" },
+    { "label": "named_item_continue", "color": "#055" },
+    { "label": "raw_text", "color": "#00f"},
+    { "label": "page_id", "color": "#f0f" },
+    { "label": "footnote", "color": "#00f080" },
+    { "label": "other", "color": "#0ff" }
+  ],
+  "multiclass": false,
+  "input_path": "tasks.json",
+  "image_key": ["task_path"],
+  "default_label_key": ["default_label"],
+  "task_instruction_key": ["additional_info"],
+  "result_key": "labeled",
+  "output_path": "diploma_classifier_TASK_ID.json",
+  "instruction": "Нажмите кнопку с нужным типом или цифру для разметки.\nДля перехода к следущей картинке с сохранением результата нажмите Enter или кнопку «Сохранить»",
+  "templates_dir": "examples",
+  "confirm_required": false,
+  "sampling": "sequential"
+}
