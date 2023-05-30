@@ -1,17 +1,27 @@
-from typing import Optional, Any
+import os
+from json import JSONDecodeError
+from typing import Optional, List, Any
+
 import ujson as json
 
-from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.attachments_extractors.concrete_attachments_extractors.json_attachment_extractor import JsonAttachmentsExtractor
+from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
+from dedoc.common.exceptions.bad_parameters_exception import BadParametersException
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
 class JsonReader(BaseReader):
     """
     This reader allows handle json files.
     """
+    def __init__(self) -> None:
+        super().__init__()
+        self.attachment_extractor = JsonAttachmentsExtractor()
+
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader (it has .json extension).
@@ -27,8 +37,26 @@ class JsonReader(BaseReader):
         The dictionaries are processed by creating key line with type `key` and value line as a child.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
+        parameters = {} if parameters is None else parameters
         with open(path) as file:
-            json_data = json.load(file)
+            try:
+                json_data = json.load(file)
+            except (JSONDecodeError, ValueError):
+                raise BadFileFormatException(msg="Seems that json is invalid")
+
+        if "html_fields" in parameters:
+            fields = parameters.get("html_fields", "[]")
+            try:
+                key_fields = json.loads(fields if fields else "[]")
+            except (JSONDecodeError, ValueError):
+                raise BadParametersException("can't read html_fields {}".format(fields))
+            json_data = self.__exclude_html_fields(json_data, key_fields)
+            attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path),
+                                                                    filename=os.path.basename(path),
+                                                                    parameters=parameters)
+        else:
+            attachments = []
+
         stack = [(json_data, 1)]
         result = []
         while len(stack) > 0:
@@ -44,11 +72,27 @@ class JsonReader(BaseReader):
                                                  line_type=HierarchyLevel.raw_text,
                                                  line_type_meta=HierarchyLevel.raw_text)
                 result.append(line)
+        return UnstructuredDocument(tables=[], lines=result, attachments=attachments)
 
-        for line_id, line in enumerate(result):
-            line.metadata.line_id = line_id
+    def __exclude_html_fields(self, json_data: dict, field_keys: List[List[str]]) -> dict:
+        for keys in field_keys:
+            self.__exclude_key(json_data, keys)
 
-        return UnstructuredDocument(tables=[], lines=result, attachments=[], warnings=[])
+        return json_data
+
+    def __exclude_key(self, json_data: dict, keys: List[str]) -> None:
+        data = json_data
+        parents = []
+
+        for key in keys[:-1]:
+            parents.append((data, key))
+            data = data[key]
+
+        del data[keys[-1]]
+
+        for (data, key) in parents[::-1]:
+            if not data[key]:
+                del data[key]
 
     def __handle_list(self, depth: int, element: list, result: list, stack: list) -> None:
         for _ in range(len(element)):
@@ -68,22 +112,22 @@ class JsonReader(BaseReader):
             # key = min(element.keys()) if len(element) < 100 else list(element.keys())[0]
             value = element.pop(key)
             line = self.__handle_one_element(depth=depth,
-                                             value=value,
-                                             line_type=key,
-                                             line_type_meta=key)
+                                             value=key,
+                                             line_type="key",
+                                             line_type_meta="key")
             result.append(line)
-            if not self.__is_flat(value):
-                stack.append((element, depth))
+            stack.append((element, depth))
+
+            if value is not None:
                 stack.append((value, depth + 1))
-                break
+            break
 
     def __handle_one_element(self, depth: int, value: Any, line_type: str, line_type_meta: str) -> LineWithMeta:
         if depth == 1 and line_type == "title":
-            level1 = 0
-            level2 = 0
+            level1, level2 = 0, 0
         else:
-            level1 = depth
-            level2 = 1
+            level1, level2 = depth, 1
+
         hierarchy_level = HierarchyLevel(level_1=level1, level_2=level2, can_be_multiline=False, line_type=line_type_meta)
         metadata = LineMetadata(tag_hierarchy_level=hierarchy_level, page_id=0, line_id=None)
         line = LineWithMeta(line=self.__get_text(value), metadata=metadata, annotations=[])
@@ -93,6 +137,7 @@ class JsonReader(BaseReader):
         return not isinstance(value, (dict, list))
 
     def __get_text(self, value: Any) -> str:
-        if isinstance(value, (dict, list)):
+        if isinstance(value, (dict, list)) or value is None:
             return ""
+
         return str(value)
