@@ -1,16 +1,26 @@
 import importlib
 import os
+
 import uvicorn
-from fastapi.responses import UJSONResponse, ORJSONResponse
-from starlette.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi import Response, FastAPI, Request, Depends, UploadFile, File
+from fastapi.responses import UJSONResponse, ORJSONResponse
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse
 
 from dedoc.api.api_args import QueryParameters
 from dedoc.api.api_utils import json2html, json2tree, json2collapsed_tree
-from dedoc.api.init_api import app, config, static_files_dirs, PORT, static_path
 from dedoc.common.exceptions.dedoc_exception import DedocException
 from dedoc.common.exceptions.missing_file_exception import MissingFileException
+from dedoc.config import get_config
 from dedoc.manager.dedoc_thread_manager import DedocThreadedManager
+
+config = get_config()
+PORT = config["api_port"]
+static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/")
+static_files_dirs = config.get("static_files_dirs")
+
+app = FastAPI()
+app.mount('/static', StaticFiles(directory=config.get("static_path", static_path)), name="static")
 
 module_api_args = importlib.import_module(config['import_path_init_api_args'])
 logger = config["logger"]
