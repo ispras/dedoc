@@ -5,14 +5,15 @@ from abc import abstractmethod
 from collections import namedtuple
 from itertools import chain
 from typing import List, Optional, Tuple, Iterator
+
 import cv2
 import numpy as np
 from joblib import Parallel, delayed
 from pdf2image import convert_from_path
 from pdf2image.exceptions import PDFPageCountError, PDFSyntaxError
 
-from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
 import dedoc.utils.parameter_utils as param_utils
+from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
@@ -20,21 +21,18 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes, recognized_extensions
 from dedoc.readers.base_reader import BaseReader
-from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
-from dedoc.utils.pdf_utils import get_page_slice, get_pdf_page_count
-from dedoc.utils.utils import get_file_mime_type, splitext_
-from dedoc.readers.archive_reader.archive_reader import ArchiveReader
 from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.scanned_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.scanned_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.scanned_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
-from dedoc.readers.scanned_reader.utils.line_object_linker import LineObjectLinker
-from dedoc.readers.scanned_reader.paragraph_extractor.scan_paragraph_classifier_extractor import \
-    ScanParagraphClassifierExtractor
-from dedoc.readers.scanned_reader.utils.header_footers_analysis import footer_header_analysis
+from dedoc.readers.scanned_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
 from dedoc.readers.scanned_reader.table_recognizer.table_recognizer import TableRecognizer
+from dedoc.readers.scanned_reader.utils.header_footers_analysis import footer_header_analysis
+from dedoc.readers.scanned_reader.utils.line_object_linker import LineObjectLinker
+from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
+from dedoc.utils.pdf_utils import get_page_slice, get_pdf_page_count
 from dedoc.utils.utils import flatten
-
+from dedoc.utils.utils import get_file_mime_type, splitext_
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", ["orient_analysis_cells",
                                                              "orient_cell_angle",
@@ -64,7 +62,6 @@ class PdfBase(BaseReader):
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
         self.attachment_extractor = PDFAttachmentsExtractor(config=config)
-        self.archive_reader = ArchiveReader(config=config)
         self.linker = LineObjectLinker(config=config)
         self.paragraph_extractor = ScanParagraphClassifierExtractor(config=config)
 
@@ -202,18 +199,11 @@ class PdfBase(BaseReader):
         mime = get_file_mime_type(path)
         if mime in recognized_mimes.pdf_like_format:
             yield from self._split_pdf2image(path)
-        elif mime in recognized_mimes.image_like_format or path.endswith(
-                tuple(recognized_extensions.image_like_format)):
+        elif mime in recognized_mimes.image_like_format or path.endswith(tuple(recognized_extensions.image_like_format)):
             image = cv2.imread(path)
             if image is None:
                 raise BadFileFormatException("seems file {} not an image".format(os.path.basename(path)))
             yield image
-        elif (mime in recognized_mimes.archive_like_format or
-              path.endswith(tuple(recognized_extensions.archive_like_format))):
-            total, images = self.archive_reader.parse_archive_on_images(path)
-            for image_num, image in enumerate(images):
-                self.logger.info("get {} pages of {} in file {}".format(image_num, total, os.path.basename(path)))
-                yield image
         else:
             raise BadFileFormatException("Unsupported input format: {}".format(splitext_(path)[1]))  # noqa
 
