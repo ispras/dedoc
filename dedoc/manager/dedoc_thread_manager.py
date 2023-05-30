@@ -121,7 +121,7 @@ class DedocThreadedManager(object):
             with tempfile.TemporaryDirectory() as tmp_dir:
                 tmp_path = os.path.join(tmp_dir, filename)
                 with open(tmp_path, "wb") as df:
-                    shutil.copyfileobj(file.file, df)
+                    shutil.copyfileobj(file, df) # заменил file.file на file
 
                 return self.__parse_file(
                     tmp_dir=tmp_dir,
@@ -132,7 +132,7 @@ class DedocThreadedManager(object):
 
         tmp_path = os.path.join(self.tmp_dir, filename)
         with open(tmp_path, "wb") as df:
-            shutil.copyfileobj(file.file, df)
+            shutil.copyfileobj(file, df) # заменил file.file на file
         return self.__parse_file(
             tmp_dir=self.tmp_dir,
             filename=filename,

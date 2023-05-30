@@ -139,7 +139,7 @@ class DedocManager:
             self.logger.info("Extract structure from file {}".format(filename_convert))
 
             if self.config.get("labeling_mode", False):
-                self.__save(file_path, unstructured_document)
+                self.__save(os.path.join(tmp_dir, filename), unstructured_document)
 
             # Step 5 - Form the output structure
             structure_type = parameters.get("structure_type")
