@@ -14,6 +14,7 @@ from dedoc.metadata_extractors.concrete_metadata_extractors.note_metadata_extarc
 from dedoc.metadata_extractors.concrete_metadata_extractors.pdf_metadata_extractor import PdfMetadataExtractor
 from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
 from dedoc.readers.archive_reader.archive_reader import ArchiveReader
+from dedoc.readers.auto_pdf_reader.auto_pdf_reader import AutoPdfReader
 from dedoc.readers.csv_reader.csv_reader import CSVReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.readers.email_reader.email_reader import EmailReader
@@ -62,6 +63,7 @@ def get_manager_config(config: dict) -> dict:
         NoteReader(config=config),
         JsonReader(),
         ArchiveReader(config=config),
+        AutoPdfReader(config=config),
         TabbyPDFReader(config=config),
         PdfWithTextReader(config=config),
         PdfScanReader(config=config),

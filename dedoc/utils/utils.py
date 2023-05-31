@@ -9,6 +9,8 @@ import re
 import time
 from os.path import splitext
 from typing import List, Optional, TypeVar, Tuple, Iterable, Iterator
+
+from Levenshtein._levenshtein import ratio
 from dateutil.parser import parse
 from charset_normalizer import from_bytes
 
@@ -166,6 +168,12 @@ def similarity(s1: str, s2: str) -> float:
     normalized2 = s2.lower()
     matcher = difflib.SequenceMatcher(None, normalized1, normalized2)
     return matcher.ratio()
+
+
+def similarity_levenshtein(str1: str, str2: str) -> float:
+    str1 = str1.lower()
+    str2 = str2.lower()
+    return ratio(str1, str2)
 
 
 def convert_datetime(time_string: str) -> int:

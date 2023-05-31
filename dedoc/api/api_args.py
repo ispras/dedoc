@@ -35,7 +35,7 @@ class QueryParameters(BaseModel):
 
     def __init__(self,
                  # type of document structure parsing
-                 document_type: Optional[str] = Body(description="a document type. Default: ''", enum=["", "law", "tz", "diploma", "article", "slide"], default=None),
+                 document_type: Optional[str] = Body(description="a document type. Default: ''", enum=["", "law", "tz", "diploma"], default=None),
                  structure_type: Optional[str] = Body(description="output structure type (linear or tree). Default: 'tree'", enum=["linear", "tree"], default=None),
                  return_format: Optional[str] = Body(description="an option for returning a response in html form, json, pretty_json or tree. Assume that one should use json in all cases, all other formats are used for debug porpoises only. Default: 'json'", default=None),
 
