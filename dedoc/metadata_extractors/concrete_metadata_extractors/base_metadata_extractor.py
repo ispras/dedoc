@@ -1,4 +1,5 @@
 import os
+from base64 import b64encode
 from typing import Optional
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
@@ -46,12 +47,18 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         Gets the basic meta-information about the file.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
         """
-        if parameters is None:
-            parameters = {}
+        parameters = {} if parameters is None else parameters
         meta_info = self._get_base_meta_information(directory, filename, original_filename, parameters)
+
+        if parameters.get("is_attached", False) and str(parameters.get("return_base64", "false")).lower() == "true":
+            other_fields = {} if other_fields is None else other_fields
+
+            path = os.path.join(directory, filename)
+            with open(path, "rb") as file:
+                other_fields["base64_encode"] = b64encode(file.read()).decode("utf-8")
+
         if other_fields is not None and len(other_fields) > 0:
             meta_info["other_fields"] = other_fields
-
         document.metadata = meta_info
         return document
 

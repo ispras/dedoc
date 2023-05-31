@@ -6,7 +6,7 @@ from typing import List
 import catboost.core
 from dedoc.download_models import download_from_hub
 
-from config import get_config
+from dedoc.config import get_config
 from dedoc.readers.scanned_reader.data_classes.text_with_bbox import TextWithBBox
 
 

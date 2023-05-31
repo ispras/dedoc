@@ -50,16 +50,22 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
         Add the predefined list of metadata for the docx documents.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
         """
-        if parameters is None:
-            parameters = {}
+        parameters = {} if parameters is None else parameters
+
+        result = super().add_metadata(document=document,
+                                      directory=directory,
+                                      filename=filename,
+                                      converted_filename=converted_filename,
+                                      original_filename=original_filename,
+                                      parameters=parameters,
+                                      version=version,
+                                      other_fields=other_fields)
+
         file_path = os.path.join(directory, converted_filename)
         docx_other_fields = self._get_docx_fields(file_path)
-        if other_fields is not None and len(other_fields) > 0:
-            docx_other_fields = {**docx_other_fields, **other_fields}
 
-        meta_info = self._get_base_meta_information(directory, filename, original_filename, parameters)
-        meta_info["other_fields"] = docx_other_fields
-        document.metadata = meta_info
+        result.metadata["other_fields"] = {**result.metadata.get("other_fields", {}), **docx_other_fields}
+        document.metadata = result
         return document
 
     def __convert_date(self, date: Optional[datetime]) -> Optional[int]:
