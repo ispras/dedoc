@@ -45,25 +45,30 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
         self._add_page_id_lines(lines)
 
         # exclude found toc from predicting
-        lines_for_predict = [line for line in lines if line.metadata.hierarchy_level.line_type not in ("toc", "page_id", "footnote")]
-        predictions = self.classifier.predict(lines_for_predict)
+        toc_lines = [line for line in lines if line.metadata.tag_hierarchy_level.line_type == "toc"]
+        lines_for_predict = [line for line in lines if line.metadata.tag_hierarchy_level.line_type not in ("toc", "page_id", "footnote")]
+        predictions = self.classifier.predict(lines_for_predict, toc_lines)
         assert len(predictions) == len(lines_for_predict)
         for line, prediction in zip(lines_for_predict, predictions):
-            line.metadata.hierarchy_level.line_type = prediction
+            line.metadata.tag_hierarchy_level.line_type = prediction
 
-        header_lines = [(line, line.metadata.hierarchy_level.line_type) for line in lines if line.metadata.hierarchy_level.line_type == "title"]
-        toc_lines = [(line, "toc") for line in lines if line.metadata.hierarchy_level.line_type == "toc"]
-        body_lines = [(line, line.metadata.hierarchy_level.line_type) for line in lines if
-                      line.metadata.hierarchy_level.line_type not in ("title", "toc")]
+        toc_lines = [(line, "toc") for line in toc_lines]
+        header_lines = [(line, "title") for line in lines if line.metadata.tag_hierarchy_level.line_type == "title"]
+        body_lines = [(line, line.metadata.tag_hierarchy_level.line_type) for line in lines if
+                      line.metadata.tag_hierarchy_level.line_type not in ("title", "toc")]
 
         header_lines = self.header_builder.get_lines_with_hierarchy(lines_with_labels=header_lines, init_hl_depth=0)
         toc_lines = self.toc_builder.get_lines_with_hierarchy(lines_with_labels=toc_lines, init_hl_depth=1)
         body_lines = self.body_builder.get_lines_with_hierarchy(lines_with_labels=body_lines, init_hl_depth=1)
-        document.lines = header_lines + toc_lines + body_lines
+        lines = header_lines + toc_lines + body_lines
+        document.lines = sorted(lines, key=lambda x: (x.metadata.page_id, x.metadata.line_id))
         return document
 
     def _replace_toc_lines(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:
         toc_lines = self.toc_extractor.get_toc(lines)
+        if len(toc_lines) == 0:
+            return lines
+
         toc_lines = [toc_item["line"] for toc_item in toc_lines]
         min_toc_line_id = min(line.metadata.line_id for line in toc_lines)
         max_toc_line_id = max(line.metadata.line_id for line in toc_lines)
@@ -76,7 +81,7 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
                 lines_wo_toc.append(line)
 
         for line in toc_lines:
-            line.metadata.hierarchy_level.line_type = "toc"
+            line.metadata.tag_hierarchy_level.line_type = "toc"
         lines = lines_wo_toc + toc_lines
         lines = sorted(lines, key=lambda x: (x.metadata.page_id, x.metadata.line_id))
         return lines
@@ -91,7 +96,7 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
 
             # simple line, previous was a footnote
             elif line.metadata.tag_hierarchy_level.line_type != "footnote":
-                current_footnote.metadata.hierarchy_level.line_type = "footnote"
+                current_footnote.metadata.tag_hierarchy_level.line_type = "footnote"
                 fixed_lines.append(current_footnote)
                 fixed_lines.append(line)
                 current_footnote = None
@@ -102,7 +107,7 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
 
             # new footnote after previous one
             elif self.footnote_start_regexp.match(line.line):
-                current_footnote.metadata.hierarchy_level.line_type = "footnote"
+                current_footnote.metadata.tag_hierarchy_level.line_type = "footnote"
                 fixed_lines.append(current_footnote)
                 current_footnote = line
 
@@ -111,7 +116,7 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
                 current_footnote += line
 
         if current_footnote is not None:
-            current_footnote.metadata.hierarchy_level.line_type = "footnote"
+            current_footnote.metadata.tag_hierarchy_level.line_type = "footnote"
             fixed_lines.append(current_footnote)
         return fixed_lines
 
@@ -120,4 +125,4 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
             line = lines[i]
             if (lines[i - 1].metadata.page_id < line.metadata.page_id or line.metadata.page_id < lines[i + 1].metadata.page_id) \
                     and line.line.strip().isdigit():
-                line.metadata.hierarchy_level.line_type = "page_id"
+                line.metadata.tag_hierarchy_level.line_type = "page_id"

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.diploma_feature_extractor import DiplomaFeatureExtractor
@@ -13,15 +13,17 @@ class DiplomaLineTypeClassifier(AbstractPickledLineTypeClassifier):
         self.classifier, feature_extractor_parameters = self.load("diploma", path)
         self.feature_extractor = DiplomaFeatureExtractor()
 
-    def predict(self, lines: List[LineWithMeta]) -> List[str]:
+    def predict(self, lines: List[LineWithMeta], toc_lines: Optional[List[LineWithMeta]] = None) -> List[str]:
         if len(lines) == 0:
             return []
 
-        features = self.feature_extractor.transform([lines])
+        features = self.feature_extractor.transform([lines], toc_lines=[toc_lines])
         labels_probability = self.classifier.predict_proba(features)
 
         title_id = list(self.classifier.classes_).index("title")
         raw_text_id = list(self.classifier.classes_).index("raw_text")
+        toc_id = list(self.classifier.classes_).index("toc")
+        labels_probability[:, toc_id] = 0  # actually we don't predict toc items
 
         # set empty lines as raw_text
         empty_line = [line.line.strip() == "" for line in lines]
@@ -30,13 +32,16 @@ class DiplomaLineTypeClassifier(AbstractPickledLineTypeClassifier):
 
         # Work with a title
         labels = [self.classifier.classes_[i] for i in labels_probability.argmax(1)]
-        first_title_line = None
         first_non_title = 0
         for i, line in enumerate(lines):
-            if labels[i] in ("title", "raw_text") and not first_title_line:
-                first_title_line = line
-            elif labels[i] in ("title", "raw_text") and line.metadata.page_id != first_title_line.metadata.page_id or \
-                    labels[i] not in ("title", "raw_text"):
+            text_wo_spaces = "".join(line.line.lower().strip().split())
+            match = self.feature_extractor.year_regexp.match(text_wo_spaces)
+
+            if match is not None:
+                first_non_title = i + 1
+                break
+
+            if labels[i] not in ("title", "raw_text"):
                 first_non_title = i
                 break
 
