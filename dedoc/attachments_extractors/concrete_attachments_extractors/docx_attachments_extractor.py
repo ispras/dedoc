@@ -1,5 +1,6 @@
 import hashlib
 import os
+import re
 import tempfile
 import zipfile
 from typing import List, Optional
@@ -55,16 +56,7 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
         except KeyError:
             doc_str = document.read('word/document2.xml')
 
-        if b'\n\t' in doc_str or b'\n ' in doc_str:
-            if b'\n\t' in doc_str:
-                tt = b'\t'
-            else:
-                tt = b' '
-            t = 1
-            while b'\n' + tt * (t + 1) in doc_str:
-                t += 1
-            for i in range(t, -1, -1):
-                doc_str = doc_str.replace(b'\n' + tt * i, b'')
+        doc_str = re.sub(br"\n[\t ]*", b"", doc_str)
         bs = BeautifulSoup(doc_str, 'xml')
 
         paragraphs = [p for p in bs.body]
