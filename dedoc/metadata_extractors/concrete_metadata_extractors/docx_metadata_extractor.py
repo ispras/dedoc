@@ -65,8 +65,7 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
         docx_other_fields = self._get_docx_fields(file_path)
 
         result.metadata["other_fields"] = {**result.metadata.get("other_fields", {}), **docx_other_fields}
-        document.metadata = result
-        return document
+        return result
 
     def __convert_date(self, date: Optional[datetime]) -> Optional[int]:
         if date is not None:

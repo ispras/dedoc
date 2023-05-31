@@ -71,6 +71,38 @@ class TestApiTxtReader(AbstractTestApiDocReader):
             if line.strip() != "":
                 self.assertEqual("Line number {:09d}".format(line_id), line)
 
+    def test_txt_with_law(self) -> None:
+        file_name = "17 (1).txt"
+        result = self._send_request(file_name)
+        metadata = result["metadata"]
+        self.assertEqual("17 (1).txt", metadata["file_name"])
+        content = result["content"]
+        self.assertEqual([], content["tables"])
+        structure = content["structure"]
+        first_child = structure["subparagraphs"][0]
+        text = first_child["text"]
+        self.assertTrue(text.startswith("\n\n \n\n \n\n"))
+        self.assertIn("\n\n \n\nПРИКАЗ\n\n \n\n", text)
+        self.assertIn("\n\n \n\nМосква\n\n \n\n", text)
+
+    def test_utf8(self) -> None:
+        file_name = "utf8.txt"
+        result = self._send_request(file_name)
+        self.__check_content(result, "utf_8")
+
+    def test_cp1251(self) -> None:
+        file_name = "cp1251.txt"
+        result = self._send_request(file_name)
+        self.__check_content(result, "cp1251")
+
+    def __check_content(self, result: dict, encoding: str) -> None:
+        warning = result["warnings"][0]
+        self.assertEqual(warning, "encoding is {}".format(encoding))
+        path = self._get_abs_path("utf8.txt")
+        with open(path) as file:
+            text = file.read()
+        self.assertEqual(text, result["content"]["structure"]["subparagraphs"][0]["text"])
+
     def __check_football(self, content: dict) -> None:
         self.assertEqual(4, len(content))
         node = content[0]

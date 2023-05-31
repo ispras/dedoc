@@ -10,7 +10,7 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         return os.path.join(self.data_directory_path, "tables", file_name)
 
     def _get_tables(self, file_name: str) -> List[dict]:
-        result = self._send_request(file_name)
+        result = self._send_request(file_name, {"pdf_with_text_layer": "false"})
         content = result['content']
         self._test_table_refs(content=content)
         tables = content['tables']
