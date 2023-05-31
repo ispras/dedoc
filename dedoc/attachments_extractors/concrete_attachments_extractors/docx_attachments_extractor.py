@@ -51,9 +51,21 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
         """
         result = []
         try:
-            bs = BeautifulSoup(document.read('word/document.xml'), 'xml')
+            doc_str = document.read('word/document.xml')
         except KeyError:
-            bs = BeautifulSoup(document.read('word/document2.xml'), 'xml')
+            doc_str = document.read('word/document2.xml')
+
+        if b'\n\t' in doc_str or b'\n ' in doc_str:
+            if b'\n\t' in doc_str:
+                tt = b'\t'
+            else:
+                tt = b' '
+            t = 1
+            while b'\n' + tt * (t + 1) in doc_str:
+                t += 1
+            for i in range(t, -1, -1):
+                doc_str = doc_str.replace(b'\n' + tt * i, b'')
+        bs = BeautifulSoup(doc_str, 'xml')
 
         paragraphs = [p for p in bs.body]
         diagram_paragraphs = []
