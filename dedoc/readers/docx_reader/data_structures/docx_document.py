@@ -7,6 +7,7 @@ from collections import defaultdict
 from typing import Optional, List
 
 from bs4 import BeautifulSoup
+import bs4
 
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
@@ -117,7 +118,22 @@ class DocxDocument:
         """
         try:
             with zipfile.ZipFile(self.path) as document:
-                return BeautifulSoup(document.read(filename), 'xml')
+                doc_str = document.read(filename)
+                if b'\n\t' in doc_str or b'\n ' in doc_str:
+                    logging.debug("Started stripping xml file")
+                    if b'\n\t' in doc_str:
+                        tt = b'\t'
+                    else:
+                        tt = b' '
+                    t = 1
+                    while b'\n' + tt * (t + 1) in doc_str:
+                        t += 1
+                    for i in range(t, -1, -1):
+                        doc_str = doc_str.replace(b'\n' + tt * i, b'')
+                    logging.debug(f"Extracted all empty lines")
+
+                soup = BeautifulSoup(doc_str, 'xml')
+                return soup
         except KeyError:
             return None
         except zipfile.BadZipFile:
