@@ -52,12 +52,12 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
         """
         result = []
         try:
-            doc_str = document.read('word/document.xml')
+            content = document.read('word/document.xml')
         except KeyError:
-            doc_str = document.read('word/document2.xml')
+            content = document.read('word/document2.xml')
 
-        doc_str = re.sub(br"\n[\t ]*", b"", doc_str)
-        bs = BeautifulSoup(doc_str, 'xml')
+        content = re.sub(br"\n[\t ]*", b"", content)
+        bs = BeautifulSoup(content, 'xml')
 
         paragraphs = [p for p in bs.body]
         diagram_paragraphs = []

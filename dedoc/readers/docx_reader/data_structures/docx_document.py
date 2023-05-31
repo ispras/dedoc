@@ -117,9 +117,9 @@ class DocxDocument:
         """
         try:
             with zipfile.ZipFile(self.path) as document:
-                doc_str = document.read(filename)
-                doc_str = re.sub(br"\n[\t ]*", b"", doc_str)
-                soup = BeautifulSoup(doc_str, 'xml')
+                content = document.read(filename)
+                content = re.sub(br"\n[\t ]*", b"", content)
+                soup = BeautifulSoup(content, 'xml')
                 return soup
         except KeyError:
             return None

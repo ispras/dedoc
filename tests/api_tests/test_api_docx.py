@@ -105,6 +105,9 @@ class TestApiDocReader(AbstractTestApiDocReader):
     def test_broken_docx(self) -> None:
         self._send_request("broken.docx", expected_code=415)
 
+    def test_not_stripped_xml(self) -> None:
+        self._send_request("not_stripped_xml.docx", expected_code=200)
+
     def test_send_wo_file(self) -> None:
         self._send_request_wo_file(expected_code=422)
 
