@@ -129,14 +129,15 @@ class DocxDocument:
                         t += 1
                     for i in range(t, -1, -1):
                         doc_str = doc_str.replace(b'\n' + tt * i, b'')
-                    logging.debug(f"Extracted all empty lines")
+                    logging.debug("Extracted all empty lines")
 
                 soup = BeautifulSoup(doc_str, 'xml')
                 return soup
         except KeyError:
             return None
         except zipfile.BadZipFile:
-            raise BadFileFormatException("Bad docx file:\n file_name = {}. Seems docx is broken".format(os.path.basename(self.path)))
+            raise BadFileFormatException(
+                "Bad docx file:\n file_name = {}. Seems docx is broken".format(os.path.basename(self.path)))
 
     def __xml2paragraph(self, paragraph_xml: BeautifulSoup, uids_set: set, cnt: Counter) -> Paragraph:
         uid = self.__get_paragraph_uid(paragraph_xml=paragraph_xml, uids_set=uids_set)
