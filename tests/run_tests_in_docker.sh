@@ -14,7 +14,7 @@ if [ "$is_test" = "true" ]
 else
   echo "skip tests"
   echo "if you want to run tests do "
-  echo 'tests="true" docker-compose up  --build --exit-code-from tests'
+  echo 'test="true" docker-compose up  --build --exit-code-from test'
   echo 'if you want run only dedoc do'
   echo "docker-compose up --build dedoc"
 fi
