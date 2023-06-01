@@ -11,6 +11,7 @@ ADD dedoc /dedoc_root/dedoc
 RUN python3 /dedoc_root/dedoc/download_models.py
 
 ADD tests /dedoc_root/tests
+ADD resources /dedoc_root/resources
 ADD VERSION /dedoc_root
 
 CMD ["python3", "/dedoc_root/dedoc/main.py", "-c", "/dedoc_root/dedoc/config.py"]

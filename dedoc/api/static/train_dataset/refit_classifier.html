@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title> Dedoc | Обучение классификаторов </title>
+    <link rel="shortcut icon" href="static_file?fname=favicon.ico" type="image/x-icon"/>
+    <link rel="stylesheet" href="static_file?fname=styles.css" />
+    <meta name="viewport" content="width=device-width">
+</head>
+
+<div class="content">
+    <h2> Дообучение классификаторов </h2>
+
+        <h3> Классификатор типа строк </h3>
+            <p>
+                Переобучение классификаторов происходит с помощью скриптов dedoc/scripts/train_<b>clf_type</b>_line_classifier.py,
+                где <b>clf_type</b> - тип классификатора (tz, law, diploma).
+            </p>
+
+        <h3> Классификатор ориентации изображения документа </h3>
+            <p>
+                Переобучение классификатора ориентации происходит с помощью скрипта dedoc/scripts/train_acc_orientation_classifier.py
+            </p>
+
+            <p> Использование: </p>
+                <code>
+                    train_acc_orientation_classifier.py [-h] -t TRAIN [-s CHECKPOINT_SAVE][-l CHECKPOINT_LOAD][-f FROM_CHECKPOINT] -d INPUT_DATA_FOLDER
+                </code>
+
+            <p> Параметры: </p>
+
+            <p>
+                <code>
+                    -h, --help информация по аргументам
+                </code>
+            </p>
+
+            <p>
+                <code>
+                    -t TRAIN, --train TRAIN (--train True) или проверка модели (--train False)
+                </code>
+            </p>
+
+            <p>
+                <code>
+                    -s CHECKPOINT_SAVE, --checkpoint_save CHECKPOINT_SAVE путь до весов checkpoint.pth для сохранения (используется только для этапа тренировки)
+                </code>
+            </p>
+
+            <p>
+                <code>
+                    -l CHECKPOINT_LOAD, --checkpoint_load CHECKPOINT_LOAD путь до весов checkpoint.pth, которые будут загружены в модель
+                </code>
+            </p>
+
+            <p>
+                <code>
+                    -f FROM_CHECKPOINT, --from_checkpoint FROM_CHECKPOINT флаг устанавливается, если обучение нужно продолжить из чекпоинта, указанного в CHECKPOINT_LOAD
+                </code>
+            </p>
+
+            <p>
+                <code>
+                    -d INPUT_DATA_FOLDER, --input_data_folder INPUT_DATA_FOLDER путь до папки с тренировочными (подпапка train) и тестовыми данными (подпапка test).
+                </code>
+            </p>
+</div>

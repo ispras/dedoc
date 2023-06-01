@@ -1,16 +1,17 @@
 import logging
 import os
+import shutil
 import time
 import uuid
 import zipfile
 from queue import Queue
-from threading import Thread
 from tempfile import TemporaryDirectory
+from threading import Thread
 
-from dedoc.manager.dedoc_thread_manager import DedocThreadedManager
+from fastapi import UploadFile
+
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
-from werkzeug.datastructures import FileStorage
-
+from dedoc.manager.dedoc_thread_manager import DedocThreadedManager
 from dedoc.train_dataset.taskers.tasker import Tasker
 
 
@@ -99,11 +100,12 @@ class AsyncHandler:
         self._handler.start()
         self.tmp_dir = TemporaryDirectory()
 
-    def handle(self, file: FileStorage, parameters: dict) -> str:
-        assert file.mimetype == 'application/zip'
+    def handle(self, file: UploadFile, parameters: dict) -> str:
+        assert file.filename.lower().endswith(".zip")
         uid = str(uuid.uuid1())
         path = os.path.join(self.tmp_dir.name, uid + ".zip")
-        file.save(path)
+        with open(path, "wb") as df:
+            shutil.copyfileobj(file.file, df)
         self.queue.put((uid, parameters, path))
         return str(uid)
 
