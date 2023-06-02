@@ -4,8 +4,8 @@ from typing import Optional
 
 from dedoc.structure_extractors.feature_extractors.diploma_feature_extractor import DiplomaFeatureExtractor
 
-from config import _config as config
-from doc_reader.train_dataset.trainer.xgboost_line_classifier_trainer import XGBoostLineClassifierTrainer
+from dedoc.config import _config as config
+from dedoc.train_dataset.trainer.xgboost_line_classifier_trainer import XGBoostLineClassifierTrainer
 
 
 def skip_labels(label: str) -> Optional[str]:

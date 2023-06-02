@@ -2,10 +2,10 @@ import logging
 import os
 from typing import Optional
 
-from config import _config as config
+from dedoc.config import _config as config
 from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
-from doc_reader.train_dataset.data_structures.line_with_label import LineWithLabel
-from doc_reader.train_dataset.trainer.logreg_line_classifier_trainer import LogRegLineClassifierTrainer
+from dedoc.train_dataset.data_structures.line_with_label import LineWithLabel
+from dedoc.train_dataset.trainer.logreg_line_classifier_trainer import LogRegLineClassifierTrainer
 
 
 def transform_labels(label: str) -> Optional[str]:

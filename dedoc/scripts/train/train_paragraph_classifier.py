@@ -2,9 +2,9 @@ import logging
 import os
 from typing import Optional
 
-from config import _config as config
+from dedoc.config import _config as config
 from dedoc.readers.scanned_reader.paragraph_extractor.paragraph_features import ParagraphFeatureExtractor
-from doc_reader.train_dataset.trainer.xgboost_line_classifier_trainer import XGBoostLineClassifierTrainer
+from dedoc.train_dataset.trainer.xgboost_line_classifier_trainer import XGBoostLineClassifierTrainer
 
 
 def skip_labels(label: str) -> Optional[str]:
