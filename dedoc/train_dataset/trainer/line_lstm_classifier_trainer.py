@@ -18,12 +18,10 @@ from statistics import mean
 import pandas as pd
 
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
-from doc_reader.train_dataset.data_structures.line_with_label import LineWithLabel
-from doc_reader.train_dataset.trainer.data_loader import DataLoader, LineEpsDataSet
+from dedoc.train_dataset.data_structures.line_with_label import LineWithLabel
+from dedoc.train_dataset.trainer.data_loader import DataLoader, LineEpsDataSet
 from dedoc.utils.utils import flatten
 
-
-# спросить у Оксаны про лстм скрипты
 
 class Attention(nn.Module):
     # source https://www.kaggle.com/bminixhofer/deterministic-neural-networks-using-pytorch

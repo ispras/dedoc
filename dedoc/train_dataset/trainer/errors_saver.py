@@ -9,12 +9,12 @@ from typing import List, Tuple
 import pandas as pd
 from tqdm import tqdm
 
-from doc_reader.train_dataset.data_structures.images_archive import ImagesArchive
-from doc_reader.train_dataset.taskers.images_creators.concrete_creators.abstract_images_creator import \
+from dedoc.train_dataset.data_structures.images_archive import ImagesArchive
+from dedoc.train_dataset.taskers.images_creators.concrete_creators.abstract_images_creator import \
     AbstractImagesCreator
-from doc_reader.train_dataset.taskers.images_creators.concrete_creators.scanned_images_creator import \
+from dedoc.train_dataset.taskers.images_creators.concrete_creators.scanned_images_creator import \
     ScannedImagesCreator
-from doc_reader.train_dataset.taskers.images_creators.concrete_creators.txt_images_creator import TxtImagesCreator
+from dedoc.train_dataset.taskers.images_creators.concrete_creators.txt_images_creator import TxtImagesCreator
 
 
 class ErrorsSaver:

@@ -3,8 +3,8 @@ from typing import Optional, Callable
 from sklearn.linear_model import LogisticRegression
 
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
-from doc_reader.train_dataset.data_structures.line_with_label import LineWithLabel
-from doc_reader.train_dataset.trainer.base_sklearn_line_classifier import BaseSklearnLineClassifierTrainer
+from dedoc.train_dataset.data_structures.line_with_label import LineWithLabel
+from dedoc.train_dataset.trainer.base_sklearn_line_classifier import BaseSklearnLineClassifierTrainer
 
 
 class LogRegLineClassifierTrainer(BaseSklearnLineClassifierTrainer):

@@ -11,8 +11,8 @@ import pandas as pd
 import wget
 from torch.utils.data import Dataset
 
-from doc_reader.train_dataset.data_structures.line_with_label import LineWithLabel
-from doc_reader.train_dataset.extractors.line_with_meta_extractor import LineWithMetaExtractor
+from dedoc.train_dataset.data_structures.line_with_label import LineWithLabel
+from dedoc.train_dataset.extractors.line_with_meta_extractor import LineWithMetaExtractor
 from dedoc.utils.utils import flatten
 
 

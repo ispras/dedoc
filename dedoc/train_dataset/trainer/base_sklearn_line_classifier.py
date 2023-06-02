@@ -15,12 +15,11 @@ from tqdm import tqdm
 from xgboost import XGBClassifier
 
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
-from doc_reader.train_dataset.data_structures.line_with_label import LineWithLabel
-from doc_reader.train_dataset.trainer.data_loader import DataLoader
-from doc_reader.train_dataset.trainer.dataset import LineClassifierDataset
-from doc_reader.train_dataset.trainer.errors_saver import ErrorsSaver
-from dedoc.utils.utils import flatten
-from doc_reader.utils.utils import identity
+from dedoc.train_dataset.data_structures.line_with_label import LineWithLabel
+from dedoc.train_dataset.trainer.data_loader import DataLoader
+from dedoc.train_dataset.trainer.dataset import LineClassifierDataset
+from dedoc.train_dataset.trainer.errors_saver import ErrorsSaver
+from dedoc.utils.utils import flatten, identity
 
 
 class BaseClassifier(XGBClassifier):
