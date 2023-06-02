@@ -41,6 +41,7 @@ class RawTextReader(BaseReader):
         This method returns only document lines, some types of the lines (e.g. `list_item`) may be found using regular expressions.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
+        parameters = {} if parameters is None else parameters
         encoding = self.__get_encoding(path=path, parameters=parameters)
         lines = self._get_lines_with_meta(path=path, encoding=encoding)
         encoding_warning = "encoding is {}".format(encoding)

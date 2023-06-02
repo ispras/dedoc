@@ -1,0 +1,11 @@
+{
+"title": "<h1>some title for test</h1>",
+"body": "<h1>Header1</h1><p>some text for test</p><h2>Header2</h2><p>some text after header 2</p>",
+"another_field": [1, 2, 3],
+"test": 4,
+"log": true,
+"text": "simple raw text field",
+"lists": [[1, 2, 3], "123", {"1": 3, "4": [6]}],
+"deep_key1": { "deep_key2": { "deep_key3": "<html><h1>Only h1</h1></html>" }},
+"example": "<!DOCTYPE html><html><head>    <title></title></head><body><h1>Example doc</h1><!-- TEST COMMENT --><h2>Title 1</h2><p>Some <a href='/'>definitions</a></p><h3>Article 1</h3><span>Define definitions</span><div><h3>Article 2</h3><p>Give answers</p></div><table>    <tr><td>N</td><td>Surname</td><td>Name</td><td>Organization</td><td>Phone</td><td>Info</td></tr>    <tr><td>1</td><td>Ivanov</td><td>Ivan</td><td>ISP</td><td>8-800</td><td></td></tr></table></body></html>"
+}

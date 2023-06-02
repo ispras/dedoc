@@ -14,6 +14,30 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
     def _get_abs_path(self, file_name: str) -> str:
         return os.path.join(self.data_directory_path, "laws", file_name)
 
+    def test_law_txt(self) -> None:
+        file_name = "коап_москвы_8_7_2015_utf.txt"
+        result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
+        content = result["content"]
+        self.assertEqual([], content["tables"])
+        structure = content["structure"]
+        body = self._get_body(structure)
+        self.assertIn("ЗАКОН", structure["text"])
+        self.assertEqual(0, structure["metadata"]["line_id"])
+        self.assertEqual("root", structure["metadata"]["paragraph_type"])
+        self.assertEqual("Статья   1.1.   Законодательство   города   Москвы   об    административных",
+                         body["subparagraphs"][0]["text"].split("\n")[0].strip())
+        self.assertTrue(body["subparagraphs"][2]["text"].strip().startswith("Статья"))
+
+    def test_law_html(self) -> None:
+        file_name = "doc_Правовые акты_0A1B19DB-15D0-47BC-B559-76DA41A36105_27.html"
+
+        result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
+        document_tree = result["content"]["structure"]
+        self.__test_law_tree_sanity(document_tree)
+        body = self._get_body(document_tree)
+        self.assertEqual("articlePart", body["subparagraphs"][0]["metadata"]["paragraph_type"])
+        self.assertIn('У К А З', document_tree["text"])
+
     def test_law_image(self) -> None:
         file_name = "law_image.png"
         result = self._send_request(file_name, dict(document_type="law"))
@@ -401,7 +425,7 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
 
     def test_chapter_article(self) -> None:
         file_name = "14_dev_direct.pdf"
-        result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
+        result = self._send_request(file_name, dict(document_type="law", pdf_with_text_layer="false"), expected_code=200)
         tree = result["content"]["structure"]
         self.__test_law_tree_sanity(tree)
 
@@ -444,6 +468,169 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         node = self._get_by_tree_path(tree, "0.0.0.0.0.0")
         self.assertEqual("Настоящим Федеральным законом", node["text"][:30].strip())
         self.assertEqual("raw_text", node["metadata"]["paragraph_type"])
+
+    def test_law_with_super_elements(self) -> None:
+        file_name = "with_super_elems.html"
+
+        result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
+        document_tree = result["content"]["structure"]
+        self.__test_law_tree_sanity(document_tree)
+        node = self._get_by_tree_path(document_tree, "0.0.0")
+        self.assertEqual("РАЗДЕЛ I\nОБЩИЕ ПОЛОЖЕНИЯ", node["text"].strip())
+        self.assertEqual("section", node["metadata"]["paragraph_type"])
+
+        node = self._get_by_tree_path(document_tree, "0.0.0.0")
+        self.assertEqual("Глава 1. ОСНОВНЫЕ ПОЛОЖЕНИЯ", node["text"].strip())
+        self.assertEqual("chapter", node["metadata"]["paragraph_type"])
+
+        node = self._get_by_tree_path(document_tree, "0.0.0.0.14")
+        self.assertEqual("Статья 16. Обязательность судебных актов", node["text"].strip())
+        self.assertEqual("article", node["metadata"]["paragraph_type"])
+
+        # source html-document had "Статья 16^1"
+        node = self._get_by_tree_path(document_tree, "0.0.0.0.15")
+        self.assertEqual("Статья 161. Переход к рассмотрению дела по правилам гражданского судопроизводства",
+                         node["text"].strip())
+        self.assertEqual("article", node["metadata"]["paragraph_type"])
+
+    def test_law_html_with_table(self) -> None:
+        file_name = "doc_000008.html"
+
+        result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
+
+        tables = result["content"]["tables"]
+        tree = result["content"]["structure"]
+        self.__test_law_tree_sanity(tree)
+        self.assertEqual(1, len(tables))
+        table = tables[0]["cells"]
+        self.assertListEqual(["№\nп/п", "", "Ф.И.О.", "Должность"], list(map(str.strip, table[0])))
+        self.assertListEqual(["1",
+                              "Председатель\nкомиссии",
+                              "Городецкий \n\nЯрослав Иванович",
+                              "первый заместитель министра"],
+                             list(map(str.strip, table[1])))
+
+        self.assertEqual("начальник управления по гражданской обороне, чрезвычайным ситуациям и пожарной безопасности",
+                         table[8][3].strip())
+
+    def test_law_html_with_part_item_quotes(self) -> None:
+        # документ разбирается как ФОИВ, тип вершин меняется. Тест теряет смысл в этом контексте
+        file_name = "doc_000000.html"
+
+        result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
+        document_tree = result["content"]["structure"]
+        self.__test_law_tree_sanity(document_tree)
+        item = self._get_by_tree_path(document_tree, "0.0.0")
+        self.assertEqual('articlePart', item["metadata"]["paragraph_type"])
+        # Спека на ФОИВы говорит: Пункты нумеруются арабскими цифрами с точкой и заголовков не имеют.
+        self.assertEqual("1.", item["text"].strip())
+        subitem = self._get_by_tree_path(document_tree, "0.0.0.1")
+        self.assertEqual('item', subitem['metadata']['paragraph_type'])
+        self.assertEqual('1)', subitem['text'].strip())
+        # цитата
+        quotation = self._get_by_tree_path(document_tree, "0.0.0.1.2")
+        self.assertEqual('raw_text', quotation['metadata']['paragraph_type'])
+        self.assertTrue(quotation['text'].strip().startswith('16)'))
+        subitem = self._get_by_tree_path(document_tree, "0.0.0.2")
+        self.assertEqual('item', subitem['metadata']['paragraph_type'])
+        self.assertEqual('2)', subitem['text'].strip())
+        quotation = self._get_by_tree_path(document_tree, "0.0.0.2.2")
+        self.assertEqual('raw_text', quotation['metadata']['paragraph_type'])
+        self.assertTrue(quotation['text'].strip().startswith('1.'))
+
+    def test_law_html_with_applications(self) -> None:
+        file_name = "with_applications.html"
+
+        result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
+        document_tree = result["content"]["structure"]
+        self.__test_law_tree_sanity(document_tree)
+
+        cellar = self._get_by_tree_path(document_tree, "0.1")
+        self.assertEqual('Торбеевского муниципального ра', cellar["text"][:30])
+        self.assertEqual('cellar', cellar["metadata"]["paragraph_type"])
+
+        application1 = self._get_by_tree_path(document_tree, "0.2")
+        self.assertIn('Приложение 1', application1["text"])
+        application2 = self._get_by_tree_path(document_tree, "0.3")
+        self.assertIn('Приложение  1', application2["text"])  # there are two Приложение 1 applications in the document
+        application3 = self._get_by_tree_path(document_tree, "0.4")
+        self.assertIn("Приложение   2", application3["text"])
+        application4 = self._get_by_tree_path(document_tree, "0.5")
+        self.assertIn("Приложение   3", application4["text"])
+        application5 = self._get_by_tree_path(document_tree, "0.6")
+        self.assertIn("Приложение  4", application5["text"])
+
+    def test_law_html_with_applications_after_header(self) -> None:
+        file_name = "with_applications_after_header.html"
+
+        result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
+        document_tree = result["content"]["structure"]
+        applications = self._get_applications(document_tree)
+        self.__test_law_tree_sanity(document_tree)
+
+        self.assertIn('Приложение\nк приказу МВД России\nот __.__.2019 '
+                      'N ___\nПЕРЕЧЕНЬ\nИЗМЕНЕНИЙ, ВНОСИМЫХ В НОРМАТИВНЫЕ ПРАВОВЫЕ АКТЫ МВД РОССИИ',
+                      applications[0]['text'])
+
+    def test_foiv_html(self) -> None:
+        """
+        Check hierarchy parsing application -> chapter ( IV. ) -> item ( 4. ) -> item ( 4.2 ) -> item ( 4.2.1 )
+        @return:
+        """
+        file_name = "prikaz_2.html"
+        result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
+        document_tree = result["content"]["structure"]
+
+        node = self._get_by_tree_path(document_tree, "0.1.")
+        self.assertEqual("Министр\nВ.Н. Фальков", node["text"].strip())
+        self.assertEqual("cellar", node['metadata']['paragraph_type'])
+
+        application1 = self._get_by_tree_path(document_tree, "0.2")["text"].strip()
+        self.assertTrue(application1.startswith("Приложение"))
+        self.assertIn("Утвержден", application1)
+        self.assertTrue(application1.endswith("ЭКОНОМИЧЕСКАЯ БЕЗОПАСНОСТЬ"))
+
+        node = self._get_by_tree_path(document_tree, "0.2.0")
+        self.assertEqual("I. Общие положения", node["text"].strip())
+        self.assertEqual("chapter", node['metadata']['paragraph_type'])
+
+        node = self._get_by_tree_path(document_tree, "0.2.1")
+        self.assertEqual("II. Требования к структуре программы специалитета", node["text"].strip())
+        self.assertEqual("chapter", node['metadata']['paragraph_type'])
+
+        node = self._get_by_tree_path(document_tree, "0.2.2")
+        self.assertEqual("III. Требования к результатам освоения\nпрограммы специалитета", node["text"].strip())
+        self.assertEqual("chapter", node['metadata']['paragraph_type'])
+
+        node = self._get_by_tree_path(document_tree, "0.2.3")
+        self.assertEqual("IV. Требования к условиям реализации программы специалитета", node["text"].strip())
+        self.assertEqual("chapter", node['metadata']['paragraph_type'])
+
+        node = self._get_by_tree_path(document_tree, "0.2.3.0")
+        self.assertEqual("4.1.", node["text"].strip())
+        self.assertEqual("item", node['metadata']['paragraph_type'])
+        node = self._get_by_tree_path(document_tree, "0.2.3.1")
+        self.assertEqual("4.2.", node["text"].strip())
+        self.assertEqual("item", node['metadata']['paragraph_type'])
+        node = self._get_by_tree_path(document_tree, "0.2.3.1.1")
+        self.assertEqual("4.2.1.", node["text"].strip())
+        self.assertEqual("item", node['metadata']['paragraph_type'])
+
+    @unittest.skip("TODO fix this")
+    def test_number_not_part(self) -> None:
+        file_name = "31(1).txt"
+        result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
+        document_tree = result["content"]["structure"]
+        self.__test_law_tree_sanity(document_tree)
+        node = self._get_by_tree_path(document_tree, "0.0.3.5.0.0")
+        self.assertTrue(node["text"].strip().endswith("2 настоящей статьи."))
+        self.assertEqual("raw_text", node['metadata']['paragraph_type'])
+
+    def test_html_invisible_table(self) -> None:
+        file_name = "invisibly_table4.html"
+        result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
+        tree = result["content"]["structure"]
+        self.__test_law_tree_sanity(tree)
 
     def __test_law_tree_sanity(self, tree: Dict[str, dict]) -> None:
         self._check_tree_sanity(tree)

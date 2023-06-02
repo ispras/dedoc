@@ -158,7 +158,6 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         self.assertListEqual(['Иванов', 'Иван', 'Иванович'], cells[1])
         self.assertListEqual(['Петров', 'Пётр', 'Петрович'], cells[2])
 
-    @unittest.skip("unskip when pdf_with_text_layer=true work")
     def test_tables_annotations(self) -> None:
         file_name = "two_column_document.pdf"
         result = self._send_request(file_name, data={"pdf_with_text_layer": "true"})
@@ -168,10 +167,7 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         self.assertEqual(3, len(tables))
         self._check_tree_sanity(tree)
         lines = tree2linear(tree)
-        expected_lines = ["Sections 1 through 9 of this document.",
-                          "additions",
-                          "line"
-                          ]
+        expected_lines = ["Sections 1 through 9 of this document.", "additions", "line"]
         for line in lines:
             annotations = [a for a in line["annotations"] if a["name"] == "table"]
             for annotation in annotations:

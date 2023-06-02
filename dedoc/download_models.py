@@ -12,6 +12,7 @@ These are versions of the models that are used at the current moment - hashes of
 Keys are the names of repositories with models.
 """
 model_hash_dict = dict(
+    catboost_detect_tl_correctness="cafb0684f59d49c9daca0bfd2ede216955cb457e",
     scan_orientation_efficient_net_b0="0160965f8a920d12afacf62b8a5a8a3b365b11ef",
     font_classifier="db4481ad60ab050cbb42079b64f97f9e431feb07",
     paragraph_classifier="00bf989876cec171c1cf9859a6b712af6445e864",
@@ -26,6 +27,10 @@ def download_from_hub(out_dir: str, out_name: str, repo_name: str, hub_name: str
 
 
 def download(resources_path: str) -> None:
+    download_from_hub(out_dir=resources_path,
+                      out_name="catboost_detect_tl_correctness.pth",
+                      repo_name="catboost_detect_tl_correctness",
+                      hub_name="model.pkl.gz")
 
     download_from_hub(out_dir=resources_path,
                       out_name="scan_orientation_efficient_net_b0.pth",

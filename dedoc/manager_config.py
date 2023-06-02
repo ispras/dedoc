@@ -1,4 +1,5 @@
 from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
+from dedoc.converters.concrete_converters.binary_converter import BinaryConverter
 from dedoc.converters.concrete_converters.docx_converter import DocxConverter
 from dedoc.converters.concrete_converters.excel_converter import ExcelConverter
 from dedoc.converters.concrete_converters.pdf_converter import PDFConverter
@@ -9,18 +10,23 @@ from dedoc.converters.file_converter import FileConverterComposition
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.metadata_extractors.concrete_metadata_extractors.docx_metadata_extractor import DocxMetadataExtractor
 from dedoc.metadata_extractors.concrete_metadata_extractors.image_metadata_extractor import ImageMetadataExtractor
+from dedoc.metadata_extractors.concrete_metadata_extractors.note_metadata_extarctor import NoteMetadataExtractor
 from dedoc.metadata_extractors.concrete_metadata_extractors.pdf_metadata_extractor import PdfMetadataExtractor
 from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
 from dedoc.readers.archive_reader.archive_reader import ArchiveReader
+from dedoc.readers.auto_pdf_reader.auto_pdf_reader import AutoPdfReader
 from dedoc.readers.csv_reader.csv_reader import CSVReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
+from dedoc.readers.email_reader.email_reader import EmailReader
 from dedoc.readers.excel_reader.excel_reader import ExcelReader
 from dedoc.readers.html_reader.html_reader import HtmlReader
 from dedoc.readers.json_reader.json_reader import JsonReader
 from dedoc.readers.mhtml_reader.mhtml_reader import MhtmlReader
+from dedoc.readers.note_reader.note_reader import NoteReader
 from dedoc.readers.pptx_reader.pptx_reader import PptxReader
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.readers.scanned_reader.pdfscanned_reader.pdf_scan_reader import PdfScanReader
+from dedoc.readers.scanned_reader.pdftxtlayer_reader.pdf_with_text_reader import PdfWithTextReader
 from dedoc.readers.scanned_reader.pdftxtlayer_reader.tabby_pdf_reader import TabbyPDFReader
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from dedoc.structure_constructors.concrete_structure_constructors.linear_constructor import LinearConstructor
@@ -44,7 +50,8 @@ def get_manager_config(config: dict) -> dict:
         PptxConverter(config=config),
         TxtConverter(config=config),
         PDFConverter(config=config),
-        PNGConverter(config=config)
+        PNGConverter(config=config),
+        BinaryConverter(config=config)
     ]
     readers = [
         DocxReader(config=config),
@@ -53,17 +60,22 @@ def get_manager_config(config: dict) -> dict:
         CSVReader(),
         HtmlReader(config=config),
         RawTextReader(config=config),
+        NoteReader(config=config),
         JsonReader(),
         ArchiveReader(config=config),
+        AutoPdfReader(config=config),
         TabbyPDFReader(config=config),
+        PdfWithTextReader(config=config),
         PdfScanReader(config=config),
-        MhtmlReader(config=config)
+        MhtmlReader(config=config),
+        EmailReader(config=config)
     ]
 
     metadata_extractors = [
         DocxMetadataExtractor(),
         PdfMetadataExtractor(config=config),
         ImageMetadataExtractor(config=config),
+        NoteMetadataExtractor(),
         BaseMetadataExtractor()
     ]
 
