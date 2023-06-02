@@ -163,7 +163,6 @@ def upload_archive(file: UploadFile = File(...), query_params: TrainDatasetParam
     """
     clear()
     parameters = query_params.dict(by_alias=True)
-    print(parameters)
     uid = handler.handle(file=file, parameters=parameters)
     return HTMLResponse(
         f'Successfully handle file. UID=<p><a href="/get_result_archive/?uid={uid}">get_result_archive/?uid={uid}</a></p>',
