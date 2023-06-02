@@ -4,10 +4,10 @@ from typing import List
 import cv2
 import numpy as np
 
-from dedoc.readers.scanned_reader.data_classes.tables.scantable import ScanTable
-from dedoc.readers.scanned_reader.table_recognizer.table_recognizer import TableRecognizer
-from dedoc.readers.scanned_reader.table_recognizer.table_utils.accuracy_table_rec import get_quantitative_parameters
-from dedoc.readers.scanned_reader.table_recognizer.table_utils.utils import equal_with_eps, similarity as utils_similarity
+from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import TableRecognizer
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.accuracy_table_rec import get_quantitative_parameters
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.utils import equal_with_eps, similarity as utils_similarity
 from tests.test_utils import get_test_config, get_full_path
 
 

@@ -3,7 +3,7 @@ import unittest
 import cv2
 
 from tests.test_utils import get_test_config
-from dedoc.readers.scanned_reader.pdfscanned_reader.scan_rotator import ScanRotator
+from dedoc.readers.pdf_reader.pdf_image_reader.scan_rotator import ScanRotator
 
 
 class TestScanRotator(unittest.TestCase):

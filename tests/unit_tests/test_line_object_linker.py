@@ -1,10 +1,10 @@
 import unittest
 
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
-from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
-from dedoc.readers.scanned_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
-from dedoc.readers.scanned_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
-from dedoc.readers.scanned_reader.utils.line_object_linker import LineObjectLinker
+from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
+from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
+from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
 from tests.test_utils import get_test_config, create_line_by_coordinates
 
 

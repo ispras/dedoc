@@ -4,9 +4,9 @@ import unittest
 from PIL import Image
 
 from dedoc.data_structures.bbox import BBox
-from dedoc.readers.scanned_reader.data_classes.page_with_bboxes import PageWithBBox
-from dedoc.readers.scanned_reader.data_classes.text_with_bbox import TextWithBBox
-from dedoc.readers.scanned_reader.line_metadata_extractor.font_type_classifier import FontTypeClassifier
+from dedoc.readers.pdf_reader.data_classes.page_with_bboxes import PageWithBBox
+from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
+from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.font_type_classifier import FontTypeClassifier
 from tests.test_utils import get_test_config
 
 

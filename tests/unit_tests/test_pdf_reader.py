@@ -7,10 +7,10 @@ import cv2
 import re
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.readers.scanned_reader.pdfscanned_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
-from dedoc.readers.scanned_reader.pdfscanned_reader.pdf_scan_reader import PdfScanReader
-from dedoc.readers.scanned_reader.pdfscanned_reader.scan_rotator import ScanRotator
-from dedoc.readers.scanned_reader.pdftxtlayer_reader.pdf_with_text_reader import PdfWithTextReader
+from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
+from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
+from dedoc.readers.pdf_reader.pdf_image_reader.scan_rotator import ScanRotator
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_with_text_reader import PdfWithTextReader
 from tests.test_utils import get_test_config
 
 
@@ -113,7 +113,7 @@ class TestPDFReader(unittest.TestCase):
 
     def test_long_list_pdf(self) -> None:
         config = get_test_config()
-        any_doc_reader = PdfScanReader(config=config)
+        any_doc_reader = PdfImageReader(config=config)
         path = os.path.join(os.path.dirname(__file__), "../data/scanned/doc_with_long_list.pdf")
         result = any_doc_reader.read(path, document_type=None, parameters={"need_pdf_table_analysis": "False"})
         list_elements = result.lines[1:]
