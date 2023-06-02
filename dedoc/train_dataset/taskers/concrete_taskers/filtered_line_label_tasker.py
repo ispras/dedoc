@@ -1,12 +1,11 @@
 from typing import List, Callable
 
-from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.line_metadata import LineMetadata
-
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor
 from dedoc.train_dataset.taskers.concrete_taskers.line_label_tasker import LineLabelTasker
-from dedoc.train_dataset.taskers.images_creators.concrete_creators.scanned_images_creator import \
-    ScannedImagesCreator
+from dedoc.train_dataset.taskers.images_creators.concrete_creators.docx_images_creator import DocxImagesCreator
+from dedoc.train_dataset.taskers.images_creators.concrete_creators.scanned_images_creator import ScannedImagesCreator
 from dedoc.train_dataset.taskers.images_creators.image_creator_composition import ImageCreatorComposition
 
 
@@ -27,7 +26,8 @@ class FilteredLineLabelTasker(LineLabelTasker):
                          item2label, config=config)
         # we can use page numbers only in pdf
         self.images_creators = ImageCreatorComposition(creators=[
-            ScannedImagesCreator(path2docs=self.path2docs)
+            ScannedImagesCreator(path2docs=self.path2docs),
+            DocxImagesCreator(path2docs=self.path2docs, config=config)
         ])
         self.toc_extractor = TOCFeatureExtractor()
 

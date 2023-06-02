@@ -111,24 +111,29 @@ class TestTasker(unittest.TestCase):
 
     def test_images_creators(self) -> None:
         test_dict = {'english_doc.docx': 3, 'txt_example.txt': 7}
-        path2docs = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "images_creator"))
-        images_creators = [DocxImagesCreator(path2docs, config=get_test_config()), TxtImagesCreator(path2docs, config=get_test_config())]
         config = get_test_config()
         config["labeling_mode"] = True
+        path2docs = get_path_original_documents(config)
+        files_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "images_creator"))
+        images_creators = [DocxImagesCreator(path2docs, config=get_test_config()), TxtImagesCreator(path2docs, config=get_test_config())]
+
         test_manager = DedocManager.from_config(version="0", manager_config=self.__create_test_manager_config(config), config=config)
-        for doc in os.listdir(path2docs):
+        for doc in os.listdir(files_dir):
             if not doc.endswith(('docx', 'txt')):
                 continue
 
             with tempfile.TemporaryDirectory() as tmp_dir:
                 with zipfile.ZipFile(os.path.join(tmp_dir, "archive.zip"), "w") as archive:
-                    _ = test_manager.parse_file(os.path.join(path2docs, doc), dict(document_type="law"), os.path.join(path2docs, doc))
-                    path = os.path.join(get_path_original_documents(config), doc)
-                    self.assertTrue(os.path.isfile(path))
+                    _ = test_manager.parse_file(file_path=os.path.join(files_dir, doc),
+                                                parameters=dict(document_type="law"),
+                                                original_file_name=doc)
                     lines_path = os.path.join(config["intermediate_data_path"], "lines.jsonlines")
                     self.assertTrue(os.path.isfile(lines_path))
                     with open(lines_path, "r") as f:
                         lines = [json.loads(line) for line in f]
+                    original_doc = lines[0]["original_document"]
+                    path = os.path.join(get_path_original_documents(config), original_doc)
+                    self.assertTrue(os.path.isfile(path))
                     for images_creator in images_creators:
                         if images_creator.can_read(lines):
                             images_creator.add_images(page=lines, archive=archive)
