@@ -39,6 +39,7 @@ python-logstash-async==2.5.0
 python-multipart==0.0.6
 starlette==0.26.1
 # TODO remove all flask
+Werkzeug==2.0.3
 Flask==2.0.3
 flask_cors==3.0.10
 flask-restx==0.5.1
