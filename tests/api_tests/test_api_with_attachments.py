@@ -79,7 +79,7 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         self.assertGreater(len(attachments[1]["content"]["structure"]["subparagraphs"]), 0)
 
     def test_get_without_attachments(self) -> None:
-        file_name = "example_with_attachments_depth_1.pdf"
+        file_name = "with_attachments/example_with_attachments_depth_1.pdf"
         result = self._send_request(file_name, dict(with_attachments=False))
         self.assertEqual([], result['attachments'])
 
@@ -142,7 +142,7 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         self.assertEqual(len(attachments), 5)
 
     def test_docx_attachments(self) -> None:
-        file_name = 'with_attachments_docx/with_attachments_0.docx'
+        file_name = 'with_attachments/with_attachments_0.docx'
         result = self._send_request(file_name, dict(with_attachments=True, need_content_analysis=True))
 
         attachments = result['attachments']

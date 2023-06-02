@@ -4,11 +4,10 @@ import tempfile
 import unittest
 from typing import List
 
-from dedoc.readers import ArchiveReader
-
 from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
 from dedoc.attachments_extractors.concrete_attachments_extractors.pptx_attachments_extractor import PptxAttachmentsExtractor
-from test_utils import get_test_config
+from dedoc.readers import ArchiveReader
+from tests.test_utils import get_test_config
 
 
 class TestAttachmentsExtractor(unittest.TestCase):

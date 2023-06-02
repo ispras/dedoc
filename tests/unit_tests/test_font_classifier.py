@@ -12,7 +12,7 @@ from tests.test_utils import get_test_config
 
 class TestFontClassifier(unittest.TestCase):
 
-    data_directory_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
+    data_directory_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "scanned"))
     dirname = os.path.dirname(__file__)
     path_model = os.path.abspath(os.path.join(get_test_config()["resources_path"], "font_classifier.pth"))
     classifier = FontTypeClassifier(path_model)

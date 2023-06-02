@@ -8,7 +8,7 @@ from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 
 
 class TestFoivApiDocreader(unittest.TestCase):
-    data_path = os.path.join(os.path.dirname(__file__), "..", "data")
+    data_path = os.path.join(os.path.dirname(__file__), "..", "data", "laws")
     data_path = os.path.abspath(data_path)
     law_extractors = {
         FoivLawStructureExtractor.document_type: FoivLawStructureExtractor(config={}),

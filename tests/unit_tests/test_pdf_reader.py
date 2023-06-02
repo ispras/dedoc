@@ -27,7 +27,7 @@ class TestPDFReader(unittest.TestCase):
 
     def test_scan_rotator(self) -> None:
         scan_rotator = ScanRotator(config=get_test_config())
-        imgs_path = ['../data/rotated_1.jpg', '../data/rotated_2.jpg', '../data/rotated_3.jpg', '../data/rotated_4.jpg']
+        imgs_path = [f'../data/scan_rotator/rotated_{i}.jpg' for i in range(1, 5)]
         angles = [0.061732858955328755, -0.017535263190370427, 0.12228411148417097, 0]
 
         for i in range(len(imgs_path)):
@@ -40,7 +40,7 @@ class TestPDFReader(unittest.TestCase):
 
     def test_scan_orientation(self) -> None:
         scan_rotator = ScanRotator(config=get_test_config())
-        imgs_path = ['../data/orient_1.png', '../data/orient_2.png', '../data/orient_3.png', '../data/orient_4.png']
+        imgs_path = [f'../data/scanned/orient_{i}.png'for i in range(1, 5)]
         angles = [90.0, 90.0, 270.0, 270.0]
         max_delta = 10.0
         for i in range(len(imgs_path)):
@@ -135,7 +135,7 @@ class TestPDFReader(unittest.TestCase):
     def test_pdf_text_layer(self) -> None:
         config = get_test_config()
         any_doc_reader = PdfWithTextReader(config=config)
-        path = os.path.join(os.path.dirname(__file__), "../data/english_doc.pdf")
+        path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer/english_doc.pdf")
         result = any_doc_reader.read(path, document_type=None, parameters={})
         for line in result.lines:
             # check that annotations not duplicated
