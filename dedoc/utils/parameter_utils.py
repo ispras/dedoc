@@ -68,7 +68,7 @@ def get_param_document_orientation(parameters: Optional[dict]) -> Optional[bool]
         return None
     document_orientation = str(parameters.get("document_orientation", "auto"))
     if document_orientation.lower() == "no_change":
-        return True
+        return False
     else:
         return None
 

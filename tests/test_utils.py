@@ -5,8 +5,8 @@ from typing import Union, List, Optional, Any
 
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.bbox import BBox
-from dedoc.readers.scanned_reader.data_classes.line_with_location import LineWithLocation
-from dedoc.readers.scanned_reader.data_classes.tables.location import Location
+from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
+from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 
 
 def get_full_path(path: str, file: str = __file__) -> str:

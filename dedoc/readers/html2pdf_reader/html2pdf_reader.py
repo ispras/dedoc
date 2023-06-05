@@ -13,7 +13,7 @@ from dedoc.data_structures.concrete_annotations.table_annotation import TableAnn
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.html_reader.html_reader import HtmlReader
-from dedoc.readers.scanned_reader.pdftxtlayer_reader.pdf_with_text_reader import PdfWithTextReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_with_text_reader import PdfWithTextReader
 
 
 class Html2PdfReader(HtmlReader):

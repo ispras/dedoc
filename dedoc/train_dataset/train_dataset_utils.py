@@ -8,7 +8,7 @@ import PIL
 from PIL.Image import Image
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.readers.scanned_reader.data_classes.page_with_bboxes import PageWithBBox
+from dedoc.readers.pdf_reader.data_classes.page_with_bboxes import PageWithBBox
 
 
 def __to_pil(image: np.ndarray) -> Image:

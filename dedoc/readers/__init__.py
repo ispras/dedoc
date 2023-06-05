@@ -8,10 +8,12 @@ from .json_reader.json_reader import JsonReader
 from .mhtml_reader.mhtml_reader import MhtmlReader
 from .pptx_reader.pptx_reader import PptxReader
 from .reader_composition import ReaderComposition
-from .scanned_reader.pdf_base_reader import PdfBase
-from .scanned_reader.pdfscanned_reader.pdf_scan_reader import PdfScanReader
-from .scanned_reader.pdftxtlayer_reader.tabby_pdf_reader import TabbyPDFReader
+from .pdf_reader.pdf_base_reader import PdfBaseReader
+from .pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
+from .pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
+from .pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
+from .pdf_reader.pdf_auto_reader.pdf_auto_reader import PdfAutoReader
 from .txt_reader.raw_text_reader import RawTextReader
 
 __all__ = ['ArchiveReader', 'BaseReader', 'CSVReader', 'DocxReader', 'ExcelReader', 'HtmlReader', 'JsonReader', 'MhtmlReader', 'PptxReader',
-           'ReaderComposition', 'PdfBase', 'PdfScanReader', 'TabbyPDFReader', 'RawTextReader']
+           'ReaderComposition', 'RawTextReader', 'PdfBaseReader', 'PdfImageReader', 'PdfTabbyReader', 'PdfTxtlayerReader', 'PdfAutoReader']

@@ -1,7 +1,7 @@
 import unittest
 
 from dedoc.data_structures.bbox import BBox
-from dedoc.readers.scanned_reader.data_classes.tables.location import Location
+from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 
 
 class TestLocation(unittest.TestCase):

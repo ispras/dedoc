@@ -1,7 +1,7 @@
 import unittest
 
-from dedoc.readers.scanned_reader.data_classes.tables.cell import Cell
-from dedoc.readers.scanned_reader.table_recognizer.cell_splitter import CellSplitter
+from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.cell_splitter import CellSplitter
 
 
 class TestCellSplitter(unittest.TestCase):
