@@ -7,8 +7,7 @@ from dedoc.train_dataset.data_structures.images_archive import ImagesArchive
 from dedoc.train_dataset.data_structures.task_item import TaskItem
 from dedoc.train_dataset.taskers.concrete_taskers.abstract_line_label_tasker import AbstractLineLabelTasker
 from dedoc.train_dataset.taskers.images_creators.concrete_creators.docx_images_creator import DocxImagesCreator
-from dedoc.train_dataset.taskers.images_creators.concrete_creators.scanned_images_creator import \
-    ScannedImagesCreator
+from dedoc.train_dataset.taskers.images_creators.concrete_creators.scanned_images_creator import ScannedImagesCreator
 from dedoc.train_dataset.taskers.images_creators.concrete_creators.txt_images_creator import TxtImagesCreator
 from dedoc.train_dataset.taskers.images_creators.image_creator_composition import ImageCreatorComposition
 

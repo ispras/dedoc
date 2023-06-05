@@ -14,7 +14,6 @@ from dedoc.metadata_extractors.concrete_metadata_extractors.note_metadata_extarc
 from dedoc.metadata_extractors.concrete_metadata_extractors.pdf_metadata_extractor import PdfMetadataExtractor
 from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
 from dedoc.readers.archive_reader.archive_reader import ArchiveReader
-from dedoc.readers.pdf_reader.pdf_auto_reader.pdf_auto_reader import PdfAutoReader
 from dedoc.readers.csv_reader.csv_reader import CSVReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.readers.email_reader.email_reader import EmailReader
@@ -23,11 +22,12 @@ from dedoc.readers.html_reader.html_reader import HtmlReader
 from dedoc.readers.json_reader.json_reader import JsonReader
 from dedoc.readers.mhtml_reader.mhtml_reader import MhtmlReader
 from dedoc.readers.note_reader.note_reader import NoteReader
+from dedoc.readers.pdf_reader.pdf_auto_reader.pdf_auto_reader import PdfAutoReader
+from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 from dedoc.readers.pptx_reader.pptx_reader import PptxReader
 from dedoc.readers.reader_composition import ReaderComposition
-from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from dedoc.structure_constructors.concrete_structure_constructors.linear_constructor import LinearConstructor
 from dedoc.structure_constructors.concrete_structure_constructors.tree_constructor import TreeConstructor

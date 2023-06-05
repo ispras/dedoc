@@ -3,7 +3,7 @@ import os
 from typing import Optional
 
 from dedoc.config import _config as config
-from dedoc.readers.scanned_reader.paragraph_extractor.paragraph_features import ParagraphFeatureExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.paragraph_features import ParagraphFeatureExtractor
 from dedoc.train_dataset.trainer.xgboost_line_classifier_trainer import XGBoostLineClassifierTrainer
 
 

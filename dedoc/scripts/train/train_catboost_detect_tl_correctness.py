@@ -8,7 +8,7 @@ from sklearn.metrics import f1_score
 import gzip
 import pickle
 
-from dedoc.readers.auto_pdf_reader.catboost_model_extractor import CatboostModelExtractor
+from dedoc.readers.pdf_reader.pdf_auto_reader.catboost_model_extractor import CatboostModelExtractor
 
 
 class GetTextAndTarget:

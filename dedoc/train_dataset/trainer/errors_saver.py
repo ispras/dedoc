@@ -10,10 +10,8 @@ import pandas as pd
 from tqdm import tqdm
 
 from dedoc.train_dataset.data_structures.images_archive import ImagesArchive
-from dedoc.train_dataset.taskers.images_creators.concrete_creators.abstract_images_creator import \
-    AbstractImagesCreator
-from dedoc.train_dataset.taskers.images_creators.concrete_creators.scanned_images_creator import \
-    ScannedImagesCreator
+from dedoc.train_dataset.taskers.images_creators.concrete_creators.abstract_images_creator import AbstractImagesCreator
+from dedoc.train_dataset.taskers.images_creators.concrete_creators.scanned_images_creator import ScannedImagesCreator
 from dedoc.train_dataset.taskers.images_creators.concrete_creators.txt_images_creator import TxtImagesCreator
 
 

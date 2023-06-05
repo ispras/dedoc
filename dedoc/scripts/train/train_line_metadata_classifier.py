@@ -26,7 +26,7 @@ from tqdm import tqdm
 
 
 from dedoc.data_structures.bbox import BBox
-from dedoc.readers.scanned_reader.line_metadata_extractor.font_type_classifier import FontTypeClassifier
+from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.font_type_classifier import FontTypeClassifier
 from dedoc.utils.image_utils import get_bbox_from_image
 
 parser = argparse.ArgumentParser(add_help=True)

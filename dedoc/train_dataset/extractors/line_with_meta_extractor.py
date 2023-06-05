@@ -5,17 +5,17 @@ from typing import List
 
 import numpy as np
 from PIL import Image
-from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.readers.docx_reader.docx_reader import DocxReader
-from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from pdf2image import convert_from_path
 from tqdm import tqdm
 
-from dedoc.readers.html_reader.html_reader import HtmlReader
 from dedoc.data_structures.bbox import BBox
-from dedoc.readers.scanned_reader.data_classes.page_with_bboxes import PageWithBBox
-from dedoc.readers.scanned_reader.data_classes.text_with_bbox import TextWithBBox
-from dedoc.readers.scanned_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
+from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.readers.docx_reader.docx_reader import DocxReader
+from dedoc.readers.html_reader.html_reader import HtmlReader
+from dedoc.readers.pdf_reader.data_classes.page_with_bboxes import PageWithBBox
+from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
+from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
+from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from dedoc.train_dataset.data_structures.images_archive import ImagesArchive
 from dedoc.train_dataset.data_structures.line_with_label import LineWithLabel
 

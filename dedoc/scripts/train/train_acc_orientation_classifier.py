@@ -9,10 +9,8 @@ from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader
 
-from dedoc.readers.scanned_reader.pdfscanned_reader.columns_orientation_classifier.columns_orientation_classifier \
-    import ColumnsOrientationClassifier
-from dedoc.readers.scanned_reader.pdfscanned_reader.columns_orientation_classifier.dataset_executor import \
-    DataLoaderImageOrient
+from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
+from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.dataset_executor import DataLoaderImageOrient
 
 
 parser = argparse.ArgumentParser()

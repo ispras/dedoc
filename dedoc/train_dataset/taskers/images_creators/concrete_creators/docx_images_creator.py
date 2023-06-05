@@ -19,7 +19,7 @@ from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.readers.docx_reader.data_structures.docx_document import DocxDocument
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
 from dedoc.readers.docx_reader.docx_reader import DocxReader
-from dedoc.readers.scanned_reader.pdfscanned_reader.pdf_scan_reader import PdfScanReader
+from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
 from dedoc.train_dataset.train_dataset_utils import get_original_document_path
 
 from dedoc.train_dataset.taskers.images_creators.concrete_creators.abstract_images_creator import AbstractImagesCreator
@@ -226,7 +226,7 @@ class DocxImagesCreator(AbstractImagesCreator):
         @param tmp_dir: path where we save intermediate images
         @return:
         """
-        scan_reader = PdfScanReader(config=self.config)
+        scan_reader = PdfImageReader(config=self.config)
         many_color_images = scan_reader._get_images(pdfs.many_color_pdf)
         two_color_images = scan_reader._get_images(pdfs.two_color_pdf)
         uid2path = defaultdict(list)
