@@ -10,9 +10,10 @@ from .pptx_reader.pptx_reader import PptxReader
 from .reader_composition import ReaderComposition
 from .pdf_reader.pdf_base_reader import PdfBaseReader
 from .pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
-from .pdf_reader.pdf_txtlayer_reader.tabby_pdf_reader import TabbyPDFReader
-from .pdf_reader.auto_pdf_reader.auto_pdf_reader import AutoPdfReader
+from .pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
+from .pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
+from .pdf_reader.pdf_auto_reader.pdf_auto_reader import PdfAutoReader
 from .txt_reader.raw_text_reader import RawTextReader
 
 __all__ = ['ArchiveReader', 'BaseReader', 'CSVReader', 'DocxReader', 'ExcelReader', 'HtmlReader', 'JsonReader', 'MhtmlReader', 'PptxReader',
-           'ReaderComposition', 'PdfBaseReader', 'PdfImageReader', 'TabbyPDFReader', 'RawTextReader', 'AutoPdfReader']
+           'ReaderComposition', 'RawTextReader', 'PdfBaseReader', 'PdfImageReader', 'PdfTabbyReader', 'PdfTxtlayerReader', 'PdfAutoReader']

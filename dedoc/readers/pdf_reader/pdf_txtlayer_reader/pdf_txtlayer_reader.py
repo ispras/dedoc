@@ -11,9 +11,11 @@ from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
 from dedoc.data_structures.bbox import BBox
 
 
-class PdfWithTextReader(PdfBaseReader):
+class PdfTxtlayerReader(PdfBaseReader):
     """
-     Class Pdf with text layer extractor
+     Class Pdf with text layer extractor.
+     This handler uses a pdfminer library for content extraction.
+     For using this class you need set a parameter pdf_with_text_layer=['yes', 'auto'].
     """
 
     def __init__(self, *, config: dict) -> None:

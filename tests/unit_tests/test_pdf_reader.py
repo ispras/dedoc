@@ -10,7 +10,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
 from dedoc.readers.pdf_reader.pdf_image_reader.scan_rotator import ScanRotator
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_with_text_reader import PdfWithTextReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 from tests.test_utils import get_test_config
 
 
@@ -52,7 +52,7 @@ class TestPDFReader(unittest.TestCase):
 
     def test_header_footer_search(self) -> None:
         config = get_test_config()
-        any_doc_reader = PdfWithTextReader(config=config)
+        any_doc_reader = PdfTxtlayerReader(config=config)
         with TemporaryDirectory() as tmpdir:
             filename = "prospectus.pdf"
             path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer", filename)
@@ -71,7 +71,7 @@ class TestPDFReader(unittest.TestCase):
 
     def test_header_footer_search_2(self) -> None:
         config = get_test_config()
-        any_doc_reader = PdfWithTextReader(config=config)
+        any_doc_reader = PdfTxtlayerReader(config=config)
         with TemporaryDirectory() as tmpdir:
             filename = "with_changed_header_footer.pdf"
             path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer", filename)
@@ -92,7 +92,7 @@ class TestPDFReader(unittest.TestCase):
 
     def test_header_footer_search_3(self) -> None:
         config = get_test_config()
-        any_doc_reader = PdfWithTextReader(config=config)
+        any_doc_reader = PdfTxtlayerReader(config=config)
         with TemporaryDirectory() as tmpdir:
             filename = "with_header_footer_2.pdf"
             path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer", filename)
@@ -134,7 +134,7 @@ class TestPDFReader(unittest.TestCase):
 
     def test_pdf_text_layer(self) -> None:
         config = get_test_config()
-        any_doc_reader = PdfWithTextReader(config=config)
+        any_doc_reader = PdfTxtlayerReader(config=config)
         path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer/english_doc.pdf")
         result = any_doc_reader.read(path, document_type=None, parameters={})
         for line in result.lines:

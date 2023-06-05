@@ -10,7 +10,7 @@ from dedoc.utils.utils import get_batch
 
 class ScanRotator:
     """
-    Correct document skew
+    Class corrects document's skew.
     """
     def __init__(self, *, config: dict) -> None:
         self.delta = 1  # step

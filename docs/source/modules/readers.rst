@@ -58,12 +58,17 @@ dedoc.readers
     :special-members: __init__
     :members:
 
-.. autoclass:: dedoc.readers.TabbyPDFReader
+.. autoclass:: dedoc.readers.PdfTabbyReader
     :show-inheritance:
     :special-members: __init__
     :members:
 
-.. autoclass:: dedoc.readers.AutoPdfReader
+.. autoclass:: dedoc.readers.PdfTxtlayerReader
+    :show-inheritance:
+    :special-members: __init__
+    :members:
+
+.. autoclass:: dedoc.readers.PdfAutoReader
     :show-inheritance:
     :special-members: __init__
     :members:

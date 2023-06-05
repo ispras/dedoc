@@ -12,21 +12,33 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.tabby_pdf_reader import TabbyPDFReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
 from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
 from dedoc.utils.pdf_utils import get_page_slice, get_page_image, get_pdf_page_count
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_with_text_reader import PdfWithTextReader
-from dedoc.readers.pdf_reader.auto_pdf_reader.pdf_textlayer_correctness import PdfTextLayerCorrectness
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
+from dedoc.readers.pdf_reader.pdf_auto_reader.pdf_txtlayer_correctness import PdfTextLayerCorrectness
 
 
 # TODO delete parameter is_one_column_document_list
-class AutoPdfReader(BaseReader):
+class PdfAutoReader(BaseReader):
+    """
+    This class allows extract content from the .pdf documents.
+    Pdf-documents can be with a textual layer (copyable documents) or without a textual layer.
+
+    PdfAutoReader calls a method, which detects Pdf has a correctness textual layes:
+
+    * if pdf-document has correctness textual layer then call classes :class:`~dedoc.readers.PdfTxtLayerReader` or  :class:`~dedoc.readers.PdfTabbyReader` for document's content extraction.
+
+    * if pdf-document hasn't correctness textual layer then call  :class:`~dedoc.readers.PdfImageReader` for document's content extraction like scanned document.
+
+    For using this class you need set a parameter pdf_with_text_layer=['auto_tabby', 'auto'].
+    """
 
     def __init__(self, *, config: dict) -> None:
-        self.pdf_parser = PdfWithTextReader(config=config)
-        self.tabby_parser = TabbyPDFReader(config=config)
+        self.pdf_parser = PdfTxtlayerReader(config=config)
+        self.tabby_parser = PdfTabbyReader(config=config)
         self.pdf_image_reader = PdfImageReader(config=config)
         self.config = config
         self.logger = config.get("logger", logging.getLogger())

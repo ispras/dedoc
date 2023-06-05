@@ -21,9 +21,12 @@ from dedoc.utils import supported_image_types
 
 class PdfImageReader(PdfBaseReader):
     """
-    This class allows extract content from the .pdf documents without a textual layer (not copyable documents),
+    This class allows to extract content from the .pdf documents without a textual layer (not copyable documents),
     as well as from images (scanned documents).
+    Here Table Detection, Table Recognition, BoldTextDetector and Tesseract OCR are called for extraction textual and table information \
+    from documents content.
     """
+
     def __init__(self, *, config: dict) -> None:
         """
         :param config: configuration of the reader, e.g. logger for logging

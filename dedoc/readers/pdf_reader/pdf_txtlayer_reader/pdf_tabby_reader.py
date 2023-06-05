@@ -32,10 +32,14 @@ from dedoc.structure_extractors.feature_extractors.list_features.list_utils impo
 from dedoc.utils.utils import calculate_file_hash
 
 
-class TabbyPDFReader(PdfBaseReader):
+class PdfTabbyReader(PdfBaseReader):
     """
-    This class allows extract content from the .pdf documents with a textual layer (copyable documents).
+    This class allows to extract content (textual and table) from the .pdf documents with a textual layer (copyable documents).
     It uses java code to get the result.
+
+    We recommend using this class as a pdf-handler.
+
+    For using this class you need set a parameter pdf_with_text_layer=["tabby", "auto_tabby"].
     """
 
     def __init__(self, *, config: dict) -> None:

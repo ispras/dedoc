@@ -1,4 +1,4 @@
-class PdfTextLayerParameters:
+class PdfTxtlayerParameters:
 
     def __init__(self, correct_text_layout: bool, correct_first_page: bool, is_booklet: bool) -> None:
         super().__init__()

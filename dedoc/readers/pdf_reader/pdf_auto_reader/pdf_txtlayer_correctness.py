@@ -7,8 +7,8 @@ from pdf2image import convert_from_path
 from pdf2image.exceptions import PDFPageCountError
 
 import dedoc.utils.parameter_utils as param_utils
-from dedoc.readers.pdf_reader.auto_pdf_reader.catboost_model_extractor import CatboostModelExtractor
-from dedoc.readers.pdf_reader.auto_pdf_reader.pdf_text_layer_parameters import PdfTextLayerParameters
+from dedoc.readers.pdf_reader.pdf_auto_reader.catboost_model_extractor import CatboostModelExtractor
+from dedoc.readers.pdf_reader.pdf_auto_reader.pdf_txtlayer_parameters import PdfTxtlayerParameters
 from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_utils import get_text_with_bbox_from_document_page
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.extractor_pdf_textlayer import ExtractorPdfTextLayer
@@ -26,7 +26,7 @@ class PdfTextLayerCorrectness:
         self.catboost_model_extractor = CatboostModelExtractor(config=config)
         self.logger = config.get("logger", logging.getLogger())
 
-    def with_text_layer(self, path: str, parameters: dict, is_one_column_list: List[bool]) -> PdfTextLayerParameters:
+    def with_text_layer(self, path: str, parameters: dict, is_one_column_list: List[bool]) -> PdfTxtlayerParameters:
         """
          Have PDF text layer or not? Also, classify documents onto booklets or not booklets
          :param path: path to PDF file
@@ -51,9 +51,9 @@ class PdfTextLayerCorrectness:
                                                is_booklet=is_booklet, lang=lang,
                                                threshold_similarity=threshold_similarity)
             else:
-                return PdfTextLayerParameters(False, False, is_booklet)
+                return PdfTxtlayerParameters(False, False, is_booklet)
         except PDFPageCountError:
-            return PdfTextLayerParameters(False, False, False)
+            return PdfTxtlayerParameters(False, False, False)
 
     @staticmethod
     def __is_booklet(image: np.ndarray) -> bool:
@@ -187,7 +187,7 @@ class PdfTextLayerCorrectness:
 
     def _detect_text_layer(self, path: str, pdf_page_text_layer_param: namedtuple, is_one_column_list: List[bool],
                            is_booklet: bool,
-                           lang: str, threshold_similarity: float) -> PdfTextLayerParameters:
+                           lang: str, threshold_similarity: float) -> PdfTxtlayerParameters:
         if self.catboost_model_extractor.detect_text_layer_correctness(text_layer_bboxes=pdf_page_text_layer_param.text_layer_bboxes):
             message = "assume document has almost correct text layer"
             self.logger.debug(message)
@@ -210,4 +210,4 @@ class PdfTextLayerCorrectness:
         is_first_page_correct = self._is_first_page_correct(path=path,
                                                             is_one_column=is_one_column_list[0],
                                                             is_txt_layer_correct=is_txt_layer_correct)
-        return PdfTextLayerParameters(is_txt_layer_correct, is_first_page_correct, is_booklet)
+        return PdfTxtlayerParameters(is_txt_layer_correct, is_first_page_correct, is_booklet)
