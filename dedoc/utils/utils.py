@@ -34,6 +34,10 @@ def flatten(data: List[List[T]]) -> Iterable[T]:
             yield item
 
 
+def identity(x: T) -> T:
+    return x
+
+
 def get_batch(size: int, iterable: Iterator[T]) -> Iterator[List[T]]:
     """
     it is batch generator. Generating batch with 'size'. Last batch can be less then size or equals []

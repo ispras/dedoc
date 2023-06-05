@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title> Dedoc | prepare label data </title>
+    <link rel="stylesheet" href="static_file?fname=styles.css" />
+    <meta name="viewport" content="width=device-width">
+</head>
+
+<body>
+    <div class="content">
+
+        <h1> Процесс создания датасетов и обучения классификаторов </h1>
+
+            <h3> Шаг 1 - Формирование заданий для системы разметки </h3>
+                <ul>
+                    <li>
+                        Запустите dedoc в режиме разметки путем включения строки <i>labeling_mode=True</i> в ваш конфиг файл <i>config.py</i>.
+                    </li>
+                    <li>
+                        Подготовьте данные для разметки в виде архива документов, которые необходимо обработать.
+                    </li>
+                    <li>
+                        Для формирования заданий для внешней системы разметки идем <a href="/handle_archive" target="_blank" rel="noopener">сюда</a> и загружаем подготовленный архив с необходимыми параметрами.
+                    </li>
+                </ul>
+
+            <h3> Шаг 2 - Разметка данных </h3>
+                <p>
+                    Разметка подготовленных данных осуществляется с помощью <a href=https://github.com/dronperminov/ImageClassifier>внешней системы разметки</a>
+                </p>
+
+            <h3> Шаг 3 - Обучение классификаторов дедка </h3>
+                <p>
+                    Информация по обучению классификаторов строк и классификатора ориентации изображений
+                    находится <a href="/info_classifiers" target="_blank" rel="noopener">тут</a>.
+                </p>
+
+            <h3> Шаг 4 - Удаление данных для разметки </h3>
+                <p>
+                    <a href="/clear" target="_blank" rel="noopener">Тут</a> можно удалить промежуточные данные,
+                    используемые при создании заданий на разметку.
+                </p>
+    </div>
+</body>
+</html>

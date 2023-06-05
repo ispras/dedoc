@@ -1,0 +1,100 @@
+{
+    "version": "2023.02.10\n",
+    "cpu_performance": 1.4144247377568728,
+    "images": {
+        "raw_time": 943.9593796730042,
+        "total_time": 1335.1594980471293,
+        "total_size": 105240044,
+        "throughput": 78822.07642901789,
+        "mean_time": 5.155055977015944,
+        "total_files": 259
+    },
+    "law_html": {
+        "raw_time": 328.1898629665375,
+        "total_time": 464.1998608609088,
+        "total_size": 215921201,
+        "throughput": 465147.0610084863,
+        "mean_time": 0.30419387998748937,
+        "total_files": 1526
+    },
+    "other_html": {
+        "raw_time": 224.99502754211426,
+        "total_time": 318.23853282785535,
+        "total_size": 215921201,
+        "throughput": 678488.5509662596,
+        "mean_time": 0.2085442548020022,
+        "total_files": 1526
+    },
+    "txt": {
+        "raw_time": 64.55673122406006,
+        "total_time": 91.31063763203207,
+        "total_size": 2483851,
+        "throughput": 27202.208465672316,
+        "mean_time": 0.09140203967170377,
+        "total_files": 999
+    },
+    "pdf_text_layer_true": {
+        "raw_time": 376.1706085205078,
+        "total_time": 532.0650143084625,
+        "total_size": 109643533,
+        "throughput": 206071.68306772865,
+        "mean_time": 16.123182251771592,
+        "total_files": 33
+    },
+    "pdf_text_layer_auto": {
+        "raw_time": 1075.6714079380035,
+        "total_time": 1521.4562490852768,
+        "total_size": 109643533,
+        "throughput": 72064.86092907331,
+        "mean_time": 46.10473482076596,
+        "total_files": 33
+    },
+    "pdf_text_layer_auto_tabby": {
+        "raw_time": 947.873806476593,
+        "total_time": 1340.696160152264,
+        "total_size": 109643533,
+        "throughput": 81781.04499646489,
+        "mean_time": 40.627156368250425,
+        "total_files": 33
+    },
+    "pdf_text_layer_false": {
+        "raw_time": 2056.419303417206,
+        "total_time": 2908.6503339540523,
+        "total_size": 109643533,
+        "throughput": 37695.673391909346,
+        "mean_time": 88.14091921072885,
+        "total_files": 33
+    },
+    "pdf_text_layer_tabby": {
+        "raw_time": 319.3526382446289,
+        "total_time": 451.7002716011247,
+        "total_size": 109643533,
+        "throughput": 242735.14959676858,
+        "mean_time": 13.6878870182159,
+        "total_files": 33
+    },
+    "docx": {
+        "raw_time": 19.985559225082397,
+        "total_time": 28.26806936586162,
+        "total_size": 417727,
+        "throughput": 14777.344522313739,
+        "mean_time": 1.284912243902801,
+        "total_files": 22
+    },
+    "pdf": {
+        "raw_time": 389.30749225616455,
+        "total_time": 550.6461476412113,
+        "total_size": 6086144,
+        "throughput": 11052.731461158965,
+        "mean_time": 30.591452646733963,
+        "total_files": 18
+    },
+    "pdf_tables": {
+        "raw_time": 1335.835561990738,
+        "total_time": 1889.4388644550543,
+        "total_size": 16536264,
+        "throughput": 8751.944458795355,
+        "mean_time": 944.7194322275271,
+        "total_files": 2
+    }
+}

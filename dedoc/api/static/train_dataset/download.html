@@ -1,0 +1,22 @@
+<!doctype html>
+<title>Result</title>
+
+<h2>Successfully created tasks with {{ cnt_per_one }} objects. </h2>
+
+<p> You can download
+    <a href="/return-file/{{ value }}" target="blank">
+        <button class='btn btn-default'>Download</button>
+    </a> archive.
+</p>
+
+<h2> md5sum </h2>
+<p> {{ hash_sum }} </p>
+
+<h2> Download from localhost </h2>
+
+<p>
+    <code>
+        wget localhost:1231/return-file/{{ filename }} -O {{ filename }}.part ; mv {{ filename }}.part {{ filename }}
+    </code>
+</p>
+

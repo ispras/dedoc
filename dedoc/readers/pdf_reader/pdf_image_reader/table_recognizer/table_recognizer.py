@@ -6,6 +6,7 @@ import numpy as np
 from typing import List, Tuple, Optional
 import os
 
+from dedoc.train_dataset.data_path_config import table_path as save_path
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.bbox import BBox
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
@@ -79,7 +80,7 @@ class TableRecognizer(object):
             orient_cell_angle=orient_cell_angle,
             table_type=table_type)
         if self.config.get("labeling_mode", False):
-            self.__save_tables(tables=single_page_tables, image=src_image)
+            self.__save_tables(tables=single_page_tables, image=src_image, table_path=save_path)
         if self.table_type.detect_one_cell_table in table_type:
             filtered_tables = single_page_tables
         else:
