@@ -9,14 +9,11 @@ from collections import defaultdict, OrderedDict
 from tempfile import TemporaryDirectory
 from typing import List, Iterable, Callable
 
-from dedoc.config import Configuration
 from dedoc.train_dataset.train_dataset_utils import get_original_document_path
 
 from dedoc.train_dataset.data_structures.images_archive import ImagesArchive
 from dedoc.train_dataset.data_structures.task_item import TaskItem
 from dedoc.train_dataset.taskers.concrete_taskers.abstract_tasker import AbstractTasker
-
-config_docreader = Configuration().getConfig()
 
 
 class AbstractLineLabelTasker(AbstractTasker):

@@ -25,6 +25,6 @@ class TrainDatasetParameters(QueryParameters):
         self.task_size: str = task_size or "250"
 
         self.document_type = document_type or ""
-        self.pdf_with_text_layer = pdf_with_text_layer or 'auto_tabby'
+        self.pdf_with_text_layer = pdf_with_text_layer or 'auto'
         self.language = language or "rus+eng"
         self.need_header_footer_analysis = need_header_footer_analysis or 'false'

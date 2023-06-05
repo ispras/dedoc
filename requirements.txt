@@ -38,6 +38,8 @@ uvicorn==0.22.0
 python-logstash-async==2.5.0
 python-multipart==0.0.6
 starlette==0.26.1
+xgbfir==0.3.1
+wget==3.2
 # TODO remove all flask
 Werkzeug==2.0.3
 Flask==2.0.3
