@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v1
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -27,12 +27,8 @@ jobs:
           pip3 install build twine
 
       - name: Check version correctness
-        env:
-          OLD_VERSION: $(git cat-file -p $(git rev-parse $GITHUB_SHA^1):VERSION)  # contents of the file VERSION (parent commit)
-          NEW_VERSION: $(< VERSION)  # contents of the file VERSION (currently pushed commit)
         run: |
-          echo new version $NEW_VERSION, old version $OLD_VERSION
-          python3 .github/check_version.py --branch $GITHUB_REF_NAME --new_version $NEW_VERSION --old_version $OLD_VERSION
+          python3 .github/check_version.py --branch $GITHUB_REF_NAME --new_version $(< VERSION) --old_version $(git cat-file -p $(git rev-parse "$GITHUB_SHA"^1):VERSION)
 
       - name: Build and publish to PyPI  # TODO change to pypi instead of testpypi
         if: ${{ success() }}  # publish only when version passed the checks
