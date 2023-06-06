@@ -29,12 +29,10 @@ if __name__ == "__main__":
     if args.branch == "develop" or args.branch == "TLDR-350_pypi_pipeline_fix":
         correct = is_correct_version(args.new_version, args.old_version, develop_version_pattern)
 
-        old_match_master = master_version_pattern.match(args.old_version)
-        # we should add 'rc' to the bigger version than the old one
-        if correct and old_match_master and args.new_version.split("rc")[0] <= args.old_version:
+        if correct and master_version_pattern.match(args.old_version) and args.new_version.split("rc")[0] <= args.old_version:
             correct = False
             print("New version should add 'rc' to the bigger version than the old one")  # noqa
-        elif correct and old_match_master and int(args.new_version.split("rc")[1]) == 0:
+        elif correct and int(args.new_version.split("rc")[1]) == 0:
             correct = False
             print("Numeration for 'rc' should start from 1")  # noqa
 
