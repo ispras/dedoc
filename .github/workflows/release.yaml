@@ -3,7 +3,6 @@ name: Publish to PyPI
 on:
   push:
     branches:
-      - TLDR-350_pypi_pipeline_fix
       - develop
       - master
     paths:

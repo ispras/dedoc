@@ -15,7 +15,7 @@ def is_correct_version(version: str, old_version: str, regexp: Pattern) -> bool:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--branch", help="Git branch to check its version", choices=["develop", "master", "TLDR-350_pypi_pipeline_fix"])
+    parser.add_argument("--branch", help="Git branch to check its version", choices=["develop", "master"])
     parser.add_argument("--new_version", help="Version on this branch", type=str)
     parser.add_argument("--old_version", help="Previous version on this branch", type=str)
     args = parser.parse_args()
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     develop_version_pattern = re.compile(r"^\d+\.\d+\.\d+rc\d+$")
 
     correct = False
-    if args.branch == "develop" or args.branch == "TLDR-350_pypi_pipeline_fix":
+    if args.branch == "develop":
         correct = is_correct_version(args.new_version, args.old_version, develop_version_pattern)
 
         if correct and master_version_pattern.match(args.old_version) and args.new_version.split("rc")[0] <= args.old_version:
