@@ -3,6 +3,7 @@ name: Publish to PyPI
 on:
   push:
     branches:
+      - TLDR-350_pypi_pipeline_fix
       - develop
       - master
     paths:
@@ -25,7 +26,16 @@ jobs:
           python3 -m pip install --upgrade pip
           pip3 install build twine
 
-      - name: Build and publish to PyPI  # TODO change to pypi instead of test pypi
+      - name: Check version correctness
+        env:
+          OLD_VERSION: $(git cat-file -p $(git rev-parse $GITHUB_SHA^1):VERSION)  # contents of the file VERSION (parent commit)
+          NEW_VERSION: $(< VERSION)  # contents of the file VERSION (currently pushed commit)
+        run: |
+          echo new version $NEW_VERSION, old version $OLD_VERSION
+          python3 .github/check_version.py --branch $GITHUB_REF_NAME --new_version $NEW_VERSION --old_version $OLD_VERSION
+
+      - name: Build and publish to PyPI  # TODO change to pypi instead of testpypi
+        if: ${{ success() }}  # publish only when version passed the checks
         env:
           TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}  # TODO delete TEST_ in the name of the variable
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}  # TODO delete TEST_ in the name of the variable
