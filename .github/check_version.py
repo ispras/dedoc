@@ -26,11 +26,11 @@ if __name__ == "__main__":
     develop_version_pattern = re.compile(r"^\d+\.\d+\.\d+rc\d+$")
 
     correct = False
-    if args.branch == "develop" or args.branch == "TLDR-350_pypi_pipeline_fix":
+    if args.branch == "develop":
         correct = is_correct_version(args.new_version, args.old_version, develop_version_pattern)
 
-    if args.branch == "master":
+    if args.branch == "master" or args.branch == "TLDR-350_pypi_pipeline_fix":
         correct = is_correct_version(args.new_version, args.old_version, master_version_pattern)
 
     assert correct
-    print("Version correct")  # noqa
+    print("Version is correct")  # noqa
