@@ -15,7 +15,7 @@ class PdfTxtlayerReader(PdfBaseReader):
     """
      Class Pdf with text layer extractor.
      This handler uses a pdfminer library for content extraction.
-     For using this class you need set a parameter pdf_with_text_layer=['yes', 'auto'].
+     For using this class you need set a parameter pdf_with_text_layer=['true', 'auto'].
     """
 
     def __init__(self, *, config: dict) -> None:

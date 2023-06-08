@@ -24,13 +24,15 @@ The main workflow consists of the following stages:
     1. **Converting** document to one of the supported formats.
     There are some documents that can be easily converted to another well-known format, e.g. odt to docx.
     In this case we use converters to convert these documents to one common format in order to facilitate the subsequent reading.
-    The list of supported document formats and which of them should be converted is shown in the table :ref:`table`.
+    The list of supported document formats and which of them should be converted is shown in the table :ref:`table_formats`.
 
     2. **Reading** the converted document to get intermediate representation of the document.
     This representation include document lines with annotations, tables, attachments and metadata.
+    The table :ref:`table_formats` shows which information can be extracted according to the document's format.
 
     3. **Structure extraction** from the document.
     This stage includes line types and hierarchy levels identification.
+    In the section :ref:`structure` supported types of structure are enlisted.
 
     4. **Structure construction** of the output.
     The result document structure representation may vary and
@@ -43,7 +45,7 @@ Reading documents using dedoc
 Dedoc allows to get the common intermediate representation for the documents of various formats.
 The resulting output of any reader is a class :class:`~dedoc.data_structures.UnstructuredDocument`.
 
-.. _table:
+.. _table_formats:
 
 .. list-table:: Supported documents formats and the reader's output
    :widths: 40 25 10 10 15
@@ -158,10 +160,25 @@ The resulting output of any reader is a class :class:`~dedoc.data_structures.Uns
      - `+`
      - `+`
 
+.. _structure:
+
 Structure extraction using dedoc
 --------------------------------
 
-Documentation will appear soon!
+Dedoc allows to extract structure from the documents of some specific domains.
+For this purpose classifiers are used to predict the type of each document line/paragraph.
+Then some rules (mostly based on regular expressions) are used to find a hierarchy level of each line for the document tree representation.
+
+It's possible to define a new structure extractor in order to handle documents of new domains.
+Currently the following domains can be handled:
+
+    * Russian laws (:ref:`structure description <law_structure>`).
+    * Russian technical specifications (:ref:`structure description <tz_structure>`).
+    * Russian thesis for bachelor or master degree (:ref:`structure description <diploma_structure>`).
+
+For a document of unknown or unsupported domain there is an option to use default structure extractor
+(`document_type=other` at :ref:`api_parameters`), the default document structure described :ref:`here <other_structure>`.
+
 
 .. toctree::
    :maxdepth: 1
@@ -178,6 +195,17 @@ Documentation will appear soon!
    dedoc_usage/api
    dedoc_usage/readers
 
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Structure types
+
+   structure_types/other
+   structure_types/law
+   structure_types/tz
+   structure_types/diploma
+
+
 .. toctree::
    :maxdepth: 1
    :caption: Package Reference
@@ -189,3 +217,11 @@ Documentation will appear soon!
    modules/metadata_extractors
    modules/structure_extractors
    modules/structure_constructors
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Notes
+   :hidden:
+
+   changelog
