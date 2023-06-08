@@ -1,12 +1,8 @@
 name: Publish to PyPI
 
 on:
-  push:
-    branches:
-      - develop
-      - master
-    paths:
-      - VERSION  # publish only when version has been changed
+  release:
+    types: [published]
 
 jobs:
   # Publish the package to PyPI https://pypi.org
