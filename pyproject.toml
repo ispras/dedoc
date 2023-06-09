@@ -38,7 +38,12 @@ exclude = ["dedoc.scripts*"]
 
 [project.optional-dependencies]
 torch = ["torch~=1.11.0", "torchvision~=0.12.0"]
-docs = ["docutils==0.18.1", "Sphinx==6.2.1", "sphinx_rtd_theme==1.2.0"]
+docs = [
+    "docutils==0.18.1",
+    "Sphinx==6.2.1",
+    "sphinx_rtd_theme==1.2.0",  # for using sphinx_rtd_theme
+    "linuxdoc==20230506"  # for using flat-table
+]
 
 [project.scripts]
 dedoc = "dedoc.main:main"

@@ -194,6 +194,7 @@ For a document of unknown or unsupported domain there is an option to use defaul
 
    dedoc_usage/api
    dedoc_usage/readers
+   dedoc_usage/return_format
 
 
 .. toctree::

@@ -57,7 +57,7 @@ class QueryParameters(BaseModel):
                  language: Optional[str] = Body(description="a recognition language. Default: 'rus+eng'", enum=["rus+eng", "rus", "eng"], default=None),
                  pages: Optional[str] = Body(description="an option to limit page numbers in pdf, archives with images. left:right, read pages from left to right. Default: ':'", default=None),
                  is_one_column_document: Optional[str] = Body(description="an option to set one or multiple column document. \"auto\" - system predict number of columns in document pages, \"true\" - is one column documents, \"false\" - is multiple column documents. Default: 'auto'", default=None),
-                 document_orientation: Optional[str] = Body(description="an option to set vertical orientation of the document without using an orientation classifier \"auto\" - system predict angle (0, 90, 180, 370) and rotate document, \"no_change\" - do not predict orientation. Default: 'auto'", enum=["auto", "no_change"], default=None),
+                 document_orientation: Optional[str] = Body(description="an option to set vertical orientation of the document without using an orientation classifier \"auto\" - system predict angle (0, 90, 180, 270) and rotate document, \"no_change\" - do not predict orientation. Default: 'auto'", enum=["auto", "no_change"], default=None),
                  need_header_footer_analysis: Optional[str] = Body(description="include header-footer analysis into pdf with text layer. Default: 'false'", default=None),
                  need_binarization: Optional[str] = Body(description="include an adaptive binarization into pdf without a text layer. Default: 'false'", default=None),
 
