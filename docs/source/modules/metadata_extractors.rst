@@ -23,6 +23,11 @@ dedoc.metadata_extractors
     :special-members: __init__
     :members:
 
+.. autoclass:: dedoc.metadata_extractors.NoteMetadataExtractor
+    :show-inheritance:
+    :special-members: __init__
+    :members:
+
 .. autoclass:: dedoc.metadata_extractors.PdfMetadataExtractor
     :show-inheritance:
     :special-members: __init__

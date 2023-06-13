@@ -17,9 +17,6 @@ class DocxReader(BaseReader):
     Please use :class:`~dedoc.converters.DocxConverter` for getting docx file from similar formats.
     """
     def __init__(self, *, config: dict) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
         self.attachment_extractor = DocxAttachmentsExtractor()
         self.logger = config.get("logger", logging.getLogger())
 

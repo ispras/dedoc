@@ -115,9 +115,9 @@ Api parameters description
         The following parameters are available:
 
             * **other** -- structure for document of any domain (:ref:`other_structure`);
-            * **law** -- russian laws (:ref:`law_structure`);
-            * **tz** -- russian technical specifications (:ref:`tz_structure`);
-            * **diploma** -- russian thesis (:ref:`diploma_structure`).
+            * **law** -- Russian laws (:ref:`law_structure`);
+            * **tz** -- Russian technical specifications (:ref:`tz_structure`);
+            * **diploma** -- Russian thesis (:ref:`diploma_structure`).
 
         This type is used for choosing a specific structure extractor after document reading.
 
@@ -295,7 +295,7 @@ Api parameters description
       - This option is used to control document orientation analysis for PDF documents without a textual layer.
         The following values are available:
 
-            * **auto** -- automatic detection of rotated document pages (rotation angle 0, 90, 180, 270) and rotation of document pages;
+            * **auto** -- automatic detection of rotated document pages (rotation angle 0, 90, 180, 270 degrees) and rotation of document pages;
             * **no_change** -- parse document pages as they are without rotated pages detection.
 
         If you are sure that the documents you need to parse consist of vertical (not rotated) pages, you can use `no_change`.

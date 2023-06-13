@@ -18,6 +18,11 @@ dedoc.attachments_extractors
     :special-members: __init__
     :members:
 
+.. autoclass:: dedoc.attachments_extractors.JsonAttachmentsExtractor
+    :show-inheritance:
+    :special-members: __init__
+    :members:
+
 .. autoclass:: dedoc.attachments_extractors.PptxAttachmentsExtractor
     :show-inheritance:
     :special-members: __init__

@@ -33,7 +33,7 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
                     other_fields: Optional[dict] = None) -> bool:
         """
         Check if the document has .docx extension.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
         """
         return converted_filename.lower().endswith("docx")
 

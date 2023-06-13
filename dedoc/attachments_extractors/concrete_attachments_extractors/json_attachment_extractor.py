@@ -19,6 +19,16 @@ class JsonAttachmentsExtractor(AbstractAttachmentsExtractor):
     def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[AttachedFile]:
         """
         Get attachments from the given json document.
+        Attached files are html files if the option `html_fields` is given in the `parameters`.
+        This option should contain list of lists of keys converted to string.
+        The list of keys is the path to the html content inside the json file (end node should be string),
+        that needs to be converted into a file attachment.
+
+        For example:
+
+        For json like {"a": {"b": "Some html string"}, "c": "Another html string"}
+
+        the possible value for `html_fields` parameter is '[["a", "b"], ["c"]]'.
 
         Look to the :class:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor` documentation to get the information about \
         the methods' parameters.

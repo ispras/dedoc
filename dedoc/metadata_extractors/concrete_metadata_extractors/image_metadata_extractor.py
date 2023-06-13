@@ -63,7 +63,7 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
                     other_fields: Optional[dict] = None) -> bool:
         """
         Check if the document has image-like extension (".png", ".jpg", ".jpeg").
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
         """
         return filename.lower().endswith((".png", ".jpg", ".jpeg"))
 

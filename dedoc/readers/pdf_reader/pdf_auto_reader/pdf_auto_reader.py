@@ -24,19 +24,22 @@ from dedoc.readers.pdf_reader.pdf_auto_reader.pdf_txtlayer_correctness import Pd
 # TODO delete parameter is_one_column_document_list
 class PdfAutoReader(BaseReader):
     """
-    This class allows extract content from the .pdf documents.
-    Pdf-documents can be with a textual layer (copyable documents) or without a textual layer.
+    This class allows to extract content from the .pdf documents of any kind.
+    PDF documents can have a textual layer (copyable documents) or be without it (images, scanned documents).
 
-    PdfAutoReader calls a method, which detects Pdf has a correctness textual layes:
+    :class:`~dedoc.readers.PdfAutoReader` is used for automatic detection of a correct textual layer in the given PDF file:
 
-    * if pdf-document has correctness textual layer then call classes :class:`~dedoc.readers.PdfTxtLayerReader` or  :class:`~dedoc.readers.PdfTabbyReader` for document's content extraction.
+    * if PDF document has a correct textual layer then :class:`~dedoc.readers.PdfTxtLayerReader` or :class:`~dedoc.readers.PdfTabbyReader` is used for document content extraction;
 
-    * if pdf-document hasn't correctness textual layer then call  :class:`~dedoc.readers.PdfImageReader` for document's content extraction like scanned document.
+    * if PDF document doesn't have a correct textual layer then :class:`~dedoc.readers.PdfImageReader` is used for document content extraction.
 
-    For using this class you need set a parameter pdf_with_text_layer=['auto_tabby', 'auto'].
+    For more information, look to `pdf_with_text_layer` option description in the table :ref:`table_parameters`.
     """
 
     def __init__(self, *, config: dict) -> None:
+        """
+        :param config: configuration of the reader, e.g. logger for logging
+        """
         self.pdf_parser = PdfTxtlayerReader(config=config)
         self.tabby_parser = PdfTabbyReader(config=config)
         self.pdf_image_reader = PdfImageReader(config=config)
@@ -56,6 +59,16 @@ class PdfAutoReader(BaseReader):
         return self._orientation_classifier
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        """
+        Check if the document extension is suitable for this reader (PDF format is supported only).
+        This method returns `True` only when the key `pdf_with_text_layer` with value `auto` or `auto_tabby`
+        is set in the dictionary `parameters`.
+
+        It is recommended to use `pdf_with_text_layer=auto_tabby` because it's faster and allows to get better results.
+        You can look to the table :ref:`table_parameters` to get more information about `parameters` dictionary possible arguments.
+
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        """
         parameters = {} if parameters is None else parameters
 
         is_pdf = mime in recognized_mimes.pdf_like_format
@@ -66,6 +79,11 @@ class PdfAutoReader(BaseReader):
         return is_pdf and pdf_with_txt_layer in ("auto", "auto_tabby")
 
     def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        The method return document content with all document's lines, tables and attachments.
+        This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+        """
         pdf_with_txt_layer = get_param_pdf_with_txt_layer(parameters)
         warnings = []
 
