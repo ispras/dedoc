@@ -20,6 +20,9 @@ Dedoc can be used as a python library, API service or a docker container.
 Workflow
 --------
 
+.. image:: _static/workflow.png
+        :align: center
+
 The main workflow consists of the following stages:
     1. **Converting** document to one of the supported formats.
     There are some documents that can be easily converted to another well-known format, e.g. odt to docx.
@@ -106,6 +109,12 @@ The resulting output of any reader is a class :class:`~dedoc.data_structures.Uns
      - `+`
      - `+`
 
+   * - eml
+     - :class:`~dedoc.readers.EmailReader`
+     - `+`
+     - `+`
+     - `+`
+
    * - html, shtml
      - :class:`~dedoc.readers.HtmlReader`
      - `+`
@@ -137,13 +146,19 @@ The resulting output of any reader is a class :class:`~dedoc.data_structures.Uns
      - `-`
 
    * - pdf (without textual layer), png
-     - :class:`~dedoc.readers.PdfScanReader`
+     - :class:`~dedoc.readers.PdfImageReader`
      - `+`
      - `+`
      - `-`
 
    * - pdf (with textual layer)
-     - :class:`~dedoc.readers.TabbyPDFReader`
+     - :class:`~dedoc.readers.PdfTabbyReader`, :class:`~dedoc.readers.PdfTxtlayerReader`
+     - `+`
+     - `+`
+     - `+`
+
+   * - pdf
+     - :class:`~dedoc.readers.PdfAutoReader`
      - `+`
      - `+`
      - `+`
@@ -159,6 +174,12 @@ The resulting output of any reader is a class :class:`~dedoc.data_structures.Uns
      - `+`
      - `+`
      - `+`
+
+   * - note.pickle
+     - :class:`~dedoc.readers.NoteReader`
+     - `+`
+     - `-`
+     - `-`
 
 .. _structure:
 
