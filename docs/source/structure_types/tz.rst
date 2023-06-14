@@ -1,6 +1,6 @@
 .. _tz_structure:
 
-Technical specification document structure type
+Technical specification structure type
 ===============================================
 
 TODO describe structure

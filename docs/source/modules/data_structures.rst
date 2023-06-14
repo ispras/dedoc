@@ -1,3 +1,5 @@
+.. _dedoc_data_structures:
+
 dedoc.data_structures
 =====================
 

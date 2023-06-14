@@ -1,60 +1,20 @@
+.. _dedoc_api:
+
 Using dedoc via API
 ===================
 
 Dedoc can be used as a web application that runs on the `localhost:1231`.
 It's possible to change the port via `config.py` file (if you clone the repository and run dedoc as a docker container).
 
-There are two ways to install and run dedoc as a web application that are described below.
+There are two ways to install and run dedoc as a web application:
 
+1. :ref:`install_docker`.
 
-Run dedoc in a docker container
--------------------------------
+2. :ref:`install_pypi`. After installing library using this method you can run the application via the following command:
 
-You should have `git <https://git-scm.com>`_ and `docker <https://www.docker.com>`_ installed for running dedoc by this method.
-This method is more flexible because it doesn't depend on the operating system and other user's limitations,
-still, the docker application should be installed and configured properly.
+    .. code-block:: bash
 
-1. Clone the repository
-
-  .. code-block:: bash
-
-    git clone https://github.com/ispras/dedoc
-
-2. Go to the `dedoc` directory
-
-  .. code-block:: bash
-
-    cd dedoc
-
-
-3. Build the image and run the application
-
-  .. code-block:: bash
-
-    docker-compose up --build
-
-
-Run dedoc as a PyPI library
----------------------------
-
-If you don't want to use docker for running the application,
-it's possible to run dedoc locally.
-However, it isn't suitable for any operating system (Ubuntu 20+ is recommended) and
-there may be not enough machine's resources for its work.
-You should have `python` (python3.8+ is recommended) and `pip` installed.
-
-1. Install the dedoc library via pip
-
-  .. code-block:: bash
-
-    pip install dedoc
-
-
-2. Run the application
-
-  .. code-block:: bash
-
-    dedoc -m main
+        dedoc -m main
 
 
 Application usage
@@ -139,7 +99,7 @@ Api parameters description
         The document structure from a structure constructor (see :class:`~dedoc.data_structures.ParsedDocument`)
         is transformed to one of the following formats:
 
-        * **json** -- simple json structure got via recursive transformation of :class:`~dedoc.data_structures.ParsedDocument` into a dictionary, see :ref:`return_format` for examples;
+        * **json** -- simple json structure got via recursive transformation of :class:`~dedoc.data_structures.ParsedDocument` into a dictionary, see :ref:`json_format` for examples;
 
         * **pretty_json** -- prettified by adding indentation to the aforesaid json structure;
 
@@ -162,7 +122,7 @@ Api parameters description
       - false
       - The option to enable file's attachments parsing along with the given file.
         The content of the parsed attachments will be represented as :class:`~dedoc.data_structures.ParsedDocument`
-        and saved in the specified return format in the `attachments` field (see :ref:`return_format` for examples).
+        and saved in the specified return format in the `attachments` field (see :ref:`json_format` for examples).
         Use `true` value to enable this behaviour.
 
     * - recursion_deep_attachments
@@ -186,17 +146,17 @@ Api parameters description
       - Parameter for inserting tables into the result content.
         By default tables are returned separately from the main document tree.
         If parameter `insert_table` is set to `true`, tables will be inserted to the document tree.
-        See :ref:`return_format` for examples of result structure in both cases.
+        See :ref:`json_format` for examples of result structure in both cases.
 
     * - need_pdf_table_analysis
       - true, false
-      - false
+      - true
       - This option is used for PDF documents which are images with text (PDF without a textual layer).
         It is also used for PDF documents when `pdf_with_text_layer` is `true`, `false`, `auto` or `auto_tabby`.
-        By default (`need_pdf_table_analysis=false`) tables in PDF documents aren't parsed because costly table recognition methods are used to get tables.
-        When tables in the PDF document are important, use `need_pdf_table_analysis=true` instead.
+        Since costly table recognition methods are used to get tables, you may need to use `need_pdf_table_analysis=false`
+        to increase parsing speed and get text without tables.
         If the document has a textual layer, it is recommended to use `pdf_with_text_layer=tabby`,
-        in this case tables will be parsed regardless the value of `need_pdf_table_analysis` parameter.
+        in this case tables will be parsed much easier and faster.
 
     * - orient_analysis_cells
       - true, false
@@ -227,7 +187,7 @@ Api parameters description
 
             * **true** -- use this option if you are sure that the PDF file has a textual layer (its text is copiable).
               In this case tables will be parsed using table recognition method for documents without a textual layer
-              (if you set `need_pdf_table_analysis=true`, by default they aren't parsed).
+              (if you set `need_pdf_table_analysis=false` parsing will be faster but tables will be ignored).
               It is recommended to use `pdf_with_text_layer=tabby` instead of `pdf_with_text_layer=true`,
               but you can try this option as well.
 
@@ -238,7 +198,7 @@ Api parameters description
 
             * **tabby** -- use this option if you are sure that the PDF file has a textual layer (its text is copiable).
               This option value forces to use PDF reader for documents with a textual layer only,
-              it also allows to extract tables by default.
+              it also allows to extract tables easily and quickly.
               The method enabled by this option is much faster than the method enabled by `pdf_with_text_layer=true`.
 
             * **auto** -- automatic detection of textual layer presence in the PDF document.

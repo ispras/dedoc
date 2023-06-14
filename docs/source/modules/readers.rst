@@ -1,3 +1,5 @@
+.. _dedoc_readers:
+
 dedoc.readers
 =============
 

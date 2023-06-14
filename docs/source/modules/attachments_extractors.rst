@@ -1,3 +1,5 @@
+.. _dedoc_attachments_extractors:
+
 dedoc.attachments_extractors
 ============================
 

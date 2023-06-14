@@ -1,3 +1,5 @@
+.. _dedoc_metadata_extractors:
+
 dedoc.metadata_extractors
 =========================
 

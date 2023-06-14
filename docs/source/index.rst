@@ -17,6 +17,9 @@ Dedoc allows to extract the following data from the documents:
 Dedoc can be integrated in some system for document contents and structure analysis as a separate module.
 Dedoc can be used as a python library, API service or a docker container.
 
+
+.. _dedoc_workflow:
+
 Workflow
 --------
 
@@ -211,11 +214,10 @@ For a document of unknown or unsupported domain there is an option to use defaul
 
 .. toctree::
    :maxdepth: 1
-   :caption: Dedoc usage
+   :caption: Dedoc API usage
 
-   dedoc_usage/api
-   dedoc_usage/readers
-   dedoc_usage/return_format
+   dedoc_api_usage/api
+   dedoc_api_usage/return_format
 
 
 .. toctree::
