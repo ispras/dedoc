@@ -226,4 +226,3 @@ def send_file(host: str, file_name: str, file_path: str, parameters: dict) -> Di
         assert r.status_code == 200
         result = json.loads(r.content.decode())
         return result
-
