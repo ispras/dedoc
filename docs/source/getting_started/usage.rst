@@ -47,7 +47,7 @@ Assume we need to parse file :download:`example.docx <../_static/code_examples/t
 
 .. _docx_example_image:
 
-.. figure:: ../_static/docx_example.png
+.. figure:: ../_static/code_examples/test_dir/docx_example.png
     :width: 400
 
     document example

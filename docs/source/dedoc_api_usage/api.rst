@@ -31,6 +31,8 @@ Post-requests should be sent to `http://localhost:1231/upload`.
 
   .. code-block:: python
 
+    import requests
+
     data = {
         "pdf_with_text_layer": "auto_tabby",
         "document_type": "diploma",
