@@ -30,7 +30,7 @@ class AbstractConverter(ABC):
         If the file format is unsupported the ConversionException will be thrown.
 
         :param tmp_dir: directory where the original file is located and where result will be saved
-        :param filename: name of the original file
+        :param filename: name of the original file without extension
         :param extension: extension of the original file
         :return: name of the converted file
         """

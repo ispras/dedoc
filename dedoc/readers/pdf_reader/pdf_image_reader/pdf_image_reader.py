@@ -23,8 +23,22 @@ class PdfImageReader(PdfBaseReader):
     """
     This class allows to extract content from the .pdf documents without a textual layer (not copyable documents),
     as well as from images (scanned documents).
-    Here Table Detection, Table Recognition, BoldTextDetector and Tesseract OCR are called for extraction textual and table information \
-    from documents content.
+
+    The following features are implemented to enhance the recognition results:
+
+    * optical character recognition using Tesseract OCR;
+
+    * table detection and recognition;
+
+    * document binarization (configure via `need_binarization` parameter);
+
+    * document orientation correction (automatically rotate on 90, 180, 270 degrees if it's needed);
+
+    * one and two column documents classification;
+
+    * detection of bold text.
+
+    It isn't recommended to use this reader for extracting content from PDF documents with a correct textual layer, use other PDF readers instead.
     """
 
     def __init__(self, *, config: dict) -> None:

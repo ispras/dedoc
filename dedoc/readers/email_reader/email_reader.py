@@ -21,16 +21,33 @@ from dedoc.readers.html_reader.html_reader import HtmlReader
 
 
 class EmailReader(BaseReader):
-
+    """
+    This class is used for parsing documents with .eml extension (e-mail messages saved into files).
+    """
     def __init__(self, *, config: dict) -> None:
+        """
+        :param config: configuration of the reader, e.g. logger for logging
+        """
         super().__init__()
         self.logger = config.get("logger", logging.getLogger())
         self.html_reader = HtmlReader(config=config)
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        """
+        Check if the document extension or mime is suitable for this reader.
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        """
         return path.lower().endswith(".eml") or mime == "message/rfc822"
 
     def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        The method return document content with all document's lines, tables and attachments.
+        This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
+        It also saves some data from the message's header (fields "subject", "from", "to", "cc", "bcc", "date", "reply-to")
+        to the attached json file with prefix `message_header_`.
+
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+        """
         parameters = {} if parameters is None else parameters
         with open(path, "rb") as f:
             msg = email.message_from_binary_file(f)

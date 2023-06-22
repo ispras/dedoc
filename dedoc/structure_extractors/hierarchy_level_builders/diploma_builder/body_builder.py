@@ -30,10 +30,19 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
         else:
             result = [AbstractBodyHierarchyLevelBuilder.get_body_line(init_hl_depth=init_hl_depth)]
         previous_raw_text_line = None
+        previous_named_item_line = None
 
         for line, prediction in lines_with_labels:
             if prediction == "named_item" or line.metadata.tag_hierarchy_level.line_type == "header":
                 line = self.__handle_named_item(init_hl_depth, line, prediction)
+                previous_named_item_line = line
+
+            elif prediction == "list_item":
+                level = line.metadata.tag_hierarchy_level
+                level_1 = previous_named_item_line.metadata.hierarchy_level.level_1 + level.level_1 - 1 if previous_named_item_line else \
+                    init_hl_depth + level.level_1 - 1
+                line.metadata.hierarchy_level = HierarchyLevel(level_1=level_1, level_2=level.level_2, line_type=prediction, can_be_multiline=False)
+
             elif prediction == "raw_text":
                 line = self.__postprocess_raw_text(line, init_hl_depth)
                 if not (line.metadata.hierarchy_level is not None and line.metadata.hierarchy_level.line_type == "named_item"):

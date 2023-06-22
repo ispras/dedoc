@@ -37,9 +37,9 @@ class PdfTabbyReader(PdfBaseReader):
     This class allows to extract content (textual and table) from the .pdf documents with a textual layer (copyable documents).
     It uses java code to get the result.
 
-    We recommend using this class as a pdf-handler.
-
-    For using this class you need set a parameter pdf_with_text_layer=["tabby", "auto_tabby"].
+    It is recommended to use this class as a handler for PDF documents with a correct textual layer
+    if you don't need to check textual layer correctness.
+    For more information, look to `pdf_with_text_layer` option description in the table :ref:`table_parameters`.
     """
 
     def __init__(self, *, config: dict) -> None:
@@ -60,7 +60,11 @@ class PdfTabbyReader(PdfBaseReader):
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
-        Check if the document extension is suitable for this reader, i.e. it has .pdf extension and a textual layer.
+        Check if the document extension is suitable for this reader (PDF format is supported only).
+        This method returns `True` only when the key `pdf_with_text_layer` with value `tabby` is set in the dictionary `parameters`.
+
+        You can look to the table :ref:`table_parameters` to get more information about `parameters` dictionary possible arguments.
+
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters

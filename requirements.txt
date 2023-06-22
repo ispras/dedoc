@@ -2,7 +2,7 @@ Cython==0.29.28
 flake8==3.9.2
 pyflakes==2.3.0
 beautifulsoup4==4.10.0
-catboost==1.2
+catboost==1.1
 charset-normalizer==2.0.12
 docx==0.2.4
 huggingface-hub==0.14.1

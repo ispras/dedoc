@@ -17,7 +17,7 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
     """
     This class is used for extraction structure from laws.
 
-    TODO structure description.
+    You can find the description of this type of structure in the section :ref:`law_structure`.
     """
 
     def __init__(self, *, config: dict) -> None:

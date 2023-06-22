@@ -13,14 +13,14 @@ from dedoc.data_structures.concrete_annotations.table_annotation import TableAnn
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.html_reader.html_reader import HtmlReader
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_with_text_reader import PdfWithTextReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 
 
 class Html2PdfReader(HtmlReader):
 
     def __init__(self, *, config: dict) -> None:
         super().__init__(config=config)
-        self.pdf_reader = PdfWithTextReader(config=config)
+        self.pdf_reader = PdfTxtlayerReader(config=config)
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
 

@@ -30,7 +30,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
                     other_fields: Optional[dict] = None) -> bool:
         """
         This extractor can handle any file so the method always returns True.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
         """
         return True
 

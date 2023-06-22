@@ -15,7 +15,7 @@ class FoivLawStructureExtractor(AbstractLawStructureExtractor):
     """
     This class is used for extraction structure from foiv type of law.
 
-    TODO structure description.
+    You can find the description of this type of structure in the section :ref:`foiv_law_structure`.
     """
     document_type = "foiv_law"
 

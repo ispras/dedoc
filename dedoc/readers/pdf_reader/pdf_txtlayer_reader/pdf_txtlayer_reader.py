@@ -13,16 +13,28 @@ from dedoc.data_structures.bbox import BBox
 
 class PdfTxtlayerReader(PdfBaseReader):
     """
-     Class Pdf with text layer extractor.
-     This handler uses a pdfminer library for content extraction.
-     For using this class you need set a parameter pdf_with_text_layer=['yes', 'auto'].
+    This class allows to extract content (text, tables, attachments) from the .pdf documents with a textual layer (copyable documents).
+    It uses a pdfminer library for content extraction.
+
+    For more information, look to `pdf_with_text_layer` option description in the table :ref:`table_parameters`.
     """
 
     def __init__(self, *, config: dict) -> None:
+        """
+        :param config: configuration of the reader, e.g. logger for logging
+        """
         super().__init__(config=config)
         self.extractor_layer = ExtractorPdfTextLayer(config=config)
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        """
+        Check if the document extension is suitable for this reader (PDF format is supported only).
+        This method returns `True` only when the key `pdf_with_text_layer` with value `true` is set in the dictionary `parameters`.
+
+        You can look to the table :ref:`table_parameters` to get more information about `parameters` dictionary possible arguments.
+
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        """
         return extension.lower().endswith("pdf") and (str(parameters.get("pdf_with_text_layer", "false")).lower() == "true")
 
     def _process_one_page(self,
