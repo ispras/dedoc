@@ -6,8 +6,7 @@ import zipfile
 from collections import defaultdict
 from typing import Optional, List
 
-from bs4 import BeautifulSoup
-from bs4 import Tag
+from bs4 import BeautifulSoup, Tag
 
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
@@ -113,7 +112,7 @@ class DocxDocument:
 
         return lines_with_meta
 
-    def __get_bs_tree(self, filename: str) -> Optional[Tag]:
+    def __get_bs_tree(self, filename: str) -> Optional[BeautifulSoup]:
         """
         Gets xml bs tree from the given file inside the self.path.
         :param filename: name of file to extract the tree

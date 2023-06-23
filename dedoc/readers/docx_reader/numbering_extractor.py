@@ -1,7 +1,7 @@
 import re
-from typing import List, Dict
+from typing import List, Dict, Optional
 
-from bs4 import Tag
+from bs4 import Tag, BeautifulSoup
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
@@ -15,7 +15,7 @@ class NumberingExtractor:
     Gets the text of the list numbering and may add some annotations like boldness, font size, etc.
     """
 
-    def __init__(self, xml: Tag, styles_extractor: StylesExtractor) -> None:
+    def __init__(self, xml: Optional[BeautifulSoup], styles_extractor: StylesExtractor) -> None:
         """
         :param xml: BeautifulSoup tree with numberings from word/numberings.xml file
         :param styles_extractor: StylesExtractor

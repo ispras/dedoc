@@ -3,7 +3,7 @@ import re
 from enum import Enum
 from typing import Optional, List
 
-from bs4 import Tag
+from bs4 import Tag, BeautifulSoup
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.data_structures.run import Run
@@ -18,7 +18,7 @@ class StyleType(Enum):
 
 class StylesExtractor:
 
-    def __init__(self, xml: Tag, logger: logging.Logger) -> None:
+    def __init__(self, xml: Optional[BeautifulSoup], logger: logging.Logger) -> None:
         """
         :param xml: BeautifulSoup tree with styles
         :param logger: logger
