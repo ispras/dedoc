@@ -1,9 +1,9 @@
-from bs4 import BeautifulSoup
+from bs4 import Tag
 
 
 class FootnoteExtractor:
 
-    def __init__(self, xml: BeautifulSoup, key: str = "footnote") -> None:
+    def __init__(self, xml: Tag, key: str = "footnote") -> None:
         """
         :param xml: BeautifulSoup tree with styles
         :param key: footnote or endnote
