@@ -1,11 +1,9 @@
 Changelog
 =========
 
-This is an example
 
-v0.9 (2023-09-29)
+v0.9 (2023-06-26)
 -------------------
 Release note: `v0.9 <https://github.com/ispras/dedoc/releases/tag/v0.9>`_
 
-* First change description
-* Second change description
+* Publication of the first version of dedoc library
