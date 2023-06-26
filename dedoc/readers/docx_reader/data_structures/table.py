@@ -1,6 +1,6 @@
 import hashlib
 from collections import namedtuple
-from bs4 import BeautifulSoup
+from bs4 import Tag
 
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
@@ -11,7 +11,7 @@ CellPropertyInfo = namedtuple('NamedTuple', 'colspan, rowspan, invisible')
 
 
 class DocxTable:
-    def __init__(self, xml: BeautifulSoup, styles_extractor: StylesExtractor) -> None:
+    def __init__(self, xml: Tag, styles_extractor: StylesExtractor) -> None:
         """
         Contains information about table properties.
         :param xml: BeautifulSoup tree with table properties
@@ -78,7 +78,7 @@ class DocxTable:
 
         return Table(cells=result_cells, metadata=TableMetadata(page_id=None, uid=self.uid), cells_properties=cell_property_list)
 
-    def __get_cell_text(self, cell: BeautifulSoup) -> str:
+    def __get_cell_text(self, cell: Tag) -> str:
         cell_text = ""
         paragraphs = cell.find_all("w:p")
 

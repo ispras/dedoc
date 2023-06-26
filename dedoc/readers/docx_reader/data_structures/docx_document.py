@@ -6,7 +6,7 @@ import zipfile
 from collections import defaultdict
 from typing import Optional, List
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
@@ -60,6 +60,9 @@ class DocxDocument:
         uids_set = set()
 
         for paragraph_xml in self.body:
+            if not isinstance(paragraph_xml, Tag):
+                continue
+
             if paragraph_xml.name == 'tbl':
                 self.__handle_table_xml(paragraph_xml, table_refs, uids_set, cnt)
                 continue
@@ -126,7 +129,7 @@ class DocxDocument:
         except zipfile.BadZipFile:
             raise BadFileFormatException("Bad docx file:\n file_name = {}. Seems docx is broken".format(os.path.basename(self.path)))
 
-    def __xml2paragraph(self, paragraph_xml: BeautifulSoup, uids_set: set, cnt: Counter) -> Paragraph:
+    def __xml2paragraph(self, paragraph_xml: Tag, uids_set: set, cnt: Counter) -> Paragraph:
         uid = self.__get_paragraph_uid(paragraph_xml=paragraph_xml, uids_set=uids_set)
         paragraph = Paragraph(xml=paragraph_xml,
                               styles_extractor=self.styles_extractor,
@@ -139,7 +142,7 @@ class DocxDocument:
         cnt.inc()
         return paragraph
 
-    def __get_paragraph_uid(self, paragraph_xml: BeautifulSoup, uids_set: set) -> str:
+    def __get_paragraph_uid(self, paragraph_xml: Tag, uids_set: set) -> str:
         xml_hash = hashlib.md5(paragraph_xml.encode()).hexdigest()
         raw_uid = '{}_{}'.format(self.path_hash, xml_hash)
         uid = raw_uid
@@ -150,7 +153,7 @@ class DocxDocument:
         uids_set.add(uid)
         return uid
 
-    def __handle_table_xml(self, xml: BeautifulSoup, table_refs: dict, uids_set: set, cnt: Counter) -> None:
+    def __handle_table_xml(self, xml: Tag, table_refs: dict, uids_set: set, cnt: Counter) -> None:
         table = DocxTable(xml, self.styles_extractor)
         self.tables.append(table.to_table())
         table_uid = table.uid
@@ -162,7 +165,7 @@ class DocxDocument:
         else:
             table_refs[len(self.paragraph_list) - 1].append(table_uid)
 
-    def __handle_images_xml(self, xmls: List[BeautifulSoup], image_refs: dict, uids_set: set, cnt: Counter) -> None:
+    def __handle_images_xml(self, xmls: List[Tag], image_refs: dict, uids_set: set, cnt: Counter) -> None:
         rels = self.__get_bs_tree('word/_rels/document.xml.rels')
         if rels is None:
             rels = self.__get_bs_tree('word/_rels/document2.xml.rels')
@@ -179,7 +182,7 @@ class DocxDocument:
             image_uid = images_rels[blips[0]["r:embed"]]
             image_refs[len(self.paragraph_list) - 1].append(image_uid)
 
-    def __handle_diagrams_xml(self, xml: BeautifulSoup, diagram_refs: dict, uids_set: set, cnt: Counter) -> None:
+    def __handle_diagrams_xml(self, xml: Tag, diagram_refs: dict, uids_set: set, cnt: Counter) -> None:
         diagram_uid = hashlib.md5(xml.encode()).hexdigest()
         self.__prepare_paragraph_list(uids_set, cnt)
         diagram_refs[len(self.paragraph_list) - 1].append(diagram_uid)
