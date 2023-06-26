@@ -1,7 +1,9 @@
-from typing import Tuple, List, Optional
+from typing import Tuple, List
 
+from dedoc.data_structures import BoldAnnotation
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.structure_extractors import DefaultStructureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
 from dedoc.structure_extractors.hierarchy_level_builders.abstract_hierarchy_level_builder import AbstractHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.abstract_body_hierarchy_level_builder import \
@@ -10,6 +12,7 @@ from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexp
 
 
 class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
+    named_item_keywords = ("введение", "заключение", "библиографический список", "список литературы", "глава", "приложение", "приложения")
 
     def __int__(self) -> None:
         super().__init__()
@@ -26,31 +29,51 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
             result = [body_line]
         else:
             result = [AbstractBodyHierarchyLevelBuilder.get_body_line(init_hl_depth=init_hl_depth)]
-        previous_hl = None
+        previous_raw_text_line = None
+        previous_named_item_line = None
 
-        # TODO add an analyse of headers.
-        # if line.metadata.tag == 'header' -> set hierarchy level (init_hl_depth + line.metadata.tag.hl)
-        # elif prediction == 'named_item' -> this code
         for line, prediction in lines_with_labels:
-            if prediction == "named_item":
-                line = self.__handle_named_item(init_hl_depth, line, prediction, previous_hl=previous_hl)
-                previous_hl = line.metadata.hierarchy_level
-                result.append(line)
+            if prediction == "named_item" or line.metadata.tag_hierarchy_level.line_type == "header":
+                line = self.__handle_named_item(init_hl_depth, line, prediction)
+                previous_named_item_line = line
+
+            elif prediction == "list_item":
+                level = line.metadata.tag_hierarchy_level
+                level_1 = previous_named_item_line.metadata.hierarchy_level.level_1 + level.level_1 - 1 if previous_named_item_line else \
+                    init_hl_depth + level.level_1 - 1
+                line.metadata.hierarchy_level = HierarchyLevel(level_1=level_1, level_2=level.level_2, line_type=prediction, can_be_multiline=False)
+
+            elif prediction == "raw_text":
+                line = self.__postprocess_raw_text(line, init_hl_depth)
+                if not (line.metadata.hierarchy_level is not None and line.metadata.hierarchy_level.line_type == "named_item"):
+                    line.metadata.hierarchy_level = DefaultStructureExtractor.get_list_hl_with_regexp(line, previous_raw_text_line)
+                    previous_raw_text_line = line
             else:
                 line.metadata.hierarchy_level = HierarchyLevel.create_raw_text()
                 line.metadata.hierarchy_level.line_type = prediction
-                result.append(line)
+            result.append(line)
         return result
 
-    def __handle_named_item(self,
-                            init_hl_depth: int,
-                            line: LineWithMeta,
-                            prediction: str,
-                            previous_hl: Optional[HierarchyLevel]) -> LineWithMeta:
-        item_depth = get_dotted_item_depth(line.line.lower().strip())
-        if item_depth == -1:
-            hierarchy_level = HierarchyLevel(init_hl_depth, 0, True, prediction) if previous_hl is None else previous_hl
+    def __handle_named_item(self, init_hl_depth: int, line: LineWithMeta, prediction: str) -> LineWithMeta:
+        text = line.line.strip().lower()
+        item_depth = get_dotted_item_depth(text)
+
+        if text.startswith(self.named_item_keywords):
+            hierarchy_level = HierarchyLevel(init_hl_depth, 0, True, prediction)
+        elif item_depth == -1:
+            hierarchy_level = HierarchyLevel(init_hl_depth + 1, 0, True, prediction)
         else:
-            hierarchy_level = HierarchyLevel(init_hl_depth + item_depth, 0, True, prediction)
+            hierarchy_level = HierarchyLevel(init_hl_depth, item_depth - 1, True, prediction)
         line.metadata.hierarchy_level = hierarchy_level
         return line
+
+    def __postprocess_raw_text(self, line: LineWithMeta, init_hl_depth: int) -> LineWithMeta:
+        text = line.line.strip().lower()
+        if not text.startswith(self.named_item_keywords):
+            return line
+
+        bold = [annotation for annotation in line.annotations if annotation.name == BoldAnnotation.name and annotation.value == "True"]
+        if len(bold) == 0:
+            return line
+
+        return self.__handle_named_item(init_hl_depth, line, "named_item")

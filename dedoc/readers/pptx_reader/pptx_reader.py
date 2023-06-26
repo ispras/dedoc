@@ -1,6 +1,5 @@
 import os
 from typing import Optional
-
 from pptx import Presentation
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.pptx_attachments_extractor import PptxAttachmentsExtractor

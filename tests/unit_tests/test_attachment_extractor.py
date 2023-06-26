@@ -2,9 +2,12 @@ import os
 import shutil
 import tempfile
 import unittest
+from typing import List
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
 from dedoc.attachments_extractors.concrete_attachments_extractors.pptx_attachments_extractor import PptxAttachmentsExtractor
+from dedoc.readers import ArchiveReader
+from tests.test_utils import get_test_config
 
 
 class TestAttachmentsExtractor(unittest.TestCase):
@@ -81,3 +84,36 @@ class TestAttachmentsExtractor(unittest.TestCase):
             for file, num_attachments in files:
                 attachments = docx_attachment_extractor.get_attachments(tmp_dir, os.path.join(src_dir, file), {})
                 self.assertEqual(num_attachments, len(attachments))
+
+    def test_archive(self) -> None:
+        file_name = "minio.zip"
+        files = self.__get_list_of_files(file_name)
+        self.assertEqual(2, len(files))
+        self.assertIn("csv_tab.tsv", files)
+        self.assertIn("english_doc.odt", files)
+
+    def test_slash2(self) -> None:
+        file_name = "name_slash.zip"
+        files = self.__get_list_of_files(file_name)
+        self.assertEqual(3, len(files))
+        self.assertIn("name⁄slash", files)
+        self.assertIn("name", files)
+        self.assertIn("slash", files)
+
+    def test_archive_with_slash(self) -> None:
+        file_name_template = "attachments.{}"
+        for extension in "7z", "tar", "tar.gz", "zip":
+            file_name = file_name_template.format(extension)
+            files = self.__get_list_of_files(file_name)
+            self.assertEqual(2, len(files))
+            self.assertIn(r"som_file⁄wiht\slash.txt", files)
+            self.assertIn("other_file.csv", files)
+
+    def __get_list_of_files(self, file_name: str) -> List[str]:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            file_path = os.path.join(tmp_dir, file_name)
+            shutil.copyfile(os.path.join(self.src_dir, file_name), file_path)
+            config = get_test_config()
+            document = ArchiveReader(config=config).read(path=file_path, parameters={"with_attachment": True})
+            files = [file.original_name for file in document.attachments]
+            return files

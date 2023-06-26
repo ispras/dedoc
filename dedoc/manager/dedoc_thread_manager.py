@@ -9,7 +9,6 @@ from time import sleep
 from typing import Optional, Dict
 
 from fastapi import UploadFile
-from werkzeug.datastructures import FileStorage
 
 from dedoc.configuration_manager import get_manager_config
 from dedoc.data_structures.parsed_document import ParsedDocument
@@ -143,7 +142,7 @@ class DedocThreadedManager(object):
     def parse_existing_file(self, path: str, parameters: Dict[str, str]) -> ParsedDocument:
         self.logger.info("Parse existing file {}".format(path))
         with open(path, 'rb') as fp:
-            file = FileStorage(fp, filename=path)
+            file = UploadFile(file=fp, filename=path)
             return self.parse_file(file=file, parameters=parameters)
 
     def __parse_file(self, tmp_dir: str, filename: str, parameters: dict, original_file_name: str) -> ParsedDocument:

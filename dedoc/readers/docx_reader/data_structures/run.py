@@ -1,5 +1,5 @@
 from typing import Optional
-from bs4 import BeautifulSoup
+from bs4 import Tag
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.properties_extractor import change_caps
@@ -19,7 +19,7 @@ class Run(BaseProperties):
         self.styles_extractor = styles_extractor
         super().__init__(properties)
 
-    def get_text(self, xml: BeautifulSoup) -> None:
+    def get_text(self, xml: Tag) -> None:
         """
         Makes the text of run.
         :param xml: BeautifulSoup tree with run properties

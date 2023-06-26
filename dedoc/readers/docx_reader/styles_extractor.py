@@ -3,7 +3,7 @@ import re
 from enum import Enum
 from typing import Optional, List
 
-from bs4 import BeautifulSoup
+from bs4 import Tag, BeautifulSoup
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.data_structures.run import Run
@@ -18,7 +18,7 @@ class StyleType(Enum):
 
 class StylesExtractor:
 
-    def __init__(self, xml: BeautifulSoup, logger: logging.Logger) -> None:
+    def __init__(self, xml: Optional[BeautifulSoup], logger: logging.Logger) -> None:
         """
         :param xml: BeautifulSoup tree with styles
         :param logger: logger
@@ -87,7 +87,7 @@ class StylesExtractor:
             except KeyError as error:
                 self.logger.info(error)
 
-    def __get_styles_hierarchy(self, style: BeautifulSoup, style_id: str, style_type: StyleType) -> List[BeautifulSoup]:
+    def __get_styles_hierarchy(self, style: Tag, style_id: str, style_type: StyleType) -> List[Tag]:
         """
         Make the list with styles hierarchy.
         :param style: the first style in the hierarchy
@@ -112,7 +112,7 @@ class StylesExtractor:
         self.__styles_hierarchy_cache[key] = styles
         return styles
 
-    def __apply_styles(self, old_properties: BaseProperties, styles: List[BeautifulSoup]) -> None:
+    def __apply_styles(self, old_properties: BaseProperties, styles: List[Tag]) -> None:
         """
         Applies all styles to old_properties according to the hierarchy:
         defaults -> paragraph -> numbering -> character
@@ -125,7 +125,7 @@ class StylesExtractor:
             if current_style.rPr:
                 change_run_properties(old_properties, current_style.rPr)
 
-    def __find_style(self, style_id: str, style_type: StyleType) -> Optional[BeautifulSoup]:
+    def __find_style(self, style_id: str, style_type: StyleType) -> Optional[Tag]:
         """
         Finds style tree with given style_id and style_type.
         :param style_id: styleId for given style

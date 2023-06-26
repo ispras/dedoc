@@ -33,9 +33,9 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
                     other_fields: Optional[dict] = None) -> bool:
         """
         Check if the document has .docx extension.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
         """
-        return converted_filename.endswith("docx")
+        return converted_filename.lower().endswith("docx")
 
     def add_metadata(self,
                      document: UnstructuredDocument,
@@ -50,17 +50,22 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
         Add the predefined list of metadata for the docx documents.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
         """
-        if parameters is None:
-            parameters = {}
+        parameters = {} if parameters is None else parameters
+
+        result = super().add_metadata(document=document,
+                                      directory=directory,
+                                      filename=filename,
+                                      converted_filename=converted_filename,
+                                      original_filename=original_filename,
+                                      parameters=parameters,
+                                      version=version,
+                                      other_fields=other_fields)
+
         file_path = os.path.join(directory, converted_filename)
         docx_other_fields = self._get_docx_fields(file_path)
-        if other_fields is not None and len(other_fields) > 0:
-            docx_other_fields = {**docx_other_fields, **other_fields}
 
-        meta_info = self._get_base_meta_information(directory, filename, original_filename, parameters)
-        meta_info["other_fields"] = docx_other_fields
-        document.metadata = meta_info
-        return document
+        result.metadata["other_fields"] = {**result.metadata.get("other_fields", {}), **docx_other_fields}
+        return result
 
     def __convert_date(self, date: Optional[datetime]) -> Optional[int]:
         if date is not None:

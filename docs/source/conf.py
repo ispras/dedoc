@@ -24,7 +24,8 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
-    'sphinx_rtd_theme'
+    'sphinx_rtd_theme',
+    'linuxdoc.rstFlatTable'
 ]
 exclude_patterns = []
 highlight_language = "python3"

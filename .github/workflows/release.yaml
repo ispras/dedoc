@@ -1,12 +1,8 @@
 name: Publish to PyPI
 
 on:
-  push:
-    branches:
-      - develop
-      - master
-    paths:
-      - VERSION  # publish only when version has been changed
+  release:
+    types: [published]
 
 jobs:
   # Publish the package to PyPI https://pypi.org
@@ -14,22 +10,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v1
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: '3.9'
+
+#      - name: Check version correctness
+#        run: |
+#          python3 .github/check_version.py --branch ${{ github.event.release.target_commitish }} --tag $GITHUB_REF_NAME \
+#                    --new_version $(< VERSION) --old_version $(git cat-file -p $(git rev-parse "$GITHUB_SHA"^1):VERSION) \
+#                    --pre_release ${{ github.event.release.prerelease }}
 
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
           pip3 install build twine
 
-      - name: Build and publish to PyPI  # TODO change to pypi instead of test pypi
+      - name: Build and publish to PyPI
+        if: ${{ success() }}  # publish only when version passed the checks
         env:
-          TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}  # TODO delete TEST_ in the name of the variable
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}  # TODO delete TEST_ in the name of the variable
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           python3 -m build -w
           twine check dist/*
-          twine upload --repository testpypi dist/*
+          twine upload --repository pypi dist/*
+
+      - name: Push to dockerhub
+        if: ${{ success() }}
+        run: |
+          docker build -f docker/Dockerfile -t dedocproject/dedoc:$GITHUB_REF_NAME .
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+          docker tag dedocproject/dedoc:$GITHUB_REF_NAME dedocproject/dedoc:latest
+          docker push dedocproject/dedoc:$GITHUB_REF_NAME
+          docker push dedocproject/dedoc:latest

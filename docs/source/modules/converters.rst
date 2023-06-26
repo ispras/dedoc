@@ -1,3 +1,5 @@
+.. _dedoc_converters:
+
 dedoc.converters
 ================
 
@@ -7,6 +9,10 @@ dedoc.converters
 
 .. autoclass:: dedoc.converters.FileConverterComposition
     :special-members: __init__
+    :members:
+
+.. autoclass:: dedoc.converters.BinaryConverter
+    :show-inheritance:
     :members:
 
 .. autoclass:: dedoc.converters.DocxConverter

@@ -1,5 +1,5 @@
 from typing import Optional
-from bs4 import BeautifulSoup
+from bs4 import Tag
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.data_structures.run import Run
@@ -12,7 +12,7 @@ from dedoc.readers.docx_reader.styles_extractor import StylesExtractor, StyleTyp
 class Paragraph(BaseProperties):
 
     def __init__(self,
-                 xml: BeautifulSoup,
+                 xml: Tag,
                  styles_extractor: StylesExtractor,
                  numbering_extractor: NumberingExtractor,
                  footnote_extractor: FootnoteExtractor,

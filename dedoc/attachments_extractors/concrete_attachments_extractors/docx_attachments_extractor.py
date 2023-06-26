@@ -1,9 +1,10 @@
 import hashlib
 import os
+import re
 import tempfile
 import zipfile
 from typing import List, Optional
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_office_attachments_extractor import AbstractOfficeAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
@@ -51,13 +52,19 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
         """
         result = []
         try:
-            bs = BeautifulSoup(document.read('word/document.xml'), 'xml')
+            content = document.read('word/document.xml')
         except KeyError:
-            bs = BeautifulSoup(document.read('word/document2.xml'), 'xml')
+            content = document.read('word/document2.xml')
+
+        content = re.sub(br"\n[\t ]*", b"", content)
+        bs = BeautifulSoup(content, 'xml')
 
         paragraphs = [p for p in bs.body]
         diagram_paragraphs = []
         for paragraph in paragraphs:
+            if not isinstance(paragraph, Tag):
+                continue
+
             extracted = paragraph.extract()
             if extracted.pict:
                 diagram_paragraphs.append(extracted)

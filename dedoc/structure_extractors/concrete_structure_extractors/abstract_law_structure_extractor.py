@@ -17,7 +17,7 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
     """
     This class is used for extraction structure from laws.
 
-    TODO structure description.
+    You can find the description of this type of structure in the section :ref:`law_structure`.
     """
 
     def __init__(self, *, config: dict) -> None:
@@ -30,6 +30,7 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
         self.hierarchy_level_builders = [StubHierarchyLevelBuilder()]
         self.hl_type = "law"
         self.init_hl_depth = 1
+        self.except_words = {"приказ", "положение", "требования", "постановление", "перечень", "регламент", "закон"}
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
         """
@@ -38,6 +39,7 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
         :class:`~dedoc.structure_extractors.AbstractStructureExtractor`.
         """
         if document.metadata.get("file_type") in recognized_mimes.txt_like_format:
+            document.lines = self.__preprocess_lines(document.lines)
             predictions = self.txt_classifier.predict(document.lines)
         else:
             predictions = self.classifier.predict(document.lines)
@@ -75,6 +77,25 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
         document.lines = self._postprocess_lines(header_lines + body_lines + cellar_lines + applications_lines)
 
         return document
+
+    def __preprocess_lines(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:
+        fixed_lines = []
+
+        for line in lines:
+            words = [word for word in line.line.split() if word.isalnum()]
+            words_len = [len(w) for w in words]
+
+            if len(words) > 0 and max(words_len) == 1:
+                word = "".join(words)
+                if word.lower() in self.except_words:
+                    word += "\n"
+                    line = LineWithMeta(line=word, metadata=line.metadata, annotations=line.annotations, uid=line.uid)
+                    fixed_lines.append(line)
+                    continue
+
+            fixed_lines.append(line)
+
+        return fixed_lines
 
     @abstractmethod
     def _postprocess_lines(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:

@@ -7,8 +7,12 @@ import os
 import random
 import re
 import time
+import requests
+import json
 from os.path import splitext
-from typing import List, Optional, TypeVar, Tuple, Iterable, Iterator
+from typing import List, Optional, TypeVar, Tuple, Iterable, Iterator, Dict, Any
+
+from Levenshtein._levenshtein import ratio
 from dateutil.parser import parse
 from charset_normalizer import from_bytes
 
@@ -30,6 +34,10 @@ def flatten(data: List[List[T]]) -> Iterable[T]:
     for group in data:
         for item in group:
             yield item
+
+
+def identity(x: T) -> T:
+    return x
 
 
 def get_batch(size: int, iterable: Iterator[T]) -> Iterator[List[T]]:
@@ -168,6 +176,12 @@ def similarity(s1: str, s2: str) -> float:
     return matcher.ratio()
 
 
+def similarity_levenshtein(str1: str, str2: str) -> float:
+    str1 = str1.lower()
+    str2 = str2.lower()
+    return ratio(str1, str2)
+
+
 def convert_datetime(time_string: str) -> int:
     """
     convert string_time in ISO/IEC 8824 format into UnixTime
@@ -199,3 +213,16 @@ def check_filename_length(filename: str) -> str:
         filename = name[:max_filename_length - len(ext)] + ext
 
     return filename
+
+
+def send_file(host: str, file_name: str, file_path: str, parameters: dict) -> Dict[str, Any]:
+    with open(file_path, 'rb') as file:
+        # file we want to parse
+        files = {'file': (file_name, file)}
+        # dict with additional parameters
+        # and now we send post request with attached file and parameters.
+        r = requests.post("{}/upload".format(host), files=files, data=parameters)
+        # wait for response, parse json result and print it
+        assert r.status_code == 200
+        result = json.loads(r.content.decode())
+        return result

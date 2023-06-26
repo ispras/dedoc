@@ -1,0 +1,21 @@
+{
+  "title": "Some title",
+  "port": 5555,
+  "debug": false,
+  "labels": [
+    { "label": "paragraph", "color": "#f00" },
+    { "label": "not_paragraph", "color": "#ffa500" },
+    { "label": "Other", "color": "#0ff" }
+  ],
+  "multiclass": false,
+  "input_path": "tasks.json",
+  "image_key": ["task_path"],
+  "default_label_key": ["default_label"],
+  "task_instruction_key": ["additional_info"],
+  "result_key": "labeled",
+  "output_path": "law_classifier_TASK_ID.json",
+  "instruction": "Type some <b>hypertext</b> for label experts!",
+  "templates_dir": "examples",
+  "confirm_required": false,
+  "sampling": "sequential"
+}

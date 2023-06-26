@@ -25,7 +25,7 @@ class TestApiPdfReader(AbstractTestApiDocReader):
 
     def test_pdf(self) -> None:
         file_name = "example.pdf"
-        result = self._send_request(file_name, data=dict(with_attachments=True, document_type="", pdf_with_text_layer="true"))
+        result = self._send_request(file_name, data=dict(with_attachments=True, document_type="", pdf_with_text_layer="false"))
         self.__check_example_file(result)
         self.__check_metainfo(result['metadata'], 'application/pdf', file_name)
         self.assertEqual([], result['attachments'])
@@ -131,6 +131,26 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self.assertTrue(len(result["content"]["tables"]), len(table_refs))
         for table in result["content"]["tables"]:
             self.assertTrue(table["metadata"]["uid"] in table_refs)
+
+    def test_pdf_with_some_tables(self) -> None:
+        file_name = os.path.join("..", "pdf_with_text_layer", "VVP_6_tables.pdf")
+        result = self._send_request(file_name, data={"pdf_with_text_layer": "true"})
+        tree = result["content"]["structure"]
+        self._check_tree_sanity(tree)
+        self._test_table_refs(result["content"])
+
+        # checks indentations
+        par = self._get_by_tree_path(tree, "0.4.0.0")
+        annotations = par["annotations"]
+        self.assertIn({"end": 170, 'value': '600', 'name': 'indentation', 'start': 0}, annotations)
+        self.assertIn("Методика расчета ВВП по доходам характеризуется суммой национального\n", par["text"])
+
+    def test_pdf_with_only_table(self) -> None:
+        file_name = os.path.join("..", "pdf_with_text_layer", "VVP_global_table.pdf")
+        result = self._send_request(file_name)
+
+        self.assertTrue(result["content"]["tables"][0]["metadata"]["uid"] ==
+                        result["content"]["structure"]["subparagraphs"][0]["annotations"][0]["value"])
 
     def test_2_columns(self) -> None:
         file_name = os.path.join("..", "scanned", "example_2_columns.png")

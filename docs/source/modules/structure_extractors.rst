@@ -1,3 +1,5 @@
+.. _dedoc_structure_extractors:
+
 dedoc.structure_extractors
 ==========================
 

@@ -3,7 +3,7 @@ import unittest
 import cv2
 import os
 
-from dedoc.readers.scanned_reader.pdfscanned_reader.ocr.ocr_line_extractor import OCRLineExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
 from tests.test_utils import get_test_config
 
 

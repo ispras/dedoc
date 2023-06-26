@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title> Загрузка файла </title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" href="static_file?fname=styles.css" />
+</head>
+
+<div class="container">
+    <h2>Распознавание структуры документа</h2>
+</div>
+
+<body class="body-upload">
+    <div id="Tab" class="container">
+        <div class="tab-content ">
+            <div class="tab-pane active" id="1">
+
+                <form class="box" method="post" enctype=multipart/form-data action="/upload_archive">
+                    <p>
+                        <label id="pdf_with_text_layer">
+                            <select name="pdf_with_text_layer">
+                                <option value="true">true</option>
+                                <option value="false">false</option>
+                                <option value="auto" selected>auto</option>
+                            </select> pdf_with_text_layer
+                        </label>
+                    </p>
+
+                    <p>
+                        <label id="language-2">
+                            <select name="language">
+                                <option value="rus" selected>rus</option>
+                                <option value="eng">eng</option>
+                                <option value="rus+eng">rus+eng</option>
+                            </select> language
+                        </label>
+                    </p>
+
+                    <p>
+                        <label>
+                            <input type="checkbox" name="need_header_footer_analysis" value=True>
+                            need_header_footer_analysis
+                        </label>
+                    </p>
+
+                    <p>
+                        <label> Размер задания:
+                            <input type="number" name="task_size" value="250" min="1" max="1000">
+                        </label>
+                    </p>
+
+                    <p>
+                        <label>
+                            <select name="document_type">
+                                <option value="law" selected>law</option>
+                                <option value="tz">tz</option>
+                                <option value="diploma">diploma</option>
+                            </select> document_type
+                        </label>
+                    </p>
+
+                    <p>
+                        <label>
+                            <select name="type_of_task">
+                                <option value="law_classifier" selected>law</option>
+                                <option value="tz_classifier">tz</option>
+                                <option value="diploma_classifier">diploma</option>
+                                <option value="header_classifier">header_classifier</option>
+                                <option value="paragraph_classifier">paragraph</option>
+                                <option value="tables_classifier">tables</option>
+                            </select> type_of_task
+                        </label>
+                    </p>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type=file name=file class="btn btn-default" data-buttonText="Выберите файл" id="select-file-box" onchange="UpdateVisibility()">
+                        </div>
+
+                        <div class="col-md-2">
+                            <input type=submit value=Загрузить class="btn btn-default">
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let htmlFieldsBox = document.getElementById("html-fields")
+        let attachmentsBox = document.getElementById("with-attachments-box")
+        let fileBox = document.getElementById("select-file-box")
+        htmlFieldsBox.style.display = "none"
+
+        function UpdateVisibility() {
+            let withAttachments = attachmentsBox.checked
+            let isJson = fileBox.value.endsWith(".json")
+            htmlFieldsBox.style.display = isJson && withAttachments ? "block" : "none"
+        }
+
+    </script>
+</body>
+</html>

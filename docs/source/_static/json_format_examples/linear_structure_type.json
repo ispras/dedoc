@@ -1,0 +1,512 @@
+{
+  "version": "2023.05.26",
+  "warnings": [],
+  "content": {
+    "structure": {
+      "node_id": "0",
+      "text": "",
+      "annotations": [],
+      "metadata": {
+        "page_id": 0,
+        "line_id": 0,
+        "paragraph_type": "root",
+        "other_fields": {}
+      },
+      "subparagraphs": [
+        {
+          "node_id": "0.0",
+          "text": "Document example",
+          "annotations": [
+            {
+              "start": 0,
+              "end": 16,
+              "name": "indentation",
+              "value": "0"
+            },
+            {
+              "start": 0,
+              "end": 16,
+              "name": "alignment",
+              "value": "center"
+            },
+            {
+              "start": 0,
+              "end": 16,
+              "name": "spacing",
+              "value": "240"
+            },
+            {
+              "start": 0,
+              "end": 16,
+              "name": "style",
+              "value": "Title"
+            },
+            {
+              "start": 0,
+              "end": 16,
+              "name": "size",
+              "value": "28.0"
+            },
+            {
+              "start": 0,
+              "end": 16,
+              "name": "bold",
+              "value": "True"
+            }
+          ],
+          "metadata": {
+            "page_id": 0,
+            "line_id": 0,
+            "paragraph_type": "header",
+            "other_fields": {}
+          },
+          "subparagraphs": []
+        },
+        {
+          "node_id": "0.1",
+          "text": "Heading",
+          "annotations": [
+            {
+              "start": 0,
+              "end": 7,
+              "name": "indentation",
+              "value": "0"
+            },
+            {
+              "start": 0,
+              "end": 7,
+              "name": "alignment",
+              "value": "left"
+            },
+            {
+              "start": 0,
+              "end": 7,
+              "name": "spacing",
+              "value": "240"
+            },
+            {
+              "start": 0,
+              "end": 7,
+              "name": "style",
+              "value": "Heading 1"
+            },
+            {
+              "start": 0,
+              "end": 7,
+              "name": "size",
+              "value": "18.0"
+            },
+            {
+              "start": 0,
+              "end": 7,
+              "name": "bold",
+              "value": "True"
+            }
+          ],
+          "metadata": {
+            "page_id": 0,
+            "line_id": 1,
+            "paragraph_type": "header",
+            "other_fields": {}
+          },
+          "subparagraphs": []
+        },
+        {
+          "node_id": "0.2",
+          "text": "Some text.\n",
+          "annotations": [
+            {
+              "start": 0,
+              "end": 11,
+              "name": "indentation",
+              "value": "0"
+            },
+            {
+              "start": 0,
+              "end": 11,
+              "name": "alignment",
+              "value": "left"
+            },
+            {
+              "start": 0,
+              "end": 11,
+              "name": "spacing",
+              "value": "120"
+            },
+            {
+              "start": 0,
+              "end": 11,
+              "name": "style",
+              "value": "Body Text"
+            },
+            {
+              "start": 0,
+              "end": 11,
+              "name": "size",
+              "value": "16.0"
+            }
+          ],
+          "metadata": {
+            "page_id": 0,
+            "line_id": 2,
+            "paragraph_type": "raw_text",
+            "other_fields": {}
+          },
+          "subparagraphs": []
+        },
+        {
+          "node_id": "0.3",
+          "text": "Bold, italic, small text.\n",
+          "annotations": [
+            {
+              "start": 0,
+              "end": 26,
+              "name": "indentation",
+              "value": "0"
+            },
+            {
+              "start": 0,
+              "end": 26,
+              "name": "alignment",
+              "value": "left"
+            },
+            {
+              "start": 0,
+              "end": 26,
+              "name": "spacing",
+              "value": "140"
+            },
+            {
+              "start": 0,
+              "end": 26,
+              "name": "style",
+              "value": "Body Text"
+            },
+            {
+              "start": 0,
+              "end": 14,
+              "name": "size",
+              "value": "16.0"
+            },
+            {
+              "start": 19,
+              "end": 26,
+              "name": "size",
+              "value": "16.0"
+            },
+            {
+              "start": 0,
+              "end": 4,
+              "name": "bold",
+              "value": "True"
+            },
+            {
+              "start": 6,
+              "end": 12,
+              "name": "italic",
+              "value": "True"
+            },
+            {
+              "start": 14,
+              "end": 19,
+              "name": "size",
+              "value": "10.0"
+            },
+            {
+              "start": 0,
+              "end": 26,
+              "name": "table",
+              "value": "3a327789721e09b3fa6fd9560f3ee263"
+            }
+          ],
+          "metadata": {
+            "page_id": 0,
+            "line_id": 3,
+            "paragraph_type": "raw_text",
+            "other_fields": {}
+          },
+          "subparagraphs": []
+        },
+        {
+          "node_id": "0.4",
+          "text": "\n",
+          "annotations": [
+            {
+              "start": 0,
+              "end": 1,
+              "name": "indentation",
+              "value": "0"
+            },
+            {
+              "start": 0,
+              "end": 1,
+              "name": "alignment",
+              "value": "left"
+            },
+            {
+              "start": 0,
+              "end": 1,
+              "name": "spacing",
+              "value": "140"
+            },
+            {
+              "start": 0,
+              "end": 1,
+              "name": "style",
+              "value": "Normal"
+            }
+          ],
+          "metadata": {
+            "page_id": 0,
+            "line_id": 4,
+            "paragraph_type": "raw_text",
+            "other_fields": {}
+          },
+          "subparagraphs": []
+        },
+        {
+          "node_id": "0.5",
+          "text": "List header:",
+          "annotations": [
+            {
+              "start": 0,
+              "end": 12,
+              "name": "indentation",
+              "value": "0"
+            },
+            {
+              "start": 0,
+              "end": 12,
+              "name": "alignment",
+              "value": "left"
+            },
+            {
+              "start": 0,
+              "end": 12,
+              "name": "spacing",
+              "value": "0"
+            },
+            {
+              "start": 0,
+              "end": 12,
+              "name": "style",
+              "value": "Normal"
+            },
+            {
+              "start": 0,
+              "end": 12,
+              "name": "size",
+              "value": "14.0"
+            }
+          ],
+          "metadata": {
+            "page_id": 0,
+            "line_id": 5,
+            "paragraph_type": "raw_text",
+            "other_fields": {}
+          },
+          "subparagraphs": []
+        },
+        {
+          "node_id": "0.6",
+          "text": "•\tfirst item;",
+          "annotations": [
+            {
+              "start": 0,
+              "end": 13,
+              "name": "indentation",
+              "value": "360.0"
+            },
+            {
+              "start": 0,
+              "end": 13,
+              "name": "alignment",
+              "value": "left"
+            },
+            {
+              "start": 0,
+              "end": 13,
+              "name": "spacing",
+              "value": "0"
+            },
+            {
+              "start": 0,
+              "end": 13,
+              "name": "style",
+              "value": "Normal"
+            },
+            {
+              "start": 0,
+              "end": 13,
+              "name": "size",
+              "value": "14.0"
+            }
+          ],
+          "metadata": {
+            "page_id": 0,
+            "line_id": 6,
+            "paragraph_type": "list_item",
+            "other_fields": {}
+          },
+          "subparagraphs": []
+        },
+        {
+          "node_id": "0.7",
+          "text": "•\tsecond item.",
+          "annotations": [
+            {
+              "start": 0,
+              "end": 14,
+              "name": "indentation",
+              "value": "360.0"
+            },
+            {
+              "start": 0,
+              "end": 14,
+              "name": "alignment",
+              "value": "left"
+            },
+            {
+              "start": 0,
+              "end": 14,
+              "name": "spacing",
+              "value": "0"
+            },
+            {
+              "start": 0,
+              "end": 14,
+              "name": "style",
+              "value": "Normal"
+            },
+            {
+              "start": 0,
+              "end": 14,
+              "name": "size",
+              "value": "14.0"
+            },
+            {
+              "start": 0,
+              "end": 14,
+              "name": "attachment",
+              "value": "image1.png"
+            }
+          ],
+          "metadata": {
+            "page_id": 0,
+            "line_id": 7,
+            "paragraph_type": "list_item",
+            "other_fields": {}
+          },
+          "subparagraphs": []
+        }
+      ]
+    },
+    "tables": [
+      {
+        "cells": [
+          [
+            "Table header",
+            "Table header"
+          ],
+          [
+            "Vertically merged cells",
+            "Text 1"
+          ],
+          [
+            "Vertically merged cells",
+            "Text 2"
+          ],
+          [
+            "Text 3",
+            "Text 4"
+          ]
+        ],
+        "metadata": {
+          "uid": "3a327789721e09b3fa6fd9560f3ee263",
+          "page_id": null,
+          "is_inserted": false,
+          "cell_properties": [
+            [
+              {
+                "colspan": 2,
+                "rowspan": 1,
+                "invisible": false
+              },
+              {
+                "colspan": 1,
+                "rowspan": 1,
+                "invisible": true
+              }
+            ],
+            [
+              {
+                "colspan": 1,
+                "rowspan": 2,
+                "invisible": false
+              },
+              {
+                "colspan": 1,
+                "rowspan": 1,
+                "invisible": false
+              }
+            ],
+            [
+              {
+                "colspan": 1,
+                "rowspan": 1,
+                "invisible": true
+              },
+              {
+                "colspan": 1,
+                "rowspan": 1,
+                "invisible": false
+              }
+            ],
+            [
+              {
+                "colspan": 1,
+                "rowspan": 1,
+                "invisible": false
+              },
+              {
+                "colspan": 1,
+                "rowspan": 1,
+                "invisible": false
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "uid": "doc_uid_auto_5ce69246-0e90-11ee-8789-4549ad8e7206",
+    "file_name": "example_return_format.docx",
+    "size": 21270,
+    "modified_time": 1687172369,
+    "created_time": 1687172369,
+    "access_time": 1687172369,
+    "file_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "document_subject": "",
+    "keywords": "",
+    "category": "",
+    "comments": "",
+    "author": "",
+    "last_modified_by": "",
+    "created_date": 1568736411,
+    "modified_date": 1686923436,
+    "last_printed_date": null,
+    "other_fields": {
+      "document_subject": "",
+      "keywords": "",
+      "category": "",
+      "comments": "",
+      "author": "",
+      "last_modified_by": "",
+      "created_date": 1568736411,
+      "modified_date": 1686923436,
+      "last_printed_date": null
+    }
+  },
+  "attachments": []
+}

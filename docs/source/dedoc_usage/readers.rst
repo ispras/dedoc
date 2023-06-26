@@ -1,4 +1,0 @@
-Using dedoc readers
-===================
-
-TODO

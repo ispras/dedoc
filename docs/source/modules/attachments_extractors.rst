@@ -1,3 +1,5 @@
+.. _dedoc_attachments_extractors:
+
 dedoc.attachments_extractors
 ============================
 
@@ -14,6 +16,11 @@ dedoc.attachments_extractors
     :members:
 
 .. autoclass:: dedoc.attachments_extractors.ExcelAttachmentsExtractor
+    :show-inheritance:
+    :special-members: __init__
+    :members:
+
+.. autoclass:: dedoc.attachments_extractors.JsonAttachmentsExtractor
     :show-inheritance:
     :special-members: __init__
     :members:

@@ -2,6 +2,7 @@ Cython==0.29.28
 flake8==3.9.2
 pyflakes==2.3.0
 beautifulsoup4==4.10.0
+catboost==1.1
 charset-normalizer==2.0.12
 docx==0.2.4
 huggingface-hub==0.14.1
@@ -12,7 +13,6 @@ python-pptx==0.6.21
 requests==2.29.0
 ujson==5.3.0
 orjson==3.8.11
-Werkzeug==2.0.3
 xlrd==1.2.0
 numpy==1.22.3
 PyPDF2==1.26.0
@@ -38,7 +38,10 @@ uvicorn==0.22.0
 python-logstash-async==2.5.0
 python-multipart==0.0.6
 starlette==0.26.1
+xgbfir==0.3.1
+wget==3.2
 # TODO remove all flask
+Werkzeug==2.0.3
 Flask==2.0.3
 flask_cors==3.0.10
 flask-restx==0.5.1

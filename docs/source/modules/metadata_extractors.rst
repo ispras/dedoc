@@ -1,3 +1,5 @@
+.. _dedoc_metadata_extractors:
+
 dedoc.metadata_extractors
 =========================
 
@@ -19,6 +21,11 @@ dedoc.metadata_extractors
     :members:
 
 .. autoclass:: dedoc.metadata_extractors.ImageMetadataExtractor
+    :show-inheritance:
+    :special-members: __init__
+    :members:
+
+.. autoclass:: dedoc.metadata_extractors.NoteMetadataExtractor
     :show-inheritance:
     :special-members: __init__
     :members:

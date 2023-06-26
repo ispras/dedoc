@@ -1,3 +1,5 @@
+.. _dedoc_readers:
+
 dedoc.readers
 =============
 
@@ -23,6 +25,11 @@ dedoc.readers
     :special-members: __init__
     :members:
 
+.. autoclass:: dedoc.readers.EmailReader
+    :show-inheritance:
+    :special-members: __init__
+    :members:
+
 .. autoclass:: dedoc.readers.ExcelReader
     :show-inheritance:
     :special-members: __init__
@@ -43,22 +50,37 @@ dedoc.readers
     :special-members: __init__
     :members:
 
+.. autoclass:: dedoc.readers.NoteReader
+    :show-inheritance:
+    :special-members: __init__
+    :members:
+
 .. autoclass:: dedoc.readers.PptxReader
     :show-inheritance:
     :special-members: __init__
     :members:
 
-.. autoclass:: dedoc.readers.PdfBase
+.. autoclass:: dedoc.readers.PdfBaseReader
     :show-inheritance:
     :special-members: __init__
     :members:
 
-.. autoclass:: dedoc.readers.PdfScanReader
+.. autoclass:: dedoc.readers.PdfImageReader
     :show-inheritance:
     :special-members: __init__
     :members:
 
-.. autoclass:: dedoc.readers.TabbyPDFReader
+.. autoclass:: dedoc.readers.PdfTabbyReader
+    :show-inheritance:
+    :special-members: __init__
+    :members:
+
+.. autoclass:: dedoc.readers.PdfTxtlayerReader
+    :show-inheritance:
+    :special-members: __init__
+    :members:
+
+.. autoclass:: dedoc.readers.PdfAutoReader
     :show-inheritance:
     :special-members: __init__
     :members:
