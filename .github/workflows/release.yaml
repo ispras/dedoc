@@ -11,6 +11,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v1
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -36,3 +37,12 @@ jobs:
           python3 -m build -w
           twine check dist/*
           twine upload --repository testpypi dist/*
+
+      - name: Push to dockerhub
+        if: ${{ success() }}
+        run: |
+          docker build -f docker/Dockerfile -t dedocproject/dedoc:$GITHUB_REF_NAME .
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+          docker tag dedocproject/dedoc:$GITHUB_REF_NAME dedocproject/dedoc:latest
+          docker push dedocproject/dedoc:$GITHUB_REF_NAME
+          docker push dedocproject/dedoc:latest
