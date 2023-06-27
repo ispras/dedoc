@@ -9,6 +9,7 @@ from typing import Optional, List
 from bs4 import BeautifulSoup, Tag
 
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
+from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -23,10 +24,11 @@ from dedoc.utils.utils import calculate_file_hash
 
 
 class DocxDocument:
-    def __init__(self, path: str, logger: logging.Logger) -> None:
+    def __init__(self, path: str, attachments: List[AttachedFile], logger: logging.Logger) -> None:
         self.logger = logger
         self.path = path
         self.path_hash = calculate_file_hash(path=path)
+        self.attachment_name2uid = {attachment.original_name: attachment.uid for attachment in attachments}
 
         self.document_bs_tree = self.__get_bs_tree('word/document.xml')
         if self.document_bs_tree is None:
@@ -179,11 +181,22 @@ class DocxDocument:
 
         for image_xml in xmls:
             blips = image_xml.find_all("a:blip")
-            image_uid = images_rels[blips[0]["r:embed"]]
+            image_name = images_rels[blips[0]["r:embed"]]
+
+            if image_name in self.attachment_name2uid:
+                image_uid = self.attachment_name2uid[image_name]
+            else:
+                self.logger.info(f"Attachment with name {image_name} not found")
+                return
             image_refs[len(self.paragraph_list) - 1].append(image_uid)
 
     def __handle_diagrams_xml(self, xml: Tag, diagram_refs: dict, uids_set: set, cnt: Counter) -> None:
-        diagram_uid = hashlib.md5(xml.encode()).hexdigest()
+        diagram_name = f"{hashlib.md5(xml.encode()).hexdigest()}.docx"
+        if diagram_name in self.attachment_name2uid:
+            diagram_uid = self.attachment_name2uid[diagram_name]
+        else:
+            self.logger.info(f"Attachment with name {diagram_name} not found")
+            return
         self.__prepare_paragraph_list(uids_set, cnt)
         diagram_refs[len(self.paragraph_list) - 1].append(diagram_uid)
 

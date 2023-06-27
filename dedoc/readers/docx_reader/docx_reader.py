@@ -3,12 +3,12 @@ import os
 from typing import Optional, List
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.docx_reader.data_structures.docx_document import DocxDocument
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
 class DocxReader(BaseReader):
@@ -34,8 +34,9 @@ class DocxReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        docx_document = self._parse_document(path=path)
         attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path), filename=os.path.basename(path), parameters=parameters)
+
+        docx_document = DocxDocument(path=path, attachments=attachments, logger=self.logger)
         lines = self.__fix_lines(docx_document.lines)
         return UnstructuredDocument(lines=lines, tables=docx_document.tables, attachments=attachments, warnings=[])
 
@@ -54,7 +55,3 @@ class DocxReader(BaseReader):
                     annotation.end += 1
 
         return lines
-
-    def _parse_document(self, path: str) -> DocxDocument:
-        docx_document = DocxDocument(path=path, logger=self.logger)
-        return docx_document
