@@ -70,7 +70,7 @@ class DocxDocument:
                 continue
 
             if paragraph_xml.pict:  # diagrams are saved using docx_attachments_extractor
-                self.__handle_diagrams_xml(paragraph_xml, diagram_refs, uids_set, cnt)
+                self.__handle_diagram_xml(paragraph_xml, diagram_refs, uids_set, cnt)
                 continue
 
             if paragraph_xml.name != 'p':
@@ -187,10 +187,10 @@ class DocxDocument:
                 image_uid = self.attachment_name2uid[image_name]
             else:
                 self.logger.info(f"Attachment with name {image_name} not found")
-                return
+                continue
             image_refs[len(self.paragraph_list) - 1].append(image_uid)
 
-    def __handle_diagrams_xml(self, xml: Tag, diagram_refs: dict, uids_set: set, cnt: Counter) -> None:
+    def __handle_diagram_xml(self, xml: Tag, diagram_refs: dict, uids_set: set, cnt: Counter) -> None:
         diagram_name = f"{hashlib.md5(xml.encode()).hexdigest()}.docx"
         if diagram_name in self.attachment_name2uid:
             diagram_uid = self.attachment_name2uid[diagram_name]
