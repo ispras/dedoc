@@ -4,6 +4,9 @@ import requests
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
+# test_structure
+# тесты на ошибки вынести в отдельный файл
+# вести файлик с темами тестов
 
 class TestApi(AbstractTestApiDocReader):
 

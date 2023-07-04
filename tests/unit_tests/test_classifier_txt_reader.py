@@ -4,6 +4,11 @@ from unittest import TestCase
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from tests.test_utils import get_test_config
 
+# на законы и тз в txt формате
+# проверить, что такое префикс
+# выделить группы тестов
+# скинуть в новую подпапку отрефакторенные тесты
+# удалять дублирующиеся тесты
 
 class TestClassifierTxtReader(TestCase):
     config = get_test_config()

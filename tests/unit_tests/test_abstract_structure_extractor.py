@@ -4,6 +4,10 @@ from dedoc.data_structures.annotation import Annotation
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
 
 
+# скорее всего annotation merger ???
+# написать документацию к классам !!!
+# написать комменты к функциям
+
 class TestAbstractStructureExtractor(unittest.TestCase):
 
     def test_split_annotation_left(self) -> None:

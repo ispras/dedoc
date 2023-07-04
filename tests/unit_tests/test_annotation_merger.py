@@ -5,6 +5,8 @@ from dedoc.data_structures.annotation import Annotation
 from dedoc.utils.annotation_merger import AnnotationMerger
 from tests.test_utils import TestTimeout
 
+# проверить кодстайл, убрать захардкоженные пути
+# проверить, что код может быть помещён в одну стрчоку (150 символов)
 
 class TestAnnotationMerger(unittest.TestCase):
 

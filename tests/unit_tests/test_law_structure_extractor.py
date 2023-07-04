@@ -13,6 +13,9 @@ from dedoc.structure_extractors.feature_extractors.abstract_extractor import Abs
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.body_law_hierarchy_level_builder import \
     BodyLawHierarchyLevelBuilder
 
+
+# проверить, что все строчки строго до 150 символов
+
 from tests.test_utils import get_test_config, TestTimeout
 
 
