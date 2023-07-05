@@ -4,12 +4,13 @@ import re
 import tempfile
 import zipfile
 from typing import List, Optional
+
 from bs4 import BeautifulSoup, Tag
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_office_attachments_extractor import AbstractOfficeAttachmentsExtractor
+from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.extensions import recognized_extensions, recognized_mimes
-from dedoc.utils.utils import splitext_
 
 
 class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
@@ -30,17 +31,16 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
         the methods' parameters.
         """
         result = []
-        name, ext = splitext_(filename)
+        try:
+            with zipfile.ZipFile(os.path.join(tmpdir, filename), 'r') as zfile:
+                diagram_attachments = self.__extract_diagrams(zfile)
+                need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+                result += self._content2attach_file(content=diagram_attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis)
 
-        if ext.lower() != '.docx':
-            return []
+            result += self._get_attachments(tmpdir=tmpdir, filename=filename, parameters=parameters, attachments_dir="word")
 
-        with zipfile.ZipFile(os.path.join(tmpdir, filename), 'r') as zfile:
-            diagram_attachments = self.__extract_diagrams(zfile)
-            need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
-            result += self._content2attach_file(content=diagram_attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis)
-
-        result += self._get_attachments(tmpdir=tmpdir, filename=filename, parameters=parameters, attachments_dir="word")
+        except zipfile.BadZipFile:
+            raise BadFileFormatException("Bad docx file:\n file_name = {}. Seems docx is broken".format(filename))
         return result
 
     def __extract_diagrams(self, document: zipfile.ZipFile) -> List[tuple]:

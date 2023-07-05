@@ -17,11 +17,11 @@ jobs:
         with:
           python-version: '3.9'
 
-#      - name: Check version correctness
-#        run: |
-#          python3 .github/check_version.py --branch ${{ github.event.release.target_commitish }} --tag $GITHUB_REF_NAME \
-#                    --new_version $(< VERSION) --old_version $(git cat-file -p $(git rev-parse "$GITHUB_SHA"^1):VERSION) \
-#                    --pre_release ${{ github.event.release.prerelease }}
+      - name: Check version correctness
+        run: |
+          python3 .github/check_version.py --branch ${{ github.event.release.target_commitish }} --tag $GITHUB_REF_NAME \
+                    --new_version $(< VERSION) --old_version $(git cat-file -p $(git rev-parse "$GITHUB_SHA"^1):VERSION) \
+                    --pre_release ${{ github.event.release.prerelease }}
 
       - name: Install dependencies
         run: |
