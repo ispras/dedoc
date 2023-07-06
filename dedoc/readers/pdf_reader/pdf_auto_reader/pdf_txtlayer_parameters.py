@@ -1,7 +1,6 @@
 class PdfTxtlayerParameters:
 
-    def __init__(self, correct_text_layout: bool, correct_first_page: bool, is_booklet: bool) -> None:
+    def __init__(self, is_correct_text_layer: bool, is_first_page_correct: bool) -> None:
         super().__init__()
-        self.correct_text_layout = correct_text_layout
-        self.correct_first_page = correct_first_page
-        self.is_booklet = is_booklet
+        self.is_correct_text_layer = is_correct_text_layer
+        self.is_first_page_correct = is_first_page_correct

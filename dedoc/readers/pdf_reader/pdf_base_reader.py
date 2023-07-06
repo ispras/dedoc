@@ -29,7 +29,7 @@ from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer
 from dedoc.readers.pdf_reader.utils.header_footers_analysis import footer_header_analysis
 from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
 from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
-from dedoc.utils.pdf_utils import get_page_slice, get_pdf_page_count
+from dedoc.utils.pdf_utils import get_pdf_page_count
 from dedoc.utils.utils import flatten
 from dedoc.utils.utils import get_file_mime_type, splitext_
 
@@ -71,7 +71,7 @@ class PdfBaseReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        first_page, last_page = get_page_slice(parameters)
+        first_page, last_page = param_utils.get_param_page_slice(parameters)
         params_for_parse = ParametersForParseDoc(
             language=param_utils.get_param_language(parameters),
             orient_analysis_cells=param_utils.get_param_orient_analysis_cells(parameters),

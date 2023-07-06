@@ -1,7 +1,6 @@
 import logging
 from collections import namedtuple
 from typing import List
-import cv2
 import numpy as np
 from pdf2image import convert_from_path
 from pdf2image.exceptions import PDFPageCountError
@@ -38,7 +37,6 @@ class PdfTextLayerCorrectness:
         try:
             page_count = get_pdf_page_count(path)
             image, page_number, page_count = self._get_image_from_first_page(path=path, page_count=page_count)
-            is_booklet = self.__is_booklet(image)
             lang = param_utils.get_param_language(parameters)
             pdf_page_text_layer_param = \
                 self._get_page_num_and_have_text_flag_from_text_layer(path=path,
@@ -47,30 +45,12 @@ class PdfTextLayerCorrectness:
             if pdf_page_text_layer_param.have_text:
                 return self._detect_text_layer(path=path,
                                                pdf_page_text_layer_param=pdf_page_text_layer_param,
-                                               is_one_column_list=is_one_column_list,
-                                               is_booklet=is_booklet, lang=lang,
+                                               is_one_column_list=is_one_column_list, lang=lang,
                                                threshold_similarity=threshold_similarity)
             else:
-                return PdfTxtlayerParameters(False, False, is_booklet)
+                return PdfTxtlayerParameters(False, False)
         except PDFPageCountError:
-            return PdfTxtlayerParameters(False, False, False)
-
-    @staticmethod
-    def __is_booklet(image: np.ndarray) -> bool:
-        """
-        The booklet is a colorful document with complex background. Booklet required special handling, so we have to
-        classify each document like a booklet or not.
-        :param image: Image of the document page in RGB format.
-        :return: True if the document is a booklet, False otherwise.
-        """
-        # convert image from RGB to HSV (https://en.wikipedia.org/wiki/HSL_and_HSV)
-        # In that space, booklets are well separate from the ordinary documents
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        height, width, channels = image.shape
-        # Reshape into flat array of points and calculate mean color
-        flat_array = image.reshape(height * width, channels)
-        hue, saturation, value = flat_array.mean(axis=0)
-        return hue > 30 or value < 190 or saturation > 160
+            return PdfTxtlayerParameters(False, False)
 
     def __extract_text_by_ocr(self, image: np.ndarray, lang: str, page_num: int) -> List[TextWithBBox]:
         """
@@ -186,7 +166,6 @@ class PdfTextLayerCorrectness:
         return is_first_page_correct
 
     def _detect_text_layer(self, path: str, pdf_page_text_layer_param: namedtuple, is_one_column_list: List[bool],
-                           is_booklet: bool,
                            lang: str, threshold_similarity: float) -> PdfTxtlayerParameters:
         if self.catboost_model_extractor.detect_text_layer_correctness(text_layer_bboxes=pdf_page_text_layer_param.text_layer_bboxes):
             message = "assume document has almost correct text layer"
@@ -210,4 +189,4 @@ class PdfTextLayerCorrectness:
         is_first_page_correct = self._is_first_page_correct(path=path,
                                                             is_one_column=is_one_column_list[0],
                                                             is_txt_layer_correct=is_txt_layer_correct)
-        return PdfTxtlayerParameters(is_txt_layer_correct, is_first_page_correct, is_booklet)
+        return PdfTxtlayerParameters(is_txt_layer_correct, is_first_page_correct)

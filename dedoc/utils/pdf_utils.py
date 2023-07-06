@@ -25,14 +25,3 @@ def get_page_image(path: str, page_id: int) -> Optional[Image]:
     return images[0] if len(images) > 0 else None
 
 
-def get_page_slice(parameters: Dict[str, Any]) -> Tuple[Optional[int], Optional[int]]:
-    pages = parameters.get("pages", "")
-    if pages is None or pages.strip() == "":
-        return None, None
-    try:
-        first_page, last_page = pages.split(":")
-        first_page = None if first_page == "" else int(first_page) - 1
-        last_page = None if last_page == "" else int(last_page)
-        return first_page, last_page
-    except Exception:
-        raise ValueError("Bad page limit {}".format(pages))

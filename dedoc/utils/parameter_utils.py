@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict, Any, Tuple
 
 
 def get_param_language(parameters: Optional[dict]) -> str:
@@ -105,3 +105,21 @@ def get_param_table_type(parameters: Optional[dict]) -> str:
 
 def get_is_one_column_document_list(parameters: Optional[dict]) -> Optional[bool]:
     return None if parameters is None else parameters.get("is_one_column_document_list")
+
+
+def get_param_page_slice(parameters: Dict[str, Any]) -> Tuple[Optional[int], Optional[int]]:
+    """
+    Parse parameter pages = ["page_number:page_number" | "" | "page_number:" | ":page_number" : ":"]
+
+    """
+    pages = parameters.get("pages", "")
+    if pages is None or pages.strip() == "":
+        return None, None
+    try:
+        first_page, last_page = pages.split(":")
+        first_page = None if first_page == "" else int(first_page) - 1
+        last_page = None if last_page == "" else int(last_page)
+
+        return first_page, last_page
+    except Exception:
+        raise ValueError("Error input parameter 'pages'. Bad page limit {}".format(pages))

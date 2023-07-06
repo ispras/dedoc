@@ -13,8 +13,8 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
-from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
-from dedoc.utils.pdf_utils import get_page_slice, get_page_image, get_pdf_page_count
+from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer, get_param_page_slice
+from dedoc.utils.pdf_utils import get_page_image, get_pdf_page_count
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
@@ -86,37 +86,26 @@ class PdfAutoReader(BaseReader):
         """
         pdf_with_txt_layer = get_param_pdf_with_txt_layer(parameters)
         warnings = []
+        is_one_column_document_list = self.__get_one_column_document(parameters, path=path, warnings=warnings)
 
-        is_one_column_document_list, warning_list = self.__get_one_column_document(parameters, path=path)
-        parameters["is_one_column_document_list"] = is_one_column_document_list
         parameters_copy = copy.deepcopy(parameters)
+        parameters_copy["is_one_column_document_list"] = is_one_column_document_list
         parameters_copy["is_one_column_document"] = "true" if is_one_column_document_list[0] else "false"
-        for warning in warning_list:
-            if warning is not None:
-                warnings.append(warning)
+        parameters_copy["pdf_with_text_layer"] = str(pdf_with_txt_layer)
+
         text_layer_parameters = self.pdf_correctness.with_text_layer(path=path,
                                                                      parameters=parameters,
                                                                      is_one_column_list=is_one_column_document_list)
-        is_booklet = text_layer_parameters.is_booklet
-        pdf_with_text_layer = text_layer_parameters.correct_text_layout
-        is_first_page_correct = text_layer_parameters.correct_first_page
 
-        if is_booklet:
-            message = "assume document is booklet"
-            warnings.append(message)
-            self.logger.warning(message + " " + os.path.basename(path))
-
-        if pdf_with_text_layer:
+        if text_layer_parameters.is_correct_text_layer:
             result = self._handle_correct_layer(document_type=document_type,
-                                                is_first_page_correct=is_first_page_correct,
-                                                parameters=parameters,
-                                                parameters_copy=parameters_copy,
+                                                is_first_page_correct=text_layer_parameters.is_first_page_correct,
+                                                parameters=parameters_copy,
                                                 path=path,
                                                 warnings=warnings,
                                                 pdf_with_txt_layer=pdf_with_txt_layer)
         else:
             result = self._handle_incorrect_text_layer(document_type, parameters_copy, path, warnings)
-        parameters_copy["pdf_with_text_layer"] = str(pdf_with_text_layer)
 
         result.warnings.extend(warnings)
         return result
@@ -129,36 +118,48 @@ class PdfAutoReader(BaseReader):
         result = self.pdf_image_reader.read(path=path, document_type=document_type, parameters=parameters_copy)
         return result
 
+    def __preparing_first_page(self, parameters: dict) -> dict:
+        first_page, last_page = get_param_page_slice(parameters)
+        # calculate indexes for the first page parsing
+        first_page_index = 0 if first_page is None else first_page
+        last_page_index = 0
+        scan_parameters = copy.deepcopy(parameters)
+        scan_parameters["pages"] = f"{first_page_index + 1}:{last_page_index + 1}"
+
+        return scan_parameters
+
+    def __preparing_other_pages(self, parameters: dict) -> dict:
+        first_page, last_page = get_param_page_slice(parameters)
+        first_page_index = 1 if first_page is None else first_page
+        last_page_index = "" if last_page is None else last_page - 1
+        parameters["pages"] = f"{first_page_index + 1}:{last_page_index + 1}"
+
+        return parameters
+
     def _handle_correct_layer(self,
                               document_type: str,
                               is_first_page_correct: bool,
                               parameters: dict,
-                              parameters_copy: dict,
                               path: str,
                               pdf_with_txt_layer: str,
                               warnings: list) -> UnstructuredDocument:
-        message = "assume {} has correct text layer"
+        message = "assume {} has a correct text layer"
         self.logger.info(message.format(os.path.basename(path)))
-        warnings.append(message.format("document"))
-        prefix = None
+        warnings.append(message.format("the document"))
+        recognized_first_page = None
         if not is_first_page_correct:
-            message = "assume first page has no text layer"
+            message = "assume the first page hasn't a text layer"
             warnings.append(message)
             self.logger.info(message)
-            first_page, last_page = get_page_slice(parameters_copy)
-            first_page = 1 if first_page is None else first_page + 1
-            last_page = 1
-            scan_parameters = copy.deepcopy(parameters)
-            scan_parameters["pages"] = f"{first_page}:{last_page}"
-            prefix = self.pdf_image_reader.read(path=path, document_type=document_type, parameters=scan_parameters)
+            # GET THE FIRST PAGE: recognize the first page like a scanned page
+            scan_parameters = self.__preparing_first_page(parameters)
+            recognized_first_page = self.pdf_image_reader.read(path=path, document_type=document_type, parameters=scan_parameters)
+            # PREPARE PARAMETERS: from the second page we recognize the content in auto mode
+            parameters = self.__preparing_other_pages(parameters)
+
         reader = self.pdf_parser if pdf_with_txt_layer == "auto" else self.tabby_parser
-        if not is_first_page_correct:
-            first_page, last_page = get_page_slice(parameters_copy)
-            first_page = 2 if first_page is None else first_page + 1
-            last_page = "" if last_page is None else last_page
-            parameters_copy["pages"] = f"{first_page}:{last_page}"
-        result = reader.read(path=path, document_type=document_type, parameters=parameters_copy)
-        result = self._merge_documents(prefix, result) if prefix is not None else result
+        result = reader.read(path=path, document_type=document_type, parameters=parameters)
+        result = self._merge_documents(recognized_first_page, result) if recognized_first_page is not None else result
         return result
 
     def _merge_documents(self, first: UnstructuredDocument, second: UnstructuredDocument) -> UnstructuredDocument:
@@ -184,49 +185,54 @@ class PdfAutoReader(BaseReader):
                                     attachments=first.attachments + second.attachments,
                                     metadata=second.metadata)
 
-    def __get_one_column_document(self, parameters: Optional[dict], path: str) -> Tuple[List[bool], List[Optional[str]]]:
+    def __get_one_column_document(self, parameters: Optional[dict], path: str, warnings: list) -> List[bool]:
         if parameters is None:
             parameters = {}
+
         is_one_column_document = str(parameters.get("is_one_column_document", "auto"))
+
         page_count = get_pdf_page_count(path)
         if is_one_column_document.lower() != "auto":
-            return [is_one_column_document.lower() == "true" for _ in range(page_count)], [None]
+            return [is_one_column_document.lower() == "true" for _ in range(page_count)]
 
         if page_count is None:
-            return self._get_page_is_one_columns_list(path=path, start=0, stop=1)[0], [None]
-        page_check_count = min(3, page_count)
-        is_one_columns_list, warnings = self._get_page_is_one_columns_list(path=path, start=0, stop=page_check_count)
-        if page_count == page_check_count:
-            self.logger.info(warnings)
-            return is_one_columns_list, warnings
+            return self._get_page_is_one_columns_list(path=path, start=0, stop=1, warnings=warnings)
 
+        page_check_count = min(3, page_count)  # it's a heuristic. We don't want to check all pages. Only 3 pages maximum.
+        is_one_columns_list = self._get_page_is_one_columns_list(path=path, start=0, stop=page_check_count, warnings=warnings)
+        if page_count == page_check_count:
+            return is_one_columns_list
+
+        # Let's make a guess about other pages based on the previous first three pages
         if is_one_columns_list[1] == is_one_columns_list[2]:
             is_one_columns_list.extend(is_one_columns_list[1] for _ in range(page_count - page_check_count))
-            warnings_count = min(5, page_count)
+            warnings_count = min(5, page_count)  # TODO will think about logging in this case (now log only the first 5 pages)
             for i in range(page_check_count, warnings_count):
-                warning = warnings[2].replace("page " + str(page_check_count - 1), "page " + str(i))
-                warnings.append(warning)
+                warnings.append(f"assume page {str(i)} has {1 if is_one_columns_list[1] else 2} columns")
         else:
-            is_one_columns, warnings_next = self._get_page_is_one_columns_list(path=path, start=page_check_count,
-                                                                               stop=page_count)
+            is_one_columns = self._get_page_is_one_columns_list(path=path, start=page_check_count, stop=page_count, warnings=warnings)
             is_one_columns_list += is_one_columns
-            warnings += warnings_next[:5]
-        self.logger.info(warnings)
-        return is_one_columns_list, warnings
 
-    def _get_page_is_one_columns_list(self, path: str, start: int, stop: int) -> Tuple[List[bool], List[Optional[str]]]:
+        self.logger.info(warnings)
+        return is_one_columns_list
+
+    def _get_page_is_one_columns_list(self, path: str, start: int, stop: int, warnings: list) -> List[bool]:
+        """
+        Function returns predictions of column classificator for each page
+        Return: List[bool] - list of prediction. Each element is True - if one text column on the page, False - if the page has multi-columns
+        """
         is_one_columns_list = []
-        warnings = []
         for page_id in range(start, stop):
             try:
                 image = get_page_image(path=path, page_id=page_id)
                 if image is None:
-                    return [False], ["fail to read image from pdf"]
+                    warnings.append(f"fail to read an image from pdf page={page_id}")
+                    return [False]
             except Exception as ex:
-                self.logger.warning("It seems the input PDF-file is uncorrected")
+                self.logger.warning("It seems the input PDF-file is incorrect")
                 raise BadFileFormatException(msg=f"It seems the input PDF-file is uncorrected. Exception: {ex}")
 
             columns, _ = self.orientation_classifier.predict(np.array(image))
             is_one_columns_list.append(columns == 1)
             warnings.append("assume page {} has {} columns".format(page_id, columns))
-        return is_one_columns_list, warnings
+        return is_one_columns_list
