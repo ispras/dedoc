@@ -4,6 +4,8 @@ from unittest import TestCase
 from dedoc.config import get_config
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 
+# этот файл дублирует test_csv_reader
+
 
 class TestTxtReader(TestCase):
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "txt"))
