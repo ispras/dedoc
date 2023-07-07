@@ -110,7 +110,7 @@ def get_is_one_column_document_list(parameters: Optional[dict]) -> Optional[bool
 def get_param_page_slice(parameters: Dict[str, Any]) -> Tuple[Optional[int], Optional[int]]:
     """
     Parse parameter pages = ["page_number:page_number" | "" | "page_number:" | ":page_number" : ":"]
-
+    Page numeration starts with 1
     """
     pages = parameters.get("pages", "")
     if pages is None or pages.strip() == "":

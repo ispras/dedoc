@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any, Tuple
+from typing import Optional
 
 from PIL.Image import Image
 from PyPDF2 import PdfFileReader
@@ -23,5 +23,3 @@ def get_page_image(path: str, page_id: int) -> Optional[Image]:
     """
     images = convert_from_path(path, first_page=page_id + 1, last_page=page_id + 1)
     return images[0] if len(images) > 0 else None
-
-
