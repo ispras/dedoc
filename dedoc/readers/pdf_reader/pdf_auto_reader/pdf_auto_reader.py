@@ -95,9 +95,8 @@ class PdfAutoReader(BaseReader):
         return result
 
     def __handle_incorrect_text_layer(self, parameters_copy: dict, path: str, warnings: list) -> UnstructuredDocument:
-        message = f"Assume document {os.path.basename(path)} has incorrect textual layer"
-        warnings.append(message)
-        self.logger.info(message)
+        self.logger.info(f"Assume document {os.path.basename(path)} has incorrect textual layer")
+        warnings.append("Assume document has incorrect textual layer")
         result = self.pdf_image_reader.read(path=path, parameters=parameters_copy)
         return result
 
@@ -107,9 +106,8 @@ class PdfAutoReader(BaseReader):
                                     path: str,
                                     pdf_with_txt_layer: str,
                                     warnings: list) -> UnstructuredDocument:
-        message = "Assume document {} has a correct textual layer"
-        self.logger.info(message.format(os.path.basename(path)))
-        warnings.append(message.format("the document"))
+        self.logger.info(f"Assume document {os.path.basename(path)} has a correct textual layer")
+        warnings.append("Assume document has a correct textual layer")
         recognized_first_page = None
 
         if not is_first_page_correct:

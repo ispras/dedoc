@@ -39,11 +39,9 @@ class TxtLayerDetector:
 
         is_one_column_list = parameters.get("is_one_column_document_list", [])
         try:
-            page_with_longest_text = self.__get_page_with_longest_text(
-                path=path,
-                is_one_column_list=is_one_column_list,
-                page_count=get_pdf_page_count(path)
-            )
+            page_count = get_pdf_page_count(path)
+            page_count = 1 if page_count is None else page_count
+            page_with_longest_text = self.__get_page_with_longest_text(path=path, is_one_column_list=is_one_column_list, page_count=page_count)
 
             if page_with_longest_text.has_text:
                 return self.__detect_text_layer(
