@@ -31,6 +31,7 @@ from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
 
 StyleLine = namedtuple("StyleLine", ["begin", "end", "bold", "italic", "font_size", "font_style", "table_name"])
+logging.getLogger('pdfminer').setLevel(logging.ERROR)
 
 
 class ExtractorPdfTextLayer(object):

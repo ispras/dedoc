@@ -28,7 +28,7 @@ def download_from_hub(out_dir: str, out_name: str, repo_name: str, hub_name: str
 
 def download(resources_path: str) -> None:
     download_from_hub(out_dir=resources_path,
-                      out_name="catboost_detect_tl_correctness.pth",
+                      out_name="catboost_detect_tl_correctness.pkl.gz",
                       repo_name="catboost_detect_tl_correctness",
                       hub_name="model.pkl.gz")
 

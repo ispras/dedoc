@@ -13,32 +13,31 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         parameters = dict(with_attachments=True, pdf_with_text_layer="auto", is_one_column_document="auto")
         result = self._send_request(file_name, parameters)
         warnings = result["warnings"]
-        self.assertIn("assume page 0 has 2 columns", warnings)
-        self.assertIn("assume page 1 has 2 columns", warnings)
-        self.assertIn("assume document has correct text layer", warnings)
+        self.assertIn("Assume page 0 has 2 columns", warnings)
+        self.assertIn("Assume page 1 has 2 columns", warnings)
+        self.assertIn("Assume document has a correct textual layer", warnings)
 
     def test_pdf_auto_auto_columns_each_page_have_different_columns(self) -> None:
         file_name = "liao2020_merged_organized.pdf"
         parameters = dict(with_attachments=True, pdf_with_text_layer="auto", is_one_column_document="auto")
         result = self._send_request(file_name, parameters)
         warnings = result["warnings"]
-        self.assertIn("assume page 0 has 1 columns", warnings)
-        self.assertIn("assume page 1 has 2 columns", warnings)
-        self.assertIn("assume page 2 has 1 columns", warnings)
-        self.assertIn("assume page 3 has 2 columns", warnings)
-        self.assertIn("assume document has correct text layer", warnings)
+        self.assertIn("Assume page 0 has 1 columns", warnings)
+        self.assertIn("Assume page 1 has 2 columns", warnings)
+        self.assertIn("Assume page 2 has 1 columns", warnings)
+        self.assertIn("Assume page 3 has 2 columns", warnings)
+        self.assertIn("Assume document has a correct textual layer", warnings)
 
     def test_pdf_auto_auto_columns_each_page_have_same_columns_except_first(self) -> None:
         file_name = "liao2020_merged-1-5.pdf"
         parameters = dict(with_attachments=True, pdf_with_text_layer="auto", is_one_column_document="auto")
         result = self._send_request(file_name, parameters)
         warnings = result["warnings"]
-        self.assertIn("assume page 0 has 1 columns", warnings)
-        self.assertIn("assume page 1 has 2 columns", warnings)
-        self.assertIn("assume page 2 has 2 columns", warnings)
-        self.assertIn("assume page 3 has 2 columns", warnings)
-        self.assertIn("assume page 4 has 2 columns", warnings)
-        self.assertIn("assume document has correct text layer", warnings)
+        self.assertIn("Assume page 0 has 1 columns", warnings)
+        self.assertIn("Assume page 1 has 2 columns", warnings)
+        self.assertIn("Assume page 2 has 2 columns", warnings)
+        self.assertIn("Assume the rest pages have 2 columns", warnings)
+        self.assertIn("Assume document has a correct textual layer", warnings)
 
     def test_pdf_auto_text_layer_2(self) -> None:
         file_name = "e09d__cs-pspc-xg-15p-portable-radio-quick-guide.pdf"
@@ -54,21 +53,21 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
     def test_auto_pdf_with_text_layer(self) -> None:
         file_name = os.path.join("..", "pdf_with_text_layer", "english_doc.pdf")
         result = self._send_request(file_name, dict(pdf_with_text_layer="auto"))
-        self.assertIn("assume document has correct text layer", result["warnings"])
+        self.assertIn("Assume document has a correct textual layer", result["warnings"])
         self.check_english_doc(result)
 
     def test_auto_pdf_with_wrong_text_layer(self) -> None:
         file_name = "english_doc_bad_text.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="auto"))
-        self.assertIn("assume document has incorrect text layer", result["warnings"])
+        self.assertIn("Assume document has incorrect textual layer", result["warnings"])
         self.check_english_doc(result)
 
     def test_auto_document_mixed(self) -> None:
         file_name = "mixed_pdf.pdf"
         for pdf_with_text_layer in "auto", "auto_tabby":
             result = self._send_request(file_name, dict(pdf_with_text_layer=pdf_with_text_layer))
-            self.assertIn("assume document has correct text layer", result["warnings"])
-            self.assertIn("assume first page has no text layer", result["warnings"])
+            self.assertIn("Assume document has a correct textual layer", result["warnings"])
+            self.assertIn("Assume the first page hasn't a textual layer", result["warnings"])
             self.check_english_doc(result)
             structure = result["content"]["structure"]
             list_items = structure["subparagraphs"][1]["subparagraphs"]
