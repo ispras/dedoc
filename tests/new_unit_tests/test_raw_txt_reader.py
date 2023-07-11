@@ -2,13 +2,9 @@ import os
 from unittest import TestCase
 
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
+from dedoc.config import get_config
 from tests.test_utils import get_test_config
 
-# на законы и тз в txt формате
-# проверить, что такое префикс
-# выделить группы тестов
-# скинуть в новую подпапку отрефакторенные тесты
-# удалять дублирующиеся тесты
 
 class TestRawTextReader(TestCase):
     """
@@ -43,3 +39,11 @@ class TestRawTextReader(TestCase):
             self.assertNotIn(line.uid, uids_set)
             uids_set.add(line.uid)
             self.assertEqual(prefix, line.uid[:len(prefix)])
+
+    def test__get_lines_with_meta(self) -> None:
+        path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "txt"))
+        file = os.path.join(path, "pr_17.txt")
+        reader = RawTextReader(config=get_config())
+        for line in reader._get_lines_with_meta(path=file, encoding="utf-8"):
+            expected_uid = "txt_1a3cd561910506d56a65db1d1dcb5049_{}".format(line.metadata.line_id)
+            self.assertEqual(expected_uid, line.uid)
