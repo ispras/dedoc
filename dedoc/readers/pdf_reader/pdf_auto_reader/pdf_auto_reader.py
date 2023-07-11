@@ -2,11 +2,8 @@ import copy
 import logging
 import os
 from itertools import chain
-from typing import Optional, List
+from typing import Optional
 
-import numpy as np
-
-from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
@@ -17,7 +14,6 @@ from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageR
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer, get_param_page_slice
-from dedoc.utils.pdf_utils import get_page_image, get_pdf_page_count
 
 
 class PdfAutoReader(BaseReader):
@@ -41,7 +37,7 @@ class PdfAutoReader(BaseReader):
         self.pdf_txtlayer_reader = PdfTxtlayerReader(config=config)
         self.pdf_tabby_reader = PdfTabbyReader(config=config)
         self.pdf_image_reader = PdfImageReader(config=config)
-        self.txtlayer_detector = TxtLayerDetector(config=config)
+        self.txtlayer_detector = TxtLayerDetector(pdf_txtlayer_reader=self.pdf_txtlayer_reader, pdf_tabby_reader=self.pdf_tabby_reader, config=config)
 
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
@@ -70,26 +66,16 @@ class PdfAutoReader(BaseReader):
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
-        pdf_with_txt_layer = get_param_pdf_with_txt_layer(parameters)
         warnings = []
-        # TODO delete parameter is_one_column_document_list
-        is_one_column_document_list = self.__get_one_column_document_list(parameters, path=path, warnings=warnings)
+        txtlayer_parameters = self.txtlayer_detector.detect_txtlayer(path=path, parameters=parameters)
 
-        parameters_copy = copy.deepcopy(parameters)
-        parameters_copy["is_one_column_document_list"] = is_one_column_document_list
-        parameters_copy["is_one_column_document"] = "true" if is_one_column_document_list[0] else "false"
-        parameters_copy["pdf_with_text_layer"] = str(pdf_with_txt_layer)
-
-        text_layer_parameters = self.txtlayer_detector.detect_txtlayer(path=path, parameters=parameters_copy)
-
-        if text_layer_parameters.is_correct_text_layer:
-            result = self.__handle_correct_text_layer(is_first_page_correct=text_layer_parameters.is_first_page_correct,
-                                                      parameters=parameters_copy,
+        if txtlayer_parameters.is_correct_text_layer:
+            result = self.__handle_correct_text_layer(is_first_page_correct=txtlayer_parameters.is_first_page_correct,
+                                                      parameters=parameters,
                                                       path=path,
-                                                      warnings=warnings,
-                                                      pdf_with_txt_layer=pdf_with_txt_layer)
+                                                      warnings=warnings)
         else:
-            result = self.__handle_incorrect_text_layer(parameters_copy, path, warnings)
+            result = self.__handle_incorrect_text_layer(parameters, path, warnings)
 
         result.warnings.extend(warnings)
         return result
@@ -104,7 +90,6 @@ class PdfAutoReader(BaseReader):
                                     is_first_page_correct: bool,
                                     parameters: dict,
                                     path: str,
-                                    pdf_with_txt_layer: str,
                                     warnings: list) -> UnstructuredDocument:
         self.logger.info(f"Assume document {os.path.basename(path)} has a correct textual layer")
         warnings.append("Assume document has a correct textual layer")
@@ -122,6 +107,7 @@ class PdfAutoReader(BaseReader):
             # PREPARE PARAMETERS: from the second page we recognize the content like PDF with a textual layer
             parameters = self.__preparing_other_pages_parameters(parameters)
 
+        pdf_with_txt_layer = get_param_pdf_with_txt_layer(parameters)
         reader = self.pdf_txtlayer_reader if pdf_with_txt_layer == "auto" else self.pdf_tabby_reader
         result = reader.read(path=path, parameters=parameters)
         result = self.__merge_documents(recognized_first_page, result) if recognized_first_page is not None else result
@@ -170,53 +156,3 @@ class PdfAutoReader(BaseReader):
                                     lines=lines,
                                     attachments=first.attachments + second.attachments,
                                     metadata=second.metadata)
-
-    def __get_one_column_document_list(self, parameters: Optional[dict], path: str, warnings: list) -> List[bool]:
-        if parameters is None:
-            parameters = {}
-
-        is_one_column_document = str(parameters.get("is_one_column_document", "auto"))
-
-        page_count = get_pdf_page_count(path)
-        if is_one_column_document.lower() != "auto":
-            return [is_one_column_document.lower() == "true" for _ in range(page_count)]
-
-        if page_count is None:
-            return self.__get_page_is_one_column_list(path=path, start=0, stop=1, warnings=warnings)
-
-        page_check_count = min(3, page_count)  # it's a heuristic. We don't want to check all pages. Only 3 pages maximum.
-        is_one_columns_list = self.__get_page_is_one_column_list(path=path, start=0, stop=page_check_count, warnings=warnings)
-        if page_count == page_check_count:
-            return is_one_columns_list
-
-        # Let's make a guess about other pages based on the previous first three pages
-        if is_one_columns_list[1] == is_one_columns_list[2]:
-            is_one_columns_list.extend(is_one_columns_list[1] for _ in range(page_count - page_check_count))
-            warnings.append(f"Assume the rest pages have {1 if is_one_columns_list[1] else 2} columns")
-        else:
-            is_one_columns = self.__get_page_is_one_column_list(path=path, start=page_check_count, stop=page_count, warnings=warnings)
-            is_one_columns_list += is_one_columns
-
-        self.logger.info(". ".join(warnings))
-        return is_one_columns_list
-
-    def __get_page_is_one_column_list(self, path: str, start: int, stop: int, warnings: list) -> List[bool]:
-        """
-        Function returns predictions of the column classifier for each page.
-        return: list of classifier predictions. True - one column, False - multi-column page
-        """
-        is_one_columns_list = []
-        for page_id in range(start, stop):
-            try:
-                image = get_page_image(path=path, page_id=page_id)
-                if image is None:
-                    warnings.append(f"Fail to read an image from pdf page={page_id}")
-                    return [False]
-            except Exception as ex:
-                self.logger.warning("It seems the input PDF-file is incorrect")
-                raise BadFileFormatException(msg=f"It seems the input PDF-file is uncorrected. Exception: {ex}")
-
-            columns, _ = self.pdf_image_reader.column_orientation_classifier.predict(np.array(image))
-            is_one_columns_list.append(columns == 1)
-            warnings.append(f"Assume page {page_id} has {columns} columns")
-        return is_one_columns_list

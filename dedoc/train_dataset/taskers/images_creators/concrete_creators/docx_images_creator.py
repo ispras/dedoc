@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 import re
 import tempfile
@@ -225,8 +226,8 @@ class DocxImagesCreator(AbstractImagesCreator):
         @return:
         """
         scan_reader = PdfImageReader(config=self.config)
-        many_color_images = scan_reader._get_images(pdfs.many_color_pdf)
-        two_color_images = scan_reader._get_images(pdfs.two_color_pdf)
+        many_color_images = scan_reader._get_images(pdfs.many_color_pdf, 0, math.inf)
+        two_color_images = scan_reader._get_images(pdfs.two_color_pdf, 0, math.inf)
         uid2path = defaultdict(list)
         n = 0
         for two_color, many_color in zip(two_color_images, many_color_images):
