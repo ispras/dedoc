@@ -4,6 +4,7 @@ import unittest
 from tempfile import TemporaryDirectory
 
 from dedoc.config import get_config
+from dedoc.metadata_extractors.concrete_metadata_extractors.docx_metadata_extractor import DocxMetadataExtractor
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 
@@ -308,6 +309,12 @@ class TestDocxReader(unittest.TestCase):
             tag_hierarchy_level = result.lines[i].metadata.tag_hierarchy_level
             self.assertIsNotNone(tag_hierarchy_level)
             self.assertEqual(tag_hierarchy_level.line_type, HierarchyLevel.list_item)
+
+    def test_docx_metadata_broken_file(self) -> None:
+        extractor = DocxMetadataExtractor()
+        path = os.path.join(os.path.dirname(__file__), "..", "data", "docx", "broken.docx")
+        path = os.path.abspath(path)
+        self.assertDictEqual({"broken_docx": True}, extractor._get_docx_fields(path))
 
     def _get_path(self, file_name: str) -> str:
         path_in = os.path.join(self.directory, file_name)

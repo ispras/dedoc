@@ -5,8 +5,6 @@ from dedoc.metadata_extractors.concrete_metadata_extractors.image_metadata_extra
 from tests.test_utils import get_test_config
 
 
-# почему нет других тестов метадата экстрактора
-
 class TestImageMetadataExtractor(unittest.TestCase):
     """
     Class with implemented tests for image metadata extractor
