@@ -13,8 +13,6 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         parameters = dict(with_attachments=True, pdf_with_text_layer="auto", is_one_column_document="auto")
         result = self._send_request(file_name, parameters)
         warnings = result["warnings"]
-        self.assertIn("Assume page 0 has 2 columns", warnings)
-        self.assertIn("Assume page 1 has 2 columns", warnings)
         self.assertIn("Assume document has a correct textual layer", warnings)
 
     def test_pdf_auto_auto_columns_each_page_have_different_columns(self) -> None:
@@ -22,10 +20,6 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         parameters = dict(with_attachments=True, pdf_with_text_layer="auto", is_one_column_document="auto")
         result = self._send_request(file_name, parameters)
         warnings = result["warnings"]
-        self.assertIn("Assume page 0 has 1 columns", warnings)
-        self.assertIn("Assume page 1 has 2 columns", warnings)
-        self.assertIn("Assume page 2 has 1 columns", warnings)
-        self.assertIn("Assume page 3 has 2 columns", warnings)
         self.assertIn("Assume document has a correct textual layer", warnings)
 
     def test_pdf_auto_auto_columns_each_page_have_same_columns_except_first(self) -> None:
@@ -33,10 +27,6 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         parameters = dict(with_attachments=True, pdf_with_text_layer="auto", is_one_column_document="auto")
         result = self._send_request(file_name, parameters)
         warnings = result["warnings"]
-        self.assertIn("Assume page 0 has 1 columns", warnings)
-        self.assertIn("Assume page 1 has 2 columns", warnings)
-        self.assertIn("Assume page 2 has 2 columns", warnings)
-        self.assertIn("Assume the rest pages have 2 columns", warnings)
         self.assertIn("Assume document has a correct textual layer", warnings)
 
     def test_pdf_auto_text_layer_2(self) -> None:

@@ -53,6 +53,9 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         text_expected = "\n".join(self.lines[0:2])
         self.__check("1:2", text_expected, reader=reader, check_partially=check_partially)
 
+        text_expected = self.lines[8]
+        self.__check("9:", text_expected, reader=reader, check_partially=False)
+
         text_expected = "\n".join(self.lines[0:9])
         self.__check("1:9", text_expected, reader=reader, check_partially=False)
 

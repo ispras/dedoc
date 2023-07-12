@@ -7,13 +7,13 @@ from typing import List
 import catboost.core
 
 from dedoc.config import get_config
+from dedoc.data_structures import LineWithMeta
 from dedoc.download_models import download_from_hub
-from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
 
 
 class TxtlayerClassifier:
     """
-    The TxtlayerClassifier class is used for classifying the correctness of the text layer in a PDF document.
+    The TxtlayerClassifier class is used for classifying the correctness of the textual layer in a PDF document.
     """
     def __init__(self, *, config: dict) -> None:
         self.config = config
@@ -46,21 +46,21 @@ class TxtlayerClassifier:
 
         return self.__model
 
-    def predict(self, text_with_bboxes: List[TextWithBBox]) -> bool:
+    def predict(self, lines: List[LineWithMeta]) -> bool:
         """
         Classifies the correctness of the text layer in a PDF document.
 
-        :param text_with_bboxes: List of text lines with bounding boxes.
-        :returns: True if the text layer is correct, False otherwise.
+        :param lines: list of document textual lines.
+        :returns: True if the textual layer is correct, False otherwise.
         """
-        text_layer = u"".join([pdf_line.text for pdf_line in text_with_bboxes])
+        text_layer = u"".join([line.line for line in lines])
         if not text_layer:
             return False
 
-        features = self.__get_feature_for_predict(text_layer)
+        features = self.__get_features_for_predict(text_layer)
         return self.__get_model.predict(features) == 1
 
-    def __get_feature_for_predict(self, text: str) -> List[float]:
+    def __get_features_for_predict(self, text: str) -> List[float]:
         features = []
         num_letters_in_data = self._count_letters(text)
         num_other_symbol_in_data = self._count_other(text)
