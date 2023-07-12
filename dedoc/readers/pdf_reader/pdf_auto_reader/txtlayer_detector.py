@@ -32,15 +32,7 @@ class TxtLayerDetector:
         """
         try:
             lines = self.__get_lines_for_predict(path=path, parameters=parameters)
-            max_line_length = max([len(line.line.strip()) for line in lines], default=0)
-
-            if max_line_length == 0:
-                self.logger.debug("The longest line doesn't have any text")
-                return PdfTxtlayerParameters(is_correct_text_layer=False, is_first_page_correct=False)
-
             is_correct = self.txtlayer_classifier.predict(lines)
-            message = "Assume document has a correct textual layer" if is_correct else "Assume document has incorrect textual layer"
-            self.logger.debug(message)
             first_page_correct = self.__is_first_page_correct(lines=lines, is_txt_layer_correct=is_correct)
             return PdfTxtlayerParameters(is_correct_text_layer=is_correct, is_first_page_correct=first_page_correct)
 
