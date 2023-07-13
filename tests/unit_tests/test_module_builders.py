@@ -13,9 +13,6 @@ from dedoc.structure_extractors.hierarchy_level_builders.law_builders.compositio
 
 
 class TestBuilders(unittest.TestCase):
-    """
-    Class with implemented tests for different hierarchy level builders
-    """
     builders = [HeaderHierarchyLevelBuilder(),
                 BodyLawHierarchyLevelBuilder(),
                 BodyFoivHierarchyLevelBuilder(),
@@ -23,10 +20,7 @@ class TestBuilders(unittest.TestCase):
                 ApplicationFoivHierarchyLevelBuilder()]
     composition_builder = HierarchyLevelBuilderComposition(builders=builders)
 
-    def test_item(self) -> None:
-        """
-        Tests different hierarchy level builders
-        """
+    def test_creation_of_builders(self) -> None:
         builders = self.composition_builder._get_builders(["header"], 'law')
         self.assertTrue(isinstance(builders[0], HeaderHierarchyLevelBuilder))
 

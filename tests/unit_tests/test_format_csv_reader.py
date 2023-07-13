@@ -6,15 +6,9 @@ from dedoc.structure_constructors.table_patcher import TablePatcher
 
 
 class TestCSVReader(TestCase):
-    """
-    Class with implemented tests for CSVReader
-    """
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "csvs"))
 
-    def test__get_lines_with_meta(self) -> None:
-        """
-        Tests .csv file parsing correctness
-        """
+    def test_get_lines_with_meta(self) -> None:
         file = os.path.join(self.path, "books_2.csv")
         reader = CSVReader()
         document = reader.read(path=file, parameters={}, document_type=None)

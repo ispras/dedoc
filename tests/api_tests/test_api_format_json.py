@@ -5,7 +5,7 @@ from json import JSONDecodeError
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
-class TestApiCSVReader(AbstractTestApiDocReader):
+class TestApiJSONReader(AbstractTestApiDocReader):
 
     def _get_abs_path(self, file_name: str) -> str:
         return os.path.abspath(os.path.join(self.data_directory_path, "json", file_name))

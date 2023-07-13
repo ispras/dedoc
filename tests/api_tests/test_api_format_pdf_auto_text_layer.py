@@ -44,13 +44,13 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         file_name = os.path.join("..", "pdf_with_text_layer", "english_doc.pdf")
         result = self._send_request(file_name, dict(pdf_with_text_layer="auto"))
         self.assertIn("Assume document has a correct textual layer", result["warnings"])
-        self.check_english_doc(result)
+        self._check_english_doc(result)
 
     def test_auto_pdf_with_wrong_text_layer(self) -> None:
         file_name = "english_doc_bad_text.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="auto"))
         self.assertIn("Assume document has incorrect textual layer", result["warnings"])
-        self.check_english_doc(result)
+        self._check_english_doc(result)
 
     def test_auto_document_mixed(self) -> None:
         file_name = "mixed_pdf.pdf"
@@ -58,7 +58,7 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
             result = self._send_request(file_name, dict(pdf_with_text_layer=pdf_with_text_layer))
             self.assertIn("Assume document has a correct textual layer", result["warnings"])
             self.assertIn("Assume the first page hasn't a textual layer", result["warnings"])
-            self.check_english_doc(result)
+            self._check_english_doc(result)
             structure = result["content"]["structure"]
             list_items = structure["subparagraphs"][1]["subparagraphs"]
             self.assertEqual("3) продолжаем список\n", list_items[2]["text"])

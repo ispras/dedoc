@@ -5,15 +5,9 @@ from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.cell_splitter im
 
 
 class TestCellSplitter(unittest.TestCase):
-    """
-    Class with implemented tests for cell splitter
-    """
     splitter = CellSplitter()
 
-    def test__merge_close_borders(self) -> None:
-        """
-        Test merging multiple cells with close borders
-        """
+    def test_merge_close_borders(self) -> None:
         cells = [
             [Cell(x_top_left=0, y_top_left=0, x_bottom_right=50, y_bottom_right=30),
              Cell(x_top_left=51, y_top_left=2, x_bottom_right=90, y_bottom_right=29)],
@@ -41,10 +35,7 @@ class TestCellSplitter(unittest.TestCase):
         self.assertEqual(90, cells_merged[1][1].x_bottom_right)
         self.assertEqual(50, cells_merged[1][1].y_bottom_right)
 
-    def test__merge_close_borders_one_cell(self) -> None:
-        """
-        Test merging of one cell
-        """
+    def test_merge_close_borders_one_cell(self) -> None:
         cells = [[Cell(x_top_left=0, y_top_left=0, x_bottom_right=50, y_bottom_right=30)]]
         cells_merged = self.splitter._merge_close_borders(cells)
         self.assertEqual(0, cells_merged[0][0].x_top_left)
@@ -52,26 +43,17 @@ class TestCellSplitter(unittest.TestCase):
         self.assertEqual(50, cells_merged[0][0].x_bottom_right)
         self.assertEqual(30, cells_merged[0][0].y_bottom_right)
 
-    def test__merge_close_borders_none_cells(self) -> None:
-        """
-        Test merging of zero cells
-        """
+    def test_merge_zero_cells(self) -> None:
         cells = [[]]
         cells_merged = self.splitter._merge_close_borders(cells)
         self.assertListEqual([[]], cells_merged)
 
     def test_split_zero_cells(self) -> None:
-        """
-        Test split of zero cells
-        """
         cells = [[]]
         matrix = self.splitter.split(cells=cells)
         self.assertListEqual([[]], matrix)
 
     def test_split_one_cell(self) -> None:
-        """
-        Test split of one cell
-        """
         cells = [[Cell(x_top_left=0, y_top_left=0, x_bottom_right=10, y_bottom_right=15)]]
         matrix = self.splitter.split(cells=cells)
         self.assertEqual(1, len(matrix))
@@ -83,9 +65,6 @@ class TestCellSplitter(unittest.TestCase):
         self.assertEqual(15, new_cell.y_bottom_right)
 
     def test_horizontal_split(self) -> None:
-        """
-        Test for horizontal split
-        """
         cells = [
             [
                 Cell(x_top_left=0, y_top_left=0, x_bottom_right=3, y_bottom_right=5),
@@ -121,9 +100,6 @@ class TestCellSplitter(unittest.TestCase):
         self.assertEqual(5, cell_d.y_bottom_right)
 
     def test_vertical_split(self) -> None:
-        """
-        Test for vertical split
-        """
         cells = [
             [
                 Cell(x_top_left=0, y_top_left=0, x_bottom_right=8, y_bottom_right=2),
@@ -159,9 +135,6 @@ class TestCellSplitter(unittest.TestCase):
         self.assertEqual(5, cell_d.y_bottom_right)
 
     def test_no_split(self) -> None:
-        """
-        Test for the case with no split
-        """
         cells = [[Cell(x_top_left=160, y_top_left=321, x_bottom_right=825, y_bottom_right=369),
                  Cell(x_top_left=825, y_top_left=321, x_bottom_right=1494, y_bottom_right=369)],
                  [Cell(x_top_left=160, y_top_left=374, x_bottom_right=825, y_bottom_right=423),

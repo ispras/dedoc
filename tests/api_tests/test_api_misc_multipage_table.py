@@ -4,7 +4,7 @@ from typing import List
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
-class TestRecognizedTable(AbstractTestApiDocReader):
+class TestMultipageTable(AbstractTestApiDocReader):
 
     def _get_abs_path(self, file_name: str) -> str:
         return os.path.join(self.data_directory_path, "tables", file_name)

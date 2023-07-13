@@ -79,7 +79,7 @@ class TestListFeatures(TestCase):
         line = self._get_line_with_meta("\tё) some text")
         self.assertEqual(LetterPrefix("ё)", 10), self.feature_extractor._get_prefix(line))
 
-    def test_nonletter(self) -> None:
+    def test_non_letter_prefix(self) -> None:
         line = self._get_line_with_meta("- some text")
         self.assertEqual(BulletPrefix("-", 10), self.feature_extractor._get_prefix(line))
 
@@ -89,7 +89,7 @@ class TestListFeatures(TestCase):
         line = self._get_line_with_meta("+ some text")
         self.assertEqual(BulletPrefix("+", 10), self.feature_extractor._get_prefix(line))
 
-    def test_empty(self) -> None:
+    def test_empty_prefix(self) -> None:
         line = self._get_line_with_meta("some text")
         self.assertEqual(EmptyPrefix(indent=10), self.feature_extractor._get_prefix(line))
 
@@ -102,7 +102,7 @@ class TestListFeatures(TestCase):
         line = self._get_line_with_meta("\nsome text")
         self.assertEqual(EmptyPrefix(indent=10), self.feature_extractor._get_prefix(line))
 
-    def test__get_window(self) -> None:
+    def test_get_window(self) -> None:
         prefixes = [BracketPrefix("{})".format(i), 1.01 * i) for i in range(0, 300)]
         doc_size = len(prefixes)
         assert doc_size == 300

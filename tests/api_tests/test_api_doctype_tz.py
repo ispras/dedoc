@@ -6,7 +6,7 @@ from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 from tests.test_utils import tree2linear
 
 
-class TestLawApiDocReader(AbstractTestApiDocReader):
+class TestTZApiDocReader(AbstractTestApiDocReader):
 
     def test_doc_tz(self) -> None:
         file_name = "alpaca_tz.doc"

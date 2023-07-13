@@ -1,7 +1,7 @@
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
-class TestApiDocReader(AbstractTestApiDocReader):
+class TestNestingList(AbstractTestApiDocReader):
 
     def test_list_nesting_content(self) -> None:
         file_name = "docx/pr14tz_v5_2007_03_01.docx"

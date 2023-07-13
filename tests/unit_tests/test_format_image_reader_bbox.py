@@ -8,16 +8,10 @@ from tests.test_utils import get_test_config
 
 
 class TestImageReaderWithBBox(unittest.TestCase):
-    """
-    Class with implemented tests for OCR line extractor
-    """
     abs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "scanned"))
     reader = OCRLineExtractor(config=get_test_config())
 
     def test_line_order(self) -> None:
-        """
-        Test for extracted line order correctness
-        """
         image = cv2.imread(os.path.join(self.abs_path, "part.png"))
         page = self.reader.split_image2lines(image=image, page_num=1, is_one_column_document=True)
         bboxes = [bbox for bbox in page.bboxes if bbox.text.strip() != ""]

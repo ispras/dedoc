@@ -5,7 +5,7 @@ from typing import List
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
-class TestApiPdfReader(AbstractTestApiDocReader):
+class TestApiPdfWithText(AbstractTestApiDocReader):
 
     def _get_abs_path(self, file_name: str) -> str:
         return os.path.join(self.data_directory_path, "pdf_with_text_layer", file_name)

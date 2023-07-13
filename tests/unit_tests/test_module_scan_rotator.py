@@ -13,7 +13,7 @@ class TestScanRotator(unittest.TestCase):
         data_directory_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
         return os.path.join(data_directory_path, "scan_rotator", file_name)
 
-    def test_short_lines(self) -> None:
+    def test_documents_with_short_lines(self) -> None:
         for i in range(1, 6):
             file_name = f"short_lines-{i}.png"
             img = cv2.imread(self._get_abs_path(file_name))

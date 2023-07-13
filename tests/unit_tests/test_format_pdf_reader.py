@@ -111,7 +111,7 @@ class TestPDFReader(unittest.TestCase):
         self.assertEqual(len(headers), 1)
         self.assertEqual(len(footers), 0)
 
-    def test_long_list_pdf(self) -> None:
+    def test_long_list_in_pdf(self) -> None:
         config = get_test_config()
         any_doc_reader = PdfImageReader(config=config)
         path = os.path.join(os.path.dirname(__file__), "../data/scanned/doc_with_long_list.pdf")

@@ -12,7 +12,7 @@ class TestApiArchiveReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, dict(with_attachments="True"))
         self.assertEqual(len(result['attachments']), 4)
         english_doc = [doc for doc in result['attachments'] if doc["metadata"]["file_name"].startswith("english_doc")][0]
-        self.check_english_doc(english_doc)
+        self._check_english_doc(english_doc)
 
     def test_zip(self) -> None:
         file_name = "arch_with_attachs.zip"
@@ -77,4 +77,4 @@ class TestApiArchiveReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, dict(with_attachments="True"))
         self.assertEqual(len(result['attachments']), 7)
         english_doc = [doc for doc in result['attachments'] if doc["metadata"]["file_name"].startswith("english_doc")][0]
-        self.check_english_doc(english_doc)
+        self._check_english_doc(english_doc)

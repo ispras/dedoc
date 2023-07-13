@@ -11,9 +11,6 @@ from tests.test_utils import get_test_config
 
 
 class TestAttachmentsExtractor(unittest.TestCase):
-    """
-    Class with implemented tests for the attachment extractor
-    """
     src_dir = os.path.join(os.path.dirname(__file__), "..", "data", "with_attachments")
 
     def test_docx_attachments_extractor(self) -> None:
@@ -51,9 +48,6 @@ class TestAttachmentsExtractor(unittest.TestCase):
         self.assertEqual(extracted, len(attachments_name_list))
 
     def test_pptx_attachments_extractor(self) -> None:
-        """
-        Tests attachment extraction from pptx files
-        """
         attachments_name_list = [
             "Microsoft_Excel_97-2004_Worksheet.xls",
             "image3.png",
@@ -85,9 +79,6 @@ class TestAttachmentsExtractor(unittest.TestCase):
         self.assertEqual(extracted, len(attachments_name_list))
 
     def test_docx_diagrams_extraction(self) -> None:
-        """
-        Tests diagram extraction from docx files
-        """
         docx_attachment_extractor = DocxAttachmentsExtractor()
         docx_dir = os.path.join(os.path.dirname(__file__), "..", "data", "docx")
         files = [('diagram_1.docx', 1), ('diagram_2.docx', 5)]
@@ -103,15 +94,12 @@ class TestAttachmentsExtractor(unittest.TestCase):
         file_name_template = "attachments.{}"
         for extension in "7z", "tar", "tar.gz", "zip":
             file_name = file_name_template.format(extension)
-            files = self.__get_list_of_files(file_name)
+            files = self.__get_list_of_files_in_archive(file_name)
             self.assertEqual(2, len(files))
             self.assertIn(r"som_file⁄wiht\slash.txt", files)
             self.assertIn("other_file.csv", files)
 
-    def __get_list_of_files(self, file_name: str) -> List[str]:
-        """
-        Class method for getting list of files in an archive
-        """
+    def __get_list_of_files_in_archive(self, file_name: str) -> List[str]:
         with tempfile.TemporaryDirectory() as tmp_dir:
             file_path = os.path.join(tmp_dir, file_name)
             shutil.copyfile(os.path.join(self.src_dir, file_name), file_path)

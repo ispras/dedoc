@@ -4,9 +4,6 @@ import requests
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
-# test_structure
-# тесты на ошибки вынести в отдельный файл
-# вести файлик с темами тестов
 
 class TestApi(AbstractTestApiDocReader):
 
@@ -45,6 +42,3 @@ class TestApi(AbstractTestApiDocReader):
         self.assertEqual(content["subparagraphs"][1]["subparagraphs"][0]["text"].strip(), '1. Элемент нумерованного списка')
         self.assertEqual(content["subparagraphs"][1]["subparagraphs"][0]["metadata"]['paragraph_type'], 'list_item')
         self._check_metainfo(result['metadata'], 'text/plain', file_name)
-
-    def test_bin_file(self) -> None:
-        self._send_request("file.bin", expected_code=415)

@@ -118,7 +118,7 @@ class TestLineSplit(unittest.TestCase):
         split = line.split("\n")
         self.assertListEqual([line], split)
 
-    def test_split_empty_sep(self) -> None:
+    def test_split_empty_separator(self) -> None:
         line = self._get_line("some text", [BoldAnnotation(0, 3, "True")])
         with self.assertRaises(ValueError):
             line.split("")
@@ -188,7 +188,7 @@ class TestLineSplit(unittest.TestCase):
         split = line.split("\n")
         self.assertListEqual([line], split)
 
-    def test_two_annotations(self) -> None:
+    def test_split_line_with_two_intersecting_annotations(self) -> None:
         line = self._get_line("some\ntext", [SizeAnnotation(0, 9, "14"), BoldAnnotation(0, 9, "True")])
         split = line.split("\n")
         self.assertEqual(2, len(split))
@@ -204,7 +204,7 @@ class TestLineSplit(unittest.TestCase):
             self.assertEqual(0, annotation_size.start)
             self.assertEqual(len(line.line), annotation_size.end)
 
-    def test_two_annotations_no_intersection(self) -> None:
+    def test_line_with_two_annotations_no_intersection(self) -> None:
         line = self._get_line("some\ntext", [SizeAnnotation(0, 5, "14"), SizeAnnotation(5, 9, "10")])
         split = line.split("\n")
         self.assertEqual(2, len(split))
@@ -230,7 +230,7 @@ class TestLineSplit(unittest.TestCase):
             self.assertEqual(start, annotation_size.start)
             self.assertEqual(end, annotation_size.end)
 
-    def test_up_to_sep(self) -> None:
+    def test_split_of_one_annotation_ending_close_to_sep(self) -> None:
         line = self._get_line("some\ntext", [SizeAnnotation(0, 5, "14")])
         split = line.split("\n")
         self.assertEqual(2, len(split))
@@ -239,6 +239,9 @@ class TestLineSplit(unittest.TestCase):
         self.assertEqual(0, len(right.annotations))
 
     def __annotation_all_line(self, split: List[LineWithMeta]) -> None:
+        """
+        Tests if annotation has the same length as line
+        """
         for line in split:
             annotations = line.annotations
             self.assertEqual(1, len(annotations))

@@ -28,7 +28,7 @@ class TestListPatcher(unittest.TestCase):
         result = self.patcher.patch(lines)
         self.assertListEqual(self.__get_text(lines), self.__get_text(result))
 
-    def test_hl_raw_text4(self) -> None:
+    def test_hierarchy_level_raw_text(self) -> None:
         line1 = self.__get_line("2 item", None, None, HierarchyLevel.raw_text)
         line2 = self.__get_line("some item", None, None, HierarchyLevel.raw_text)
         line3 = self.__get_line("2 item", None, None, HierarchyLevel.raw_text)

@@ -10,7 +10,7 @@ from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 class TestTreeNode(TestCase):
 
-    def test_root_annotations(self) -> None:
+    def test_root_node_annotations(self) -> None:
         lines = [LineWithMeta(line="bold text\n",
                               metadata=LineMetadata(hierarchy_level=HierarchyLevel.create_root(), page_id=0, line_id=0),
                               annotations=[BoldAnnotation(start=0, end=10, value="True")]),

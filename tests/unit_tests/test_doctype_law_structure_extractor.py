@@ -1,4 +1,3 @@
-import os
 import random
 import time
 import unittest
@@ -61,7 +60,7 @@ class TestLawStructureExtractor(unittest.TestCase):
         for application_start in application_starts:
             self.assertIsNotNone(self.structure_extractor.classifier.regexp_application_begin.match(application_start.lower()))
 
-    def test_number_regexp(self) -> None:
+    def test_string_number_correctness_with_regexp(self) -> None:
         lines = ['03.06.2009 № 17, от 07.10.2009 № 42, от  10.03.2010 № 6, от 14.04.2010 № 11,  от',
                  'правонарушениях. (В редакции Закона Москвы от 24.06.2015 г. № 39)',
                  '2. Нарушение  административного регламента',
@@ -82,34 +81,34 @@ class TestLawStructureExtractor(unittest.TestCase):
             res = AbstractFeatureExtractor.ends_of_number.search(number)
             self.assertEqual(number[:res.start()], without_ends[num])
 
-    def __get_line(self, hierarchy_level: HierarchyLevel, text: str) -> LineWithMeta:
+    def __get_line_with_meta(self, hierarchy_level: HierarchyLevel, text: str) -> LineWithMeta:
         metadata = LineMetadata(page_id=0, line_id=0, hierarchy_level=hierarchy_level)
         return LineWithMeta(line=text, metadata=metadata, annotations=[])
 
-    def __check_one_postprocess(self, text: str, text_expected: str) -> None:
+    def __check_postprocess_of_one_string_w_roman_numeral(self, text: str, text_expected: str) -> None:
         hierarchy_level = HierarchyLevel(4, 0, True, "subsection")
-        line = self.__get_line(hierarchy_level=hierarchy_level, text=text)
+        line = self.__get_line_with_meta(hierarchy_level=hierarchy_level, text=text)
         result = self.structure_extractor._postprocess_roman(hierarchy_level=hierarchy_level, line=line)
         self.assertEqual(text_expected, result.line)
 
-    def test_postprocess_roman(self) -> None:
-        self.__check_one_postprocess("I. Общие положения", "I. Общие положения")
-        self.__check_one_postprocess("Т. Общие положения", "I. Общие положения")
-        self.__check_one_postprocess("Г. Общие положения", "I. Общие положения")
-        self.__check_one_postprocess("T. Общие положения", "I. Общие положения")
-        self.__check_one_postprocess("П. Общие положения", "II. Общие положения")
-        self.__check_one_postprocess("Ш. Общие положения", "III. Общие положения")
-        self.__check_one_postprocess("ТУ. Общие положения", "IV. Общие положения")
-        self.__check_one_postprocess("УТ. Общие положения", "VI. Общие положения")
-        self.__check_one_postprocess("  УТ. Общие положения", "  VI. Общие положения")
-        self.__check_one_postprocess("У. Общие положения", "V. Общие положения")
-        self.__check_one_postprocess("V. Общие положения", "V. Общие положения")
-        self.__check_one_postprocess("Общие положения", "Общие положения")
+    def test_postprocessing_of_strings_with_roman_numerals(self) -> None:
+        self.__check_postprocess_of_one_string_w_roman_numeral("I. Общие положения", "I. Общие положения")
+        self.__check_postprocess_of_one_string_w_roman_numeral("Т. Общие положения", "I. Общие положения")
+        self.__check_postprocess_of_one_string_w_roman_numeral("Г. Общие положения", "I. Общие положения")
+        self.__check_postprocess_of_one_string_w_roman_numeral("T. Общие положения", "I. Общие положения")
+        self.__check_postprocess_of_one_string_w_roman_numeral("П. Общие положения", "II. Общие положения")
+        self.__check_postprocess_of_one_string_w_roman_numeral("Ш. Общие положения", "III. Общие положения")
+        self.__check_postprocess_of_one_string_w_roman_numeral("ТУ. Общие положения", "IV. Общие положения")
+        self.__check_postprocess_of_one_string_w_roman_numeral("УТ. Общие положения", "VI. Общие положения")
+        self.__check_postprocess_of_one_string_w_roman_numeral("  УТ. Общие положения", "  VI. Общие положения")
+        self.__check_postprocess_of_one_string_w_roman_numeral("У. Общие положения", "V. Общие положения")
+        self.__check_postprocess_of_one_string_w_roman_numeral("V. Общие положения", "V. Общие положения")
+        self.__check_postprocess_of_one_string_w_roman_numeral("Общие положения", "Общие положения")
 
     def test_empty_document(self) -> None:
         self.assertListEqual([], self.structure_extractor.classifier.predict([]))
 
-    def test__fix_labels(self) -> None:
+    def test_fix_labels(self) -> None:
         labels = ["title", "raw_text", "title", "structure_unit", "title", "cellar", "structure_unit", "cellar",
                   "application"]
         labels_expected = ["title", "title", "title", "structure_unit", "raw_text", "raw_text", "structure_unit",

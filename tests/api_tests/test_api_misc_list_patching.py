@@ -1,7 +1,7 @@
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
-class TestApiDocReader(AbstractTestApiDocReader):
+class TestListPatching(AbstractTestApiDocReader):
 
     def test_list_patching(self) -> None:
         file_name = "docx/13_moloko_1_polug.docx"

@@ -3,7 +3,7 @@ import os
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
-class TestApiDocReader(AbstractTestApiDocReader):
+class TestStructure(AbstractTestApiDocReader):
 
     data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "docx")
 

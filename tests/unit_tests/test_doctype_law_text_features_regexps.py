@@ -12,7 +12,7 @@ class TestLawTextFeaturesRegexps(unittest.TestCase):
         self.assertTrue(self.features.roman_regexp.fullmatch('    XI.') is None)
         self.assertTrue(self.features.roman_regexp.fullmatch('\tIII. '))
 
-    def test_application_begin_regexp(self) -> None:
+    def test_application_beginnings_with_regexp(self) -> None:
         self.assertTrue(self.features.regexp_application_begin.fullmatch('приложение'))
         self.assertTrue(self.features.regexp_application_begin.fullmatch('Приложение'))
         self.assertTrue(self.features.regexp_application_begin.fullmatch('утверждены'))
@@ -21,7 +21,7 @@ class TestLawTextFeaturesRegexps(unittest.TestCase):
         self.assertTrue(self.features.regexp_application_begin.fullmatch('постановление') is None)
         self.assertTrue(self.features.regexp_application_begin.fullmatch('к приказу') is None)
 
-    def test_glava(self) -> None:
+    def test_chapter_beginnings(self) -> None:
         # note to rewrites this test if we change the num of regexps
         self.assertEqual(1, len(LawTextFeatures.named_regexp))
 

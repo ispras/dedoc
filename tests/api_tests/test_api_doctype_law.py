@@ -616,16 +616,6 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         self.assertEqual("4.2.1.", node["text"].strip())
         self.assertEqual("item", node['metadata']['paragraph_type'])
 
-    @unittest.skip("TODO fix this")
-    def test_number_not_part(self) -> None:
-        file_name = "31(1).txt"
-        result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
-        document_tree = result["content"]["structure"]
-        self.__test_law_tree_sanity(document_tree)
-        node = self._get_by_tree_path(document_tree, "0.0.3.5.0.0")
-        self.assertTrue(node["text"].strip().endswith("2 настоящей статьи."))
-        self.assertEqual("raw_text", node['metadata']['paragraph_type'])
-
     def test_html_invisible_table(self) -> None:
         file_name = "invisibly_table4.html"
         result = self._send_request(file_name, dict(document_type="law"), expected_code=200)

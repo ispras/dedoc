@@ -6,15 +6,9 @@ from dedoc.structure_extractors.feature_extractors.abstract_extractor import Abs
 
 
 class TestRegexpFeatures(unittest.TestCase):
-    """
-    Class with implemented tests for feature extractor
-    """
     result_matrix = np.array([[1, 0, 0], [0, 1, 1], [0, 0, 1]])
 
     def compare_with_expected(self, expected_matrix: List[List[int]], result: np.ndarray) -> None:
-        """
-        Method for comparison of two matrices
-        """
         self.assertEqual(len(expected_matrix), result.shape[0])
         self.assertEqual(len(expected_matrix[0]), result.shape[1])
         for row_res, row_exp in zip(result, expected_matrix):

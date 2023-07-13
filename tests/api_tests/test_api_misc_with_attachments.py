@@ -11,18 +11,6 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
 
     data_directory_path = AbstractTestApiDocReader.data_directory_path
 
-    def check_pdf_1(self, pdf: dict) -> None:
-        content = pdf["content"]['structure']
-        self.assertEqual("Глава 543\n", content["subparagraphs"][0]["text"])
-        self.assertEqual("Какой-то текст.\n", content["subparagraphs"][0]["subparagraphs"][0]["text"])
-        self.assertEqual(content["subparagraphs"][0]["subparagraphs"][1]["subparagraphs"][0]['text'], '1.\n')
-        self.assertEqual(content["subparagraphs"][0]["subparagraphs"][1]["subparagraphs"][1]['text'], '2.\n')
-        self.assertEqual(content["subparagraphs"][0]["subparagraphs"][1]["subparagraphs"][2]['text'], '3.\n')
-
-    def check_pdf_2(self, pdf: dict) -> None:
-        content = pdf["content"]
-        self.assertEqual("Пример документа\n", content['structure']['subparagraphs'][0]["text"])
-
     def _check_attachments(self, attachments: List[dict]) -> None:
         for attachment in attachments:
             self.assertTrue(attachment["attachments"] is not None)
@@ -172,7 +160,7 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
             with open(path, "wb") as file_out:
                 file_out.write(base64.decodebytes(base64_encode.encode()))
             result_english = self._send_request(file_name=path, data={})
-            self.check_english_doc(result_english)
+            self._check_english_doc(result_english)
 
     def test_docx_images_no_base64(self) -> None:
         metadata = self.__check_base64(False)

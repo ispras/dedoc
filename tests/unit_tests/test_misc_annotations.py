@@ -8,28 +8,16 @@ from tests.test_utils import TestTimeout
 
 
 class TestAnnotationMerger(unittest.TestCase):
-    """
-    Class with implemented tests for the AnnotationMerger
-    """
     def merge(self, annotations: List[Annotation], text: str) -> Set[Tuple[int, int, str, str]]:
-        """
-        Class method to merge given annotations in a given string
-        """
         res = AnnotationMerger().merge_annotations(annotations, text)
         return {(annotation.start, annotation.end, annotation.name, annotation.value) for annotation in res}
 
     def test_annotation_merge_zero(self) -> None:
-        """
-        Tests merging of empty list of annotations
-        """
         annotations = []
         text = "hello my friend"
         self.assertSetEqual(set(), self.merge(annotations, text))
 
     def test_annotation_merge_one(self) -> None:
-        """
-        Tests merging of list consisting of only one annotation
-        """
         annotations = [Annotation(start=0, end=4, name="size", value="1")]
         text = "hello my friend"
         self.assertSetEqual({(0, 4, "size", "1")}, self.merge(annotations, text))
@@ -43,17 +31,11 @@ class TestAnnotationMerger(unittest.TestCase):
         self.assertSetEqual({(0, 5, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_same_value(self) -> None:
-        """
-        Tests the case where two annotations match on a space symbol and cover the whole string
-        """
         annotations = [Annotation(start=0, end=5, name="size", value="1"), Annotation(start=5, end=15, name="size", value="1")]
         text = "hello my friend"
         self.assertSetEqual({(0, 15, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_same_value_no_spaces(self) -> None:
-        """
-        Tests the case where two annotations match on a letter and cover the whole string
-        """
         annotations = [Annotation(start=0, end=5, name="size", value="1"), Annotation(start=5, end=15, name="size", value="1")]
         text = "hellomyfriend"
         self.assertSetEqual({(0, 15, "size", "1")}, self.merge(annotations, text))
@@ -75,25 +57,16 @@ class TestAnnotationMerger(unittest.TestCase):
         self.assertSetEqual({(0, 25, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_same_value_separating_by_space(self) -> None:
-        """
-        Tests the case where two annotations are separated by space symbol
-        """
         annotations = [Annotation(start=0, end=5, name="size", value="1"), Annotation(start=6, end=15, name="size", value="1")]
         text = "hello my friend"
         self.assertSetEqual({(0, 15, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_same_value_separating_by_tab(self) -> None:
-        """
-        Tests the case where two annotations are separated by tab symbol
-        """
         annotations = [Annotation(start=0, end=5, name="size", value="1"), Annotation(start=6, end=15, name="size", value="1")]
         text = "hello\tmy friend"
         self.assertSetEqual({(0, 15, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_same_value_separating_by_newline(self) -> None:
-        """
-        Tests the case where two annotations are separated by newline symbol
-        """
         annotations = [Annotation(start=0, end=5, name="size", value="1"), Annotation(start=6, end=15, name="size", value="1")]
         text = "hello\nmy friend"
         self.assertSetEqual({(0, 15, "size", "1")}, self.merge(annotations, text))
@@ -107,62 +80,41 @@ class TestAnnotationMerger(unittest.TestCase):
         self.assertSetEqual({(0, 15, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_three_annotations(self) -> None:
-        """
-        Tests the case of merging three disjoint annotations that cover the whole string
-        """
         annotations = [Annotation(start=0, end=5, name="size", value="1"), Annotation(start=6, end=10, name="size", value="1"),
                        Annotation(start=10, end=15, name="size", value="1")]
         text = "hello my friend"
         self.assertSetEqual({(0, 15, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_three_nested_annotations(self) -> None:
-        """
-        Tests the case of merging three nested annotations that cover the whole string
-        """
         annotations = [Annotation(start=0, end=15, name="size", value="1"), Annotation(start=6, end=10, name="size", value="1"),
                        Annotation(start=3, end=8, name="size", value="1")]
         text = "hello my friend"
         self.assertSetEqual({(0, 15, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_three_intersected_annotations(self) -> None:
-        """
-        Tests the case of merging three intersecting annotations
-        """
         annotations = [Annotation(start=0, end=5, name="size", value="1"), Annotation(start=3, end=8, name="size", value="1"),
                        Annotation(start=6, end=9, name="size", value="1")]
         text = "hello my friend"
         self.assertSetEqual({(0, 9, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_three_one_intersected_annotations(self) -> None:
-        """
-        Tests the case of merging two intersecting annotations and the one that is separate
-        """
         annotations = [Annotation(start=0, end=3, name="size", value="1"), Annotation(start=3, end=6, name="size", value="1"),
                        Annotation(start=8, end=15, name="size", value="1")]
         text = "hello my friend"
         self.assertSetEqual({(0, 6, "size", "1"), (8, 15, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_different_value(self) -> None:
-        """
-        Tests the case of merging two annotations with different values
-        """
         annotations = [Annotation(start=0, end=5, name="bold", value="True"), Annotation(start=5, end=15, name="italic", value="True")]
         text = "hello my friend"
         self.assertSetEqual({(0, 5, "bold", "True"), (5, 15, "italic", "True")}, self.merge(annotations, text))
 
     def test_annotation_merge_mixed(self) -> None:
-        """
-        Tests the case of merging many annotations with mixed values
-        """
         annotations = [Annotation(start=0, end=5, name="bold", value="True"), Annotation(start=5, end=15, name="bold", value="True"),
                        Annotation(start=4, end=6, name="italic", value="True"), Annotation(start=6, end=66, name="italic", value="True")]
         text = "hello my friend, hello my friend, hello my friend, hello my friend"
         self.assertSetEqual({(0, 15, "bold", "True"), (4, 66, "italic", "True")}, self.merge(annotations, text))
 
     def test_merge_1000_annotations(self) -> None:
-        """
-        Tests the case of merging one hundred annotations with the same values
-        """
         timeout = 10
         n = 1000
         annotations = [Annotation(start=i, end=i + 1, name="bold", value="True") for i in range(n)]
@@ -172,9 +124,6 @@ class TestAnnotationMerger(unittest.TestCase):
         self.assertSetEqual({(0, n, "bold", "True")}, result)
 
     def test_merge_1000_pair_annotations(self) -> None:
-        """
-        Tests the case of merging many annotations with the same positions but with different values
-        """
         timeout = 10
         n = 1000
         annotations = []
@@ -188,9 +137,6 @@ class TestAnnotationMerger(unittest.TestCase):
         self.assertSetEqual({(0, n, "bold", "True"), (0, n, "size", "1")}, result)
 
     def test_merge_1000_no_intersection(self) -> None:
-        """
-        Tests the case of merging many annotations with no intersections
-        """
         timeout = 10
         n = 1000
         annotations = []
@@ -204,9 +150,6 @@ class TestAnnotationMerger(unittest.TestCase):
 
 
 class TestAbstractStructureExtractor(unittest.TestCase):
-    """
-    Class with implemented tests for the AbstractStructureExtractor
-    """
     def test_annotation_extractor_left(self) -> None:
         """
         Tests the case where extraction region is one pixel to the left of the annotation region
@@ -263,9 +206,6 @@ class TestAbstractStructureExtractor(unittest.TestCase):
         self.assertEqual(res[1].end, 3)
 
     def test_annotation_extractor_zero(self) -> None:
-        """
-        Tests the case with extracting empty list of annotations
-        """
         annotations = []
         res = AbstractStructureExtractor._select_annotations(annotations, 1, 4)
         self.assertEqual(len(res), 0)

@@ -16,7 +16,7 @@ class TestLawTxtReader(AbstractTestApiDocReader):
     def _get_abs_path(self, file_name: str) -> str:
         return os.path.join(self.data_directory_path, "laws", file_name)
 
-    def test_spaces(self) -> None:
+    def test_law_document_spaces_correctness(self) -> None:
         path = self._get_abs_path("коап_москвы_8_7_2015_utf.txt")
         directory, filename = os.path.split(path)
         document = self.txt_reader.read(path=path, document_type="law", parameters={})

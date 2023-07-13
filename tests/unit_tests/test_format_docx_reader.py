@@ -10,9 +10,6 @@ from dedoc.readers.docx_reader.docx_reader import DocxReader
 
 
 class TestDocxReader(unittest.TestCase):
-    """
-    Class with implemented tests for DocxReader
-    """
 
     directory = os.path.join(os.path.dirname(__file__), "..", "data", "docx")
     tmpdir = None
@@ -32,9 +29,6 @@ class TestDocxReader(unittest.TestCase):
         super().tearDown()
 
     def test_docx_with_table(self) -> None:
-        """
-        Tests parsing correctness for .docx file with tables
-        """
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("example.docx")
         result = docx_reader.read(path)
@@ -71,9 +65,6 @@ class TestDocxReader(unittest.TestCase):
         self.assertTrue(found)
 
     def test_docx_without_tables(self) -> None:
-        """
-        Tests parsing correctness for .docx file without tables
-        """
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("header_test.docx")
         result = docx_reader.read(path)
@@ -95,9 +86,6 @@ class TestDocxReader(unittest.TestCase):
         self.assertEqual("4.6. п", lines[11].line.strip())
 
     def test_tz_file(self) -> None:
-        """
-        Tests parsing correctness for .docx tz file
-        """
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("tz.docx")
         result = docx_reader.read(path)
@@ -115,9 +103,6 @@ class TestDocxReader(unittest.TestCase):
         self.assertTrue(result is not None)
 
     def test_caps_letters1(self) -> None:
-        """
-        Tests parsing correctness for .docx with caps letters
-        """
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("caps_1.docx")
         result = docx_reader.read(path)
@@ -125,9 +110,6 @@ class TestDocxReader(unittest.TestCase):
         self.assertEqual('АНАСТАСИЯ АЙГУЗИНА', result.lines[3].line)
 
     def test_caps_letters2(self) -> None:
-        """
-        Tests parsing correctness for .docx with caps letters and complex structure
-        """
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("caps_2.docx")
         result = docx_reader.read(path)
@@ -135,9 +117,6 @@ class TestDocxReader(unittest.TestCase):
         self.assertEqual('I глава\n', result.lines[2].line)
 
     def test_justification(self) -> None:
-        """
-        Tests justification of text in .docx file
-        """
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("justification.docx")
         result = docx_reader.read(path)
@@ -148,9 +127,6 @@ class TestDocxReader(unittest.TestCase):
                     self.assertEqual(answer[1], annotation.value)
 
     def test_numeration(self) -> None:
-        """
-        Tests numeration in .docx file
-        """
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("numeration.docx")
         result = docx_reader.read(path)
@@ -166,10 +142,7 @@ class TestDocxReader(unittest.TestCase):
         self.assertEqual("5.4.\tlist", lines[11].line)
         self.assertEqual("5.5.\tlist", lines[13].line)
 
-    def test_tables(self) -> None:
-        """
-        Tests table parsing in .docx file
-        """
+    def test_table_parsing_correctness(self) -> None:
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("merged_cells.docx")
         result = docx_reader.read(path)
@@ -245,10 +218,7 @@ class TestDocxReader(unittest.TestCase):
         self.assertEqual(result.tables[1].metadata.cell_properties[1][0].rowspan, 2)
         self.assertEqual(result.tables[1].metadata.cell_properties[1][0].colspan, 2)
 
-    def test_merged_tables(self) -> None:
-        """
-        Tests parsing of .docx file containing big table with merged cells
-        """
+    def test_tables_with_merged_cells(self) -> None:
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("big_table_with_merged_cells.docx")
         result = docx_reader.read(path)
@@ -270,9 +240,6 @@ class TestDocxReader(unittest.TestCase):
         self.assertEqual(result.tables[0].metadata.cell_properties[3][0].colspan, 4)
 
     def test_diagram_annotation(self) -> None:
-        """
-        Tests parsing of diagram annotation in .docx file
-        """
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("diagram_1.docx")
         result = docx_reader.read(path)
@@ -293,9 +260,6 @@ class TestDocxReader(unittest.TestCase):
             self.assertTrue(annotation_found)
 
     def test_tags(self) -> None:
-        """
-        Tests parsing of tags in .docx file
-        """
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("with_tags.docx")
         result = docx_reader.read(path)
