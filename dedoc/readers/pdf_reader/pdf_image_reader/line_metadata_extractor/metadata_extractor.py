@@ -21,8 +21,7 @@ class LineMetadataExtractor:
 
     def __init__(self, default_spacing: int = 50, *, config: dict) -> None:
         self.config = config
-        path_model = os.path.join(get_config()["resources_path"], "font_classifier.pth")
-        self.font_type_classifier = FontTypeClassifier(path_model)
+        self.font_type_classifier = FontTypeClassifier()
         self.default_spacing = default_spacing
 
     def predict_annotations(self, page_with_lines: PageWithBBox) -> PageWithBBox:
