@@ -4,7 +4,7 @@ from sklearn.cluster import AgglomerativeClustering
 
 
 class BoldAgglomerativeClusterizer:
-    def __init__(self):
+    def __init__(self) -> None:
         self.significance_level = 0.2
 
     def clusterize(self, x: np.ndarray) -> np.ndarray:

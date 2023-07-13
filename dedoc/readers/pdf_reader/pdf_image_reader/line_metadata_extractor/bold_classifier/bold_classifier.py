@@ -8,12 +8,12 @@ from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.bold_clas
 
 
 class BoldClassifier:
-    def __init__(self):
+    def __init__(self) -> None:
         self.permissible_h_bbox = 5
         self.binarizer = ValleyEmphasisBinarizer()
         self.clusterizer = BoldAgglomerativeClusterizer()
 
-    def classify(self, image: np.ndarray,  bboxes: List[BBox]) -> List[float]:
+    def classify(self, image: np.ndarray, bboxes: List[BBox]) -> List[float]:
         if len(bboxes) == 0:
             return []
 
@@ -54,7 +54,7 @@ class BoldClassifier:
         if p > s or s == 0:
             evaluation = 1.
         else:
-            evaluation = p/s
+            evaluation = p / s
         return evaluation
 
     def __clusterize(self, bboxes_evaluation: List[float]) -> List[float]:
@@ -94,7 +94,7 @@ class BoldClassifier:
                 argmax2 = i
         h_min = min(argmax1, argmax2)
         h_max = min(max(argmax1, argmax2) + 1, h)
-        if h_max-h_min < self.permissible_h_bbox:
+        if h_max - h_min < self.permissible_h_bbox:
             return image
         return image[h_min:h_max, :]
 
