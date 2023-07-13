@@ -38,11 +38,6 @@ def download(resources_path: str) -> None:
                       hub_name="model.pth")
 
     download_from_hub(out_dir=resources_path,
-                      out_name="font_classifier.pth",
-                      repo_name="font_classifier",
-                      hub_name="model.pth")
-
-    download_from_hub(out_dir=resources_path,
                       out_name="paragraph_classifier.pkl.gz",
                       repo_name="paragraph_classifier",
                       hub_name="model.pkl.gz")
