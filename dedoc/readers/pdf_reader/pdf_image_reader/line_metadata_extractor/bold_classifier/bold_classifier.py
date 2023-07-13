@@ -8,6 +8,10 @@ from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.bold_clas
 
 
 class BoldClassifier:
+    """
+    This class classifies words (or lines) in bboxes as bold or non-bold.
+    Given a list of bboxes and an image, it returns a list of boldness probabilities (actually only 0 and 1 for now)
+    """
     def __init__(self) -> None:
         self.permissible_h_bbox = 5
         self.binarizer = ValleyEmphasisBinarizer()
@@ -21,8 +25,8 @@ class BoldClassifier:
             return [0.0]
 
         bboxes_evaluation = self.__get_bboxes_evaluation(image, bboxes)
-        bboxes_indicators = self.__clusterize(bboxes_evaluation)
-        return bboxes_indicators
+        bold_probabilities = self.__clusterize(bboxes_evaluation)
+        return bold_probabilities
 
     def __get_bboxes_evaluation(self, image: np.ndarray, bboxes: List[BBox]) -> List[float]:
         processed_image = self.__preprocessing(image)
