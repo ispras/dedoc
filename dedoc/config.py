@@ -12,8 +12,8 @@ DEBUG_MODE = False
 
 _config = dict(
     # -----------------------------------------RESOURCES PATH SETTINGS----------------------------------------------------
-    resources_path=os.path.join(os.path.expanduser('~'), ".cache", "dedoc", "resources"),
-    intermediate_data_path=os.path.join(os.path.expanduser('~'), ".cache", "dedoc", "resources", "datasets"),
+    resources_path=os.environ.get('RESOURCES_PATH', os.path.join(os.path.expanduser('~'), ".cache", "dedoc", "resources")),
+    intermediate_data_path=os.environ.get('RESOURCES_PATH', os.path.join(os.path.expanduser('~'), ".cache", "dedoc", "resources", "datasets")),
 
     # -----------------------------------------COMMON DEBUG SETTINGS----------------------------------------------------
     debug_mode=DEBUG_MODE,
