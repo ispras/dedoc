@@ -2,6 +2,7 @@ ARG REPOSITORY="docker.io"
 FROM dedocproject/baseimg
 
 ENV PYTHONPATH "${PYTHONPATH}:/dedoc_root"
+ENV RESOURCES_PATH "/dedoc_root/resources"
 
 ADD requirements.txt .
 RUN pip3 install -r requirements.txt

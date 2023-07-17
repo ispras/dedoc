@@ -9,11 +9,12 @@ logging.basicConfig(stream=sys.stdout,
                     format="%(asctime)s - %(pathname)s - %(levelname)s - %(message)s")
 
 DEBUG_MODE = False
+RESOURCES_PATH = os.environ.get('RESOURCES_PATH', os.path.join(os.path.expanduser('~'), ".cache", "dedoc", "resources"))
 
 _config = dict(
     # -----------------------------------------RESOURCES PATH SETTINGS----------------------------------------------------
-    resources_path=os.path.join(os.path.expanduser('~'), ".cache", "dedoc", "resources"),
-    intermediate_data_path=os.path.join(os.path.expanduser('~'), ".cache", "dedoc", "resources", "datasets"),
+    resources_path=RESOURCES_PATH,
+    intermediate_data_path=os.path.join(RESOURCES_PATH, "datasets"),
 
     # -----------------------------------------COMMON DEBUG SETTINGS----------------------------------------------------
     debug_mode=DEBUG_MODE,
