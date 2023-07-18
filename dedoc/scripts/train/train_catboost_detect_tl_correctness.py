@@ -8,7 +8,7 @@ from sklearn.metrics import f1_score
 import gzip
 import pickle
 
-from dedoc.readers.pdf_reader.pdf_auto_reader.catboost_model_extractor import CatboostModelExtractor
+from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier import TxtlayerClassifier
 
 
 class GetTextAndTarget:
@@ -51,7 +51,7 @@ class GetTextAndTarget:
         return {"text": text, "label": label}
 
 
-class GetFeaturesFromText(CatboostModelExtractor):
+class GetFeaturesFromText(TxtlayerClassifier):
     """
     The GetFeaturesFromText class is used for extracting features from text data.
     """
@@ -59,7 +59,7 @@ class GetFeaturesFromText(CatboostModelExtractor):
         super().__init__(config=config)
 
     def __len__(self) -> int:
-        return len(self.list_symbols)
+        return len(self.symbols_list)
 
     def get_feature(self, correct_data_path: str, not_correct_data_path: str) -> dict:
         """
@@ -75,12 +75,12 @@ class GetFeaturesFromText(CatboostModelExtractor):
             list_of_sub = []
             num_letters_in_data = self._count_letters(data["text"])
             num_other_symboll_in_data = self._count_other(data["text"])
-            for symbol in self.list_letters:
+            for symbol in self.letters_list:
                 if num_letters_in_data != 0:
                     list_of_sub.append(round(data["text"].count(symbol) / num_letters_in_data, 5))
                 else:
                     list_of_sub.append(0.0)
-            for symbol in self.list_symbols:
+            for symbol in self.symbols_list:
                 list_of_sub.append(data["text"].count(symbol))
             list_of_sub.append(num_letters_in_data + num_other_symboll_in_data / len(data["text"]) if len(data["text"]) != 0 else 0)
             features.append(list_of_sub)

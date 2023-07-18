@@ -10,10 +10,16 @@ class AbstractConverterTest(TestCase):
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
 
     def setUp(self) -> None:
+        """
+        Method that runs before AbstractConverterTest testing
+        """
         super().setUp()
         self.tmp_dir = TemporaryDirectory()
 
     def tearDown(self) -> None:
+        """
+        Method that runs after AbstractConverterTest testing
+        """
         super().tearDown()
         self.tmp_dir.cleanup()
 

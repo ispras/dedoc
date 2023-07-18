@@ -77,7 +77,7 @@ class ContentChecker(unittest.TestCase):
         if "other_fields" in metadata:
             self.assertIsInstance(metadata["other_fields"], dict)
 
-    def check_english_doc(self, result: dict) -> None:
+    def _check_english_doc(self, result: dict) -> None:
         content = result["content"]
         structure = content["structure"]
         self._check_tree_sanity(structure)
