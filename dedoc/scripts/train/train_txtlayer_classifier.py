@@ -8,7 +8,7 @@ import xgbfir
 from sklearn.metrics import f1_score
 from xgboost import XGBClassifier
 
-from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier import TxtlayerFeatureExtractor
+from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_feature_extractor import TxtlayerFeatureExtractor
 
 
 class GetTextAndTarget:
