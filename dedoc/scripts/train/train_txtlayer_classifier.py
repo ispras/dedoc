@@ -1,13 +1,16 @@
 import gzip
 import os
 import pickle
+import zipfile
 from pathlib import Path
 from typing import List, Tuple
 
+import wget
 import xgbfir
 from sklearn.metrics import f1_score
 from xgboost import XGBClassifier
 
+from config import get_config
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_feature_extractor import TxtlayerFeatureExtractor
 
 
@@ -56,12 +59,28 @@ class GetTextAndTarget:
 
 
 if __name__ == "__main__":
+    data_dir = os.path.join(get_config()["intermediate_data_path"], "text_layer_correctness_data")
+    os.makedirs(data_dir, exist_ok=True)
+    txtlayer_classifier_dataset_dir = os.path.join(data_dir, "data")
+
+    if not os.path.isdir(txtlayer_classifier_dataset_dir):
+        path_out = os.path.join(data_dir, "data.zip")
+        wget.download("https://at.ispras.ru/owncloud/index.php/s/z9WLFiKKFo2WMgW/download", path_out)
+        with zipfile.ZipFile(path_out, 'r') as zip_ref:
+            zip_ref.extractall(data_dir)
+        os.remove(path_out)
+        print(f"Dataset downloaded to {txtlayer_classifier_dataset_dir}")
+    else:
+        print(f"Use cached dataset from {txtlayer_classifier_dataset_dir}")
+
+    assert os.path.isdir(txtlayer_classifier_dataset_dir)
+
     features_extractor = TxtlayerFeatureExtractor()
     stages_data = {}
 
     for stage in ["train", "test", "val"]:
-        texts, labels = GetTextAndTarget(path_correct_texts=os.getcwd() + f"/data/correct_{stage}/",
-                                         path_incorrect_texts=os.getcwd() + f"/data/not_correct_{stage}/").get_texts_and_targets()
+        texts, labels = GetTextAndTarget(os.path.join(txtlayer_classifier_dataset_dir, f"correct_{stage}"),
+                                         os.path.join(txtlayer_classifier_dataset_dir, f"not_correct_{stage}")).get_texts_and_targets()
         features = features_extractor.transform(texts)
         stages_data[stage] = dict(features=features, labels=labels)
 

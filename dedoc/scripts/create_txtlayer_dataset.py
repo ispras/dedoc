@@ -46,7 +46,7 @@ class CorrectTextGenerator:
                 article_text_fixed = re.sub(self.meta, "", article_text_fixed)
                 article_text_fixed = re.sub(self.symbols, "", article_text_fixed)
                 article_text_fixed = re.sub(r'\n+', "\n", article_text_fixed)
-            except:
+            except:  # noqa
                 article_text_fixed = ""
 
         return article_text_fixed
@@ -128,7 +128,10 @@ class OCRCorruptor:
             # 2 - read text from the image using OCR with another language
             lines = []
             for image_path in images_path_list:
-                document = self.image_reader.read(image_path, document_type=None, parameters=dict(language=ocr_lang, need_pdf_table_analysis="false"))
+                document = self.image_reader.read(image_path, document_type=None, parameters=dict(language=ocr_lang,
+                                                                                                  need_pdf_table_analysis="false",
+                                                                                                  document_orientation="no_change",
+                                                                                                  is_one_column_document="true"))
                 lines.extend(document.lines)
 
         return "".join([line.line for line in lines])

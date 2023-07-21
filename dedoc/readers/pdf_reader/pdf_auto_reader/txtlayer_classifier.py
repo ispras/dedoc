@@ -21,9 +21,7 @@ class TxtlayerClassifier:
         self.logger = config.get("logger", logging.getLogger())
 
         self.feature_extractor = TxtlayerFeatureExtractor()
-        # self.path = os.path.join(get_config()["resources_path"], "txtlayer_classifier.pkl.gz")
-        self.path = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "resources")),
-                                 "txtlayer_classifier.pkl.gz")
+        self.path = os.path.join(get_config()["resources_path"], "txtlayer_classifier.pkl.gz")
         self.__model = None
 
     @property
@@ -33,7 +31,7 @@ class TxtlayerClassifier:
 
         if not os.path.isfile(self.path):
             out_dir, out_name = os.path.split(self.path)
-            download_from_hub(out_dir=out_dir, out_name=out_name, repo_name="txtlayer_classifier", hub_name="model.pkl.gz")  # TODO
+            download_from_hub(out_dir=out_dir, out_name=out_name, repo_name="txtlayer_classifier", hub_name="model.pkl.gz")
 
         assert os.path.isfile(self.path)
         with gzip.open(self.path, 'rb') as f:
