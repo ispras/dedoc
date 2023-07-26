@@ -10,7 +10,7 @@ import xgbfir
 from sklearn.metrics import f1_score
 from xgboost import XGBClassifier
 
-from config import get_config
+from dedoc.config import get_config
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_feature_extractor import TxtlayerFeatureExtractor
 
 
@@ -32,7 +32,7 @@ class GetTextAndTarget:
             if not subdir.is_dir():
                 continue
             for file_path in subdir.iterdir():
-                if str(file_path).endswith("txt"):
+                if str(file_path).endswith(".txt"):
                     path_all.append(str(file_path))
 
         return path_all
