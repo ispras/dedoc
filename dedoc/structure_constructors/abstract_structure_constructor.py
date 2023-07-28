@@ -19,13 +19,12 @@ class AbstractStructureConstructor(ABC):
     """
 
     @abstractmethod
-    def structure_document(self, document: UnstructuredDocument, version: str, structure_type: Optional[str] = None) -> ParsedDocument:
+    def structure_document(self, document: UnstructuredDocument, structure_type: Optional[str] = None) -> ParsedDocument:
         """
         Process unstructured document and build parsed document representation on this basis.
 
         :param document: intermediate representation of the document received from some structure extractor \
         (there should be filled hierarchy levels for all lines)
-        :param version: current version of the dedoc library
         :param structure_type: type of the structure that should be retrieved for the document
         :return:  the structured representation of the given document
         """

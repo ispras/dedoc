@@ -73,21 +73,14 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
-                     version: str,
                      parameters: dict = None,
                      other_fields: Optional[dict] = None) -> UnstructuredDocument:
         """
         Add the predefined list of metadata for images.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
         """
-        result = super().add_metadata(document=document,
-                                      directory=directory,
-                                      filename=filename,
-                                      converted_filename=converted_filename,
-                                      original_filename=original_filename,
-                                      parameters=parameters,
-                                      version=version,
-                                      other_fields=other_fields)
+        result = super().add_metadata(document=document, directory=directory, filename=filename, converted_filename=converted_filename,
+                                      original_filename=original_filename, parameters=parameters, other_fields=other_fields)
 
         path = os.path.join(directory, filename)
         exif_fields = self._get_exif(path)

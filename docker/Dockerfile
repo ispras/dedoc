@@ -9,10 +9,12 @@ RUN pip3 install -r requirements.txt
 
 RUN mkdir /dedoc_root
 ADD dedoc /dedoc_root/dedoc
+ADD VERSION /dedoc_root
+
+RUN python3 /dedoc_root/dedoc/utils/version_utils.py
 RUN python3 /dedoc_root/dedoc/download_models.py
 
 ADD tests /dedoc_root/tests
 ADD resources /dedoc_root/resources
-ADD VERSION /dedoc_root
 
 CMD ["python3", "/dedoc_root/dedoc/main.py", "-c", "/dedoc_root/dedoc/config.py"]

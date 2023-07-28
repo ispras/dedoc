@@ -43,7 +43,7 @@ from dedoc.structure_extractors.structure_extractor_composition import Structure
 """MANAGER SETTINGS"""
 
 
-def get_manager_config(config: dict) -> dict:
+def _get_manager_config(config: dict) -> dict:
     converters = [
         DocxConverter(config=config),
         ExcelConverter(config=config),
@@ -99,5 +99,41 @@ def get_manager_config(config: dict) -> dict:
             default_constructor=TreeConstructor()
         ),
         document_metadata_extractor=MetadataExtractorComposition(extractors=metadata_extractors),
-        attachments_extractor=AttachmentsHandler(config=config)
+        attachments_handler=AttachmentsHandler(config=config)
     )
+
+
+class ConfigurationManager(object):
+    """
+    Pattern Singleton for configuration service
+    INFO: Configuration class and config are created once at the first call
+    For initialization ConfigurationManager call ConfigurationManager.getInstance().initConfig(new_config: dict)
+    If you need default config, call ConfigurationManager.getInstance()
+    """
+    __instance = None
+    __config = None
+
+    @classmethod
+    def getInstance(cls: "ConfigurationManager") -> "ConfigurationManager":
+        """
+        Actual object creation will happen when we use ConfigurationManager.getInstance()
+        """
+        if not cls.__instance:
+            cls.__instance = ConfigurationManager()
+
+        return cls.__instance
+
+    def initConfig(self, config: dict, new_config: dict = None) -> None:
+        if new_config is None:
+            self.__config = _get_manager_config(config)
+        else:
+            self.__config = new_config
+
+    def getConfig(self, config: dict) -> dict:
+        if self.__config is None:
+            self.initConfig(config)
+        return self.__config
+
+
+def get_manager_config(config: dict) -> dict:
+    return ConfigurationManager().getInstance().getConfig(config)

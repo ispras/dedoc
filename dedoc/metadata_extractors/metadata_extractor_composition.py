@@ -23,7 +23,6 @@ class MetadataExtractorComposition:
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
-                     version: str,
                      parameters: Optional[dict] = None,
                      other_fields: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -45,6 +44,5 @@ class MetadataExtractorComposition:
                                               converted_filename=converted_filename,
                                               original_filename=original_filename,
                                               parameters=parameters,
-                                              other_fields=other_fields,
-                                              version=version)
+                                              other_fields=other_fields)
         raise Exception(f"Can't extract metadata from from file {filename}")

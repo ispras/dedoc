@@ -6,6 +6,7 @@ from flask_restx import fields, Api, Model
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.document_metadata import DocumentMetadata
 from dedoc.data_structures.serializable import Serializable
+from dedoc.utils.version_utils import get_dedoc_version
 
 
 class ParsedDocument(Serializable):
@@ -15,21 +16,18 @@ class ParsedDocument(Serializable):
     def __init__(self,
                  metadata: DocumentMetadata,
                  content: Optional[DocumentContent],
-                 version: str,
                  warnings: List[str] = None,
                  attachments: Optional[List["ParsedDocument"]] = None) -> None:
         """
         :param metadata: document metadata such as size, creation date and so on.
         :param content: text and tables
         :param attachments: result of analysis of attached files
-        :param version: the version of the program that parsed this document
         :param warnings: list of warnings and possible errors, arising in the process of document parsing
         """
         self.metadata = metadata
         self.content = content
         self.attachments = [] if attachments is None else attachments
-        assert version is not None
-        self.version = version
+        self.version = get_dedoc_version()
         self.warnings = warnings if warnings is not None else []
 
     def add_attachments(self, new_attachment: List["ParsedDocument"]) -> None:
