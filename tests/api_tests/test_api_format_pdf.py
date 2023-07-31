@@ -1,8 +1,8 @@
 import os
 
-from dedoc.data_structures.concrete_annotations.confidence_annotation import ConfidenceAnnotation
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
+from dedoc.data_structures.concrete_annotations.confidence_annotation import ConfidenceAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.utils import supported_image_types
 

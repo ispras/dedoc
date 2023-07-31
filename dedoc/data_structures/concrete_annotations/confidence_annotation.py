@@ -5,7 +5,7 @@ from dedoc.data_structures.annotation import Annotation
 
 class ConfidenceAnnotation(Annotation):
     """
-    confidence of some recognized with OCR text inside the line.
+    Confidence level of some recognized with OCR text inside the line.
     """
     name = "confidence"
 
@@ -13,7 +13,7 @@ class ConfidenceAnnotation(Annotation):
         """
         :param start: start of the text
         :param end: end of the text (not included)
-        :param value: number from 0 to 100
+        :param value: confidence level in "percents" (float or integer number from 0 to 100)
         """
         try:
             assert 0.0 <= float(value) <= 100.0
@@ -21,7 +21,7 @@ class ConfidenceAnnotation(Annotation):
             raise ValueError("the value of confidence annotation should be float value")
         except AssertionError:
             raise ValueError("the value of confidence annotation should be in range [0, 100]")
-        super().__init__(start=start, end=end, name=ConfidenceAnnotation.name, value=value, mergeable=False)
+        super().__init__(start=start, end=end, name=ConfidenceAnnotation.name, value=value, is_mergeable=False)
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
