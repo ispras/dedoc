@@ -13,6 +13,7 @@ class QueryParameters(BaseModel):
     need_content_analysis: Optional[str]
     recursion_deep_attachments: Optional[str]
     return_base64: Optional[str]
+    attachments_dir: Optional[str]
 
     insert_table: Optional[str]
     need_pdf_table_analysis: Optional[str]
@@ -44,6 +45,7 @@ class QueryParameters(BaseModel):
                  need_content_analysis: Optional[str] = Body(description="turn on if you need parse the contents of the document attachments. Default: 'false'", default=None),
                  recursion_deep_attachments: Optional[str] = Body(description="the depth on which nested attachments will be parsed if need_content_analysis=true. Default: '10'", default=None),
                  return_base64: Optional[str] = Body(description="returns images in base64 format. Default: 'false'", default=None),
+                 attachments_dir: Optional[str] = Body(description="path to the directory where to save files' attachments", default=None),
 
                  # tables handling
                  insert_table: Optional[str] = Body(description="Insert table into the result tree's content or not. Default: 'false'", default=None),
@@ -79,6 +81,7 @@ class QueryParameters(BaseModel):
         self.need_content_analysis: str         = need_content_analysis or 'false'
         self.recursion_deep_attachments: str    = recursion_deep_attachments or '10'
         self.return_base64: str                 = return_base64 or 'false'
+        self.attachments_dir: str               = attachments_dir
 
         self.insert_table: str                  = insert_table or 'false'
         self.need_pdf_table_analysis: str       = need_pdf_table_analysis or 'true'

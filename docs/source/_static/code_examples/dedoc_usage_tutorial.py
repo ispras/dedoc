@@ -122,12 +122,10 @@ print(parsed_document.content.structure.subparagraphs[0].text)  # Document examp
 
 
 """Run the whole pipeline"""
-from dedoc.manager.dedoc_manager import DedocManager
-from dedoc.config import _config as config
-from dedoc.manager_config import get_manager_config
+from dedoc import DedocManager
 
-manager = DedocManager.from_config("", get_manager_config(config=config), config=config)
-result = manager.parse_file(file_path=file_path, parameters={})
+manager = DedocManager()
+result = manager.parse(file_path=file_path, parameters={})
 
 print(result)  # <dedoc.data_structures.ParsedDocument>
 print(result.to_dict())  # OrderedDict([('version', ''), ('warnings', []), ('content', OrderedDict([('structure', OrderedDict([('node_id', '0'), ('text', ''), ('annotations', []), ('metadata', OrderedDict([('page_id', 0), ('line_id', 0), ('paragraph_type', 'root'), ('other_fields', {})])), ...

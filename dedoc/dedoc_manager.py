@@ -16,19 +16,21 @@ from dedoc.utils.utils import get_unique_name
 class DedocManager:
     """
     This class allows to run the whole pipeline of the document processing:
-    1. Converting
-    2. Reading
-    3. Metadata extraction
-    4. Structure extraction
-    5. Output structure construction
-    6. Attachments handling
+
+        1. Converting
+        2. Reading
+        3. Metadata extraction
+        4. Structure extraction
+        5. Output structure construction
+        6. Attachments handling
     """
 
     def __init__(self, config: Optional[dict] = None, manager_config: Optional[dict] = None) -> None:
         """
         :param config: config for document processing
         :param manager_config: dictionary with different stage document processors.
-        The following keys should be in the dictionary:
+
+        The following keys should be in the `manager_config` dictionary:
             - converter (optional) (:class:`~dedoc.converters.FileConverterComposition`)
             - reader (:class:`~dedoc.readers.ReaderComposition`)
             - structure_extractor (:class:`~dedoc.structure_extractors.StructureExtractorComposition`)
@@ -53,6 +55,14 @@ class DedocManager:
         assert self.attachments_handler is not None, "Attachments handler shouldn't be None"
 
     def parse(self, file_path: str, parameters: Optional[Dict[str, str]] = None) -> ParsedDocument:
+        """
+        Run the whole pipeline of the document processing.
+        If some error occurred, file metadata are stored in the exception's metadata field.
+
+        :param file_path: full path where the file is located
+        :param parameters: any parameters, specify how to parse file (see API parameters documentation for more details)
+        :return: parsed document
+        """
         parameters = {} if parameters is None else parameters
 
         file_dir, file_name = os.path.split(file_path)
@@ -66,7 +76,8 @@ class DedocManager:
 
     def __parse_no_error_handling(self, file_path: str, parameters: Dict[str, str]) -> ParsedDocument:
         """
-        Function of complete parsing document with 'file_path' with attachment files analyze
+        Function of complete document parsing without errors handling.
+
         :param file_path: full path where the file is located
         :param parameters: any parameters, specify how to parse file
         :return: parsed document

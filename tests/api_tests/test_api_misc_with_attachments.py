@@ -179,3 +179,17 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         # check that attachment on cloud and looks fine
         metadata = attachment["metadata"]
         return metadata
+
+    def test_attachments_recursion(self) -> None:
+        file_name = "with_attachments/with_attachments_0.docx"
+
+        result = self._send_request(file_name=file_name, data=dict(with_attachments=True, need_content_analysis=True, recursion_deep_attachments=0))
+        self.assertEqual(0, len(result["attachments"]))
+
+        result = self._send_request(file_name=file_name, data=dict(with_attachments=True, need_content_analysis=True, recursion_deep_attachments=1))
+        self.assertLess(0, len(result["attachments"]))
+        self.assertEqual(0, len(result["attachments"][1]["attachments"]))
+
+        result = self._send_request(file_name=file_name, data=dict(with_attachments=True, need_content_analysis=True, recursion_deep_attachments=2))
+        self.assertLess(0, len(result["attachments"]))
+        self.assertLess(0, len(result["attachments"][1]["attachments"]))
