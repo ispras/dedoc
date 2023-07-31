@@ -95,6 +95,7 @@ def get_unique_name(filename: str) -> str:
 
 def save_upload_file(upload_file: UploadFile, output_dir: str) -> str:
     file_name = upload_file.filename.split("/")[-1]
+    file_name = check_filename_length(file_name)
     file_path = os.path.join(output_dir, file_name)
     try:
         with open(file_path, "wb") as buffer:

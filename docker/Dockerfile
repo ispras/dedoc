@@ -11,7 +11,7 @@ RUN mkdir /dedoc_root
 ADD dedoc /dedoc_root/dedoc
 ADD VERSION /dedoc_root
 
-RUN python3 /dedoc_root/dedoc/utils/version_utils.py
+RUN echo "__version__ = \"$(cat /dedoc_root/VERSION)\"" > /dedoc_root/dedoc/version.py
 RUN python3 /dedoc_root/dedoc/download_models.py
 
 ADD tests /dedoc_root/tests

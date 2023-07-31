@@ -3,10 +3,10 @@ from typing import List, Optional
 
 from flask_restx import fields, Api, Model
 
+import dedoc
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.document_metadata import DocumentMetadata
 from dedoc.data_structures.serializable import Serializable
-from dedoc.utils.version_utils import get_dedoc_version
 
 
 class ParsedDocument(Serializable):
@@ -27,7 +27,7 @@ class ParsedDocument(Serializable):
         self.metadata = metadata
         self.content = content
         self.attachments = [] if attachments is None else attachments
-        self.version = get_dedoc_version()
+        self.version = dedoc.__version__
         self.warnings = warnings if warnings is not None else []
 
     def add_attachments(self, new_attachment: List["ParsedDocument"]) -> None:

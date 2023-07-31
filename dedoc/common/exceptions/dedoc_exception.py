@@ -1,6 +1,6 @@
 from typing import Optional
 
-from dedoc.utils.version_utils import get_dedoc_version
+import dedoc
 
 
 class DedocException(Exception):
@@ -14,7 +14,7 @@ class DedocException(Exception):
         self.msg = msg
         self.msg_api = msg if msg_api is None else msg_api
         self.filename = filename
-        self.version = version if version is not None else get_dedoc_version()
+        self.version = version if version is not None else dedoc.__version__
         self.metadata = metadata
 
     def __str__(self) -> str:

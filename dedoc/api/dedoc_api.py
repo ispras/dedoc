@@ -8,6 +8,7 @@ from fastapi.responses import UJSONResponse, ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse
 
+import dedoc
 from dedoc.api.api_args import QueryParameters
 from dedoc.api.api_utils import json2html, json2tree, json2collapsed_tree
 from dedoc.common.exceptions.dedoc_exception import DedocException
@@ -15,7 +16,6 @@ from dedoc.common.exceptions.missing_file_exception import MissingFileException
 from dedoc.config import get_config
 from dedoc.dedoc_manager import DedocManager
 from dedoc.utils.utils import save_upload_file
-from dedoc.utils.version_utils import get_dedoc_version
 
 config = get_config()
 PORT = config["api_port"]
@@ -49,7 +49,7 @@ def get_static_file(request: Request) -> Response:
 
 @app.get('/version')
 def get_version() -> Response:
-    return PlainTextResponse(get_dedoc_version())
+    return PlainTextResponse(dedoc.__version__)
 
 
 def _get_static_file_path(request: Request) -> str:
@@ -65,7 +65,7 @@ async def upload(file: UploadFile = File(...), query_params: QueryParameters = D
     parameters = query_params.dict(by_alias=True)
 
     if not file or file.filename == "":
-        raise MissingFileException("Error: Missing content in request_post file parameter", version=get_dedoc_version())
+        raise MissingFileException("Error: Missing content in request_post file parameter", version=dedoc.__version__)
     # check if the post request_post has the file part
 
     logger.info(f"Get file {file.filename} with parameters {parameters}")
