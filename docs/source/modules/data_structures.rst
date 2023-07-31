@@ -201,3 +201,9 @@ Concrete annotations
     :special-members: __init__
 
     .. autoattribute:: name
+
+.. autoclass:: dedoc.data_structures.ConfidenceAnnotation
+    :show-inheritance:
+    :special-members: __init__
+
+    .. autoattribute:: name
