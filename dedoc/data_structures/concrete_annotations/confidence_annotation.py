@@ -21,7 +21,7 @@ class ConfidenceAnnotation(Annotation):
             raise ValueError("the value of confidence annotation should be float value")
         except AssertionError:
             raise ValueError("the value of confidence annotation should be in range [0, 100]")
-        super().__init__(start=start, end=end, name=ConfidenceAnnotation.name, value=value)
+        super().__init__(start=start, end=end, name=ConfidenceAnnotation.name, value=value, mergeable=False)
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:

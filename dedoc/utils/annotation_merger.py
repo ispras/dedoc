@@ -82,7 +82,7 @@ class AnnotationMerger:
         """
         Merge one group annotations, assume that all annotations has the same name and value
         """
-        if len(annotations) <= 1:
+        if len(annotations) <= 1 or not annotations[0].mergeable:
             return annotations
         self.__check_annotations_group(annotations)
         result = []
