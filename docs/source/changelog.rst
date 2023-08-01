@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v0.10.0 (2023-08-01)
+--------------------
+Release note: `v0.10.0 <https://github.com/ispras/dedoc/releases/tag/v0.10.0>`_
+
+* Add ConfidenceAnnotation annotation for PdfImageReader.
+* Remove version parameter from metadata extractors, structure constructors and parsed document methods.
+* Add version file and version resolving for the library.
+* Add recursive handling of attachments.
+* Add parameter for saving attachments in a custom directory.
+* Remove dedoc threaded manager.
+* Improve PdfAutoReader.
+* Add temporary file name to DocumentMetadata.
+
 v0.9.2 (2023-07-18)
 -------------------
 Release note: `v0.9.2 <https://github.com/ispras/dedoc/releases/tag/v0.9.2>`_
