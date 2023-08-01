@@ -1,9 +1,9 @@
 Changelog
 =========
 
-v0.10.0 (2023-08-01)
+v0.10 (2023-08-01)
 --------------------
-Release note: `v0.10.0 <https://github.com/ispras/dedoc/releases/tag/v0.10.0>`_
+Release note: `v0.10 <https://github.com/ispras/dedoc/releases/tag/v0.10>`_
 
 * Add ConfidenceAnnotation annotation for PdfImageReader.
 * Remove version parameter from metadata extractors, structure constructors and parsed document methods.
