@@ -2,24 +2,26 @@ import datetime
 import difflib
 import gzip
 import hashlib
+import json
 import mimetypes
 import os
 import random
 import re
+import shutil
 import time
-import requests
-import json
 from os.path import splitext
 from typing import List, Optional, TypeVar, Tuple, Iterable, Iterator, Dict, Any
 
+import requests
 from Levenshtein._levenshtein import ratio
-from dateutil.parser import parse
 from charset_normalizer import from_bytes
+from dateutil.parser import parse
+from fastapi import UploadFile
 
 from dedoc.data_structures.document_content import DocumentContent
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.tree_node import TreeNode
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 T = TypeVar("T")
 
@@ -89,6 +91,19 @@ def get_unique_name(filename: str) -> str:
     ts = int(time.time())
     rnd = random.randint(0, 1000)
     return str(ts) + '_' + str(rnd) + ext
+
+
+def save_upload_file(upload_file: UploadFile, output_dir: str) -> str:
+    file_name = upload_file.filename.split("/")[-1]
+    file_name = check_filename_length(file_name)
+    file_path = os.path.join(output_dir, file_name)
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(upload_file.file, buffer)
+    finally:
+        upload_file.file.close()
+
+    return file_path
 
 
 def save_data_to_unique_file(directory: str, filename: str, binary_data: bytes) -> str:

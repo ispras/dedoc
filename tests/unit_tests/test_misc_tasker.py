@@ -9,11 +9,12 @@ from PIL import Image
 
 from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
 from dedoc.converters.file_converter import FileConverterComposition
-from dedoc.manager.dedoc_manager import DedocManager
+from dedoc.dedoc_manager import DedocManager
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.readers.reader_composition import ReaderComposition
+from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from dedoc.structure_constructors.concrete_structure_constructors.tree_constructor import TreeConstructor
 from dedoc.structure_constructors.structure_constructor_composition import StructureConstructorComposition
 from dedoc.structure_extractors.concrete_structure_extractors.classifying_law_structure_extractor import ClassifyingLawStructureExtractor
@@ -21,13 +22,12 @@ from dedoc.structure_extractors.concrete_structure_extractors.default_structure_
 from dedoc.structure_extractors.concrete_structure_extractors.foiv_law_structure_extractor import FoivLawStructureExtractor
 from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
 from dedoc.structure_extractors.structure_extractor_composition import StructureExtractorComposition
-from dedoc.train_dataset.train_dataset_utils import get_path_original_documents
-from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
-from tests.test_utils import get_test_config
 from dedoc.train_dataset.taskers.concrete_taskers.line_label_tasker import LineLabelTasker
 from dedoc.train_dataset.taskers.images_creators.concrete_creators.docx_images_creator import DocxImagesCreator
 from dedoc.train_dataset.taskers.images_creators.concrete_creators.txt_images_creator import TxtImagesCreator
 from dedoc.train_dataset.taskers.tasker import Tasker
+from dedoc.train_dataset.train_dataset_utils import get_path_original_documents
+from tests.test_utils import get_test_config
 
 
 class TestTasker(unittest.TestCase):
@@ -117,16 +117,14 @@ class TestTasker(unittest.TestCase):
         files_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "images_creator"))
         images_creators = [DocxImagesCreator(path2docs, config=get_test_config()), TxtImagesCreator(path2docs, config=get_test_config())]
 
-        test_manager = DedocManager.from_config(version="0", manager_config=self.__create_test_manager_config(config), config=config)
+        test_manager = DedocManager(manager_config=self.__create_test_manager_config(config), config=config)
         for doc in os.listdir(files_dir):
             if not doc.endswith(('docx', 'txt')):
                 continue
 
             with tempfile.TemporaryDirectory() as tmp_dir:
                 with zipfile.ZipFile(os.path.join(tmp_dir, "archive.zip"), "w") as archive:
-                    _ = test_manager.parse_file(file_path=os.path.join(files_dir, doc),
-                                                parameters=dict(document_type="law"),
-                                                original_file_name=doc)
+                    _ = test_manager.parse(file_path=os.path.join(files_dir, doc), parameters=dict(document_type="law"))
                     lines_path = os.path.join(config["intermediate_data_path"], "lines.jsonlines")
                     self.assertTrue(os.path.isfile(lines_path))
                     with open(lines_path, "r") as f:
@@ -162,5 +160,5 @@ class TestTasker(unittest.TestCase):
             structure_extractor=StructureExtractorComposition(extractors=structure_extractors, default_key="other"),
             structure_constructor=StructureConstructorComposition(default_constructor=TreeConstructor(), constructors={"tree": TreeConstructor()}),
             document_metadata_extractor=MetadataExtractorComposition(extractors=metadata_extractors),
-            attachments_extractor=AttachmentsHandler(config=config)
+            attachments_handler=AttachmentsHandler(config=config)
         )

@@ -287,11 +287,12 @@ The description of :ref:`API output JSON format <json_format>` also may be usefu
 Run the whole pipeline
 ----------------------
 
-For running the whole pipeline with all readers, metadata and structure extractors, structure constructors, one may use manager class.
+For running the whole pipeline with all readers, metadata and structure extractors, structure constructors,
+one may use manager class (see :ref:`dedoc_manager` for more details).
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
-    :lines: 125-133
+    :lines: 125-131
 
 Manager allows to run workflow (see :ref:`dedoc_workflow`) for a file of any format supported by dedoc (see :ref:`table_formats`).
-One can also make a custom `config` and `manager_config` for more flexible usage of the library.
+One can also make a custom `config` and `manager_config` (parameters of the manager constructor) for more flexible usage of the library.

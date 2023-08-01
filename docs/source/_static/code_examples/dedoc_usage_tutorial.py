@@ -86,7 +86,7 @@ from dedoc.metadata_extractors import DocxMetadataExtractor
 
 metadata_extractor = DocxMetadataExtractor()
 metadata_extractor.can_extract(document, file_dir, file_name, file_name, file_name)  # True
-document = metadata_extractor.add_metadata(document, file_dir, file_name, file_name, file_name, "")
+document = metadata_extractor.add_metadata(document, file_dir, file_name, file_name, file_name)
 print(document.metadata)  # {'file_name': 'example.docx', 'file_type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'size': 373795, 'access_time': 1686825619, 'created_time': 1686825617, 'modified_time': 1686823541, 'other_fields': {'document_subject': '', 'keywords': '', 'category': '', 'comments': '', 'author': '', 'last_modified_by': '', 'created_date': 1568725611, 'modified_date': 1686752726, 'last_printed_date': None}}
 
 
@@ -112,7 +112,7 @@ print(document.lines[0].metadata.hierarchy_level)  # HierarchyLevel(level_1=1, l
 from dedoc.structure_constructors import TreeConstructor
 
 constructor = TreeConstructor()
-parsed_document = constructor.structure_document(document, "")
+parsed_document = constructor.structure_document(document)
 print(parsed_document)  # <dedoc.data_structures.ParsedDocument>
 print(list(vars(parsed_document)))  # ['metadata', 'content', 'attachments', 'version', 'warnings']
 
@@ -122,12 +122,10 @@ print(parsed_document.content.structure.subparagraphs[0].text)  # Document examp
 
 
 """Run the whole pipeline"""
-from dedoc.manager.dedoc_manager import DedocManager
-from dedoc.config import _config as config
-from dedoc.configuration_manager import get_manager_config
+from dedoc import DedocManager
 
-manager = DedocManager.from_config("", get_manager_config(config=config), config=config)
-result = manager.parse_file(file_path=file_path, parameters={})
+manager = DedocManager()
+result = manager.parse(file_path=file_path, parameters={})
 
 print(result)  # <dedoc.data_structures.ParsedDocument>
 print(result.to_dict())  # OrderedDict([('version', ''), ('warnings', []), ('content', OrderedDict([('structure', OrderedDict([('node_id', '0'), ('text', ''), ('annotations', []), ('metadata', OrderedDict([('page_id', 0), ('line_id', 0), ('paragraph_type', 'root'), ('other_fields', {})])), ...

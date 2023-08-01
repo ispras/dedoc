@@ -13,6 +13,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
 
     It returns the following information about the given file:
         - file name;
+        - file name during parsing (unique);
         - file type (MIME);
         - file size in bytes;
         - time when the file was last accessed;
@@ -40,7 +41,6 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
-                     version: str,
                      parameters: Optional[dict] = None,
                      other_fields: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -48,7 +48,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
         """
         parameters = {} if parameters is None else parameters
-        meta_info = self._get_base_meta_information(directory, filename, original_filename, parameters)
+        meta_info = self._get_base_meta_information(directory, filename, original_filename)
 
         if parameters.get("is_attached", False) and str(parameters.get("return_base64", "false")).lower() == "true":
             other_fields = {} if other_fields is None else other_fields
@@ -63,10 +63,11 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         return document
 
     @staticmethod
-    def _get_base_meta_information(directory: str, filename: str, name_actual: str, parameters: dict) -> dict:
+    def _get_base_meta_information(directory: str, filename: str, name_actual: str) -> dict:
         (mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(os.path.join(directory, filename))
         meta = {
             "file_name": name_actual,
+            "temporary_file_name": filename,
             "file_type": get_file_mime_type(os.path.join(directory, filename)),
             "size": size,  # in bytes
             "access_time": atime,
