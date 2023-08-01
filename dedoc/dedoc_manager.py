@@ -65,12 +65,11 @@ class DedocManager:
         """
         parameters = {} if parameters is None else parameters
 
-        file_dir, file_name = os.path.split(file_path)
         try:
             return self.__parse_no_error_handling(file_path=file_path, parameters=parameters)
         except DedocException as e:
-            e.filename = file_name
             file_dir, file_name = os.path.split(file_path)
+            e.filename = file_name
             e.metadata = BaseMetadataExtractor._get_base_meta_information(directory=file_dir, filename=file_name, name_actual=file_name)
             raise e
 

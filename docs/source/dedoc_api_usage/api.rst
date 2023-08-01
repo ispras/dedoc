@@ -141,7 +141,7 @@ Api parameters description
         Use `true` value to enable this behaviour.
 
     * - attachments_dir
-      - any string with a valid path
+      - optional string with a valid path
       - None
       - The path to the directory where document's attached files can be saved instead of a temporary directory.
 
