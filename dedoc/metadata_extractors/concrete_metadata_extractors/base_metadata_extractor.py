@@ -13,6 +13,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
 
     It returns the following information about the given file:
         - file name;
+        - file name during parsing (unique);
         - file type (MIME);
         - file size in bytes;
         - time when the file was last accessed;
@@ -66,6 +67,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         (mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(os.path.join(directory, filename))
         meta = {
             "file_name": name_actual,
+            "temporary_file_name": filename,
             "file_type": get_file_mime_type(os.path.join(directory, filename)),
             "size": size,  # in bytes
             "access_time": atime,
