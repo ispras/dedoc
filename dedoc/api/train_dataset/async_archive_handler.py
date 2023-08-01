@@ -11,20 +11,13 @@ from threading import Thread
 from fastapi import UploadFile
 
 from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
-from dedoc.manager.dedoc_thread_manager import DedocThreadedManager
+from dedoc.dedoc_manager import DedocManager
 from dedoc.train_dataset.taskers.tasker import Tasker
 
 
 class _ArchiveHandler(Thread):
 
-    def __init__(self,
-                 queue: Queue,
-                 results: dict,
-                 progress: dict,
-                 tasker: Tasker,
-                 manager: DedocThreadedManager,
-                 *,
-                 config: dict) -> None:
+    def __init__(self, queue: Queue, results: dict, progress: dict, tasker: Tasker, manager: DedocManager, *, config: dict) -> None:
         Thread.__init__(self)
         self.progress = progress
         self.config = config
@@ -77,7 +70,7 @@ class _ArchiveHandler(Thread):
                     if not path_out.endswith("/"):
                         with open(path_out, "wb") as file_out:
                             file_out.write(item.read())
-                        self.manager.parse_existing_file(path=path_out, parameters=parameters)
+                        self.manager.parse(file_path=path_out, parameters=parameters)
             except BadFileFormatException as e:
                 self.logger.warning("Can't handle file {}, exception {}".format(file, str(e)))
         self.logger.info("Finish handle {}".format(file))
@@ -85,7 +78,7 @@ class _ArchiveHandler(Thread):
 
 class AsyncHandler:
 
-    def __init__(self, tasker: Tasker, manager: DedocThreadedManager, *, config: dict) -> None:
+    def __init__(self, tasker: Tasker, manager: DedocManager, *, config: dict) -> None:
         super().__init__()
         self.queue = Queue()
         self.__results = {}

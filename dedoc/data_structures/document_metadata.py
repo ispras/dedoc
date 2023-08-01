@@ -14,6 +14,7 @@ class DocumentMetadata(Serializable):
 
     def __init__(self,
                  file_name: str,
+                 temporary_file_name: str,
                  size: int,
                  modified_time: int,
                  created_time: int,
@@ -24,6 +25,7 @@ class DocumentMetadata(Serializable):
         """
         :param uid: document unique identifier (useful for attached files)
         :param file_name: original document name (before rename and conversion, so it can contain non-ascii symbols, spaces and so on)
+        :param temporary_file_name: file name during parsing (unique name after rename and conversion);
         :param size: size of the original file in bytes
         :param modified_time: time of the last modification in unix time format (seconds since the epoch)
         :param created_time: time of the creation in unixtime
@@ -32,6 +34,7 @@ class DocumentMetadata(Serializable):
         :param other_fields: additional fields of user metadata
         """
         self.file_name = file_name
+        self.temporary_file_name = temporary_file_name
         self.size = size
         self.modified_time = modified_time
         self.created_time = created_time
@@ -62,6 +65,7 @@ class DocumentMetadata(Serializable):
         res = OrderedDict()
         res["uid"] = self.uid
         res["file_name"] = self.file_name
+        res["temporary_file_name"] = self.temporary_file_name
         res["size"] = self.size
         res["modified_time"] = self.modified_time
         res["created_time"] = self.created_time
@@ -78,6 +82,7 @@ class DocumentMetadata(Serializable):
         return api.model('DocumentMetadata', {
             "uid": fields.String(description='unique document identifier', example="doc_uid_auto_ba73d76a-326a-11ec-8092-417272234cb0"),
             'file_name': fields.String(description='file name', example="example.odt"),
+            'temporary_file_name': fields.String(description='file name', example="123.odt"),
             'size': fields.Integer(description='file size in bytes', example="20060"),
             'modified_time': fields.Integer(description='modification time of the document in the format UnixTime', example="1590579805"),
             'created_time': fields.Integer(description='creation time of the document in the format UnixTime', example="1590579805"),

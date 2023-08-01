@@ -73,21 +73,14 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
-                     version: str,
                      parameters: dict = None,
                      other_fields: Optional[dict] = None) -> UnstructuredDocument:
         """
         Add the predefined list of metadata for images.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
         """
-        result = super().add_metadata(document=document,
-                                      directory=directory,
-                                      filename=filename,
-                                      converted_filename=converted_filename,
-                                      original_filename=original_filename,
-                                      parameters=parameters,
-                                      version=version,
-                                      other_fields=other_fields)
+        result = super().add_metadata(document=document, directory=directory, filename=filename, converted_filename=converted_filename,
+                                      original_filename=original_filename, parameters=parameters, other_fields=other_fields)
 
         path = os.path.join(directory, filename)
         exif_fields = self._get_exif(path)
@@ -134,6 +127,7 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
             encoded_dict = {key_renamed: encode_function(exif.get(key))
                             for key, (key_renamed, encode_function) in self.keys.items() if key in exif}
             encoded_dict = {k: v for k, v in encoded_dict.items() if k is not None if v is not None}
+            image.close()
             return encoded_dict
         except Exception as e:  # noqa
             self.logger.debug(e)

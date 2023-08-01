@@ -1,5 +1,6 @@
 import importlib
 import os
+import tempfile
 
 import uvicorn
 from fastapi import Response, FastAPI, Request, Depends, UploadFile, File
@@ -7,12 +8,14 @@ from fastapi.responses import UJSONResponse, ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse
 
+import dedoc
 from dedoc.api.api_args import QueryParameters
 from dedoc.api.api_utils import json2html, json2tree, json2collapsed_tree
 from dedoc.common.exceptions.dedoc_exception import DedocException
 from dedoc.common.exceptions.missing_file_exception import MissingFileException
 from dedoc.config import get_config
-from dedoc.manager.dedoc_thread_manager import DedocThreadedManager
+from dedoc.dedoc_manager import DedocManager
+from dedoc.utils.utils import save_upload_file
 
 config = get_config()
 PORT = config["api_port"]
@@ -24,8 +27,7 @@ app.mount('/static', StaticFiles(directory=config.get("static_path", static_path
 
 module_api_args = importlib.import_module(config['import_path_init_api_args'])
 logger = config["logger"]
-version_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "VERSION"))
-manager = DedocThreadedManager.from_config(config=config, version=open(version_file_path).read().strip())
+manager = DedocManager(config=config)
 
 
 @app.get("/")
@@ -47,7 +49,7 @@ def get_static_file(request: Request) -> Response:
 
 @app.get('/version')
 def get_version() -> Response:
-    return PlainTextResponse(manager.version)
+    return PlainTextResponse(dedoc.__version__)
 
 
 def _get_static_file_path(request: Request) -> str:
@@ -63,13 +65,14 @@ async def upload(file: UploadFile = File(...), query_params: QueryParameters = D
     parameters = query_params.dict(by_alias=True)
 
     if not file or file.filename == "":
-        raise MissingFileException("Error: Missing content in request_post file parameter", version=manager.version)
+        raise MissingFileException("Error: Missing content in request_post file parameter", version=dedoc.__version__)
     # check if the post request_post has the file part
 
-    logger.info("Get file {} with parameters {}".format(file.filename, parameters))
-    warnings = []
-    document_tree = manager.parse_file(file, parameters=dict(parameters))
-    document_tree.warnings.extend(warnings)
+    logger.info(f"Get file {file.filename} with parameters {parameters}")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        file_path = save_upload_file(file, tmpdir)
+        document_tree = manager.parse(file_path, parameters=dict(parameters))
+
     return_format = str(parameters.get("return_format", "json")).lower()
     if return_format == "html":
         html_content = json2html(text="", paragraph=document_tree.content.structure, tables=document_tree.content.tables, tabs=0)
@@ -83,7 +86,7 @@ async def upload(file: UploadFile = File(...), query_params: QueryParameters = D
         html_content = json2collapsed_tree(paragraph=document_tree.content.structure)
         return HTMLResponse(content=html_content, status_code=200)
     else:
-        logger.info("Send result. File {} with parameters {}".format(file.filename, parameters))
+        logger.info(f"Send result. File {file.filename} with parameters {parameters}")
         return ORJSONResponse(content=document_tree.to_dict(), status_code=200)
 
 
@@ -96,10 +99,7 @@ async def exception_handler(request: Request, exc: DedocException) -> Response:
         result["dedoc_version"] = exc.version
     if exc.metadata:
         result["metadata"] = exc.metadata
-    return JSONResponse(
-        status_code=exc.code,
-        content=result,
-    )
+    return JSONResponse(status_code=exc.code, content=result)
 
 
 def get_api() -> FastAPI:

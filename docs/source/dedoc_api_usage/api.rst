@@ -140,6 +140,11 @@ Api parameters description
         The encoded contents will be saved in the attachment's metadata in the `base64_encode` field.
         Use `true` value to enable this behaviour.
 
+    * - attachments_dir
+      - optional string with a valid path
+      - None
+      - The path to the directory where document's attached files can be saved instead of a temporary directory.
+
     * - :cspan:`3` **Tables handling**
 
     * - insert_table

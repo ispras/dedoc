@@ -24,7 +24,7 @@ Workflow
 --------
 
 .. image:: _static/workflow.png
-        :align: center
+        :width: 700px
 
 The main workflow consists of the following stages:
     1. **Converting** document to one of the supported formats.
@@ -234,6 +234,7 @@ For a document of unknown or unsupported domain there is an option to use defaul
    :maxdepth: 1
    :caption: Package Reference
 
+   modules/manager
    modules/data_structures
    modules/converters
    modules/readers
