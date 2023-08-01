@@ -6,10 +6,16 @@ on:
     branches:
       - develop
       - master
+    paths-ignore:
+      - 'VERSION'
+      - 'docs/source/changelog.rst'
   push:
     branches:
     - develop
     - master
+    paths-ignore:
+      - 'VERSION'
+      - 'docs/source/changelog.rst'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 

@@ -24,7 +24,6 @@ class StructureConstructorComposition(AbstractStructureConstructor):
 
     def structure_document(self,
                            document: UnstructuredDocument,
-                           version: str,
                            structure_type: Optional[str] = None,
                            parameters: Optional[dict] = None) -> ParsedDocument:
         """
@@ -38,9 +37,9 @@ class StructureConstructorComposition(AbstractStructureConstructor):
             document = self.table_patcher.insert_table(document=document)
 
         if structure_type in self.constructors:
-            return self.constructors[structure_type].structure_document(document, structure_type)
+            return self.constructors[structure_type].structure_document(document)
 
         if structure_type is None or structure_type == "":
-            return self.default_constructor.structure_document(document, version, structure_type)
+            return self.default_constructor.structure_document(document)
 
         raise StructureExtractorException(f"Bad structure type {structure_type}, available structure types is: {' '.join(self.constructors.keys())}")

@@ -12,7 +12,7 @@ from dedoc.api.dedoc_api import _get_static_file_path
 from dedoc.api.train_dataset.api_args import TrainDatasetParameters
 from dedoc.api.train_dataset.async_archive_handler import AsyncHandler
 from dedoc.config import get_config
-from dedoc.manager.dedoc_thread_manager import DedocThreadedManager
+from dedoc.dedoc_manager import DedocManager
 from dedoc.train_dataset.taskers.concrete_taskers.filtered_line_label_tasker import FilteredLineLabelTasker
 from dedoc.train_dataset.taskers.concrete_taskers.header_footer_tasker import HeaderFooterTasker
 from dedoc.train_dataset.taskers.concrete_taskers.line_label_tasker import LineLabelTasker
@@ -33,8 +33,7 @@ app = FastAPI()
 app.mount('/static', StaticFiles(directory=static_path), name="static")
 templates = Jinja2Templates(directory=os.path.join(static_path, "train_dataset"))
 
-version_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "VERSION"))
-manager = DedocThreadedManager.from_config(config=config, version=open(version_file_path).read().strip())
+manager = DedocManager(config=config)
 
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))

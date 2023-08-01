@@ -14,7 +14,7 @@ class LinearConstructor(AbstractStructureConstructor):
     The result contains the empty root node with the consecutive list of all document lines as its children.
     """
 
-    def structure_document(self, document: UnstructuredDocument, version: str, structure_type: Optional[str] = None) -> ParsedDocument:
+    def structure_document(self, document: UnstructuredDocument, structure_type: Optional[str] = None) -> ParsedDocument:
         """
         Build the linear structure representation for the given document intermediate representation.
         To get the information about the parameters look at the documentation of :class:`~dedoc.structure_constructors.AbstractStructureConstructor`.
@@ -26,4 +26,4 @@ class LinearConstructor(AbstractStructureConstructor):
         tree.merge_annotations()
         document_content = DocumentContent(tables=document.tables, structure=tree)
         metadata = DocumentMetadata(**document.metadata)
-        return ParsedDocument(content=document_content, metadata=metadata, version=version)
+        return ParsedDocument(content=document_content, metadata=metadata, warnings=document.warnings)

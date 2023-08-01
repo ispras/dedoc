@@ -37,7 +37,6 @@ class NoteMetadataExtractor(BaseMetadataExtractor):
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
-                     version: str,
                      parameters: dict = None,
                      other_fields: Optional[dict] = None) -> UnstructuredDocument:
         """

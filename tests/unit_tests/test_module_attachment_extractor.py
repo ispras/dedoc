@@ -6,6 +6,7 @@ from typing import List
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
 from dedoc.attachments_extractors.concrete_attachments_extractors.pptx_attachments_extractor import PptxAttachmentsExtractor
+from dedoc.dedoc_manager import DedocManager
 from dedoc.readers import ArchiveReader
 from tests.test_utils import get_test_config
 
@@ -107,3 +108,15 @@ class TestAttachmentsExtractor(unittest.TestCase):
             document = ArchiveReader(config=config).read(path=file_path, parameters={"with_attachment": True})
             files = [file.original_name for file in document.attachments]
             return files
+
+    def test_attachments_dir(self) -> None:
+        file_name = "with_attachments_0.docx"
+        manager = DedocManager()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            result = manager.parse(file_path=os.path.join(self.src_dir, file_name),
+                                   parameters=dict(with_attachments=True, need_content_analysis=False, attachments_dir=tmpdir))
+
+            attachment_names = os.listdir(tmpdir)
+            for attachment in result.attachments:
+                self.assertIn(attachment.metadata.temporary_file_name, attachment_names)

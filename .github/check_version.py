@@ -2,19 +2,15 @@ import argparse
 import re
 from typing import Pattern
 
+from pkg_resources import parse_version
 
-def is_correct_version(version: str, tag: str, old_version: str, regexp: Pattern) -> bool:
+
+def is_correct_version(version: str, tag: str, old_version: str, regexp: Pattern) -> None:
     match = regexp.match(version)
 
-    if match is None:
-        print("New version doesn't match the pattern")  # noqa
-        return False
-
-    if not (tag.startswith("v") and tag[1:] == version):
-        print("Tag value should be equal to version with `v` in the beginning")  # noqa
-        return False
-
-    return old_version < version
+    assert match is not None, "New version doesn't match the pattern"
+    assert tag.startswith("v") and tag[1:] == version, "Tag value should be equal to version with `v` in the beginning"
+    assert parse_version(old_version) < parse_version(version), "New version should be greater than old version"
 
 
 if __name__ == "__main__":
@@ -34,25 +30,17 @@ if __name__ == "__main__":
 
     correct = False
     if args.branch == "develop":
-        correct = is_correct_version(args.new_version, args.tag, args.old_version, develop_version_pattern)
+        is_correct_version(args.new_version, args.tag, args.old_version, develop_version_pattern)
 
-        if correct and master_version_pattern.match(args.old_version) and args.new_version.split("rc")[0] <= args.old_version:
-            correct = False
-            print("New version should add 'rc' to the bigger version than the old one")  # noqa
-        elif correct and int(args.new_version.split("rc")[1]) == 0:
-            correct = False
-            print("Numeration for 'rc' should start from 1")  # noqa
+        if master_version_pattern.match(args.old_version) and args.new_version.split("rc")[0] <= args.old_version:
+            assert False, "New version should add 'rc' to the bigger version than the old one"
+        elif int(args.new_version.split("rc")[1]) == 0:
+            assert False, "Numeration for 'rc' should start from 1"
 
-        if args.pre_release == "false":
-            correct = False
-            print("Only pre-releases allowed on develop")  # noqa
+        assert args.pre_release != "false", "Only pre-releases allowed on develop"
 
     if args.branch == "master":
-        correct = is_correct_version(args.new_version, args.tag, args.old_version, master_version_pattern)
+        is_correct_version(args.new_version, args.tag, args.old_version, master_version_pattern)
+        assert args.pre_release != "true", "Pre-releases are not allowed on master"
 
-        if args.pre_release == "true":
-            correct = False
-            print("Pre-releases are not allowed on master")  # noqa
-
-    assert correct
     print("Version is correct")  # noqa
