@@ -14,14 +14,14 @@ Extensions = namedtuple('Parts', 'excel_like_format '
 
 
 converted_extensions = Extensions(
-    excel_like_format=[],
-    docx_like_format=[],
-    pptx_like_format=[],
+    excel_like_format=['.ods', 'xls'],
+    docx_like_format=['.odt', '.doc'],
+    pptx_like_format=['.odp', '.ppt'],
     archive_like_format=[],
     image_like_format=['.pcx', '.webp', '.sgi', '.hdr', '.sr', '.pic', '.dib', '.jfif', '.j2k'],
     pdf_like_format=[],
     csv_like_format=[],
-    txt_like_format=[]
+    txt_like_format=['.xml']
 )
 # .sgi, .hdr, .sr, .ras - не зарегистрованы в mime
 converted_mimes = Extensions(

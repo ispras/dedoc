@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 import re
 import tempfile
@@ -9,6 +10,7 @@ from collections import namedtuple
 from copy import deepcopy
 from typing import Iterator, Optional, Dict, Iterable, Tuple
 from typing import List
+
 import numpy as np
 from PIL import Image
 from PIL import ImageColor
@@ -18,11 +20,9 @@ from pdf2image import convert_from_path
 from dedoc.common.exceptions.conversion_exception import ConversionException
 from dedoc.readers.docx_reader.data_structures.docx_document import DocxDocument
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
-from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
-from dedoc.train_dataset.train_dataset_utils import get_original_document_path
-
 from dedoc.train_dataset.taskers.images_creators.concrete_creators.abstract_images_creator import AbstractImagesCreator
+from dedoc.train_dataset.train_dataset_utils import get_original_document_path
 from dedoc.utils.image_utils import get_concat_v
 
 PairedPdf = namedtuple("PairedPdf", ["many_color_pdf", "two_color_pdf", "many_colors", "two_colors"])
@@ -32,7 +32,6 @@ class DocxImagesCreator(AbstractImagesCreator):
 
     def __init__(self, path2docs: str, *, config: dict) -> None:
         self.path2docs = path2docs
-        self.docx_reader = DocxReader(config=config)
         self.color_step = 16
         self.first_color = 15
         self.base_color = 0
@@ -58,7 +57,7 @@ class DocxImagesCreator(AbstractImagesCreator):
         """
         path2doc = get_original_document_path(self.path2docs, page)
         # here we get half processing docx document (with raw xml)
-        document = self.docx_reader._parse_document(path2doc)
+        document = DocxDocument(path=path2doc, attachments=[], logger=self.logger)
         with zipfile.ZipFile(path2doc) as d:
             with tempfile.TemporaryDirectory() as tmp_dir:
                 pdfs = self.__create_pair_pdfs(docx_archive=d, document=document, tmp_dir=tmp_dir)
@@ -227,8 +226,8 @@ class DocxImagesCreator(AbstractImagesCreator):
         @return:
         """
         scan_reader = PdfImageReader(config=self.config)
-        many_color_images = scan_reader._get_images(pdfs.many_color_pdf)
-        two_color_images = scan_reader._get_images(pdfs.two_color_pdf)
+        many_color_images = scan_reader._get_images(pdfs.many_color_pdf, 0, math.inf)
+        two_color_images = scan_reader._get_images(pdfs.two_color_pdf, 0, math.inf)
         uid2path = defaultdict(list)
         n = 0
         for two_color, many_color in zip(two_color_images, many_color_images):

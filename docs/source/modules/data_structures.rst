@@ -1,3 +1,5 @@
+.. _dedoc_data_structures:
+
 dedoc.data_structures
 =====================
 
@@ -195,6 +197,12 @@ Concrete annotations
     .. autoattribute:: name
 
 .. autoclass:: dedoc.data_structures.StyleAnnotation
+    :show-inheritance:
+    :special-members: __init__
+
+    .. autoattribute:: name
+
+.. autoclass:: dedoc.data_structures.ConfidenceAnnotation
     :show-inheritance:
     :special-members: __init__
 

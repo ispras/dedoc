@@ -1,9 +1,10 @@
 import json
 import logging
+import math
 import os
-import re
 import subprocess
 from typing import List, Optional, Tuple
+
 import numpy as np
 
 from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
@@ -29,6 +30,7 @@ from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
 from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
+from dedoc.utils.parameter_utils import get_param_page_slice
 from dedoc.utils.utils import calculate_file_hash
 
 
@@ -37,9 +39,9 @@ class PdfTabbyReader(PdfBaseReader):
     This class allows to extract content (textual and table) from the .pdf documents with a textual layer (copyable documents).
     It uses java code to get the result.
 
-    We recommend using this class as a pdf-handler.
-
-    For using this class you need set a parameter pdf_with_text_layer=["tabby", "auto_tabby"].
+    It is recommended to use this class as a handler for PDF documents with a correct textual layer
+    if you don't need to check textual layer correctness.
+    For more information, look to `pdf_with_text_layer` option description in the table :ref:`table_parameters`.
     """
 
     def __init__(self, *, config: dict) -> None:
@@ -60,7 +62,11 @@ class PdfTabbyReader(PdfBaseReader):
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
-        Check if the document extension is suitable for this reader, i.e. it has .pdf extension and a textual layer.
+        Check if the document extension is suitable for this reader (PDF format is supported only).
+        This method returns `True` only when the key `pdf_with_text_layer` with value `tabby` is set in the dictionary `parameters`.
+
+        You can look to the table :ref:`table_parameters` to get more information about `parameters` dictionary possible arguments.
+
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
@@ -76,19 +82,17 @@ class PdfTabbyReader(PdfBaseReader):
         lines, scan_tables = self.__extract(path=path)
         warnings = []
         document_metadata = None
-        pages = str(parameters.get("pages", ""))
-        pattern = r"\d*:\d*"
-        if re.match(pattern, pages):
-            pages_array = pages.split(":")
-            start, end = pages_array
-            start_page = int(start) if start else 0
-            end_page = int(end) if end else None
+
+        first_page, last_page = get_param_page_slice(parameters)
+        first_page = 0 if first_page is None else first_page
+        last_page = math.inf if last_page is None else last_page
+        extracted_lines_length = len(lines)
+        lines = [line for line in lines if first_page <= line.metadata.page_id < last_page]
+        if len(lines) < extracted_lines_length:
             warnings.append("The document is partially parsed")
-            document_metadata = dict(first_page=start_page, last_page=end_page)
-            if end_page:
-                lines = [line for line in lines if start_page - 1 <= line.metadata.page_id < end_page]
-            else:
-                lines = [line for line in lines if start_page - 1 <= line.metadata.page_id]
+            document_metadata = dict(first_page=first_page)
+            if last_page != math.inf:
+                document_metadata["last_page"] = last_page
 
         lines = self.linker.link_objects(lines=lines, tables=scan_tables, images=[])
         tables = []

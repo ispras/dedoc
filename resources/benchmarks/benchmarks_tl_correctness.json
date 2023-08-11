@@ -1,0 +1,24 @@
+{
+    "version": "0.9.2",
+    "guessing_the_correctness_of_the_text": {
+        "percentage_of_guessed_correct_tl": 0.9699570815450643,
+        "list_of_file_with_incorrect_tl": [
+            "access-the-vision-for-2013.pdf",
+            "afcea-spy.pdf",
+            "b96a__usmc-combat-camera-directory.pdf",
+            "HBG-JMP-CIM_1616126784_120.pdf",
+            "demystifying-nge-rock-ridge_1643518222_537.pdf",
+            "nifog-2009_1616541890_542.pdf",
+            "hogans-federal-motion-for-a-preliminary-injunction_1616093696_24.pdf"
+        ],
+        "percentage_of_guessed_incorrect_tl": 0.75,
+        "list_of_file_with_correct_tl": [
+            "slides.pdf",
+            "╨º╨£╨£╨ñ_╨É╨▒╨░╨║╤â╨╝╨╛╨▓_╤â╤ç╨╡╨▒╨╜╨╕╨║.pdf",
+            "PE20_1616439522_1.pdf",
+            "EXTERNAL FORMS - SUPPORTING DOCUMENTATION-ESHS9615401 2017_07_27 11_22_39_1616049888_455.pdf",
+            "cu-spy-holes_1616346633_620.pdf",
+            "PE157_1616278053_181.pdf"
+        ]
+    }
+}

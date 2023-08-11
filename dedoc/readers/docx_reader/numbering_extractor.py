@@ -1,7 +1,7 @@
 import re
-from typing import List, Dict
+from typing import List, Dict, Optional
 
-from bs4 import BeautifulSoup
+from bs4 import Tag, BeautifulSoup
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
@@ -15,7 +15,7 @@ class NumberingExtractor:
     Gets the text of the list numbering and may add some annotations like boldness, font size, etc.
     """
 
-    def __init__(self, xml: BeautifulSoup, styles_extractor: StylesExtractor) -> None:
+    def __init__(self, xml: Optional[BeautifulSoup], styles_extractor: StylesExtractor) -> None:
         """
         :param xml: BeautifulSoup tree with numberings from word/numberings.xml file
         :param styles_extractor: StylesExtractor
@@ -36,7 +36,7 @@ class NumberingExtractor:
         # dictionary with num properties
         self.num_dict = {num_id: Num(num_id, abstract_num_dict, num_dict, styles_extractor) for num_id in num_dict}
 
-    def parse(self, xml: BeautifulSoup, paragraph_properties: BaseProperties, run_properties: BaseProperties) -> None:
+    def parse(self, xml: Tag, paragraph_properties: BaseProperties, run_properties: BaseProperties) -> None:
         """
         Parses numPr content and extracts properties for paragraph for given numId and list level.
         Changes old_paragraph properties according to list properties.
@@ -258,7 +258,7 @@ class AbstractNum:
 
     suffix_dict = dict(nothing="", space=" ", tab="\t")
 
-    def __init__(self, tree: BeautifulSoup, styles_extractor: StylesExtractor) -> None:
+    def __init__(self, tree: Tag, styles_extractor: StylesExtractor) -> None:
         """
         :param tree: BeautifulSoup tree with abstractNum content
         :param styles_extractor: StylesExtractor
@@ -278,7 +278,7 @@ class AbstractNum:
         # properties for each list level {level number: LevelInfo}
         self.level_number2level_info = dict()
 
-    def parse(self, lvl_list: List[BeautifulSoup]) -> None:
+    def parse(self, lvl_list: List[Tag]) -> None:
         """
         Save information about levels in self.levels
         :param lvl_list: list with BeautifulSoup trees which contain information about levels
@@ -332,8 +332,8 @@ class Num(AbstractNum):
 
     def __init__(self,
                  num_id: str,
-                 abstract_num_dict: Dict[str, BeautifulSoup],
-                 num_dict: Dict[str, BeautifulSoup],
+                 abstract_num_dict: Dict[str, Tag],
+                 num_dict: Dict[str, Tag],
                  styles_extractor: StylesExtractor) -> None:
         """
         :param num_id: numId for num element

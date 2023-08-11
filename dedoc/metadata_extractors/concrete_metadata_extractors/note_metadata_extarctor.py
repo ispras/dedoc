@@ -8,7 +8,12 @@ from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extrac
 
 
 class NoteMetadataExtractor(BaseMetadataExtractor):
+    """
+    This class is used to extract metadata from documents with extension .note.pickle.
+    It expands metadata retrieved by :class:`~dedoc.metadata_extractors.BaseMetadataExtractor`.
 
+    In addition to them, the `author` field can be added to the metadata other fields.
+    """
     def __init__(self) -> None:
         super().__init__()
 
@@ -20,6 +25,10 @@ class NoteMetadataExtractor(BaseMetadataExtractor):
                     original_filename: str,
                     parameters: Optional[dict] = None,
                     other_fields: Optional[dict] = None) -> bool:
+        """
+        Check if the document has .note.pickle extension.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
+        """
         return filename.lower().endswith(".note.pickle")
 
     def add_metadata(self,
@@ -28,9 +37,12 @@ class NoteMetadataExtractor(BaseMetadataExtractor):
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
-                     version: str,
                      parameters: dict = None,
                      other_fields: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        Add the predefined list of metadata for the .note.pickle documents.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        """
 
         try:
             file_path = os.path.join(directory, filename)

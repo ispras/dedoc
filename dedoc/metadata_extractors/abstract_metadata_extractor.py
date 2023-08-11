@@ -30,7 +30,6 @@ class AbstractMetadataExtractor(ABC):
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
-                     version: str,
                      parameters: Optional[dict] = None,
                      other_fields: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -42,7 +41,6 @@ class AbstractMetadataExtractor(ABC):
         The file gets a new name during processing by the dedoc manager (if used)
         :type converted_filename: name of the file after renaming and conversion (for example 23141.docx)
         :type original_filename: name of the file before renaming
-        :type version: version of the dedoc library
         :type parameters: additional parameters for document parsing
         :type other_fields: other fields that should be added to the document's metadata
         :return: document content with added metadata attribute (dict with information about the document)

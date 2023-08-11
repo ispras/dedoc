@@ -22,7 +22,7 @@ class TablePatcher:
         tables_dict = {table.metadata.uid: table for table in document.tables if not table.metadata.is_inserted}
         paragraphs = []
         hierarchy_level = max((line.metadata.hierarchy_level.level_1 for line in document.lines
-                               if not line.metadata.hierarchy_level.is_raw_text()), default=0)
+                               if line.metadata.hierarchy_level.level_1 is not None), default=0)
         for line in document.lines:
             if line.metadata.hierarchy_level.is_raw_text():
                 hierarchy_level_raw_text = HierarchyLevel(level_1=hierarchy_level + 1,

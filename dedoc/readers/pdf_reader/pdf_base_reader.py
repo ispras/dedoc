@@ -3,8 +3,8 @@ import math
 import os
 from abc import abstractmethod
 from collections import namedtuple
-from itertools import chain
 from typing import List, Optional, Tuple, Iterator
+
 import cv2
 import numpy as np
 from joblib import Parallel, delayed
@@ -29,7 +29,7 @@ from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer
 from dedoc.readers.pdf_reader.utils.header_footers_analysis import footer_header_analysis
 from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
 from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
-from dedoc.utils.pdf_utils import get_page_slice, get_pdf_page_count
+from dedoc.utils.pdf_utils import get_pdf_page_count
 from dedoc.utils.utils import flatten
 from dedoc.utils.utils import get_file_mime_type, splitext_
 
@@ -71,7 +71,7 @@ class PdfBaseReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        first_page, last_page = get_page_slice(parameters)
+        first_page, last_page = param_utils.get_param_page_slice(parameters)
         params_for_parse = ParametersForParseDoc(
             language=param_utils.get_param_language(parameters),
             orient_analysis_cells=param_utils.get_param_orient_analysis_cells(parameters),
@@ -117,23 +117,18 @@ class PdfBaseReader(BaseReader):
                                                                                      List[PdfImageAttachment],
                                                                                      List[str],
                                                                                      Optional[dict]]:
-        first_page = 0 if parameters.first_page is None else parameters.first_page
+        first_page = 0 if parameters.first_page is None or parameters.first_page < 0 else parameters.first_page
         last_page = math.inf if parameters.last_page is None else parameters.last_page
-        images = self._get_images(path)
+        images = self._get_images(path, first_page, last_page)
 
-        page_with_images = self._images_slice(images, first_page, last_page)
-        result = Parallel(n_jobs=self.config["n_jobs"])(delayed(self._process_one_page_with_flag)(partially_parsed,
-                                                                                                  image,
-                                                                                                  parameters,
-                                                                                                  page_number,
-                                                                                                  path)
-                                                        for partially_parsed, page_number, image in page_with_images)
-        partially_parsed = result[-1][0] if len(result) > 0 else False
-        result = [item[1] for item in result]
+        result = Parallel(n_jobs=self.config["n_jobs"])(delayed(self._process_one_page)(image, parameters, page_number, path)
+                                                        for page_number, image in enumerate(images, start=first_page))
 
-        if first_page > 0 or partially_parsed:
+        page_count = get_pdf_page_count(path)
+        page_count = math.inf if page_count is None else page_count
+        if first_page > 0 or last_page < page_count:
             warnings = ["The document is partially parsed"]
-            metadata = {"first_page": first_page}
+            metadata = dict(first_page=first_page)
             if last_page != math.inf:
                 metadata["last_page"] = last_page
         else:
@@ -159,45 +154,15 @@ class PdfBaseReader(BaseReader):
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
-    def _images_slice(self, images: Iterator[np.ndarray],
-                      page_from: int,
-                      page_to: int) -> Iterator[Tuple[bool, int, Optional[np.ndarray]]]:
-        if page_from >= page_to:
-            return
-        extended_images = chain(images, [None, None])
-        page_num = 0
-        image = next(extended_images)
-        try:
-            while image is not None:
-                next_image = next(extended_images)
-                if page_num + 1 >= page_to:
-                    yield next_image is not None, page_num, image
-                    break
-                if page_num >= page_from:
-                    yield False, page_num, image
-                page_num += 1
-                image = next_image
-        except StopIteration:
-            yield False, page_num, image
-
-    def _process_one_page_with_flag(self,
-                                    partially_parsed: bool,
-                                    image: np.ndarray,
-                                    parameters: ParametersForParseDoc,
-                                    page_number: int,
-                                    path: str) \
-            -> Tuple[bool, Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]]:
-        return partially_parsed, self._process_one_page(image, parameters, page_number, path)
-
     @abstractmethod
     def _process_one_page(self, image: np.ndarray, parameters: ParametersForParseDoc, page_number: int, path: str) \
             -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
         pass
 
-    def _get_images(self, path: str) -> Iterator[np.ndarray]:
+    def _get_images(self, path: str, page_from: int, page_to: int) -> Iterator[np.ndarray]:
         mime = get_file_mime_type(path)
         if mime in recognized_mimes.pdf_like_format:
-            yield from self._split_pdf2image(path)
+            yield from self._split_pdf2image(path, page_from, page_to)
         elif mime in recognized_mimes.image_like_format or path.endswith(tuple(recognized_extensions.image_like_format)):
             image = cv2.imread(path)
             if image is None:
@@ -206,24 +171,29 @@ class PdfBaseReader(BaseReader):
         else:
             raise BadFileFormatException("Unsupported input format: {}".format(splitext_(path)[1]))  # noqa
 
-    def _split_pdf2image(self, path: str) -> Iterator[np.ndarray]:
+    def _split_pdf2image(self, path: str, page_from: int, page_to: int) -> Iterator[np.ndarray]:
+        if page_from >= page_to:
+            return
+
         try:
             page_count = get_pdf_page_count(path)
-            file_name = os.path.basename(path)
+            page_count = math.inf if page_count is None else page_count
             step = max(self.config["n_jobs"], 3)
-            left = 1
+            left = page_from + 1
             images = None
-            while images is None or len(images) > 0:
-                right = left + step - 1
+            while (images is None or len(images) > 0) and left <= min(page_to, page_count):
+                right = left + step
+                # for convert_from_path function first_page should start from 1, last_page is included to the result
                 images = convert_from_path(path, first_page=left, last_page=right)  # noqa
-                self.logger.info("get page from {} to {} of {} file {}".format(left, right, page_count, file_name))
-                left += step
+                # in logging we include both ends of the pages interval, numeration starts with 1
+                self.logger.info("Get page from {} to {} of {} file {}".format(left, min(right, page_count), page_count, os.path.basename(path)))
                 for image in images:
+                    left += 1
+                    if left > page_to + 1:
+                        break
                     yield np.array(image)
         except (PDFPageCountError, PDFSyntaxError) as error:
-            raise BadFileFormatException("Bad pdf file:\n file_name = {} \n exception = {}".format(
-                os.path.basename(path), error.args
-            ))
+            raise BadFileFormatException(f"Bad pdf file:\n file_name = {os.path.basename(path)} \n exception = {error.args}")
 
     def _convert_to_gray(self, image: np.ndarray) -> np.ndarray:
         gray_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)

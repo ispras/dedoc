@@ -66,7 +66,7 @@ class AnnotationMerger:
 
     def merge_annotations(self, annotations: List[Annotation], text: str) -> List[Annotation]:
         """
-        Merge annotations when end of the firs annotation and start of the second match and has same value.
+        Merge annotations when end of the first annotation and start of the second match and has same value.
         Used with add_text
         """
         annotations_group_by_name_value = self._group_annotations(annotations).values()
@@ -80,9 +80,9 @@ class AnnotationMerger:
 
     def _merge_one_group(self, annotations: List[Annotation], spaces: List[Space]) -> List[Annotation]:
         """
-        merge one group annotations, assume that all annotations has the same name and value
+        Merge one group annotations, assume that all annotations has the same name and value
         """
-        if len(annotations) <= 1:
+        if len(annotations) <= 1 or not annotations[0].is_mergeable:
             return annotations
         self.__check_annotations_group(annotations)
         result = []

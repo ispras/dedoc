@@ -5,7 +5,7 @@ import uuid
 from typing import Optional, List, Union
 
 from bs4 import BeautifulSoup
-from bs4.element import Tag, Doctype, Comment
+from bs4 import Tag, Doctype, Comment
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.table import Table

@@ -16,7 +16,7 @@ class TzStructureExtractor(AbstractStructureExtractor):
     """
     This class is used for extraction structure from technical tasks.
 
-    TODO structure description.
+    You can find the description of this type of structure in the section :ref:`tz_structure`.
     """
     document_type = "tz"
 

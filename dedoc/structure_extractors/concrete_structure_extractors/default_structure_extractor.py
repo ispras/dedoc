@@ -16,7 +16,7 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
     """
     This class corresponds the basic structure extraction from the documents.
 
-    TODO structure description.
+    You can find the description of this type of structure in the section :ref:`other_structure`.
     """
     document_type = "other"
 

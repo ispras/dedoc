@@ -33,7 +33,7 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
                     other_fields: Optional[dict] = None) -> bool:
         """
         Check if the document has .docx extension.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
         """
         return converted_filename.lower().endswith("docx")
 
@@ -43,7 +43,6 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
-                     version: str,
                      parameters: dict = None,
                      other_fields: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -52,14 +51,8 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
         """
         parameters = {} if parameters is None else parameters
 
-        result = super().add_metadata(document=document,
-                                      directory=directory,
-                                      filename=filename,
-                                      converted_filename=converted_filename,
-                                      original_filename=original_filename,
-                                      parameters=parameters,
-                                      version=version,
-                                      other_fields=other_fields)
+        result = super().add_metadata(document=document, directory=directory, filename=filename, converted_filename=converted_filename,
+                                      original_filename=original_filename, parameters=parameters, other_fields=other_fields)
 
         file_path = os.path.join(directory, converted_filename)
         docx_other_fields = self._get_docx_fields(file_path)

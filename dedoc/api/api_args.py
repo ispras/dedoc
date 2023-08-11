@@ -13,6 +13,7 @@ class QueryParameters(BaseModel):
     need_content_analysis: Optional[str]
     recursion_deep_attachments: Optional[str]
     return_base64: Optional[str]
+    attachments_dir: Optional[str]
 
     insert_table: Optional[str]
     need_pdf_table_analysis: Optional[str]
@@ -44,6 +45,7 @@ class QueryParameters(BaseModel):
                  need_content_analysis: Optional[str] = Body(description="turn on if you need parse the contents of the document attachments. Default: 'false'", default=None),
                  recursion_deep_attachments: Optional[str] = Body(description="the depth on which nested attachments will be parsed if need_content_analysis=true. Default: '10'", default=None),
                  return_base64: Optional[str] = Body(description="returns images in base64 format. Default: 'false'", default=None),
+                 attachments_dir: Optional[str] = Body(description="path to the directory where to save files' attachments", default=None),
 
                  # tables handling
                  insert_table: Optional[str] = Body(description="Insert table into the result tree's content or not. Default: 'false'", default=None),
@@ -57,7 +59,7 @@ class QueryParameters(BaseModel):
                  language: Optional[str] = Body(description="a recognition language. Default: 'rus+eng'", enum=["rus+eng", "rus", "eng"], default=None),
                  pages: Optional[str] = Body(description="an option to limit page numbers in pdf, archives with images. left:right, read pages from left to right. Default: ':'", default=None),
                  is_one_column_document: Optional[str] = Body(description="an option to set one or multiple column document. \"auto\" - system predict number of columns in document pages, \"true\" - is one column documents, \"false\" - is multiple column documents. Default: 'auto'", default=None),
-                 document_orientation: Optional[str] = Body(description="an option to set vertical orientation of the document without using an orientation classifier \"auto\" - system predict angle (0, 90, 180, 370) and rotate document, \"no_change\" - do not predict orientation. Default: 'auto'", enum=["auto", "no_change"], default=None),
+                 document_orientation: Optional[str] = Body(description="an option to set vertical orientation of the document without using an orientation classifier \"auto\" - system predict angle (0, 90, 180, 270) and rotate document, \"no_change\" - do not predict orientation. Default: 'auto'", enum=["auto", "no_change"], default=None),
                  need_header_footer_analysis: Optional[str] = Body(description="include header-footer analysis into pdf with text layer. Default: 'false'", default=None),
                  need_binarization: Optional[str] = Body(description="include an adaptive binarization into pdf without a text layer. Default: 'false'", default=None),
 
@@ -79,6 +81,7 @@ class QueryParameters(BaseModel):
         self.need_content_analysis: str         = need_content_analysis or 'false'
         self.recursion_deep_attachments: str    = recursion_deep_attachments or '10'
         self.return_base64: str                 = return_base64 or 'false'
+        self.attachments_dir: str               = attachments_dir
 
         self.insert_table: str                  = insert_table or 'false'
         self.need_pdf_table_analysis: str       = need_pdf_table_analysis or 'true'

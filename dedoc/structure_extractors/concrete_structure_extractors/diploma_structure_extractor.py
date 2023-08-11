@@ -18,7 +18,7 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
     """
     This class is used for extraction structure from russian diplomas, master dissertations, thesis, etc.
 
-    TODO structure description.
+    You can find the description of this type of structure in the section :ref:`diploma_structure`.
     """
     document_type = "diploma"
 

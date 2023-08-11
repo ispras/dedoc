@@ -18,7 +18,7 @@ class LawStructureExtractor(AbstractLawStructureExtractor):
     """
     This class is used for extraction structure from common laws.
 
-    TODO structure description.
+    You can find the description of this type of structure in the section :ref:`simple_law_structure`.
     """
     document_type = "law"
 
