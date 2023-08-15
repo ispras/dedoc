@@ -25,7 +25,7 @@ class ExcelConverter(AbstractConverter):
         """
         path_in = f"{tmp_dir}/{filename}{extension}"
         command = ["soffice", "--headless", "--convert-to", "xlsx", "--outdir", tmp_dir, path_in]
-        file_out = filename + '.xlsx'
+        file_out = filename + ".xlsx"
         expected_path = os.path.join(tmp_dir, file_out)
         self._run_subprocess(command=command, filename=filename, expected_path=expected_path)
 

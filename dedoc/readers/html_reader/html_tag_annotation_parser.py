@@ -1,6 +1,7 @@
-from typing import List, Union, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from bs4 import Tag
+
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.concrete_annotations.alignment_annotation import AlignmentAnnotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
@@ -38,8 +39,8 @@ class HtmlTagAnnotationParser:
 
         annotations.extend(self.__create_annotations(tag, start, start + curr_len))
 
-        if 'style' in tag.attrs.keys():
-            annotations.extend(self.__parse_style_string(tag.attrs['style'], start, start + curr_len))
+        if "style" in tag.attrs.keys():
+            annotations.extend(self.__parse_style_string(tag.attrs["style"], start, start + curr_len))
 
         return curr_len, annotations
 
@@ -64,46 +65,55 @@ class HtmlTagAnnotationParser:
 
     def __parse_style_string(self, styles_string: str, start: int, end: int) -> List[Annotation]:
         annotations = []
-        styles_list = styles_string.split(';')
+        styles_list = styles_string.split(";")
+
         for st in styles_list:
             st = st.strip()
 
             if not st:
                 continue
 
-            pair = st.split(':')
+            pair = st.split(":")
             if len(pair) != 2:
                 continue
-            key, value = st.split(':')
+            key, value = st.split(":")
             value = value.strip()
 
-            if key == 'font-style':
-                if value == 'italic':
-                    annotations.append(ItalicAnnotation(start, end, value="True"))
-            elif key == 'font-weight':
-                if value == 'bold':
-                    annotations.append(BoldAnnotation(start, end, value="True"))
-            elif key == 'font-size':
-                font_size = self.__parse_font_size_style(value)
-
-                if font_size is not None:
-                    annotations.append(SizeAnnotation(start, end, value=font_size))
-            elif key == 'text-align':
-                if value in ['justify', 'inherit', 'auto']:
-                    continue
-                elif value in AlignmentAnnotation.valid_values:
-                    annotations.append(AlignmentAnnotation(start, end, value=value))
-                elif value in ['start', 'end']:  # additional fields for left
-                    annotations.append(AlignmentAnnotation(start, end, value="left"))
-                else:
-                    continue
-            elif key == 'font-family':
-                annotations.append(StyleAnnotation(start, end, value=value))
-            elif key == 'display':
-                if value in {"none", "hidden"}:
-                    annotations.append(StyleAnnotation(start, end, value="hidden"))
+            annotation = self.__get_annotation(key=key, value=value, start=start, end=end)
+            if annotation:
+                annotations.append(annotation)
 
         return annotations
+
+    def __get_annotation(self, key: str, value: str, start: int, end: int) -> Optional[Annotation]:
+        if key == "font-style":
+            annotation = ItalicAnnotation(start, end, value="True") if value == "italic" else None
+            return annotation
+
+        if key == "font-weight":
+            annotation = BoldAnnotation(start, end, value="True") if value == "bold" else None
+            return annotation
+
+        if key == "font-size":
+            font_size = self.__parse_font_size_style(value)
+            annotation = SizeAnnotation(start, end, value=font_size) if font_size is not None else None
+            return annotation
+
+        if key == "text-align":
+            annotation = None
+            if value in AlignmentAnnotation.valid_values:
+                annotation = AlignmentAnnotation(start, end, value=value)
+            elif value in ["start", "end"]:  # additional fields for left
+                annotation = AlignmentAnnotation(start, end, value="left")
+
+            return annotation
+
+        if key == "font-family":
+            return StyleAnnotation(start, end, value=value)
+
+        if key == "display":
+            annotation = StyleAnnotation(start, end, value="hidden") if value in {"none", "hidden"} else None
+            return annotation
 
     def __parse_font_size_style(self, value: str) -> Optional[str]:
         if value.endswith("pt"):

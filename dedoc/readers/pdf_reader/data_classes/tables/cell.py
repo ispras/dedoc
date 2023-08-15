@@ -40,7 +40,7 @@ class Cell:
                  is_attribute_required: bool = False,
                  rotated_angle: int = 0,
                  uid: str = None,
-                 contour_coord: BBox = BBox(0, 0, 0, 0)) -> None:
+                 contour_coord: BBox = BBox(0, 0, 0, 0)) -> None:  # noqa
         assert x_top_left <= x_bottom_right
         assert y_top_left <= y_bottom_right
         self.x_top_left = x_top_left
@@ -49,19 +49,19 @@ class Cell:
         self.y_bottom_right = y_bottom_right
         self.id_con = id_con
         if not isinstance(text, str):
-            raise ValueError("get {} ({}) instead of text".format(text.__class__, text))
+            raise ValueError(f"get {text.__class__} ({text}) instead of text")
         self.text = text
         self.is_attribute = is_attribute
         self.is_attribute_required = is_attribute_required
         self.rotated_angle = rotated_angle
-        self.cell_uid = "cell_{}".format(uuid.uuid1()) if uid is None else uid
+        self.cell_uid = f"cell_{uuid.uuid1()}" if uid is None else uid
         self.colspan = 1
         self.rowspan = 1
         self.invisible = False
         self.con_coord = contour_coord
 
     def __str__(self) -> str:
-        return "Cell((cs={}, rs={}, {})".format(self.colspan, self.rowspan, self.text)
+        return f"Cell((cs={self.colspan}, rs={self.rowspan}, {self.text})"
 
     def __repr__(self) -> str:
         return self.__str__()

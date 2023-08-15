@@ -1,7 +1,7 @@
 import os
 import zipfile
 from io import BytesIO
-from typing import List, Callable
+from typing import Callable, List
 
 from dedoc.train_dataset.data_structures.images_archive import ImagesArchive
 from dedoc.train_dataset.data_structures.task_item import TaskItem
@@ -25,8 +25,7 @@ class LineLabelTasker(AbstractLineLabelTasker):
                  item2label: Callable = None,
                  *,
                  config: dict) -> None:
-        super().__init__(path2bboxes, path2lines, path2docs, manifest_path, config_path, tmp_dir, progress_bar,
-                         item2label, config=config)
+        super().__init__(path2bboxes, path2lines, path2docs, manifest_path, config_path, tmp_dir, progress_bar, item2label, config=config)
         self.images_creators = ImageCreatorComposition(creators=[
             ScannedImagesCreator(path2docs=self.path2docs),
             DocxImagesCreator(path2docs=self.path2docs, config=config),
@@ -50,17 +49,16 @@ class LineLabelTasker(AbstractLineLabelTasker):
         task_items = []
 
         for i, line in enumerate(page):
-            uid = line['_uid']
-            image_bbox_name = "images/{:0>6d}_{:0>6d}_img_bbox_{}.jpg".format(self._page_counter, i, uid)
-            image_bbox = images.get_page_by_uid("{}.jpg".format(uid))
+            uid = line["_uid"]
+            image_bbox_name = f"images/{self._page_counter:0>6d}_{i:0>6d}_img_bbox_{uid}.jpg"
+            image_bbox = images.get_page_by_uid(f"{uid}.jpg")
             if image_bbox is None:
                 if not uid.endswith("_split"):
-                    self.logger.warn("uid {} not found".format(uid))
+                    self.logger.warn(f"uid {uid} not found")
                 continue
             with BytesIO() as buffer:
-                image_bbox.convert('RGB').save(fp=buffer, format="jpeg")
-                task_archive.writestr(zinfo_or_arcname=os.path.join(task_directory, image_bbox_name),
-                                      data=buffer.getvalue())
+                image_bbox.convert("RGB").save(fp=buffer, format="jpeg")
+                task_archive.writestr(zinfo_or_arcname=os.path.join(task_directory, image_bbox_name), data=buffer.getvalue())
 
             line_id = line["_metadata"]["line_id"]
             page_id = line["_metadata"]["page_id"]
@@ -69,9 +67,8 @@ class LineLabelTasker(AbstractLineLabelTasker):
                 task_id=len(task_items),
                 task_path=image_bbox_name,
                 data=line,
-                labeled=[line["_metadata"]['hierarchy_level']['line_type']],
-                additional_info="<p><em>page_id</em> {} </p><p><em>line_id</em> {} </p><p><em> text</em> {}</p>".format(
-                    page_id, line_id, text),
+                labeled=[line["_metadata"]["hierarchy_level"]["line_type"]],
+                additional_info=f"<p><em>page_id</em> {page_id} </p><p><em>line_id</em> {line_id} </p><p><em> text</em> {text}</p>",
                 default_label=self.item2label(line)
             )
             task_items.append(task_item)

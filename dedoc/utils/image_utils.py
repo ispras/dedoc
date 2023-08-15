@@ -1,10 +1,11 @@
-from typing import Tuple, List
+from copy import deepcopy
+from typing import List, Tuple
+
 import PIL
 import cv2
 import numpy as np
-from scipy.ndimage import maximum_filter
-from copy import deepcopy
 from PIL import Image, ImageDraw
+from scipy.ndimage import maximum_filter
 
 from dedoc.data_structures.bbox import BBox
 
@@ -36,7 +37,7 @@ def get_bbox_from_image(image: Image, bbox: BBox, resize: Tuple[int, int] = (300
         image = PIL.Image.fromarray(image)
     cropped = image.crop(rectangle)
     if resize is not None:
-        cropped = cropped.resize((300, 15)).convert('RGB')
+        cropped = cropped.resize((300, 15)).convert("RGB")
     return cropped
 
 
@@ -111,7 +112,7 @@ def get_concat_v(images: List[Image.Image]) -> Image:
         return images[0]
     width = max((image.width for image in images))
     height = sum((image.height for image in images))
-    dst = Image.new('RGB', (width, height))
+    dst = Image.new("RGB", (width, height))
     height = 0
     for image in images:
         dst.paste(image, (0, height))

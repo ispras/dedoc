@@ -1,4 +1,4 @@
-from flask_restx import Model, Api, fields
+from flask_restx import Api, Model, fields
 
 from dedoc.data_structures.annotation import Annotation
 
@@ -21,6 +21,6 @@ class AttachAnnotation(Annotation):
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
-        return api.model('AttachAnnotation', {
-            'value': fields.String(description='ref to attachment', required=True, example="attach fafffa145agh")
+        return api.model("AttachAnnotation", {
+            "value": fields.String(description="ref to attachment", required=True, example="attach fafffa145agh")
         })

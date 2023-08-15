@@ -1,5 +1,5 @@
-import os
 import json
+import os
 from typing import List, Optional
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
@@ -42,17 +42,17 @@ class JsonAttachmentsExtractor(AbstractAttachmentsExtractor):
 
         for keys in field_keys:
             path = json.dumps(keys, ensure_ascii=False)
-            attached_filename = path + '.html'
+            attached_filename = path + ".html"
             attachment_file_path = os.path.join(tmpdir, attached_filename)
             field_content = self.__get_value_by_keys(data, keys)
 
             if not isinstance(field_content, str):
                 continue
 
-            with open(attachment_file_path, 'w') as f:
+            with open(attachment_file_path, "w") as f:
                 f.write(field_content)
 
-            with open(attachment_file_path, mode='rb') as f:
+            with open(attachment_file_path, mode="rb") as f:
                 binary_data = f.read()
 
             attachments.append((attached_filename, binary_data))

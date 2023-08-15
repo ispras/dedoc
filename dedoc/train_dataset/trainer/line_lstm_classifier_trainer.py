@@ -1,21 +1,22 @@
 import hashlib
 import json
-import os
 import logging
-from typing import Callable, List, Iterator, Optional, Dict, Any
-from collections import OrderedDict
-from torch.autograd import Variable
-import torch
-from torch import nn
+import os
 import time
+from collections import OrderedDict
+from statistics import mean
+from typing import Any, Callable, Dict, Iterator, List, Optional
+
 import numpy as np
+import pandas as pd
+import torch
 from sklearn.model_selection import KFold
+from torch import nn
+from torch.autograd import Variable
 from torch.nn.modules.loss import CrossEntropyLoss
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 from torch.optim.optimizer import Optimizer
 from tqdm import tqdm
-from statistics import mean
-import pandas as pd
 
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.train_dataset.data_structures.line_with_label import LineWithLabel
@@ -111,8 +112,8 @@ class LSTM(nn.Module):
         output_unpacked, output_lengths = pad_packed_sequence(output, batch_first=True)
 
         if self.with_attention:
-            '''att_mask = torch.tensor(np.array([0.3, 0.3, 0.5, 1.0, 0.5, 0.3, 0.3]),
-                  dtype=torch.float32, device=torch.device("cuda:0"))'''
+            """att_mask = torch.tensor(np.array([0.3, 0.3, 0.5, 1.0, 0.5, 0.3, 0.3]),
+                  dtype=torch.float32, device=torch.device("cuda:0"))"""
             att_mask = None
             res_nn = self.lstm_attention(output_unpacked, mask=att_mask)
         else:
@@ -151,7 +152,7 @@ class LSTMTrainer:
         self.logger = logger
         self.tmp_dir = "/tmp" if tmp_dir is None else tmp_dir
         url_hash = hashlib.md5(self.data_url.encode()).hexdigest()
-        self.dataset_dir = os.path.join(self.tmp_dir, "dataset_{}".format(url_hash))
+        self.dataset_dir = os.path.join(self.tmp_dir, f"dataset_{url_hash}")
         self.data_loader = DataLoader(dataset_dir=self.dataset_dir,
                                       label_transformer=label_transformer,
                                       logger=logger,
@@ -172,15 +173,14 @@ class LSTMTrainer:
         result = [line.label for line in flatten(data)]
         return result
 
-    def get_features_with_separing(self, data: List[List[LineWithLabel]]) \
-            -> [pd.DataFrame, pd.DataFrame, List[str], List[str]]:
+    def get_features_with_separing(self, data: List[List[LineWithLabel]]) -> [pd.DataFrame, pd.DataFrame, List[str], List[str]]:
         features = self.feature_extractor.fit_transform(data)
         n = features.shape[0] // 10
         features_train, features_test = features[n:], features[:n]
         labels = self.__get_labels(data)
         labels_train, labels_test = labels[n:], labels[:n]
-        self.logger.info("data train shape {}".format(features_train.shape))
-        self.logger.info("data test shape {}".format(features_test.shape))
+        self.logger.info(f"data train shape {features_train.shape}")
+        self.logger.info(f"data test shape {features_test.shape}")
 
         return features_train, features_test, labels_train, labels_test
 
@@ -206,23 +206,19 @@ class LSTMTrainer:
 
             loader_iter = iter(LineEpsDataSet(features_train, labels_train, self.class_dict))
             time_begin = time.time()
-            train_loss, train_acc = self.train(lstm_model, loader_iter, len(labels_train),
-                                               optimizer, criteria, batch_size=self.batch_size)
+            train_loss, train_acc = self.train(lstm_model, loader_iter, len(labels_train), optimizer, criteria, batch_size=self.batch_size)
             time_epoch += time.time() - time_begin
-            print("\n\t \x1b\33[33mTrain: epoch: {}| Train loss: {} | Train acc: {}\x1b[0m".format(epoch, train_loss,  # noqa
-                                                                                                   train_acc))
+            print(f"\n\t \x1b\33[33mTrain: epoch: {epoch}| Train loss: {train_loss} | Train acc: {train_acc}\x1b[0m")  # noqa
             if file_log:
-                file_log.write("\t Train: epoch: {}| Train loss: {} | Train acc: {}\n".format(epoch, epoch, train_loss))
+                file_log.write(f"\t Train: epoch: {epoch}| Train loss: {epoch} | Train acc: {train_loss}\n")
 
             # Evaluation
             if with_eval:
                 loader_iter = iter(LineEpsDataSet(features_test, labels_test, self.class_dict))
-                test_loss, test_acc = self.evaluate(lstm_model, loader_iter, len(labels_test), criteria,
-                                                    batch_size=self.batch_size)
-                print("\n\t \x1b\33[92mEvaluation: Test loss: {} | Test acc: {}\x1b[0m".format(test_loss, test_acc))  # noqa
+                test_loss, test_acc = self.evaluate(lstm_model, loader_iter, len(labels_test), criteria, batch_size=self.batch_size)
+                print(f"\n\t \x1b\33[92mEvaluation: Test loss: {test_loss} | Test acc: {test_acc}\x1b[0m")  # noqa
                 if file_log:
-                    file_log.write(
-                        "\t Eval: epoch: {}| Test loss: {} | Test acc: {}\n".format(epoch, test_loss, test_acc))
+                    file_log.write(f"\t Eval: epoch: {epoch}| Test loss: {test_loss} | Test acc: {test_acc}\n")
                 curr_loss = test_loss
                 res_acc += test_acc
                 res_loss += test_loss
@@ -235,7 +231,7 @@ class LSTMTrainer:
             if with_save and curr_loss < best_loss:
                 best_loss = curr_loss
                 torch.save(lstm_model.state_dict(), self.path_out)
-                print("Model has been saved into {}".format(self.path_out))  # noqa
+                print(f"Model has been saved into {self.path_out}")  # noqa
 
         return res_loss / self.num_epochs, res_acc / self.num_epochs, time_epoch / self.num_epochs
 
@@ -265,16 +261,15 @@ class LSTMTrainer:
 
                 lstm_model = LSTM(input_dim=features_train.shape[1], hidden_dim=features_train.shape[1],
                                   hidden_dim_2=lstm_hidden_dim, num_classes=self.num_classes, lstm_layers=lstm_layers,
-                                  bidirectional=self.bi_directional, dropout=lstm_drop_out, device=self.device) \
-                    .to(self.device)
+                                  bidirectional=self.bi_directional, dropout=lstm_drop_out, device=self.device).to(self.device)
                 optimizer = torch.optim.Adam(lstm_model.parameters(), lr=self.lr)
-                logfile_kfold_tmp.write("\t KFold iter = {}\n".format(iteration))
+                logfile_kfold_tmp.write(f"\t KFold iter = {iteration}\n")
                 loss, acc, epoch_sec = self.training_and_evaluation_process(lstm_model, optimizer, criteria,
                                                                             features_train, labels_train, features_test,
                                                                             labels_test,
                                                                             file_log=logfile_kfold_tmp,
                                                                             with_save=False, with_eval=True)
-                logfile_kfold_tmp.write("\t time_epoch_(sec)={}\n".format(epoch_sec))
+                logfile_kfold_tmp.write(f"\t time_epoch_(sec)={epoch_sec}\n")
                 logfile_kfold_tmp.flush()
                 scores.append(acc)
                 epoch_time.append(epoch_sec)
@@ -299,7 +294,7 @@ class LSTMTrainer:
         scores_dict["final_accuracy"] = acc
 
         if self.path_scores is not None:
-            self.logger.info("Save scores in {}".format(self.path_scores))
+            self.logger.info(f"Save scores in {self.path_scores}")
             os.makedirs(os.path.basename(self.path_scores), exist_ok=True)
             with open(self.path_scores, "w") as file:
                 json.dump(obj=scores_dict, fp=file, indent=4)
@@ -322,7 +317,7 @@ class LSTMTrainer:
 
     def _get_batch_data(self, curr_batch_size: int, iterator: Iterator) -> [List[Iterator], List[int], List[str]]:
         batch_features, batch_lens, labels = [], [], []
-        for num in range(curr_batch_size):
+        for _ in range(curr_batch_size):
             curr = next(iterator)
             batch_features.append(curr[0])
             batch_lens.append(curr[2])
@@ -358,12 +353,11 @@ class LSTMTrainer:
             epoch_acc += accuracy
             cnt += 1
             if log_per_cnt != 0 and batch_num % log_per_cnt == 0:
-                print("\t\tbatch_num: {}, loss={}, acc={}".format(batch_num, epoch_loss / cnt, epoch_acc / cnt))  # noqa
+                print(f"\t\tbatch_num: {batch_num}, loss={epoch_loss / cnt}, acc={epoch_acc / cnt}")  # noqa
 
         return epoch_loss / cnt, epoch_acc / cnt
 
-    def evaluate(self, model: nn.Module, iterator: Iterator, cnt_data: int, criteria: CrossEntropyLoss,
-                 batch_size: int) -> [float, float]:
+    def evaluate(self, model: nn.Module, iterator: Iterator, cnt_data: int, criteria: CrossEntropyLoss, batch_size: int) -> [float, float]:
         epoch_loss = 0
         epoch_acc = 0
         cnt = 0

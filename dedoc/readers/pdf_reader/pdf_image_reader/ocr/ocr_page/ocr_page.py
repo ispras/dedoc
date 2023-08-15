@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Dict, Iterable
+from typing import Dict, Iterable, List
 
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_page.ocr_block import OcrBlock
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_page.ocr_line import OcrLine

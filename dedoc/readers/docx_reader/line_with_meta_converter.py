@@ -47,7 +47,7 @@ class LineWithMetaConverter:
 
         for run, (start, end) in zip(paragraph.runs, paragraph.runs_ids):
             annotations.append(SizeAnnotation(start=start, end=end, value=str(run.size / 2)))
-            for property_name in ['bold', 'italic', 'underlined', 'strike', 'superscript', 'subscript']:
+            for property_name in ["bold", "italic", "underlined", "strike", "superscript", "subscript"]:
                 property_value = getattr(run, property_name)
                 if property_value:
                     annotations.append(self.dict2annotation[property_name](start=start, end=end, value=str(property_value)))

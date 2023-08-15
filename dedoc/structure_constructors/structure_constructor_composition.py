@@ -1,6 +1,6 @@
-from typing import Optional, Dict
+from typing import Dict, Optional
 
-from dedoc.common.exceptions.structure_extractor_exception import StructureExtractorException
+from dedoc.common.exceptions.structure_extractor_error import StructureExtractorError
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_constructors.abstract_structure_constructor import AbstractStructureConstructor
@@ -42,4 +42,4 @@ class StructureConstructorComposition(AbstractStructureConstructor):
         if structure_type is None or structure_type == "":
             return self.default_constructor.structure_document(document)
 
-        raise StructureExtractorException(f"Bad structure type {structure_type}, available structure types is: {' '.join(self.constructors.keys())}")
+        raise StructureExtractorError(f"Bad structure type {structure_type}, available structure types is: {' '.join(self.constructors.keys())}")

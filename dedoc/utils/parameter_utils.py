@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 
 def get_param_language(parameters: Optional[dict]) -> str:
@@ -122,4 +122,4 @@ def get_param_page_slice(parameters: Dict[str, Any]) -> Tuple[Optional[int], Opt
 
         return first_page, last_page
     except Exception:
-        raise ValueError("Error input parameter 'pages'. Bad page limit {}".format(pages))
+        raise ValueError(f"Error input parameter 'pages'. Bad page limit {pages}")

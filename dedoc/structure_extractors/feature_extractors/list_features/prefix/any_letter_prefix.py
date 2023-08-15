@@ -18,7 +18,7 @@ class AnyLetterPrefix(LinePrefix):
     """
     name = "any_letter"
 
-    regexp = re.compile(r'^\s*\w\)')
+    regexp = re.compile(r"^\s*\w\)")
 
     def predecessor(self, other: "LinePrefix") -> bool:
         return isinstance(other, AnyLetterPrefix)

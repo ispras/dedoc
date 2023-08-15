@@ -3,16 +3,16 @@ import os
 import tempfile
 
 import uvicorn
-from fastapi import Response, FastAPI, Request, Depends, UploadFile, File
-from fastapi.responses import UJSONResponse, ORJSONResponse
+from fastapi import Depends, FastAPI, File, Request, Response, UploadFile
+from fastapi.responses import ORJSONResponse, UJSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse
 
 import dedoc
 from dedoc.api.api_args import QueryParameters
-from dedoc.api.api_utils import json2html, json2tree, json2collapsed_tree
-from dedoc.common.exceptions.dedoc_exception import DedocException
-from dedoc.common.exceptions.missing_file_exception import MissingFileException
+from dedoc.api.api_utils import json2collapsed_tree, json2html, json2tree
+from dedoc.common.exceptions.dedoc_error import DedocError
+from dedoc.common.exceptions.missing_file_error import MissingFileError
 from dedoc.config import get_config
 from dedoc.dedoc_manager import DedocManager
 from dedoc.utils.utils import save_upload_file
@@ -23,9 +23,9 @@ static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/"
 static_files_dirs = config.get("static_files_dirs")
 
 app = FastAPI()
-app.mount('/static', StaticFiles(directory=config.get("static_path", static_path)), name="static")
+app.mount("/static", StaticFiles(directory=config.get("static_path", static_path)), name="static")
 
-module_api_args = importlib.import_module(config['import_path_init_api_args'])
+module_api_args = importlib.import_module(config["import_path_init_api_args"])
 logger = config["logger"]
 manager = DedocManager(config=config)
 
@@ -33,13 +33,13 @@ manager = DedocManager(config=config)
 @app.get("/")
 def get_info() -> Response:
     """
-    Root URL '/' is need start with simple Flask before rest-plus. API otherwise you will get 404 Error.
+    Root URL "/" is need start with simple Flask before rest-plus. API otherwise you will get 404 Error.
     It is bug of rest-plus lib.
     """
-    return FileResponse(os.path.join(static_path, 'html_eng/info.html'))
+    return FileResponse(os.path.join(static_path, "html_eng/info.html"))
 
 
-@app.get('/static_file')
+@app.get("/static_file")
 def get_static_file(request: Request) -> Response:
     path = _get_static_file_path(request)
     # TODO check as_attachment
@@ -47,7 +47,7 @@ def get_static_file(request: Request) -> Response:
     return FileResponse(path)
 
 
-@app.get('/version')
+@app.get("/version")
 def get_version() -> Response:
     return PlainTextResponse(dedoc.__version__)
 
@@ -60,12 +60,12 @@ def _get_static_file_path(request: Request) -> str:
     return os.path.abspath(os.path.join(directory, file))
 
 
-@app.post('/upload')
-async def upload(file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:
+@app.post("/upload")
+async def upload(file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:  # noqa
     parameters = query_params.dict(by_alias=True)
 
     if not file or file.filename == "":
-        raise MissingFileException("Error: Missing content in request_post file parameter", version=dedoc.__version__)
+        raise MissingFileError("Error: Missing content in request_post file parameter", version=dedoc.__version__)
     # check if the post request_post has the file part
 
     logger.info(f"Get file {file.filename} with parameters {parameters}")
@@ -90,8 +90,8 @@ async def upload(file: UploadFile = File(...), query_params: QueryParameters = D
         return ORJSONResponse(content=document_tree.to_dict(), status_code=200)
 
 
-@app.exception_handler(DedocException)
-async def exception_handler(request: Request, exc: DedocException) -> Response:
+@app.exception_handler(DedocError)
+async def exception_handler(request: Request, exc: DedocError) -> Response:
     result = {"message": exc.msg}
     if exc.filename:
         result["file_name"] = exc.filename

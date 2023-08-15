@@ -87,5 +87,5 @@ class ContentChecker(unittest.TestCase):
         self.assertEqual("2) Second item with some even more inglish text. Let me speek from my heart",
                          list_elements[1]["text"].strip())
         table = content["tables"][0]
-        self.assertListEqual(['London', 'The capital of Great Britain'], table["cells"][0])
-        self.assertListEqual(['Speek', 'From my heart'], table["cells"][1])
+        self.assertListEqual(["London", "The capital of Great Britain"], table["cells"][0])
+        self.assertListEqual(["Speek", "From my heart"], table["cells"][1])

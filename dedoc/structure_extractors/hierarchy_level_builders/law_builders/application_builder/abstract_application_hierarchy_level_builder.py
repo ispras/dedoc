@@ -1,7 +1,7 @@
 import abc
 import copy
 from copy import deepcopy
-from typing import Tuple, Optional, List
+from typing import List, Optional, Tuple
 
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -32,7 +32,7 @@ class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, ab
         previous_hl = HierarchyLevel(level_1=init_hl_depth,  # 2
                                      level_2=0,
                                      can_be_multiline=True,
-                                     line_type='application')
+                                     line_type="application")
 
         lines_with_labels[0] = lines_with_labels[0][0], "application"
         previous_line_start_of_application = False
@@ -99,12 +99,11 @@ class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, ab
             return HierarchyLevel(1, 1, False, "Other"), None
 
         elif label in ("application", "header", "raw_text"):
-            if label == "application" or (label == "raw_text" and
-                                          previous_hl is not None and
-                                          previous_hl.line_type == "application"):
+            application_continue = label == "raw_text" and previous_hl is not None and previous_hl.line_type == "application"
+            if label == "application" or application_continue:
                 hl = HierarchyLevel(init_hl_depth, 0, True, "application")
                 return hl, hl
             else:
                 return HierarchyLevel.create_raw_text(), None
         else:
-            raise Exception("{} {}".format(text, label))
+            raise Exception(f"{text} {label}")

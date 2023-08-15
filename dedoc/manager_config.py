@@ -114,7 +114,7 @@ class ConfigurationManager(object):
     __config = None
 
     @classmethod
-    def getInstance(cls: "ConfigurationManager") -> "ConfigurationManager":
+    def get_instance(cls: "ConfigurationManager") -> "ConfigurationManager":
         """
         Actual object creation will happen when we use ConfigurationManager.getInstance()
         """
@@ -123,17 +123,17 @@ class ConfigurationManager(object):
 
         return cls.__instance
 
-    def initConfig(self, config: dict, new_config: dict = None) -> None:
+    def init_config(self, config: dict, new_config: dict = None) -> None:
         if new_config is None:
             self.__config = _get_manager_config(config)
         else:
             self.__config = new_config
 
-    def getConfig(self, config: dict) -> dict:
+    def get_config(self, config: dict) -> dict:
         if self.__config is None:
-            self.initConfig(config)
+            self.init_config(config)
         return self.__config
 
 
 def get_manager_config(config: dict) -> dict:
-    return ConfigurationManager().getInstance().getConfig(config)
+    return ConfigurationManager().get_instance().get_config(config)

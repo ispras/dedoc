@@ -1,7 +1,7 @@
 import math
 from collections import OrderedDict
 from functools import total_ordering
-from typing import Tuple, Dict, Any
+from typing import Any, Dict, Tuple
 
 from dedoc.data_structures.bbox import BBox
 

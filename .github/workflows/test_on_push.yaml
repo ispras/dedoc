@@ -29,11 +29,11 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.8'
-    - name: Install dependencies
+    - name: Run lint
       run: |
         python3 -m pip install --upgrade pip
-        pip3 install pycodestyle==2.7.0 flake8==3.9.2 flake8-annotations==2.6.2 pyflakes==2.3.1
+        pip3 install .[lint]
+        flake8 .
     - name: Run tests
       run: |
-        python3 -m unittest -v -f tests/test_style.py
         test="true" docker-compose up --build --exit-code-from test

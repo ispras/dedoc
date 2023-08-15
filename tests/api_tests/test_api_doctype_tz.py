@@ -106,7 +106,7 @@ class TestTZApiDocReader(AbstractTestApiDocReader):
 
         self._check_tz_tree(structure)
         self.assertEqual("ТЕХНИЧЕСКОЕ ЗАДАНИЕ \nНа разведение и уход за альпаками. Принято министерством по делам альпаководства.",
-            structure["text"].strip())
+                         structure["text"].strip())
         toc = structure["subparagraphs"][0]
         self.assertEqual("содержание", toc["text"].strip().lower())
         self.assertEqual("toc", toc["metadata"]["paragraph_type"])

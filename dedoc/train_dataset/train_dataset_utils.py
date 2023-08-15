@@ -3,8 +3,9 @@ import os
 import shutil
 import zipfile
 from typing import List
-import numpy as np
+
 import PIL
+import numpy as np
 from PIL.Image import Image
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -41,7 +42,7 @@ def save_page_with_bbox(page: PageWithBBox, document_name: str, *, config: dict)
 
     with open(os.path.join(config["intermediate_data_path"], "bboxes.jsonlines"), "a") as out:
         image = __to_pil(page.image)
-        image_name = "img_{}_{:06d}.png".format(uid, page.page_num)
+        image_name = f"img_{uid}_{page.page_num:06d}.png"
         image.save(os.path.join(images_path, image_name))
         for bbox in page.bboxes:
             bbox_dict = bbox.to_dict()

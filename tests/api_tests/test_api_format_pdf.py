@@ -1,10 +1,10 @@
 import os
 
-from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.confidence_annotation import ConfidenceAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.utils import supported_image_types
+from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
 class TestApiPdfReader(AbstractTestApiDocReader):
@@ -23,26 +23,26 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self._check_similarity("1.2.1 Поясним за непонятное", content[3]["subparagraphs"][0]["text"])
 
     def __check_metainfo(self, metainfo: dict, actual_type: str, actual_name: str) -> None:
-        self.assertEqual(metainfo['file_type'], actual_type)
-        self.assertEqual(metainfo['file_name'], actual_name)
+        self.assertEqual(metainfo["file_type"], actual_type)
+        self.assertEqual(metainfo["file_name"], actual_name)
 
     def test_pdf(self) -> None:
         file_name = "example.pdf"
         result = self._send_request(file_name, data=dict(with_attachments=True, document_type="", pdf_with_text_layer="false"))
         self.__check_example_file(result)
-        self.__check_metainfo(result['metadata'], 'application/pdf', file_name)
-        self.assertEqual([], result['attachments'])
+        self.__check_metainfo(result["metadata"], "application/pdf", file_name)
+        self.assertEqual([], result["attachments"])
 
     def test_djvu(self) -> None:
         file_name = "example_with_table7.djvu"
         result = self._send_request(file_name, dict(document_type=""))
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
-        self.assertEqual('2. Срок поставки в течении 70 дней с момента внесения авансового платежа.\n',
-                         self._get_by_tree_path(tree, "0.2.1")['text'])
-        self.assertEqual("3. Срок изготовления не ранее 2018г.\n", self._get_by_tree_path(tree, "0.2.2")['text'])
+        self.assertEqual("2. Срок поставки в течении 70 дней с момента внесения авансового платежа.\n",
+                         self._get_by_tree_path(tree, "0.2.1")["text"])
+        self.assertEqual("3. Срок изготовления не ранее 2018г.\n", self._get_by_tree_path(tree, "0.2.2")["text"])
 
-        self.__check_metainfo(result['metadata'], 'image/vnd.djvu', file_name)
+        self.__check_metainfo(result["metadata"], "image/vnd.djvu", file_name)
 
     def test_djvu_2(self) -> None:
         file_name = "example_with_table9.djvu"
@@ -52,7 +52,7 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self.assertEqual("1. Предмет закупки, источник финансирования :\n", self._get_by_tree_path(content, "0.1.0")["text"])
         self.assertEqual("2.   Место выполнения Работ:\n", self._get_by_tree_path(content, "0.1.1")["text"])
 
-        self.__check_metainfo(result['metadata'], 'image/vnd.djvu', file_name)
+        self.__check_metainfo(result["metadata"], "image/vnd.djvu", file_name)
 
     def test_broken_djvu(self) -> None:
         file_name = "broken.djvu"
@@ -75,13 +75,13 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self._check_similarity("4.5. п", self._get_by_tree_path(tree, "0.1.3.0.4")["text"])
         self._check_similarity("4.6. п", self._get_by_tree_path(tree, "0.1.3.0.5")["text"])
 
-        self.__check_metainfo(result['metadata'], 'application/pdf', file_name)
+        self.__check_metainfo(result["metadata"], "application/pdf", file_name)
 
     def test_images(self) -> None:
         formats = [
-            '.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif', '.ppm', '.pnm', '.pgm',
-            '.pbm', '.webp', '.pcx', '.eps', '.sgi', '.hdr', '.pic', '.sr', '.ras',
-            '.dib', '.jpe', '.jfif', '.j2k'
+            ".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".gif", ".ppm", ".pnm", ".pgm",
+            ".pbm", ".webp", ".pcx", ".eps", ".sgi", ".hdr", ".pic", ".sr", ".ras",
+            ".dib", ".jpe", ".jfif", ".j2k"
         ]
 
         for image_format in formats:
@@ -101,28 +101,28 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         result = self._send_request("01_МФО_Наклон.jpg", data=dict(need_binarization="true"))
 
         self.assertIn("ЦЕНТРАЛЬНЫЙ БАНК РОССИЙСКОЙ ФЕДЕРАЦИИ\n{БАНК РОССИИ)\nСВИДЕТЕЛЬСТВО\nО ВНЕСЕНИИ СВЕДЕНИЙ О ЮРИДИЧЕСКОМ ЛИЦЕ\n"
-                      "В ГОСУДАРСТВЕННЫЙ РЕЕСТР МИКРОФИНАНСОВЫХ ОРГАНИЗАЦИЙ", result['content']['structure']['subparagraphs'][0]['text'])
-        self.assertIn("Е.И Курицына\n(расшифровка подлиси", result['content']['structure']['subparagraphs'][1]['text'])
+                      "В ГОСУДАРСТВЕННЫЙ РЕЕСТР МИКРОФИНАНСОВЫХ ОРГАНИЗАЦИЙ", result["content"]["structure"]["subparagraphs"][0]["text"])
+        self.assertIn("Е.И Курицына\n(расшифровка подлиси", result["content"]["structure"]["subparagraphs"][1]["text"])
 
     def test_on_ocr_conf_threshold(self) -> None:
         result = self._send_request("with_trash.jpg", data=dict(structure_type="tree"))
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
         # check, that handwritten text was filtered
-        self._check_similarity('ФИО  года рождения, паспорт: серия \n№ выдан _, дата выдачи\n'
-                               'т. код подразделения зарегистрированный по адресу:\n \n', tree['subparagraphs'][3]['text'])
+        self._check_similarity("ФИО  года рождения, паспорт: серия \n№ выдан _, дата выдачи\n"
+                               "т. код подразделения зарегистрированный по адресу:\n \n", tree["subparagraphs"][3]["text"])
 
     def test_rotated_image(self) -> None:
         result = self._send_request("orient_1.png", data=dict(need_pdf_table_analysis="false"))
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
 
-        self._check_similarity(tree['subparagraphs'][0]['text'], 'Приложение к Положению о порядке\n'
-                                                                 'формирования, ведения и утверждения\n'
-                                                                 'ведомственных перечней государственных услуг\n'
-                                                                 'и работ, оказываемых и выполняемых\n'
-                                                                 'государственными учреждениями Калужской\n'
-                                                                 'области\n')
+        self._check_similarity(tree["subparagraphs"][0]["text"], "Приложение к Положению о порядке\n"
+                                                                 "формирования, ведения и утверждения\n"
+                                                                 "ведомственных перечней государственных услуг\n"
+                                                                 "и работ, оказываемых и выполняемых\n"
+                                                                 "государственными учреждениями Калужской\n"
+                                                                 "области\n")
 
     def test_pdf_with_only_mp_table(self) -> None:
         file_name = os.path.join("..", "tables", "multipage_table.pdf")
@@ -145,15 +145,15 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         # checks indentations
         par = self._get_by_tree_path(tree, "0.4.0.0")
         annotations = par["annotations"]
-        self.assertIn({"end": 170, 'value': '600', 'name': 'indentation', 'start': 0}, annotations)
+        self.assertIn({"end": 170, "value": "600", "name": "indentation", "start": 0}, annotations)
         self.assertIn("Методика расчета ВВП по доходам характеризуется суммой национального\n", par["text"])
 
     def test_pdf_with_only_table(self) -> None:
         file_name = os.path.join("..", "pdf_with_text_layer", "VVP_global_table.pdf")
         result = self._send_request(file_name)
 
-        self.assertTrue(result["content"]["tables"][0]["metadata"]["uid"] ==
-                        result["content"]["structure"]["subparagraphs"][0]["annotations"][0]["value"])
+        self.assertEqual(result["content"]["tables"][0]["metadata"]["uid"],
+                         result["content"]["structure"]["subparagraphs"][0]["annotations"][0]["value"])
 
     def test_2_columns(self) -> None:
         file_name = os.path.join("..", "scanned", "example_2_columns.png")
@@ -166,8 +166,8 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         file_name = "orient_3.png"
         result = self._send_request(file_name, data=dict(document_orientation="auto"))
         tree = result["content"]["structure"]
-        self._check_similarity(tree['subparagraphs'][0]['text'], 'Приложение к постановлению\n'
-                                                                 'Губернатора Камчатского края\n'
-                                                                 '0729.12.2014 № 168\n'
+        self._check_similarity(tree["subparagraphs"][0]["text"], "Приложение к постановлению\n"
+                                                                 "Губернатора Камчатского края\n"
+                                                                 "0729.12.2014 № 168\n"
                                                                  '"БУРЫЙ МЕДВЕДЬ\n'
-                                                                 '{вид охотничьих ресурсов)\n')
+                                                                 "{вид охотничьих ресурсов)\n")

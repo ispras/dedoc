@@ -7,8 +7,8 @@ import time
 from typing import List
 
 from dedoc.attachments_extractors import AbstractAttachmentsExtractor
-from dedoc.common.exceptions.dedoc_exception import DedocException
-from dedoc.data_structures import ParsedDocument, DocumentMetadata, AttachedFile
+from dedoc.common.exceptions.dedoc_error import DedocError
+from dedoc.data_structures import AttachedFile, DocumentMetadata, ParsedDocument
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.utils.utils import get_empty_content
 
@@ -73,7 +73,7 @@ class AttachmentsHandler:
                         parsed_file = document_parser.parse(attachment_path, parameters=parameters_copy)
                 else:
                     parsed_file = self.__get_empty_document(document_parser=document_parser, attachment=attachment, parameters=parameters_copy)
-            except DedocException:
+            except DedocError:
                 # return empty ParsedDocument with Meta information
                 parsed_file = self.__get_empty_document(document_parser=document_parser, attachment=attachment, parameters=parameters_copy)
 

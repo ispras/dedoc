@@ -28,4 +28,4 @@ class PDFConverter(AbstractConverter):
         command = ["ddjvu", "--format=pdf", path_in, expected_path]
         self._run_subprocess(command=command, filename=filename, expected_path=expected_path)
 
-        return filename + '.pdf'
+        return filename + ".pdf"

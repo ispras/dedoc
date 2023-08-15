@@ -1,14 +1,14 @@
 import concurrent.futures
 from collections import namedtuple
-from typing import List, Iterator, Iterable
+from typing import Iterable, Iterator, List
+
 import numpy as np
 
 from dedoc.data_structures.bbox import BBox
 from dedoc.readers.pdf_reader.data_classes.page_with_bboxes import PageWithBBox
 from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
-from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_utils import \
-    get_text_with_bbox_from_document_page_one_column, \
-    get_text_with_bbox_from_cells, get_text_with_bbox_from_document_page
+from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_utils import get_text_with_bbox_from_cells, get_text_with_bbox_from_document_page, \
+    get_text_with_bbox_from_document_page_one_column
 
 BBoxLevel = namedtuple("BBoxLevel", ["text_line", "some_word"])
 bbox_level = BBoxLevel(4, 5)
@@ -52,10 +52,9 @@ class OCRLineExtractor:
         """
         check if box1 is in box2
         """
-        return ((box1.x_top_left >= box2.x_top_left) and
-                (box1.y_top_left >= box2.y_top_left) and
-                (box1.x_bottom_right <= box2.x_bottom_right) and
-                (box1.y_bottom_right <= box2.y_bottom_right))
+        x_inside = (box1.x_top_left >= box2.x_top_left) and (box1.x_bottom_right <= box2.x_bottom_right)
+        y_inside = (box1.y_top_left >= box2.y_top_left) and (box1.y_bottom_right <= box2.y_bottom_right)
+        return x_inside and y_inside
 
     def __split_image2bboxes(self,
                              image: np.ndarray,

@@ -1,14 +1,14 @@
 from typing import List
 
 
-LIST_ITEM_POINT_END_TYPE = '.'
-LIST_ITEM_BRACKET_END_TYPE = ')'
+LIST_ITEM_POINT_END_TYPE = "."
+LIST_ITEM_BRACKET_END_TYPE = ")"
 
 
 class ListItem:
     def __init__(self, item: List[int], end: str) -> None:
         self.item = item
-        self.end_type = LIST_ITEM_BRACKET_END_TYPE if end == ')' else LIST_ITEM_POINT_END_TYPE
+        self.end_type = LIST_ITEM_BRACKET_END_TYPE if end == ")" else LIST_ITEM_POINT_END_TYPE
 
     def get_parent(self) -> "ListItem":
         parent_item = [item for item in self.item]

@@ -1,7 +1,7 @@
-from dedoc.structure_extractors.hierarchy_level_builders.law_builders.structure_unit.foiv_structure_unit import FoivStructureUnitBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_subitem, regexps_item_with_bracket
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.abstract_body_hierarchy_level_builder import \
     AbstractBodyHierarchyLevelBuilder
+from dedoc.structure_extractors.hierarchy_level_builders.law_builders.structure_unit.foiv_structure_unit import FoivStructureUnitBuilder
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_item_with_bracket, regexps_subitem
 
 
 class BodyFoivHierarchyLevelBuilder(AbstractBodyHierarchyLevelBuilder):

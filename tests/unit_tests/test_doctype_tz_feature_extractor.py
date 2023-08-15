@@ -3,7 +3,6 @@ from unittest import TestCase
 
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.structure_extractors.feature_extractors.tz_feature_extractor import TzTextFeatures
-
 from tests.test_utils import get_test_config
 
 
@@ -44,7 +43,7 @@ class TestTzTextFeatures(TestCase):
         self.assertEqual(0, sum(self.feature_extractor._end_regexp(line2)))
 
     def test_named_item_regexp(self) -> None:
-        self.assertTrue(self.feature_extractor.named_item_regexp.fullmatch('раздел'))
-        self.assertTrue(self.feature_extractor.named_item_regexp.fullmatch('подраздел'))
-        self.assertTrue(self.feature_extractor.named_item_regexp.fullmatch('подраздел           \t        '))
-        self.assertTrue(self.feature_extractor.named_item_regexp.fullmatch('разделывать') is None)
+        self.assertTrue(self.feature_extractor.named_item_regexp.fullmatch("раздел"))
+        self.assertTrue(self.feature_extractor.named_item_regexp.fullmatch("подраздел"))
+        self.assertTrue(self.feature_extractor.named_item_regexp.fullmatch("подраздел           \t        "))
+        self.assertTrue(self.feature_extractor.named_item_regexp.fullmatch("разделывать") is None)

@@ -1,10 +1,10 @@
 import unittest
 from typing import List, Optional
 
-from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.line_metadata import LineMetadata
-from dedoc.structure_constructors.concrete_structure_constructors.list_patcher import ListPatcher
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.structure_constructors.concrete_structure_constructors.list_patcher import ListPatcher
 
 
 class TestListPatcher(unittest.TestCase):

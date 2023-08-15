@@ -2,6 +2,7 @@ import copy
 import logging
 import uuid
 from typing import List
+
 import numpy as np
 
 from dedoc.data_structures.bbox import BBox
@@ -12,7 +13,8 @@ from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdd
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.cell_splitter import CellSplitter
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.split_last_hor_union_cells import split_last_column
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.base_table_extractor import BaseTableExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableAttributeExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import \
+    TableAttributeExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.img_processing import detect_tables_by_contours
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.utils import get_cell_text_by_ocr
 from dedoc.utils.image_utils import rotate_image
@@ -76,7 +78,7 @@ class OnePageTableExtractor(BaseTableExtractor):
         :return: True if cell is vertical and False otherwise
         """
         # 1 - разбиваем на строки длины которых состоят хотя бы из одного символа
-        parts = cell_text.split('\n')
+        parts = cell_text.split("\n")
         parts = [p for p in parts if len(p) > 0]
 
         # 2 - подсчитываем среднюю длину строк ячейки
@@ -84,8 +86,8 @@ class OnePageTableExtractor(BaseTableExtractor):
         avg_len_part = np.average(len_parts)
 
         # Эвристика: считаем что ячейка повернута, если у нас большое количество строк и строки короткие
-        if len(parts) > self.config['minimal_cell_cnt_line'] \
-                and avg_len_part < self.config['minimal_cell_avg_length_line']:
+        if len(parts) > self.config["minimal_cell_cnt_line"] \
+                and avg_len_part < self.config["minimal_cell_avg_length_line"]:
             return True
         return False
 
@@ -181,7 +183,7 @@ class OnePageTableExtractor(BaseTableExtractor):
                                                                    language=self.language,
                                                                    image=self.image)
             except Exception as ex:
-                self.logger.warning("Warning: unrecognized table into page {}. {}".format(self.page_number, ex))
+                self.logger.warning(f"Warning: unrecognized table into page {self.page_number}. {ex}")
                 if self.config.get("debug_mode", False):
                     raise ex
         return tables

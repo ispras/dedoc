@@ -63,7 +63,7 @@ class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
     def _get_attachments(self, tmpdir: str, filename: str, parameters: dict, attachments_dir: str) -> List[AttachedFile]:
         result = []
 
-        with zipfile.ZipFile(os.path.join(tmpdir, filename), 'r') as zfile:
+        with zipfile.ZipFile(os.path.join(tmpdir, filename), "r") as zfile:
             files = zfile.namelist()
             attachments = [file for file in files if file.startswith((f"{attachments_dir}/media/", f"{attachments_dir}/embeddings/"))]
 
@@ -71,10 +71,10 @@ class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
                 original_name = os.path.split(attachment)[-1]
 
                 # these are windows metafile extensions
-                if original_name.endswith(('.emf', 'wmf')):
+                if original_name.endswith((".emf", "wmf")):
                     continue
 
-                if not original_name.endswith('.bin'):
+                if not original_name.endswith(".bin"):
                     result.append((original_name, zfile.read(attachment)))
                 else:
                     with zfile.open(attachment) as f:
@@ -82,9 +82,9 @@ class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
 
                     # extracting PDF-files
                     if ole.exists("CONTENTS"):
-                        data = ole.openstream('CONTENTS').read()
-                        if data[0:5] == b'%PDF-':
-                            result.append((os.path.splitext(original_name)[-2] + '.pdf', data))
+                        data = ole.openstream("CONTENTS").read()
+                        if data[0:5] == b"%PDF-":
+                            result.append((os.path.splitext(original_name)[-2] + ".pdf", data))
 
                     # extracting files in other formats
                     elif ole.exists("\x01Ole10Native"):

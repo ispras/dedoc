@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import List, Tuple
 
 from dedoc.data_structures import BoldAnnotation
 from dedoc.data_structures.hierarchy_level import HierarchyLevel

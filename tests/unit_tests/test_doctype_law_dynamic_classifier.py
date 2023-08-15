@@ -1,10 +1,10 @@
 import os
 import unittest
 
+from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from dedoc.structure_extractors.concrete_structure_extractors.classifying_law_structure_extractor import ClassifyingLawStructureExtractor
 from dedoc.structure_extractors.concrete_structure_extractors.foiv_law_structure_extractor import FoivLawStructureExtractor
 from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
-from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 
 
 class TestFoivApiDocreader(unittest.TestCase):
@@ -29,46 +29,46 @@ class TestFoivApiDocreader(unittest.TestCase):
         self.assertEqual(result.document_type, expected_type)
 
     def test_law(self) -> None:
-        file_name = 'закон.txt'
-        expected_type = 'law'
+        file_name = "закон.txt"
+        expected_type = "law"
         self._test_document_type(file_name, expected_type)
 
     def test_instruction(self) -> None:
-        file_name = 'инструкция.txt'
-        expected_type = 'foiv_law'
+        file_name = "инструкция.txt"
+        expected_type = "foiv_law"
         self._test_document_type(file_name, expected_type)
 
     def test_codex(self) -> None:
-        file_name = 'кодекс.txt'
-        expected_type = 'law'
+        file_name = "кодекс.txt"
+        expected_type = "law"
         self._test_document_type(file_name, expected_type)
 
     def test_definition(self) -> None:
-        file_name = 'определение.txt'
-        expected_type = 'law'
+        file_name = "определение.txt"
+        expected_type = "law"
         self._test_document_type(file_name, expected_type)
 
     def test_resolution(self) -> None:
-        file_name = 'постановление.txt'
-        expected_type = 'law'
+        file_name = "постановление.txt"
+        expected_type = "law"
         self._test_document_type(file_name, expected_type)
 
     def test_order(self) -> None:
-        file_name = 'приказ.txt'
-        expected_type = 'foiv_law'
+        file_name = "приказ.txt"
+        expected_type = "foiv_law"
         self._test_document_type(file_name, expected_type)
 
     def test_disposal(self) -> None:
-        file_name = 'распоряжение.txt'
-        expected_type = 'law'
+        file_name = "распоряжение.txt"
+        expected_type = "law"
         self._test_document_type(file_name, expected_type)
 
     def test_decree(self) -> None:
-        file_name = 'указ.txt'
-        expected_type = 'law'
+        file_name = "указ.txt"
+        expected_type = "law"
         self._test_document_type(file_name, expected_type)
 
     def test_fz(self) -> None:
-        file_name = 'федеральный_закон.txt'
-        expected_type = 'law'
+        file_name = "федеральный_закон.txt"
+        expected_type = "law"
         self._test_document_type(file_name, expected_type)

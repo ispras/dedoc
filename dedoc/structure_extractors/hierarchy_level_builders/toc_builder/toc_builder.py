@@ -1,8 +1,8 @@
 from typing import List, Tuple
 
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.hierarchy_level_builders.abstract_hierarchy_level_builder import AbstractHierarchyLevelBuilder
 
 
@@ -13,7 +13,7 @@ class TocBuilder(AbstractHierarchyLevelBuilder):
         # TODO add analyse toc if tag 'toc' and 'toc_item' exist
         result = []
         is_toc_begun = False
-        for line, prediction in lines_with_labels:
+        for line, _ in lines_with_labels:
             if line.line.lower().strip() in ("содержание", "оглавление"):  # set line as toc
                 line.metadata.hierarchy_level = HierarchyLevel(init_hl_depth + 0, 0, False, "toc")
                 result.append(line)

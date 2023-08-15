@@ -1,12 +1,12 @@
 import logging
-from collections import deque, defaultdict
-from typing import List, Union, Dict
+from collections import defaultdict, deque
+from typing import Dict, List, Union
 
+from dedoc.data_structures.bbox import BBox
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
-from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.data_structures.bbox import BBox
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
@@ -50,7 +50,7 @@ class LineObjectLinker:
         self._add_lines(all_objects, "previous_lines", objects_with_line_candidate)
         self._add_lines(all_objects[::-1], "next_lines", objects_with_line_candidate)
 
-        for uid, object_with_lines in objects_with_line_candidate.items():
+        for _, object_with_lines in objects_with_line_candidate.items():
             page_object = object_with_lines["object"]
             best_line = self._find_closest_line(page_object=page_object,
                                                 lines_before=object_with_lines["previous_lines"],
@@ -61,9 +61,9 @@ class LineObjectLinker:
             elif isinstance(page_object, PdfImageAttachment):
                 annotation = AttachAnnotation(attach_uid=page_object.uid, start=0, end=len(best_line.line))
             else:
-                self.logger.warning("Unsupported page object type {}".format(page_object))
+                self.logger.warning(f"Unsupported page object type {page_object}")
                 if self.config.get("debug_mode", False):
-                    raise Exception("Unsupported page object type {}".format(page_object))
+                    raise Exception(f"Unsupported page object type {page_object}")
             best_line.annotations.append(annotation)  # noqa
         return lines
 

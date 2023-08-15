@@ -33,4 +33,4 @@ class ColorAnnotation(Annotation):
         super().__init__(start=start, end=end, name=ColorAnnotation.name, value=json.dumps(value))
 
     def __str__(self) -> str:
-        return "ColorAnnotation(red={}, green={}, blue={})".format(self.red, self.green, self.blue)
+        return f"ColorAnnotation(red={self.red}, green={self.green}, blue={self.blue})"

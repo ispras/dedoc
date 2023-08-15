@@ -30,7 +30,7 @@ class LinePrefix(abc.ABC):
     regexp = None
 
     def __init__(self, prefix: str, indent: float) -> None:
-        assert self.is_valid(prefix), "`{}` is invalid prefix for this {} type".format(prefix, self.name)
+        assert self.is_valid(prefix), f"`{prefix}` is invalid prefix for this {self.name} type"
         self.prefix = prefix
         self.indent = indent
 
@@ -70,14 +70,13 @@ class LinePrefix(abc.ABC):
         """
         returns true if prefix_str is valid for this type of prefix, false otherwise.
         :param prefix_str: the string representation of the prefix
-        For example '1.' is valid for DottedPrefix
+        For example "1." is valid for DottedPrefix
         :return:
         """
         pass
 
     def __str__(self) -> str:
-        name = self.__class__.__name__
-        return "{}({})".format(name, self.prefix)
+        return f"{self.__class__.__name__}({self.prefix})"
 
     def __repr__(self) -> str:
         return self.__str__()

@@ -1,12 +1,13 @@
-from typing import List
 import logging
+from typing import List
 
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.base_table_extractor import BaseTableExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableAttributeExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import \
+    TableAttributeExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.utils import equal_with_eps
 
 
@@ -16,20 +17,17 @@ class MultiPageTableExtractor(BaseTableExtractor):
         super().__init__(config=config, logger=logger)
         self.single_tables = [[]]  # simple tables on all pages
 
-    def extract_multipage_tables(self,
-                                 single_tables: List[ScanTable],
-                                 lines_with_meta: List[LineWithMeta]) -> List[ScanTable]:
+    def extract_multipage_tables(self, single_tables: List[ScanTable], lines_with_meta: List[LineWithMeta]) -> List[ScanTable]:
         self.single_tables = single_tables
         multipages_tables = []
         list_page_with_tables = []
         total_pages = max((table.page_number + 1 for table in single_tables), default=0)
         for cur_page in range(total_pages):
-            # 1. get possible diaposon of neighbors pages with tables
-            # распределение по страницам
+            # 1. get possible diapason of neighbors pages with tables
+            # pages distribution
             list_mp_table = [t for t in self.single_tables if t.page_number == cur_page]
             list_page_with_tables.append(list_mp_table)
 
-        # проход по всем таблицам. Основной цикл обработки.
         total_cur_page = 0
         if total_pages == 1:
             for tbls in list_page_with_tables:
@@ -39,58 +37,21 @@ class MultiPageTableExtractor(BaseTableExtractor):
         while total_cur_page < total_pages:
             begin_page = total_cur_page
 
-            # если нет таблиц на текущей странице
+            # if tables are not found on the current page
             if len(list_page_with_tables[begin_page]) == 0:
                 total_cur_page += 1
                 continue
 
-            # последняя таблица на текущей странице может иметь продолжение
-            # начинаем анализ на слияние таблиц
+            # table merging analysis
             t1 = list_page_with_tables[begin_page][-1]
 
-            # цикл по следующим страницам
-            finish = False  # условие выхода анализа текущей многостраничной таблицы
+            # next pages cycle
             cur_page = begin_page + 1
-
-            while not finish:
-                # условия выхода
-                if cur_page == total_pages:  # достигнут конец документа
-                    finish = True
-                    continue
-
-                if len(list_page_with_tables[cur_page]) == 0:  # нет таблиц на текущей странице
-                    finish = True
-                    continue
-
-                # рассматриваем первую страницу на текущей странице
-                t2 = list_page_with_tables[cur_page][0]
-                if self.config.get("debug_mode", False):
-                    self.logger.debug("cur page: {}".format(cur_page))
-
-                # проверка что t2 является продолжением t1
-                if self.__is_one_table(t1, t2):
-                    # таблица присоединяется к первой
-                    t1.extended(t2)
-                    list_page_with_tables[cur_page].pop(0)
-                    self.__delete_ref_table(lines=lines_with_meta, table_name=t2.name)
-                else:
-                    if len(list_page_with_tables[cur_page]) > 0:
-                        cur_page -= 1  # чтобы начать с этой страницы анализ, а не со следующей
-                    finish = True
-                    continue
-
-                if not finish:
-                    # если несколько таблиц на странице, то завершаем объединение многостраничной таблицы
-                    if len(list_page_with_tables[cur_page]) > 0:
-                        cur_page -= 1  # чтобы начать с этой страницы анализ, а не со следующей
-                        finish = True
-                    else:  # продолжаем обход
-                        cur_page += 1
-
-            total_cur_page = cur_page + 1  # анализ следующей страницы
+            cur_page = self.__handle_multipage_table(cur_page, lines_with_meta, list_page_with_tables, t1, total_pages)
+            total_cur_page = cur_page + 1
 
             multipages_tables.extend(list_page_with_tables[begin_page][:-1])
-            multipages_tables.append(t1)  # добавление многостраничной таблицы
+            multipages_tables.append(t1)
             list_page_with_tables[begin_page] = []
             for page in range(begin_page + 1, min(cur_page + 1, total_pages)):
                 if len(list_page_with_tables[page]) > 0:
@@ -98,6 +59,48 @@ class MultiPageTableExtractor(BaseTableExtractor):
                     list_page_with_tables[page] = []
 
         return multipages_tables
+
+    def __handle_multipage_table(self,
+                                 cur_page: int,
+                                 lines_with_meta: List[LineWithMeta],
+                                 list_page_with_tables: List[List[ScanTable]],
+                                 t1: ScanTable,
+                                 total_pages: int) -> int:
+        finish = False  # multipage table finished
+        while not finish:
+            if cur_page == total_pages:  # end of the document
+                finish = True
+                continue
+
+            if len(list_page_with_tables[cur_page]) == 0:  # tables are not found on the current page
+                finish = True
+                continue
+
+            # first table on the current page
+            t2 = list_page_with_tables[cur_page][0]
+            if self.config.get("debug_mode", False):
+                self.logger.debug(f"cur page: {cur_page}")
+
+            # t2 is continuation of t1
+            if self.__is_one_table(t1, t2):
+                # t2 is merged with t1
+                t1.extended(t2)
+                list_page_with_tables[cur_page].pop(0)
+                self.__delete_ref_table(lines=lines_with_meta, table_name=t2.name)
+            else:
+                if len(list_page_with_tables[cur_page]) > 0:
+                    cur_page -= 1  # analysis from the current page, not the next one
+                finish = True
+                continue
+
+            if not finish:
+                # if there are several tables on the current page, end of parsing of the current multipage table
+                if len(list_page_with_tables[cur_page]) > 0:
+                    cur_page -= 1  # analysis from the current page, not the next one
+                    finish = True
+                else:
+                    cur_page += 1
+        return cur_page
 
     def __delete_ref_table(self, lines: List[LineWithMeta], table_name: str) -> None:
         for line in lines:
@@ -129,28 +132,28 @@ class MultiPageTableExtractor(BaseTableExtractor):
         width_cell2 = self.__get_width_cell_wo_separating(table_part_2[0])
 
         for i in range(0, len(width_cell1)):
-            eps = max(4, int(width_cell1[i] * 0.1))  # +-1% от ширины погрешность
+            eps = max(4, int(width_cell1[i] * 0.1))  # error +-1% from the width
             if len(width_cell2) <= i or (not equal_with_eps(width_cell1[i], width_cell2[i], eps)):
                 if self.config.get("debug_mode", False):
-                    self.logger.debug("1 - {}".format(width_cell1[i]))
-                    self.logger.debug("2 - {}".format(width_cell2[i]))
-                    self.logger.debug("eps = {}".format(eps))
+                    self.logger.debug(f"1 - {width_cell1[i]}")
+                    self.logger.debug(f"2 - {width_cell2[i]}")
+                    self.logger.debug(f"eps = {eps}")
                 return False
 
         return True
 
     def __is_one_table(self, t1: ScanTable, t2: ScanTable) -> bool:
-        # condition 1. Width1 == Width2. Ширина таблиц должна совпадать
+        # condition 1. Width1 == Width2. Tables widths should be equal
         width1 = abs(t1.locations[-1].bbox.width)
         width2 = abs(t2.locations[0].bbox.width)
-        eps_width = int(width1 * 0.03)  # в диапозоне +-1% от ширины погрешность
+        eps_width = int(width1 * 0.03)  # error +-1% from width
         if not equal_with_eps(width1, width2, eps_width):
             if self.config.get("debug_mode", False):
                 self.logger.debug("Different width tables")
-                self.logger.debug("w1, w2, eps = {}, {}, {}".format(width1, width2, eps_width))
+                self.logger.debug(f"w1, w2, eps = {width1}, {width2}, {eps_width}")
             return False
 
-        # condition 2. исключение дублированного заголовка (если он есть)
+        # condition 2. Exclusion of the duplicated header (if any)
         attr1 = TableAttributeExtractor.get_header_table(t1.matrix_cells)
         attr2 = TableAttributeExtractor.get_header_table(t2.matrix_cells)
         if TableAttributeExtractor.is_equal_attributes(attr1, attr2):
@@ -159,16 +162,15 @@ class MultiPageTableExtractor(BaseTableExtractor):
         if len(t2.matrix_cells) == 0 or len(t1.matrix_cells) == 0:
             return False
 
-        # очищаем признак аттрибутов у второй части таблицы
         TableAttributeExtractor.clear_attributes(t2.matrix_cells)
 
-        # condition 3. количество столбцов должно совпадать
+        # condition 3. Number of columns should be equal
         if len(t1.matrix_cells[-1]) != len(t2.matrix_cells[0]):
             if self.config.get("debug_mode", False):
                 self.logger.debug("Different count column")
             return False
 
-        # condition 4. сравнение ширин столбцов последнего и первого рядов
+        # condition 4. Comparison of the widths of last and first rows
         if not self.__is_equal_width_cells(t1.matrix_cells, t2.matrix_cells):
             if self.config.get("debug_mode", False):
                 self.logger.debug("Different width columns")

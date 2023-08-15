@@ -5,8 +5,8 @@ from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
-from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
 
 
 def _make_line(line: str, annotations: List[Annotation]) -> LineWithMeta:
@@ -22,7 +22,7 @@ class TestLineSum(unittest.TestCase):
     sized_line = _make_line("SmallBig", [SizeAnnotation(0, 5, "8"), SizeAnnotation(5, 8, "14")])
     lines = [empty, italic_line, sized_line, bold_line]
 
-    def assertAnnotationsEqual(self, expected: List[Annotation], result: List[Annotation]) -> None:
+    def assert_annotations_equal(self, expected: List[Annotation], result: List[Annotation]) -> None:
         self.assertEqual(len(expected), len(result))
         for annotation in result:
             self.assertIn(annotation, expected)
@@ -35,14 +35,14 @@ class TestLineSum(unittest.TestCase):
         for non_empty in self.lines:
             for result in (self.empty + non_empty, non_empty + self.empty):
                 self.assertEqual(non_empty.line, result.line)
-                self.assertAnnotationsEqual(non_empty.annotations, result.annotations)
+                self.assert_annotations_equal(non_empty.annotations, result.annotations)
 
     def test_sum_with_str(self) -> None:
         text = "some text"
         for line in self.lines:
             result = line + text
             self.assertEqual(line.line + text, result.line)
-            self.assertAnnotationsEqual(line.annotations, result.annotations)
+            self.assert_annotations_equal(line.annotations, result.annotations)
 
     def test_line_plus_line(self) -> None:
         for first in self.lines:
@@ -55,4 +55,4 @@ class TestLineSum(unittest.TestCase):
 
         result = self.bold_line + self.italic_line
         expected = [BoldAnnotation(0, len(self.bold_line.line), "True"), ItalicAnnotation(4, 10, "True")]
-        self.assertAnnotationsEqual(expected, result.annotations)
+        self.assert_annotations_equal(expected, result.annotations)

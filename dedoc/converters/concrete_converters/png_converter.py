@@ -25,7 +25,7 @@ class PNGConverter(AbstractConverter):
         """
         Convert the image-like documents into files with .png extension.
         """
-        if extension in ['.hdr', '.pic', '.sr', '.ras', '.j2k']:
+        if extension in [".hdr", ".pic", ".sr", ".ras", ".j2k"]:
             img = cv2.imread(f"{tmp_dir}/{filename}{extension}")
             cv2.imwrite(f"{tmp_dir}/{filename}.png", img)
         else:

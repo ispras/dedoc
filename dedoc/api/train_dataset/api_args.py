@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 
 from fastapi import Body
 
@@ -10,21 +10,21 @@ class TrainDatasetParameters(QueryParameters):
     task_size: Optional[str]
 
     def __init__(self,
-                 type_of_task: Optional[str] = Body(description="Type of the task to create", default=None),
-                 task_size: Optional[str] = Body(description="Maximum number of images in one task", default=None),
+                 type_of_task: Optional[str] = Body(description="Type of the task to create", default=None),  # noqa
+                 task_size: Optional[str] = Body(description="Maximum number of images in one task", default=None),  # noqa
 
-                 document_type: Optional[str] = Body(default=None),
-                 pdf_with_text_layer: Optional[str] = Body(default=None),
-                 language: Optional[str] = Body(default=None),
-                 need_header_footer_analysis: Optional[str] = Body(default=None),
+                 document_type: Optional[str] = Body(default=None),  # noqa
+                 pdf_with_text_layer: Optional[str] = Body(default=None),  # noqa
+                 language: Optional[str] = Body(default=None),  # noqa
+                 need_header_footer_analysis: Optional[str] = Body(default=None),  # noqa
 
-                 **data: Any) -> None:
+                 **data: dict) -> None:
 
         super().__init__(**data)
         self.type_of_task: str = type_of_task or ""
         self.task_size: str = task_size or "250"
 
         self.document_type = document_type or ""
-        self.pdf_with_text_layer = pdf_with_text_layer or 'auto'
+        self.pdf_with_text_layer = pdf_with_text_layer or "auto"
         self.language = language or "rus+eng"
-        self.need_header_footer_analysis = need_header_footer_analysis or 'false'
+        self.need_header_footer_analysis = need_header_footer_analysis or "false"

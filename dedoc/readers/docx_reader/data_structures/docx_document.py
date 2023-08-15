@@ -4,20 +4,20 @@ import os
 import re
 import zipfile
 from collections import defaultdict
-from typing import Optional, List
+from typing import List, Optional
 
 from bs4 import BeautifulSoup, Tag
 
-from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
+from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.readers.docx_reader.line_with_meta_converter import LineWithMetaConverter
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
 from dedoc.readers.docx_reader.data_structures.table import DocxTable
 from dedoc.readers.docx_reader.data_structures.utils import Counter
 from dedoc.readers.docx_reader.footnote_extractor import FootnoteExtractor
+from dedoc.readers.docx_reader.line_with_meta_converter import LineWithMetaConverter
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.utils.utils import calculate_file_hash
@@ -30,15 +30,15 @@ class DocxDocument:
         self.path_hash = calculate_file_hash(path=path)
         self.attachment_name2uid = {attachment.original_name: attachment.uid for attachment in attachments}
 
-        self.document_bs_tree = self.__get_bs_tree('word/document.xml')
+        self.document_bs_tree = self.__get_bs_tree("word/document.xml")
         if self.document_bs_tree is None:
-            self.document_bs_tree = self.__get_bs_tree('word/document2.xml')
+            self.document_bs_tree = self.__get_bs_tree("word/document2.xml")
         self.body = self.document_bs_tree.body if self.document_bs_tree else None
 
-        self.footnote_extractor = FootnoteExtractor(self.__get_bs_tree('word/footnotes.xml'))
-        self.endnote_extractor = FootnoteExtractor(self.__get_bs_tree('word/endnotes.xml'), key="endnote")
-        self.styles_extractor = StylesExtractor(self.__get_bs_tree('word/styles.xml'), logger)
-        num_tree = self.__get_bs_tree('word/numbering.xml')
+        self.footnote_extractor = FootnoteExtractor(self.__get_bs_tree("word/footnotes.xml"))
+        self.endnote_extractor = FootnoteExtractor(self.__get_bs_tree("word/endnotes.xml"), key="endnote")
+        self.styles_extractor = StylesExtractor(self.__get_bs_tree("word/styles.xml"), logger)
+        num_tree = self.__get_bs_tree("word/numbering.xml")
         self.numbering_extractor = NumberingExtractor(num_tree, self.styles_extractor) if num_tree else None
         self.styles_extractor.numbering_extractor = self.numbering_extractor
 
@@ -65,7 +65,7 @@ class DocxDocument:
             if not isinstance(paragraph_xml, Tag):
                 continue
 
-            if paragraph_xml.name == 'tbl':
+            if paragraph_xml.name == "tbl":
                 self.__handle_table_xml(paragraph_xml, table_refs, uids_set, cnt)
                 continue
 
@@ -73,14 +73,14 @@ class DocxDocument:
                 self.__handle_diagram_xml(paragraph_xml, diagram_refs, uids_set, cnt)
                 continue
 
-            if paragraph_xml.name != 'p':
-                for subparagraph_xml in paragraph_xml.find_all('w:p'):  # TODO check what to add
+            if paragraph_xml.name != "p":
+                for subparagraph_xml in paragraph_xml.find_all("w:p"):  # TODO check what to add
                     paragraph = self.__xml2paragraph(subparagraph_xml, uids_set, cnt)
                     self.paragraph_list.append(paragraph)
                 continue
 
             self.paragraph_list.append(self.__xml2paragraph(paragraph_xml, uids_set, cnt))
-            images = paragraph_xml.find_all('pic:pic')
+            images = paragraph_xml.find_all("pic:pic")
             if images:
                 self.__handle_images_xml(images, image_refs, uids_set, cnt)
 
@@ -124,12 +124,12 @@ class DocxDocument:
             with zipfile.ZipFile(self.path) as document:
                 content = document.read(filename)
                 content = re.sub(br"\n[\t ]*", b"", content)
-                soup = BeautifulSoup(content, 'xml')
+                soup = BeautifulSoup(content, "xml")
                 return soup
         except KeyError:
             return None
         except zipfile.BadZipFile:
-            raise BadFileFormatException("Bad docx file:\n file_name = {}. Seems docx is broken".format(os.path.basename(self.path)))
+            raise BadFileFormatError(f"Bad docx file:\n file_name = {os.path.basename(self.path)}. Seems docx is broken")
 
     def __xml2paragraph(self, paragraph_xml: Tag, uids_set: set, cnt: Counter) -> Paragraph:
         uid = self.__get_paragraph_uid(paragraph_xml=paragraph_xml, uids_set=uids_set)
@@ -146,12 +146,12 @@ class DocxDocument:
 
     def __get_paragraph_uid(self, paragraph_xml: Tag, uids_set: set) -> str:
         xml_hash = hashlib.md5(paragraph_xml.encode()).hexdigest()
-        raw_uid = '{}_{}'.format(self.path_hash, xml_hash)
+        raw_uid = f"{self.path_hash}_{xml_hash}"
         uid = raw_uid
         n = 0
         while uid in uids_set:
             n += 1
-            uid = raw_uid + "_{}".format(n)
+            uid = f"{raw_uid}_{n}"
         uids_set.add(uid)
         return uid
 
@@ -168,13 +168,13 @@ class DocxDocument:
             table_refs[len(self.paragraph_list) - 1].append(table_uid)
 
     def __handle_images_xml(self, xmls: List[Tag], image_refs: dict, uids_set: set, cnt: Counter) -> None:
-        rels = self.__get_bs_tree('word/_rels/document.xml.rels')
+        rels = self.__get_bs_tree("word/_rels/document.xml.rels")
         if rels is None:
-            rels = self.__get_bs_tree('word/_rels/document2.xml.rels')
+            rels = self.__get_bs_tree("word/_rels/document2.xml.rels")
 
         images_rels = dict()
-        for rel in rels.find_all('Relationship'):
-            if rel["Target"].startswith('media/'):
+        for rel in rels.find_all("Relationship"):
+            if rel["Target"].startswith("media/"):
                 images_rels[rel["Id"]] = rel["Target"][6:]
 
         self.__prepare_paragraph_list(uids_set, cnt)
@@ -208,5 +208,5 @@ class DocxDocument:
                 break
 
         if not self.paragraph_list:
-            empty_paragraph = self.__xml2paragraph(BeautifulSoup('<w:p></w:p>').body.contents[0], uids_set, cnt)
+            empty_paragraph = self.__xml2paragraph(BeautifulSoup("<w:p></w:p>").body.contents[0], uids_set, cnt)
             self.paragraph_list.append(empty_paragraph)

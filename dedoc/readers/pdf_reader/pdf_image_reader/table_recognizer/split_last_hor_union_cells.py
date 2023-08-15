@@ -1,9 +1,10 @@
 import copy
 from typing import List
+
 import numpy as np
 
-from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
+from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.utils import get_cell_text_by_ocr
 
 

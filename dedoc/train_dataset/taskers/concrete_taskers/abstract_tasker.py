@@ -1,8 +1,8 @@
 import json
 import os
 import zipfile
-from typing import Iterable, List
 from abc import ABC, abstractmethod
+from typing import Iterable, List
 
 
 class AbstractTasker(ABC):
@@ -14,8 +14,8 @@ class AbstractTasker(ABC):
         """
         create tasks one by one, put them into zip archive and return path to this archive.
         warning it will remove archive with previous task before starts to form new task.
-        Every task archive should be self contained: it mast include images, task config, manifest and so on
-        @param task_size: size of one task, task should not be large than this. For example number of page.
+        Every task archive should be self contained: it must include images, task config, manifest and so on
+        @param task_size: size of one task, task should not be larger than this. For example number of page.
         @param tasks_uid: uid of task
         @return: path to the zip archive with task.
         """
@@ -36,7 +36,7 @@ class AbstractTasker(ABC):
         elif not required:
             return []
         else:
-            raise Exception("file not found {}".format(path))
+            raise Exception(f"file not found {path}")
 
     def _add_docker_files(self,
                           archive: zipfile.ZipFile,
@@ -51,11 +51,11 @@ class AbstractTasker(ABC):
         """
 
         docker_path = os.path.join(self.resources_path, "train_dataset", dockerfile_directory, "Dockerfile")
-        archive.write(filename=docker_path, arcname="{}/Dockerfile".format(task_directory))
+        archive.write(filename=docker_path, arcname=f"{task_directory}/Dockerfile")
         readme_path = os.path.join(self.resources_path, "train_dataset", dockerfile_directory, "README.md")
-        archive.write(filename=readme_path, arcname="{}/README.md".format(task_directory))
+        archive.write(filename=readme_path, arcname=f"{task_directory}/README.md")
         run_path = os.path.join(self.resources_path, "train_dataset", dockerfile_directory, "run.sh")
-        archive.write(filename=run_path, arcname="{}/run.sh".format(task_directory))
+        archive.write(filename=run_path, arcname=f"{task_directory}/run.sh")
         return archive
 
     def _add_config(self,

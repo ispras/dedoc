@@ -1,8 +1,8 @@
 import json
 
-from dedoc.data_structures.annotation import Annotation
-from flask_restx import fields, Api, Model
+from flask_restx import Api, Model, fields
 
+from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.bbox import BBox
 
 
@@ -26,10 +26,10 @@ class BBoxAnnotation(Annotation):
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
-        return api.model('BBoxAnnotation', {
-            'start': fields.Integer(description='annotation start index', required=True, example=0),
-            'end': fields.Integer(description='annotation end index', required=True, example=4),
-            'value': fields.String(description='bounding box of text chunk',
+        return api.model("BBoxAnnotation", {
+            "start": fields.Integer(description="annotation start index", required=True, example=0),
+            "end": fields.Integer(description="annotation end index", required=True, example=4),
+            "value": fields.String(description="bounding box of text chunk",
                                    required=True,
                                    example='{"x_top_left": 0, "y_top_left": 0, "width": 70, "height": 20}')
         })

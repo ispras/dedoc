@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Optional, Dict, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -8,9 +8,9 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_prefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.bracket_prefix import BracketPrefix
+from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.dotted_prefix import DottedPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.letter_prefix import LetterPrefix
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.prefix import LinePrefix
 
 
@@ -78,9 +78,9 @@ class ListFeaturesExtractor(AbstractFeatureExtractor):
         same_indent /= window_size
         predecessor_num_same_indent /= window_size
         predecessor_num /= window_size
-        return {"same_indent_{}".format(self.window_size): same_indent,
-                "predecessor_num_same_indent_{}".format(self.window_size): predecessor_num_same_indent,
-                "predecessor_num_{}".format(self.window_size): predecessor_num}
+        return {f"same_indent_{self.window_size}": same_indent,
+                f"predecessor_num_same_indent_{self.window_size}": predecessor_num_same_indent,
+                f"predecessor_num_{self.window_size}": predecessor_num}
 
     def _same_indent(self, this_indent: float, other_indent: float, std: float) -> bool:
         eps = 1

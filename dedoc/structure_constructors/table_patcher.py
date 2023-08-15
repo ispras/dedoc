@@ -1,11 +1,11 @@
 from typing import List
 
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.data_structures.line_metadata import LineMetadata
 
 
 class TablePatcher:
@@ -68,7 +68,7 @@ class TablePatcher:
             line_type="table"
         )
         metadata = LineMetadata(hierarchy_level=hierarchy_level_new, page_id=table.metadata.page_id, line_id=None)
-        return LineWithMeta(line="", metadata=metadata, annotations=[], uid="table_{}".format(table.metadata.uid))
+        return LineWithMeta(line="", metadata=metadata, annotations=[], uid=f"table_{table.metadata.uid}")
 
     @staticmethod
     def _create_row_line(table: Table, hierarchy_level: int) -> LineWithMeta:

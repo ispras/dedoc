@@ -31,9 +31,7 @@ class LawLineTypeClassifier(AbstractPickledLineTypeClassifier):
         raw_text_id = list(self.classifier.classes_).index("raw_text")
         labels_probability[inside_quotes, raw_text_id] = 1
         labels = [self.classifier.classes_[label_id] for label_id in labels_probability.argmax(1)]
-        content_start = [line_id for line_id, label in enumerate(labels)
-                         if self.__match_body_begin(lines[line_id].line, label) or
-                         self.regexp_application_begin.match(lines[line_id].line.lower().strip())]
+        content_start = [line_id for line_id, label in enumerate(labels) if self.__match_body_begin(lines[line_id].line, label)]
         header_end = min(content_start) if len(content_start) else len(labels) - 1
         # preparing header_id features
         header_id = list(self.classifier.classes_).index("header")
@@ -45,6 +43,6 @@ class LawLineTypeClassifier(AbstractPickledLineTypeClassifier):
         return labels
 
     def __match_body_begin(self, text: str, label: str) -> bool:
-        return (label == "structure_unit" or
-                label in ("header", "raw_text") and
-                any(regexp.match(text.strip()) for regexp in LawTextFeatures.named_regexp))
+        body_started = label in ("header", "raw_text") and any(regexp.match(text.strip()) for regexp in LawTextFeatures.named_regexp)
+        application_started = self.regexp_application_begin.match(text.lower().strip())
+        return label == "structure_unit" or body_started or application_started

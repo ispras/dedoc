@@ -1,5 +1,5 @@
 import re
-from typing import List, Union, Sized
+from typing import List, Sized, Union
 from uuid import uuid1
 
 from dedoc.data_structures.annotation import Annotation

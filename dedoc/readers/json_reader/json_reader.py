@@ -1,12 +1,12 @@
 import os
 from json import JSONDecodeError
-from typing import Optional, List, Any
+from typing import Any, List, Optional
 
 import ujson as json
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.json_attachment_extractor import JsonAttachmentsExtractor
-from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
-from dedoc.common.exceptions.bad_parameters_exception import BadParametersException
+from dedoc.common.exceptions.bad_file_error import BadFileFormatError
+from dedoc.common.exceptions.bad_parameters_error import BadParametersError
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -42,14 +42,14 @@ class JsonReader(BaseReader):
             try:
                 json_data = json.load(file)
             except (JSONDecodeError, ValueError):
-                raise BadFileFormatException(msg="Seems that json is invalid")
+                raise BadFileFormatError(msg="Seems that json is invalid")
 
         if "html_fields" in parameters:
             fields = parameters.get("html_fields", "[]")
             try:
                 key_fields = json.loads(fields if fields else "[]")
             except (JSONDecodeError, ValueError):
-                raise BadParametersException("can't read html_fields {}".format(fields))
+                raise BadParametersError(f"can't read html_fields {fields}")
             json_data = self.__exclude_html_fields(json_data, key_fields)
             attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path),
                                                                     filename=os.path.basename(path),
@@ -122,7 +122,7 @@ class JsonReader(BaseReader):
                 stack.append((value, depth + 1))
             break
 
-    def __handle_one_element(self, depth: int, value: Any, line_type: str, line_type_meta: str) -> LineWithMeta:
+    def __handle_one_element(self, depth: int, value: Any, line_type: str, line_type_meta: str) -> LineWithMeta:  # noqa
         if depth == 1 and line_type == "title":
             level1, level2 = 0, 0
         else:
@@ -133,10 +133,10 @@ class JsonReader(BaseReader):
         line = LineWithMeta(line=self.__get_text(value), metadata=metadata, annotations=[])
         return line
 
-    def __is_flat(self, value: Any) -> bool:
+    def __is_flat(self, value: Any) -> bool:  # noqa
         return not isinstance(value, (dict, list))
 
-    def __get_text(self, value: Any) -> str:
+    def __get_text(self, value: Any) -> str:  # noqa
         if isinstance(value, (dict, list)) or value is None:
             return ""
 

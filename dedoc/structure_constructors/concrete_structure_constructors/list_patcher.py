@@ -1,22 +1,22 @@
 import re
 from typing import List
 
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_constructors.concrete_structure_constructors.list_item import ListItem
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
 class ListPatcher:
     def __init__(self) -> None:
-        self.list_line_regexp = re.compile(r' *\d+(?:\.\d+|)*[ .)].*')
-        self.list_item_regexp = re.compile(r' *\d+(?:\.\d+|)*[ .)]')
+        self.list_line_regexp = re.compile(r" *\d+(?:\.\d+|)*[ .)].*")
+        self.list_item_regexp = re.compile(r" *\d+(?:\.\d+|)*[ .)]")
 
     def __is_list(self, line: str) -> bool:
         return self.list_line_regexp.fullmatch(line) is not None
 
     def __get_list_item(self, line: str) -> ListItem:
         list_item = self.list_item_regexp.search(line).group(0).lstrip()
-        items = [int(item) for item in list_item[:-1].split(r'.') if item]
+        items = [int(item) for item in list_item[:-1].split(r".") if item]
         return ListItem(items, list_item[-1:])
 
     def __update_line_levels(self, lines: List[LineWithMeta], list_item_line: LineWithMeta) -> None:

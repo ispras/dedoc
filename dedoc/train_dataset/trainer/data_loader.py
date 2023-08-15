@@ -3,9 +3,10 @@ import logging
 import os
 import pickle
 import zipfile
-from collections import defaultdict, Counter
+from collections import Counter, defaultdict
 from tempfile import TemporaryDirectory
-from typing import List, Callable, Tuple
+from typing import Callable, List, Tuple
+
 import numpy as np
 import pandas as pd
 import wget
@@ -50,7 +51,7 @@ class DataLoader:
         self.logger.info("Finish download dataset")
 
         with TemporaryDirectory() as tmp_dir:
-            with zipfile.ZipFile(path_out, 'r') as zip_ref:
+            with zipfile.ZipFile(path_out, "r") as zip_ref:
                 zip_ref.extractall(tmp_dir)
             metadata_extractor = LineWithMetaExtractor(
                 path=os.path.join(tmp_dir, "labeled.json"),

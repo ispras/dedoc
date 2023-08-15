@@ -8,7 +8,7 @@ import zipfile
 from collections import defaultdict
 from collections import namedtuple
 from copy import deepcopy
-from typing import Iterator, Optional, Dict, Iterable, Tuple
+from typing import Dict, Iterable, Iterator, Optional, Tuple
 from typing import List
 
 import numpy as np
@@ -17,7 +17,7 @@ from PIL import ImageColor
 from bs4 import BeautifulSoup
 from pdf2image import convert_from_path
 
-from dedoc.common.exceptions.conversion_exception import ConversionException
+from dedoc.common.exceptions.conversion_error import ConversionError
 from dedoc.readers.docx_reader.data_structures.docx_document import DocxDocument
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
 from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
@@ -36,8 +36,8 @@ class DocxImagesCreator(AbstractImagesCreator):
         self.first_color = 15
         self.base_color = 0
         self.base_color_step = 1
-        self.many_colors_file_name = 'many_colors_doc'
-        self.two_colors_file_name = 'two_colors_doc'
+        self.many_colors_file_name = "many_colors_doc"
+        self.two_colors_file_name = "two_colors_doc"
         self.config = config
         self.logger = self.config.get("logger", logging.getLogger())
 
@@ -50,7 +50,7 @@ class DocxImagesCreator(AbstractImagesCreator):
         nonzero pixels on bboxes only)
         3 we clear bboxes from first image
         4 and create one image per bbox and save in tmp dir
-        5 and finally we return image with bboxes in the proper order
+        5 finally we return image with bboxes in the proper order
         @param page:
         @param archive:
         @return:
@@ -65,7 +65,7 @@ class DocxImagesCreator(AbstractImagesCreator):
                 self.logger.info("\nstart image processing")
                 uid_with_images = self._create_images_from_pdf(pdfs=pdfs, page=page, tmp_dir=tmp_dir)
                 for uid, image in uid_with_images:
-                    img_name = "{}.jpg".format(uid)
+                    img_name = f"{uid}.jpg"
                     with tempfile.TemporaryDirectory() as tmpdir:
                         img_path = os.path.join(tmpdir, img_name)
                         image.save(img_path, format="jpeg")
@@ -91,7 +91,7 @@ class DocxImagesCreator(AbstractImagesCreator):
         text = re.sub("w:ppr", "w:pPr", text)
         many_colors_pdf = self.__create_pdf_from_docx(tmp_dir, self.many_colors_file_name, namelist, text)
         # clear document_bs from border tags
-        border_tags = document_bs.find_all('w:pbdr')
+        border_tags = document_bs.find_all("w:pbdr")
         for tag in border_tags:
             tag.decompose()
         # create docx file with bboxes of two interleaving colors
@@ -103,9 +103,7 @@ class DocxImagesCreator(AbstractImagesCreator):
         self.logger.info("\nstart image converting")
         return PairedPdf(many_colors_pdf, two_colors_pdf, used_many_colors, used_two_colors)
 
-    def __draw_bboxes(self,
-                      paragraph_list: List[Paragraph],
-                      many_colors: bool) -> Dict[str, int]:
+    def __draw_bboxes(self, paragraph_list: List[Paragraph], many_colors: bool) -> Dict[str, int]:
         """
         draw bbox in docx document around each paragraph
         @param paragraph_list:
@@ -137,7 +135,7 @@ class DocxImagesCreator(AbstractImagesCreator):
     def _color_from_decimal(decimal_color: int) -> str:
         color = hex(decimal_color)[2:]
         if len(color) < 6:
-            color = '0' * (6 - len(color)) + color
+            color = "0" * (6 - len(color)) + color
         return color
 
     @staticmethod
@@ -145,12 +143,12 @@ class DocxImagesCreator(AbstractImagesCreator):
                                doc_name: str,
                                namelist: List[str],
                                doc_text: str) -> str:
-        with open('{}/word/document.xml'.format(tmp_dir), 'w') as f:
+        with open(f"{tmp_dir}/word/document.xml", "w") as f:
             f.write(doc_text)
-        docx_path = "{}/{}.docx".format(tmp_dir, doc_name)
-        with zipfile.ZipFile(docx_path, mode='w') as new_d:
+        docx_path = f"{tmp_dir}/{doc_name}.docx"
+        with zipfile.ZipFile(docx_path, mode="w") as new_d:
             for filename in namelist:
-                new_d.write('{}/{}'.format(tmp_dir, filename), arcname=filename)
+                new_d.write(f"{tmp_dir}/{filename}", arcname=filename)
         # create pdf file with bbox
         pdf_name = DocxImagesCreator.__docx2pdf(tmp_dir, docx_path)
         os.remove(docx_path)
@@ -166,15 +164,13 @@ class DocxImagesCreator(AbstractImagesCreator):
             t += period_checking
 
             if t >= timeout:
-                raise ConversionException(
-                    msg="fail with {filename}".format(filename=filename),
-                    msg_api="Unsupported file format {}".format(filename))
+                raise ConversionError(msg=f"fail with {filename}", msg_api=f"Unsupported file format {filename}")
 
     @staticmethod
     def __docx2pdf(out_dir: str,
                    path: str) -> str:
-        os.system("soffice --headless --convert-to pdf {} --outdir {}".format(path, out_dir))
-        out_file = '{}/{}pdf'.format(out_dir, os.path.split(path)[-1][:-4])
+        os.system(f"soffice --headless --convert-to pdf {path} --outdir {out_dir}")
+        out_file = f"{out_dir}/{os.path.split(path)[-1][:-4]}pdf"
         DocxImagesCreator.__await_for_conversion(out_file)
         return out_file
 
@@ -183,19 +179,15 @@ class DocxImagesCreator(AbstractImagesCreator):
                         color: str) -> None:
         if bs_tree is None:
             return
-        border_str = '<w:pBdr><w:top w:val="single" ' \
-                     'w:color="{color}" w:sz="20" w:space="0" ' \
-                     'w:shadow="0" w:frame="0"/><w:left w:val="single" ' \
-                     'w:color="{color}" w:sz="20" w:space="0" ' \
-                     'w:shadow="0" w:frame="0"/><w:bottom w:val="single" ' \
-                     'w:color="{color}" w:sz="20" w:space="0" w:shadow="0" ' \
-                     'w:frame="0"/><w:right w:val="single" w:color="{color}" ' \
-                     'w:sz="20" w:space="0" w:shadow="0" w:frame="0"/></w:pBdr>'.format(color=color)
-        border_bs = BeautifulSoup(border_str, 'lxml').body.contents[0]
+        border_str = f'<w:pBdr><w:top w:val="single" w:color="{color}" w:sz="20" w:space="0" w:shadow="0" w:frame="0"/><w:left w:val="single" ' \
+                     f'w:color="{color}" w:sz="20" w:space="0" w:shadow="0" w:frame="0"/><w:bottom w:val="single" ' \
+                     f'w:color="{color}" w:sz="20" w:space="0" w:shadow="0" w:frame="0"/><w:right w:val="single" w:color="{color}" ' \
+                     f'w:sz="20" w:space="0" w:shadow="0" w:frame="0"/></w:pBdr>'
+        border_bs = BeautifulSoup(border_str, "lxml").body.contents[0]
         if bs_tree.pPr:
             bs_tree.pPr.insert(1, border_bs)
         else:
-            border_bs = BeautifulSoup('<w:pPr>' + border_str + '</w:pPr>', 'lxml').body.contents[0]
+            border_bs = BeautifulSoup(f"<w:pPr>{border_str}</w:pPr>", "lxml").body.contents[0]
             bs_tree.insert(0, border_bs)
 
     @staticmethod
@@ -245,8 +237,7 @@ class DocxImagesCreator(AbstractImagesCreator):
             colors_dict_invert = {}
             page2color = {line["_uid"]: line.get("color", "#ff0000") for line in page}
             for uid in pdfs.two_colors:
-                color = ImageColor.getcolor(
-                    "#{}".format(self._color_from_decimal(pdfs.many_colors[uid] - pdfs.two_colors[uid])), "RGB")
+                color = ImageColor.getcolor(f"#{self._color_from_decimal(pdfs.many_colors[uid] - pdfs.two_colors[uid])}", "RGB")
                 colors_dict[uid] = color
                 colors_dict_invert[color] = uid
             assert len(colors_dict) == len(colors_dict_invert)
@@ -260,7 +251,7 @@ class DocxImagesCreator(AbstractImagesCreator):
                     if bbox_color is not None:
                         image_copy = deepcopy(original_image)
                         image_copy[mask] = ImageColor.getcolor(bbox_color, "RGB")
-                        path = "{}/{:06d}.png".format(tmp_dir, n)
+                        path = f"{tmp_dir}/{n:06d}.png"
                         n += 1
                         uid2path[uid].append(path)
                         Image.fromarray(image_copy).save(path)

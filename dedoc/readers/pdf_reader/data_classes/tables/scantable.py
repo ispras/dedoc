@@ -1,6 +1,7 @@
 import copy
 from collections import OrderedDict
-from typing import List, Any
+from typing import Any, List
+
 import numpy as np
 
 from dedoc.data_structures.bbox import BBox
@@ -40,7 +41,7 @@ class ScanTable:
         return attrs
 
     @staticmethod
-    def get_key_value_attrs(attrs: List, val: Any) -> dict:
+    def get_key_value_attrs(attrs: List, val: Any) -> dict:  # noqa
         res_attrs = []
         for i in range(0, len(attrs)):
             res_attrs.append({"attr": attrs[i]})

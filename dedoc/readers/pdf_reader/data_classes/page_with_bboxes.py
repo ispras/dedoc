@@ -1,4 +1,5 @@
 from typing import List
+
 import numpy as np
 
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment

@@ -1,4 +1,5 @@
-from typing import List, Dict, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
+
 import numpy as np
 
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
@@ -116,9 +117,9 @@ class CellSplitter:
         horizontal_dict = self.__get_border_dict(borders=horizontal_borders, threshold=eps_horizontal)
         vertical_dict = self.__get_border_dict(borders=vertical_borders, threshold=eps_vertical)
         result = []
-        for row_id, row in enumerate(cells):
+        for row in cells:
             new_row = []
-            for cell_id, cell in enumerate(row):
+            for cell in row:
                 x_top_left = vertical_dict[cell.x_top_left]
                 x_bottom_right = vertical_dict[cell.x_bottom_right]
                 y_top_left = horizontal_dict[cell.y_top_left]

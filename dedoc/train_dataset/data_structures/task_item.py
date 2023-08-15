@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Optional, List
+from typing import List, Optional
 
 from dedoc.data_structures.serializable import Serializable
 

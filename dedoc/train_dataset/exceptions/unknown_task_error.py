@@ -1,7 +1,7 @@
-from dedoc.train_dataset.exceptions.train_dataset_exception import TrainDatasetException
+from dedoc.train_dataset.exceptions.train_dataset_error import TrainDatasetError
 
 
-class UnknownTaskException(TrainDatasetException):
+class UnknownTaskError(TrainDatasetError):
     """
     Raise if you try to create dataset with unknown type
     """

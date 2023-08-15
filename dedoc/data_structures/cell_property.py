@@ -1,8 +1,8 @@
 from collections import OrderedDict
 from typing import Any
 
-from flask_restx import fields, Api, Model
 import numpy as np
+from flask_restx import Api, Model, fields
 
 from dedoc.data_structures.serializable import Serializable
 
@@ -11,7 +11,7 @@ class CellProperty(Serializable):
     """
     This class holds information about the table cell.
     """
-    def __init__(self, cell: Any) -> None:
+    def __init__(self, cell: Any) -> None:  # noqa
         """
         :param cell: class which should contain the following attributes: colspan, rowspan, invisible.
         """
@@ -28,8 +28,8 @@ class CellProperty(Serializable):
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
-        return api.model('CellProperty', {
-            'colspan': fields.Integer(description='attribute of union column count'),
-            'rowspan': fields.Integer(description='attribute of union row count'),
-            'invisible': fields.Boolean(description='flag for cell display (for example: if invisible==true then style=\"display: none\")'),
+        return api.model("CellProperty", {
+            "colspan": fields.Integer(description="attribute of union column count"),
+            "rowspan": fields.Integer(description="attribute of union row count"),
+            "invisible": fields.Boolean(description='flag for cell display (for example: if invisible==true then style=\"display: none\")'),
         })

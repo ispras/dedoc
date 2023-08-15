@@ -1,5 +1,6 @@
 import json
 import os
+
 import requests
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
@@ -26,7 +27,7 @@ class TestApi(AbstractTestApiDocReader):
 
     def test_version(self) -> None:
         version = self.__get_version()
-        r = requests.get("http://{host}:{port}/version".format(host=self._get_host(), port=self._get_port()))
+        r = requests.get(f"http://{self._get_host()}:{self._get_port()}/version")
         self.assertEqual(version, r.text.strip())
 
     def test_version_parsed_file(self) -> None:
@@ -38,7 +39,7 @@ class TestApi(AbstractTestApiDocReader):
         file_name = "example.txt"
         result = self._send_request(os.path.join("txt", file_name), data=dict(structure_type="tree"))
         content = result["content"]["structure"]
-        self.assertEqual(content["subparagraphs"][0]["text"].strip(), 'Пример документа')
-        self.assertEqual(content["subparagraphs"][1]["subparagraphs"][0]["text"].strip(), '1. Элемент нумерованного списка')
-        self.assertEqual(content["subparagraphs"][1]["subparagraphs"][0]["metadata"]['paragraph_type'], 'list_item')
-        self._check_metainfo(result['metadata'], 'text/plain', file_name)
+        self.assertEqual(content["subparagraphs"][0]["text"].strip(), "Пример документа")
+        self.assertEqual(content["subparagraphs"][1]["subparagraphs"][0]["text"].strip(), "1. Элемент нумерованного списка")
+        self.assertEqual(content["subparagraphs"][1]["subparagraphs"][0]["metadata"]["paragraph_type"], "list_item")
+        self._check_metainfo(result["metadata"], "text/plain", file_name)

@@ -23,9 +23,9 @@ class PptxConverter(AbstractConverter):
         """
         Convert the pptx-like documents into files with .pptx extension using the soffice application.
         """
-        path_in = "{tmp_dir}/{filename}{extension}".format(tmp_dir=tmp_dir, extension=extension, filename=filename)
+        path_in = f"{tmp_dir}/{filename}{extension}"
         command = ["soffice", "--headless", "--convert-to", "pptx", "--outdir", tmp_dir, path_in]
-        file_out = filename + '.pptx'
+        file_out = filename + ".pptx"
         expected_path = os.path.join(tmp_dir, file_out)
         self._run_subprocess(command=command, filename=filename, expected_path=expected_path)
 

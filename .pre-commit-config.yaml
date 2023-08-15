@@ -1,0 +1,20 @@
+repos:
+-   repo: https://github.com/PyCQA/flake8
+    rev: 5.0.4
+    hooks:
+    -   id: flake8
+        exclude: \.github|.*__init__\.py|resources|dedoc/scripts|examples|docs|venv
+        args:
+            - "--config=.flake8"
+        additional_dependencies: [
+            flake8-absolute-import==1.0.0.1,
+            flake8-annotations==2.9.1,
+            flake8-bugbear==23.3.12,
+            flake8-builtins==2.1.0,
+            flake8-import-order==0.18.2,
+            flake8-print==5.0.0,
+            flake8-quotes==3.3.2,
+            flake8-use-fstring==1.4,
+            pycodestyle==2.9.0,
+            pep8-naming==0.13.3
+        ]

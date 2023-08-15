@@ -1,14 +1,15 @@
-from typing import List, Optional
-import numpy as np
 import difflib
 import re
 from collections import Counter
+from typing import List, Optional
+
+import numpy as np
 
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 
 
 def _get_pattern(s: str) -> str:
-    return re.sub(r'[0-9]+', '@', s.lower().strip())
+    return re.sub(r"[0-9]+", "@", s.lower().strip())
 
 
 def _similarity_with_replacement(s1: str, s2: str) -> float:
@@ -68,10 +69,10 @@ def _get_popular_pattern(is_footer_header: List[bool], max_cnt_lines: int, thres
 
     popular_patterns = [[] for _ in range(max_cnt_lines)]
 
-    for num, patterns_on_line in enumerate(patterns):
+    for num, _ in enumerate(patterns):
         if not is_footer_header[num]:
             continue
-        filter_pattern = [p for p in patterns[num] if p != '' and p]
+        filter_pattern = [p for p in patterns[num] if p != "" and p]
         uniques = np.array(list(Counter(filter_pattern).keys()))
         freqs = np.array(list(Counter(filter_pattern).values())) / len(filter_pattern)
 

@@ -1,12 +1,13 @@
 import json
 from collections import deque
-from typing import List, Optional, Any
+from typing import Any, List, Optional
+
 import numpy as np
 import pandas as pd
 
-from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
 from dedoc.data_structures.bbox import BBox
+from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.utils.utils import list_get
@@ -14,7 +15,7 @@ from dedoc.utils.utils import list_get
 
 class ParagraphFeatureExtractor(AbstractFeatureExtractor):
 
-    def __init__(self, *, config: dict = None, **kwargs: Any) -> None:
+    def __init__(self, *, config: dict = None, **kwargs: Any) -> None:  # noqa
         super().__init__()
         self.config = config if config is not None else {}
 

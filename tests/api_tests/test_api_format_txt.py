@@ -16,25 +16,25 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         file_name = "example.txt"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]
-        self.assertEqual(content["subparagraphs"][0]["text"].rstrip(), 'Пример документа')
+        self.assertEqual(content["subparagraphs"][0]["text"].rstrip(), "Пример документа")
 
-        self._check_metainfo(result['metadata'], 'text/plain', file_name)
+        self._check_metainfo(result["metadata"], "text/plain", file_name)
 
     def test_text_pretty_json(self) -> None:
         file_name = "example.txt"
         result = self._send_request(file_name, data={"structure_type": "tree", "return_format": "pretty_json"})
         content = result["content"]["structure"]
-        self.assertEqual(content["subparagraphs"][0]["text"].rstrip(), 'Пример документа')
+        self.assertEqual(content["subparagraphs"][0]["text"].rstrip(), "Пример документа")
 
-        self._check_metainfo(result['metadata'], 'text/plain', file_name)
+        self._check_metainfo(result["metadata"], "text/plain", file_name)
 
     def test_text_bad_return_format(self) -> None:
         file_name = "example.txt"
         result = self._send_request(file_name, data={"structure_type": "tree", "return_format": "broken"})
         content = result["content"]["structure"]
-        self.assertEqual(content["subparagraphs"][0]["text"].rstrip(), 'Пример документа')
+        self.assertEqual(content["subparagraphs"][0]["text"].rstrip(), "Пример документа")
 
-        self._check_metainfo(result['metadata'], 'text/plain', file_name)
+        self._check_metainfo(result["metadata"], "text/plain", file_name)
 
     def test_text2(self) -> None:
         file_name = "pr_17.txt"
@@ -69,7 +69,7 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         content = result["content"]["structure"]["subparagraphs"][0]["text"]
         for line_id, line in enumerate(content.split("\n")):
             if line.strip() != "":
-                self.assertEqual("Line number {:09d}".format(line_id), line)
+                self.assertEqual(f"Line number {line_id:09d}", line)
 
     def test_txt_with_law(self) -> None:
         file_name = "17 (1).txt"
@@ -97,7 +97,7 @@ class TestApiTxtReader(AbstractTestApiDocReader):
 
     def __check_content(self, result: dict, encoding: str) -> None:
         warning = result["warnings"][0]
-        self.assertEqual(warning, "encoding is {}".format(encoding))
+        self.assertEqual(warning, f"encoding is {encoding}")
         path = self._get_abs_path("utf8.txt")
         with open(path) as file:
             text = file.read()
@@ -109,17 +109,17 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         self.assertTrue(node["text"].startswith("    Association football, more commonly known as simply"))
         self.assertTrue(node["text"].endswith("The team with the higher number of goals wins the game.\n\n"))
         annotations = node["annotations"]
-        self.assertIn({'name': 'spacing', 'value': '50', 'start': 0, 'end': 546}, annotations)
+        self.assertIn({"name": "spacing", "value": "50", "start": 0, "end": 546}, annotations)
         node = content[1]
         self.assertTrue(node["text"].startswith("  Football is played in accordance with a set of rules known"))
         self.assertTrue(node["text"].strip().endswith("the coin toss prior to kick-off or penalty kicks."))
         annotations = node["annotations"]
-        self.assertIn({'name': 'spacing', 'value': '100', 'start': 0, 'end': 163}, annotations)
+        self.assertIn({"name": "spacing", "value": "100", "start": 0, "end": 163}, annotations)
         node = content[2]
         self.assertTrue(node["text"].startswith("    Football is governed internationally by the International"))
         self.assertTrue(node["text"].endswith("the 2019 FIFA Women's World Cup in France.\n\n"))
         annotations = node["annotations"]
-        self.assertIn({'name': 'spacing', 'value': '400', 'start': 0, 'end': 164}, annotations)
-        self.assertIn({'name': 'spacing', 'value': '50', 'start': 164, 'end': 1068}, annotations)
+        self.assertIn({"name": "spacing", "value": "400", "start": 0, "end": 164}, annotations)
+        self.assertIn({"name": "spacing", "value": "50", "start": 164, "end": 1068}, annotations)
         self.assertTrue(content[3]["text"].startswith("    The most prestigious competitions in European club"))
         self.assertTrue(content[3]["text"].endswith("cost in excess of £600 million/€763 million/US$1.185 billion.\n"))

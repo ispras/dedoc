@@ -5,15 +5,14 @@ import random
 import uuid
 import zipfile
 from abc import abstractmethod
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict, defaultdict
 from tempfile import TemporaryDirectory
-from typing import List, Iterable, Callable
-
-from dedoc.train_dataset.train_dataset_utils import get_original_document_path
+from typing import Callable, Iterable, List
 
 from dedoc.train_dataset.data_structures.images_archive import ImagesArchive
 from dedoc.train_dataset.data_structures.task_item import TaskItem
 from dedoc.train_dataset.taskers.concrete_taskers.abstract_tasker import AbstractTasker
+from dedoc.train_dataset.train_dataset_utils import get_original_document_path
 
 
 class AbstractLineLabelTasker(AbstractTasker):
@@ -63,11 +62,8 @@ class AbstractLineLabelTasker(AbstractTasker):
             random.shuffle(pages)
             batches = list(enumerate(self._task_batch(pages=pages, size=task_size)))
             for task_id, task in batches:
-                self.progress_bar[tasks_uid] = "done = {};  total = {}  in progress = 1".format(task_id, len(batches))
-                path = self._create_one_task(task=task,
-                                             task_id=task_id,
-                                             job_uid=tasks_uid,
-                                             images=images)
+                self.progress_bar[tasks_uid] = f"done = {task_id};  total = {len(batches)}  in progress = 1"
+                path = self._create_one_task(task=task, task_id=task_id, job_uid=tasks_uid, images=images)
                 yield path
                 os.remove(path)
 
@@ -108,9 +104,9 @@ class AbstractLineLabelTasker(AbstractTasker):
                          task_id: int,
                          job_uid: str,
                          *, images: ImagesArchive) -> str:
-        task_name = "{:06d}_{}".format(task_id, "".join(random.sample(self._symbols, 3)))
-        task_directory = "task_{}".format(task_name)
-        path = os.path.join(self.tmp_dir, "{}.zip".format(task_directory))
+        task_name = f"{task_id:06d}_{''.join(random.sample(self._symbols, 3))}"
+        task_directory = f"task_{task_name}"
+        path = os.path.join(self.tmp_dir, f"{task_directory}.zip")
         task_items = OrderedDict()
         item_id = 0
         with zipfile.ZipFile(path, "w") as task_archive:
@@ -132,9 +128,8 @@ class AbstractLineLabelTasker(AbstractTasker):
                     item_id += 1
                     task_items[item.task_id] = item.to_dict()
                     self.progress_bar[job_uid] = self.progress_bar.get(job_uid, "").split("\n")[0]
-                    self.progress_bar[job_uid] += "\n done = {} total = {}".format(page_id, len(task))
-            task_archive.writestr("{}/tasks.json".format(task_directory),
-                                  json.dumps(task_items, ensure_ascii=False, indent=4).encode("utf-8"))
+                    self.progress_bar[job_uid] += f"\n done = {page_id} total = {len(task)}"
+            task_archive.writestr(f"{task_directory}/tasks.json", json.dumps(task_items, ensure_ascii=False, indent=4).encode("utf-8"))
             task_archive.write(self.manifest_path, os.path.join(task_directory, os.path.basename(self.manifest_path)))
             self._add_config(task_archive, task_name=task_name, task_directory=task_directory,
                              config_path=self.config_path, tmp_dir=self.tmp_dir)

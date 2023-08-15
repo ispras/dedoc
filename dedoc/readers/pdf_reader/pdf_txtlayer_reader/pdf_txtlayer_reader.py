@@ -1,14 +1,15 @@
 import os
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
+
 import numpy as np
 
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.extractor_pdf_textlayer import ExtractorPdfTextLayer
+from dedoc.data_structures.bbox import BBox
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
-from dedoc.readers.pdf_reader.pdf_base_reader import PdfBaseReader, ParametersForParseDoc
+from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.extractor_pdf_textlayer import ExtractorPdfTextLayer
 from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
-from dedoc.data_structures.bbox import BBox
 
 
 class PdfTxtlayerReader(PdfBaseReader):

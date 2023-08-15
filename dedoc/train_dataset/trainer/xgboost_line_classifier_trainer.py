@@ -1,5 +1,6 @@
 import logging
-from typing import Optional, List, Callable
+from typing import Callable, List, Optional
+
 import xgbfir
 from xgboost import XGBClassifier
 

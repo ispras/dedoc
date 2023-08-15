@@ -1,7 +1,7 @@
 import os
 import uuid
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.utils.utils import save_data_to_unique_file

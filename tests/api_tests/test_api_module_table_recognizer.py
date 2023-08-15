@@ -14,46 +14,46 @@ class TestRecognizedTable(AbstractTestApiDocReader):
     def test_api_table_recognition_3(self) -> None:
         file_name = "example_with_table16.jpg"
         res = self._send_request(file_name)
-        table = res['content']['tables'][0]
-        self._check_similarity(table['cells'][0][1], "Наименование участкового лестничества")
-        self._check_similarity(table['cells'][2][1], "Итого")
-        self._check_similarity(table['cells'][13][0], "Выращивание лесных, плодовых, ягодных, "
+        table = res["content"]["tables"][0]
+        self._check_similarity(table["cells"][0][1], "Наименование участкового лестничества")
+        self._check_similarity(table["cells"][2][1], "Итого")
+        self._check_similarity(table["cells"][13][0], "Выращивание лесных, плодовых, ягодных, "
                                                       "декоративных растений, лекарственных растений")
-        self._check_similarity(table['cells'][13][3], "1272100,0")
+        self._check_similarity(table["cells"][13][3], "1272100,0")
 
     def test_api_table_recognition_4(self) -> None:
         file_name = "example_with_table17.jpg"
-        table = self._send_request(file_name)['content']['tables'][0]
-        self._check_similarity(table['cells'][0][1], "Наименование\nучасткового\nлестничества")
-        self._check_similarity(table['cells'][0][2], 'Неречень кварталов или их частей')
-        self._check_similarity(table['cells'][3][3], '801 976,3')
+        table = self._send_request(file_name)["content"]["tables"][0]
+        self._check_similarity(table["cells"][0][1], "Наименование\nучасткового\nлестничества")
+        self._check_similarity(table["cells"][0][2], "Неречень кварталов или их частей")
+        self._check_similarity(table["cells"][3][3], "801 976,3")
 
     def test_api_table_recognition_horizontal_union_1(self) -> None:
-        file_name = 'example_with_table_horizontal_union.jpg'
-        table = self._send_request(file_name)['content']['tables'][0]
+        file_name = "example_with_table_horizontal_union.jpg"
+        table = self._send_request(file_name)["content"]["tables"][0]
 
-        self._check_similarity(table['cells'][0][1], "Наименование позиции")
-        self._check_similarity(table['cells'][1][1], "Наименование позиции")
-        self._check_similarity(table['cells'][0][2], "Начальная (максимальная) цена за единицу\nпродукции")
-        self._check_similarity(table['cells'][1][2], "рублей, включая НДС\n(20%)")
-        self._check_similarity(table['cells'][0][3], "Начальная (максимальная) цена за единицу\nпродукции")
-        self._check_similarity(table['cells'][1][3], "рублей, без учета НДС\n(20%)")
+        self._check_similarity(table["cells"][0][1], "Наименование позиции")
+        self._check_similarity(table["cells"][1][1], "Наименование позиции")
+        self._check_similarity(table["cells"][0][2], "Начальная (максимальная) цена за единицу\nпродукции")
+        self._check_similarity(table["cells"][1][2], "рублей, включая НДС\n(20%)")
+        self._check_similarity(table["cells"][0][3], "Начальная (максимальная) цена за единицу\nпродукции")
+        self._check_similarity(table["cells"][1][3], "рублей, без учета НДС\n(20%)")
 
     def test_api_table_recognition_hor_and_vert_union_2(self) -> None:
         file_name = "example_with_table_hor_vert_union.png"
-        table = self._send_request(file_name, data={"language": "rus"})['content']['tables'][0]
+        table = self._send_request(file_name, data={"language": "rus"})["content"]["tables"][0]
 
-        self._check_similarity(table['cells'][0][6], "Стоимость единицы, руб.")
-        self._check_similarity(table['cells'][1][6], "В Tоm числе")
-        self._check_similarity(table['cells'][2][6], "Осн.З/п")
+        self._check_similarity(table["cells"][0][6], "Стоимость единицы, руб.")
+        self._check_similarity(table["cells"][1][6], "В Tоm числе")
+        self._check_similarity(table["cells"][2][6], "Осн.З/п")
 
-        self._check_similarity(table['cells'][0][10], "Общая стоимость, руб.")
-        self._check_similarity(table['cells'][1][10], "Всего")
-        self._check_similarity(table['cells'][2][10], "Всего")
+        self._check_similarity(table["cells"][0][10], "Общая стоимость, руб.")
+        self._check_similarity(table["cells"][1][10], "Всего")
+        self._check_similarity(table["cells"][2][10], "Всего")
 
-        self._check_similarity(table['cells'][0][12], "Общая стоимость, руб.")
-        self._check_similarity(table['cells'][1][12], "В том числе")
-        self._check_similarity(table['cells'][2][12], "Эк.Маш")
+        self._check_similarity(table["cells"][0][12], "Общая стоимость, руб.")
+        self._check_similarity(table["cells"][1][12], "В том числе")
+        self._check_similarity(table["cells"][2][12], "Эк.Маш")
 
     def _check_header_table(self, cells: List[List[str]]) -> None:
         self._check_similarity(cells[0][0], "№\nп/п", threshold=0.5)
@@ -87,16 +87,16 @@ class TestRecognizedTable(AbstractTestApiDocReader):
     def test_api_table_recognition_with_diff_orient_cells_90(self) -> None:
         file_name = "example_table_with_90_orient_cells.pdf"
         response = self._send_request(file_name, dict(orient_analysis_cells=True, orient_cell_angle="90"))
-        table = response['content']['tables'][0]
+        table = response["content"]["tables"][0]
 
-        self._check_header_table(table['cells'])
+        self._check_header_table(table["cells"])
 
     @unittest.skip
     def test_api_table_recognition_with_diff_orient_cells_270(self) -> None:
         file_name = "example_table_with_270_orient_cells.pdf"
         response = self._send_request(file_name, dict(orient_analysis_cells=True, orient_cell_angle="270"))
-        table = response['content']['tables'][0]
-        self._check_header_table(table['cells'])
+        table = response["content"]["tables"][0]
+        self._check_header_table(table["cells"])
 
     def test_pdf_table(self) -> None:
         file_name = "example_with_table1.pdf"
@@ -120,7 +120,7 @@ class TestRecognizedTable(AbstractTestApiDocReader):
 
         self.assertEqual("6", rows[6][0])
         self.assertEqual('ООО "Скай-\nтехнолоджи"', rows[6][1])
-        self.assertEqual('Пр. Свободный 75', rows[6][2])
+        self.assertEqual("Пр. Свободный 75", rows[6][2])
         self.assertEqual("Андрей Горбунов\n8-913-560-50-09", rows[6][3])
 
     def test_rectangular(self) -> None:
@@ -130,9 +130,9 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         self.assertEqual(1, len(tables))
         table = tables[0]
         cells = table["cells"]
-        self.assertListEqual(['Фамилия', 'Имя', 'Отчество'], cells[0])
-        self.assertListEqual(['Иванов', 'Иван', 'Иванович'], cells[1])
-        self.assertListEqual(['Петров', 'Пётр', 'Петрович'], cells[2])
+        self.assertListEqual(["Фамилия", "Имя", "Отчество"], cells[0])
+        self.assertListEqual(["Иванов", "Иван", "Иванович"], cells[1])
+        self.assertListEqual(["Петров", "Пётр", "Петрович"], cells[2])
 
     def test_merged_vertical(self) -> None:
         file_name = "merged_vertical.pdf"
@@ -142,9 +142,9 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         table = tables[0]
         cells = table["cells"]
 
-        self.assertListEqual(['Фамилия\nИванов\nПетров', 'Имя', 'Отчество'], cells[0])
-        self.assertListEqual(['Фамилия\nИванов\nПетров', 'Иван', 'Иванович'], cells[1])
-        self.assertListEqual(['Фамилия\nИванов\nПетров', 'Пётр', 'Петрович'], cells[2])
+        self.assertListEqual(["Фамилия\nИванов\nПетров", "Имя", "Отчество"], cells[0])
+        self.assertListEqual(["Фамилия\nИванов\nПетров", "Иван", "Иванович"], cells[1])
+        self.assertListEqual(["Фамилия\nИванов\nПетров", "Пётр", "Петрович"], cells[2])
 
     def test_merged_horizontal(self) -> None:
         file_name = "merged_horizontal.pdf"
@@ -154,9 +154,9 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         table = tables[0]
         cells = table["cells"]
 
-        self.assertListEqual(['Фамилия Имя Отчество', 'Фамилия Имя Отчество', 'Фамилия Имя Отчество'], cells[0])
-        self.assertListEqual(['Иванов', 'Иван', 'Иванович'], cells[1])
-        self.assertListEqual(['Петров', 'Пётр', 'Петрович'], cells[2])
+        self.assertListEqual(["Фамилия Имя Отчество", "Фамилия Имя Отчество", "Фамилия Имя Отчество"], cells[0])
+        self.assertListEqual(["Иванов", "Иван", "Иванович"], cells[1])
+        self.assertListEqual(["Петров", "Пётр", "Петрович"], cells[2])
 
     def test_tables_annotations(self) -> None:
         file_name = "two_column_document.pdf"

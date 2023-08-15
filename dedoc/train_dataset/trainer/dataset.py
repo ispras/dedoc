@@ -40,7 +40,7 @@ class LineClassifierDataset:
         if csv_only:
             self.dataframe.to_csv(os.path.join(path, "dataset.csv"))
             return path
-        dir_out = os.path.join(path, "dataset_{}".format(int(time.time() * 1000)))
+        dir_out = os.path.join(path, f"dataset_{int(time.time() * 1000)}")
         os.mkdir(dir_out)
         self.dataframe.to_csv(os.path.join(dir_out, "dataset.csv"))
         self.dataframe.to_pickle(os.path.join(dir_out, "dataset.pkl.gz"))

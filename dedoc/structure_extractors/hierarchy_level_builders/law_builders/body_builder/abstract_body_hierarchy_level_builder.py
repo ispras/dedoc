@@ -1,11 +1,11 @@
 import abc
 from copy import deepcopy
-from typing import Tuple, Optional, List
+from typing import List, Optional, Tuple
 from uuid import uuid1
 
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
 from dedoc.structure_extractors.hierarchy_level_builders.abstract_hierarchy_level_builder import AbstractHierarchyLevelBuilder
@@ -99,4 +99,4 @@ class AbstractBodyHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
         if label == "application":
             return HierarchyLevel(None, None, False, HierarchyLevel.raw_text), None
         else:
-            raise Exception("{} {}".format(text, label))
+            raise Exception(f"{text} {label}")

@@ -1,20 +1,23 @@
 import json
 import logging
-import cv2
-from PIL import Image
-import numpy as np
-from typing import List, Tuple, Optional
 import os
+from typing import List, Optional, Tuple
 
-from dedoc.train_dataset.data_path_config import table_path as save_path
-from dedoc.data_structures.line_with_meta import LineWithMeta
+import cv2
+import numpy as np
+from PIL import Image
+
 from dedoc.data_structures.bbox import BBox
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdditionalOptions
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.multipage_table_extractor import MultiPageTableExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.onepage_table_extractor import OnePageTableExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.multipage_table_extractor import \
+    MultiPageTableExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.onepage_table_extractor import \
+    OnePageTableExtractor
+from dedoc.train_dataset.data_path_config import table_path as save_path
 
-'''-------------------------------------entry class of Table Recognizer Module---------------------------------------'''
+"""-------------------------------------entry class of Table Recognizer Module---------------------------------------"""
 
 
 class TableRecognizer(object):
@@ -49,7 +52,7 @@ class TableRecognizer(object):
                                     orient_analysis_cells: bool,
                                     orient_cell_angle: int,
                                     table_type: str = "") -> Tuple[np.ndarray, List[ScanTable]]:
-        self.logger.debug("Page %i" % page_number)
+        self.logger.debug(f"Page {page_number}")
         try:
             cleaned_image, matrix_tables = self.__rec_tables_from_img(image, page_num=page_number,
                                                                       language=language,
@@ -143,11 +146,7 @@ class TableRecognizer(object):
                 cells_area += cell.width * cell.height
 
         ratio = cells_area / table_area
-        res = ((white_mean < 0.5) or
-               (black_mean > 0.3) or
-               (std < 30) or (mean < 150) or
-               (mean < 200 and std < 80) or
-               ratio < 0.65)
+        res = (white_mean < 0.5) or (black_mean > 0.3) or (std < 30) or (mean < 150) or (mean < 200 and std < 80) or ratio < 0.65
         return res
 
     def __save_tables(self, tables: List[ScanTable], image: np.ndarray, table_path: Optional[str] = None) -> None:
@@ -155,8 +154,8 @@ class TableRecognizer(object):
         os.makedirs(table_path, exist_ok=True)
         for table in tables:
             images_cnt = len(os.listdir(table_path))
-            image_path = os.path.join(table_path, "{:06d}.png".format(images_cnt))
-            jsons_path = os.path.join(table_path, "{:06d}.json".format(images_cnt))
+            image_path = os.path.join(table_path, f"{images_cnt:06d}.png")
+            jsons_path = os.path.join(table_path, f"{images_cnt:06d}.json")
             image.save(image_path)
             with open(jsons_path, "w") as out:
                 json.dump(obj=table.to_dict(), fp=out, indent=4, ensure_ascii=False)

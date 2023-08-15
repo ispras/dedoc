@@ -35,7 +35,7 @@ class OcrElement:
         self.block_num = block_num
 
     def __str__(self) -> str:
-        return "OcrTUPLE(level={}, conf={}, text={})".format(self.level, self.conf, self.text[:60])
+        return f"OcrTUPLE(level={self.level}, conf={self.conf}, text={self.text[:60]})"
 
     def __repr__(self) -> str:
         return str(self)

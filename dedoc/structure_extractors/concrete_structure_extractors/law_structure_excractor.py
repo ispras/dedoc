@@ -11,7 +11,7 @@ from dedoc.structure_extractors.hierarchy_level_builders.law_builders.applicatio
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.body_law_hierarchy_level_builder import \
     BodyLawHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.cellar_builder import CellarHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_number, regexps_ends_of_number
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_number
 
 
 class LawStructureExtractor(AbstractLawStructureExtractor):
@@ -28,9 +28,9 @@ class LawStructureExtractor(AbstractLawStructureExtractor):
                                          BodyLawHierarchyLevelBuilder(),
                                          CellarHierarchyLevelBuilder(),
                                          ApplicationLawHierarchyLevelBuilder()]
-        self.regexps_item = re.compile(r'^\s*(\d*\.)*\d+[\)|\}]')
+        self.regexps_item = re.compile(r"^\s*(\d*\.)*\d+[\)|\}]")
         self.regexps_part = regexps_number
-        self.regexps_subitem = re.compile(r'^\s*[а-яё]\)')
+        self.regexps_subitem = re.compile(r"^\s*[а-яё]\)")
         self.regexps_ends_of_number = regexps_ends_of_number
         self.init_hl_depth = 2
         self.hl_type = "law"

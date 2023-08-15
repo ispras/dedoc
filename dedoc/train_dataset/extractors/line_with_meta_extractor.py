@@ -62,7 +62,7 @@ class LineWithMetaExtractor:
             elif document_name.endswith(".html"):
                 reader = self.html_reader
             else:
-                raise Exception("Unknown document type {}".format(document_name))
+                raise Exception(f"Unknown document type {document_name}")
             document = reader.read(os.path.join(self.documents_path, document_name), parameters={})
             lines = document.lines
             return self.__add_labels(document_name, labels, lines)

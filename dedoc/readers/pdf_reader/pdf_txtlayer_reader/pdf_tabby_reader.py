@@ -190,7 +190,7 @@ class PdfTabbyReader(PdfBaseReader):
                     annotations.append(LinkedTextAnnotation(start, end, url))
 
             meta = block["metadata"].lower()
-            uid = "txt_{}_{}".format(file_hash, order)
+            uid = f"txt_{file_hash}_{order}"
             bbox = BBox.from_two_points((bx_top_left, by_top_left), (bx_bottom_right, by_bottom_right))
 
             metadata = LineMetadata(page_id=page_number, line_id=order)
@@ -229,7 +229,7 @@ class PdfTabbyReader(PdfBaseReader):
         try:
             result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL, check=True)
             if result.stderr:
-                self.logger.warning("Got stderr: {}".format(result.stderr.decode(encoding)))
+                self.logger.warning(f"Got stderr: {result.stderr.decode(encoding)}")
             return result.stdout
         except FileNotFoundError:
             raise JavaNotFoundError(self.java_not_found_error)
@@ -238,7 +238,7 @@ class PdfTabbyReader(PdfBaseReader):
 
     def __process_pdf(self, path: str, start_page: int = None, end_page: int = None) -> dict:
         output = self.__run(path=path, start_page=start_page, end_page=end_page)
-        response = output.decode('UTF-8')
+        response = output.decode("UTF-8")
         document = json.loads(response) if response else {}
         return document
 

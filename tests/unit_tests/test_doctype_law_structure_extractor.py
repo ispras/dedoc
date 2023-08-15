@@ -4,15 +4,14 @@ import unittest
 from collections import defaultdict
 from typing import List
 
-from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.body_law_hierarchy_level_builder import \
     BodyLawHierarchyLevelBuilder
-
-from tests.test_utils import get_test_config, TestTimeout
+from tests.test_utils import TestTimeout, get_test_config
 
 
 class TestLawStructureExtractor(unittest.TestCase):
@@ -61,10 +60,10 @@ class TestLawStructureExtractor(unittest.TestCase):
             self.assertIsNotNone(self.structure_extractor.classifier.regexp_application_begin.match(application_start.lower()))
 
     def test_string_number_correctness_with_regexp(self) -> None:
-        lines = ['03.06.2009 № 17, от 07.10.2009 № 42, от  10.03.2010 № 6, от 14.04.2010 № 11,  от',
-                 'правонарушениях. (В редакции Закона Москвы от 24.06.2015 г. № 39)',
-                 '2. Нарушение  административного регламента',
-                 '1.2.2)', '1.2.4.6}', '1.23.005 ', '1.4.5 ', '1.4.5\n', '1.5.6.Закон о ....']
+        lines = ["03.06.2009 № 17, от 07.10.2009 № 42, от  10.03.2010 № 6, от 14.04.2010 № 11,  от",
+                 "правонарушениях. (В редакции Закона Москвы от 24.06.2015 г. № 39)",
+                 "2. Нарушение  административного регламента",
+                 "1.2.2)", "1.2.4.6}", "1.23.005 ", "1.4.5 ", "1.4.5\n", "1.5.6.Закон о ...."]
         answers = [False,
                    False,
                    True,
@@ -74,7 +73,7 @@ class TestLawStructureExtractor(unittest.TestCase):
             self.assertEqual(answers[num], self.structure_extractor.regexps_part.match(line) is not None, line)
 
     def test_number_ends(self) -> None:
-        numbers = ["1.2.2) ", '1.4.5Д', '1.5.6.Н', '1.2.4.6}    ']
+        numbers = ["1.2.2) ", "1.4.5Д", "1.5.6.Н", "1.2.4.6}    "]
         without_ends = ["1.2.2)", "1.4.5", "1.5.6.", "1.2.4.6}"]
 
         for num, number in enumerate(numbers):

@@ -2,7 +2,7 @@ import os
 from typing import Optional
 
 from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
-from dedoc.extensions import converted_mimes, converted_extensions
+from dedoc.extensions import converted_extensions, converted_mimes
 
 
 class DocxConverter(AbstractConverter):

@@ -3,7 +3,7 @@ import tempfile
 import zipfile
 from copy import deepcopy
 from itertools import zip_longest
-from typing import List, Iterator
+from typing import Iterator, List
 
 import PIL
 import cv2
@@ -50,7 +50,7 @@ class ScannedImagesCreator(AbstractImagesCreator):
         else:
             images = self._create_image_jpg(path=path, page=page)
         for image, line in zip_longest(images, page):
-            img_name = "{}.jpg".format(line["_uid"])
+            img_name = f"{line['_uid']}.jpg"
             with tempfile.TemporaryDirectory() as tmpfile:
                 img_path = os.path.join(tmpfile, img_name)
                 image.save(img_path, format="jpeg")
@@ -77,7 +77,7 @@ class ScannedImagesCreator(AbstractImagesCreator):
             image = deepcopy(current_image)
             image_bbox = self._draw_one_bbox(image, line)
             image_bbox = PIL.Image.fromarray(image_bbox)
-            image_bbox = image_bbox.convert('RGB')
+            image_bbox = image_bbox.convert("RGB")
             yield image_bbox
 
     def _create_image_pdf(self, path: str, page: List[dict]) -> Iterator[Image]:
@@ -91,7 +91,7 @@ class ScannedImagesCreator(AbstractImagesCreator):
             image = deepcopy(current_image)
             image_bbox = self._draw_one_bbox(image, line)
             image_bbox = PIL.Image.fromarray(image_bbox)
-            image_bbox = image_bbox.convert('RGB')
+            image_bbox = image_bbox.convert("RGB")
             yield image_bbox
 
     def _create_image_jpg(self, path: str, page: List[dict]) -> Iterator[Image]:
@@ -99,5 +99,5 @@ class ScannedImagesCreator(AbstractImagesCreator):
         for line in page:
             image_bbox = self._draw_one_bbox(image, line)
             image_bbox = PIL.Image.fromarray(image_bbox)
-            image_bbox = image_bbox.convert('RGB')
+            image_bbox = image_bbox.convert("RGB")
             yield image_bbox

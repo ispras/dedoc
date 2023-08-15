@@ -18,18 +18,18 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
     def test_wo_attachments_excel(self) -> None:
         file_name = "xlsx/example.xlsx"
         result = self._send_request(file_name, dict(with_attachments=True))
-        self.assertEqual([], result['attachments'])
+        self.assertEqual([], result["attachments"])
 
     def test_get_attachments_xlxs_depth_1(self) -> None:
         file_name = "xlsx/example_with_images.xlsx"
         result = self._send_request(file_name, dict(with_attachments=True))
-        attachments = result['attachments']
+        attachments = result["attachments"]
         self._check_attachments(attachments)
 
     def test_get_attachments_xls_depth_1(self) -> None:
         file_name = "xlsx/example_with_images.xls"
         result = self._send_request(file_name, dict(with_attachments=True))
-        attachments = result['attachments']
+        attachments = result["attachments"]
         self._check_attachments(attachments)
 
     def test_get_attachments_pdf_depth_1(self) -> None:
@@ -44,7 +44,7 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         self.assertEqual(attachments[3]["metadata"]["file_name"], "attachment.txt")
         self.assertEqual(attachments[4]["metadata"]["file_type"], "application/json")
 
-    def test_attachments_pmi_document(self):
+    def test_attachments_pmi_document(self) -> None:
         file_name = "pdf_with_text_layer/Document635.pdf"
         result = self._send_request(file_name, dict(with_attachments=True, pdf_with_text_layer="tabby"))
 
@@ -69,10 +69,10 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
     def test_get_without_attachments(self) -> None:
         file_name = "with_attachments/example_with_attachments_depth_1.pdf"
         result = self._send_request(file_name, dict(with_attachments=False))
-        self.assertEqual([], result['attachments'])
+        self.assertEqual([], result["attachments"])
 
     def test_json_attachments(self) -> None:
-        file_name = 'json/with_html.json'
+        file_name = "json/with_html.json"
         parameters = dict()
         parameters["with_attachments"] = True
         parameters["html_fields"] = json.dumps(
@@ -84,7 +84,7 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         self.assertEqual(len(attachments), 4)
 
     def test_json_invalid_html_fields(self) -> None:
-        file_name = 'json/with_html.json'
+        file_name = "json/with_html.json"
         parameters = dict()
         parameters["with_attachments"] = True
         parameters["html_fields"] = json.dumps(
@@ -98,7 +98,7 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         self.assertEqual(len(attachments), 4)
 
     def test_json_with_html_fields_with_scripts(self) -> None:
-        file_name = 'json/example2.json'
+        file_name = "json/example2.json"
         parameters = dict(
             with_attachments=True,
             html_fields=json.dumps([["text"]]),
@@ -130,26 +130,26 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         self.assertEqual(len(attachments), 5)
 
     def test_docx_attachments(self) -> None:
-        file_name = 'with_attachments/with_attachments_0.docx'
+        file_name = "with_attachments/with_attachments_0.docx"
         result = self._send_request(file_name, dict(with_attachments=True, need_content_analysis=True))
 
-        attachments = result['attachments']
-        names = [attachment['metadata']['file_name'] for attachment in attachments]
-        self.assertIn('arch_with_attachs.zip', names)
-        self.assertIn('VVP_global_table.pdf', names)
-        self.assertIn('lorem.txt', names)
-        self.assertIn('books.csv', names)
+        attachments = result["attachments"]
+        names = [attachment["metadata"]["file_name"] for attachment in attachments]
+        self.assertIn("arch_with_attachs.zip", names)
+        self.assertIn("VVP_global_table.pdf", names)
+        self.assertIn("lorem.txt", names)
+        self.assertIn("books.csv", names)
 
         arch = [attachment for attachment in attachments
-                if attachment['metadata']['file_name'] == 'arch_with_attachs.zip'][0]
-        self.assertEqual(len(arch['attachments']), 4)
+                if attachment["metadata"]["file_name"] == "arch_with_attachs.zip"][0]
+        self.assertEqual(len(arch["attachments"]), 4)
 
         txt = [attachment for attachment in attachments
-               if attachment['metadata']['file_name'] == 'lorem.txt'][0]
+               if attachment["metadata"]["file_name"] == "lorem.txt"][0]
 
         self.assertIn("Adipisicing est non minim aute reprehenderit incididunt magna"
                       " ad consectetur ad occaecat anim voluptate culpa fugiat",
-                      txt['content']['structure']['subparagraphs'][0]['text'], )
+                      txt["content"]["structure"]["subparagraphs"][0]["text"], )
 
     def test_docx_images_base64(self) -> None:
         metadata = self.__check_base64(True)

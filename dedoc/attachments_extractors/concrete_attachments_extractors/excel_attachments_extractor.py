@@ -25,7 +25,7 @@ class ExcelAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
         """
         attachments = []
         name, ext = splitext_(filename)
-        if ext.lower() != '.xlsx':
+        if ext.lower() != ".xlsx":
             return attachments
 
         return self._get_attachments(tmpdir=tmpdir, filename=filename, parameters=parameters, attachments_dir="xl")

@@ -6,7 +6,7 @@ import zipfile
 from tempfile import TemporaryDirectory
 from typing import Dict, Union
 
-from flask import Flask, request, send_file, Response
+from flask import Flask, Response, request, send_file
 
 app = Flask(__name__, static_folder=os.path.dirname(__file__))
 
@@ -21,7 +21,7 @@ with open("formResult.html") as file:
     form_results = file.read()
 
 
-@app.route('/', methods=['GET'])
+@app.route("/", methods=["GET"])
 def get_info() -> str:
     if len(tasks) > 0:
         return form_input.format(tasks_left=len(tasks))
@@ -30,7 +30,7 @@ def get_info() -> str:
         <h2> <a href="get_results">Получить результаты</a> </h2>"""
 
 
-@app.route('/upload', methods=['POST'])
+@app.route("/upload", methods=["POST"])
 def upload() -> Union[str, Response]:
     parameters = {k: v for k, v in request.values.items()}
     name = parameters.get("name", "Инкогнито")
@@ -39,14 +39,14 @@ def upload() -> Union[str, Response]:
     else:
         task = tasks.pop()
         with open("task_manager.log", "a") as file_log:
-            file_log.write("{} take task {}\n".format(name, task))
+            file_log.write(f"{name} take task {task}\n")
         return send_file(task, as_attachment=True, attachment_filename=task)
 
 
-@app.route('/upload_results', methods=['POST', "GET"])
+@app.route("/upload_results", methods=["POST", "GET"])
 def upload_results() -> Response:
     if request.method == "POST":
-        file = request.files['file']
+        file = request.files["file"]
         with TemporaryDirectory() as tmp_dir:
             name = file.filename
             path_out = os.path.join(tmp_dir, name)
@@ -62,7 +62,7 @@ def upload_results() -> Response:
                         path_out = os.path.join(tmp_dir, file_name)
                         archive.extract(member=file_name, path=tmp_dir)
                         _save_result_file(path_out, file_name)
-        return '<h1> Результат получен {} </h1>'.format(cnt)
+        return f"<h1> Результат получен {cnt} </h1>"
     if request.method == "GET":
         return form_results
 
@@ -71,13 +71,13 @@ def _save_result_file(path: str, name: str) -> None:
     path_out = os.path.abspath(os.path.join(results_dir, name))
     shutil.copy(path, path_out)
     with open("task_manager.log", "a") as file_log:
-        file_log.write("save file in {}\n".format(path_out))
+        file_log.write(f"save file in {path_out}\n")
 
 
-@app.route('/get_results', methods=["GET"])
+@app.route("/get_results", methods=["GET"])
 def get_results() -> Response:
     with TemporaryDirectory() as tmp_dir:
-        archive_name = "results_{}.zip".format(int(time.time()))
+        archive_name = f"results_{int(time.time())}.zip"
         archive_path = os.path.join(tmp_dir, archive_name)
         with zipfile.ZipFile(archive_path, "w") as archive:
             labeled = _merge_labeled()
@@ -88,7 +88,7 @@ def get_results() -> Response:
                 files = [file for file in original_documents.namelist() if file in original_documents_set]
                 for file in files:
                     with original_documents.open(file) as f_in:
-                        archive.writestr("original_documents/{}".format(file), f_in.read())
+                        archive.writestr(f"original_documents/{file}", f_in.read())
 
             archive.write("task_manager.log")
         return send_file(archive_path, as_attachment=True, attachment_filename=archive_name)
@@ -107,5 +107,5 @@ def _merge_labeled() -> Dict[str, dict]:
     return labeled
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000)

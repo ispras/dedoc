@@ -8,8 +8,8 @@ class Counter:
 
     def __init__(self, body: Tag, logger: logging.Logger) -> None:
         self.logger = logger
-        self.total_paragraph_number = sum([len(p.find_all('w:p')) for p in body if p.name != 'p' and p.name != "tbl" and isinstance(p, Tag)])
-        self.total_paragraph_number += len([p for p in body if p.name == 'p' and isinstance(p, Tag)])
+        self.total_paragraph_number = sum([len(p.find_all("w:p")) for p in body if p.name != "p" and p.name != "tbl" and isinstance(p, Tag)])
+        self.total_paragraph_number += len([p for p in body if p.name == "p" and isinstance(p, Tag)])
         self.current_paragraph_number = 0
         self.checkpoint_time = time.time()
 

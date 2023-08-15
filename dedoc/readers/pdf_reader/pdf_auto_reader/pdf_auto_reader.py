@@ -13,7 +13,7 @@ from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_detector import TxtLayerD
 from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
-from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer, get_param_page_slice
+from dedoc.utils.parameter_utils import get_param_page_slice, get_param_pdf_with_txt_layer
 
 
 class PdfAutoReader(BaseReader):
@@ -23,7 +23,8 @@ class PdfAutoReader(BaseReader):
 
     :class:`~dedoc.readers.PdfAutoReader` is used for automatic detection of a correct textual layer in the given PDF file:
 
-    * if PDF document has a correct textual layer then :class:`~dedoc.readers.PdfTxtLayerReader` or :class:`~dedoc.readers.PdfTabbyReader` is used for document content extraction;
+    * if PDF document has a correct textual layer then :class:`~dedoc.readers.PdfTxtLayerReader` or :class:`~dedoc.readers.PdfTabbyReader` is used
+        for document content extraction;
 
     * if PDF document doesn't have a correct textual layer then :class:`~dedoc.readers.PdfImageReader` is used for document content extraction.
 

@@ -16,16 +16,16 @@ class LetterPrefix(LinePrefix):
     в) Kalt wie das Eis
     """
 
-    regexp = re.compile(r'^\s*[а-яёa-z]\)')
+    regexp = re.compile(r"^\s*[а-яёa-z]\)")
     name = "letter"
 
     @property
     def order(self) -> float:
         letter = self.prefix[0]
-        if letter == "ё":  # ё is between е and ж, but ord('ё') is not between them
-            return 0.5 * (ord('е') + ord('ж'))
-        elif letter == "Ё":  # Ё is between Е and Ж, but ord('Ё') is not between them
-            return 0.5 * (ord('Е') + ord('Ж'))
+        if letter == "ё":  # ё is between е and ж, but ord("ё") is not between them
+            return 0.5 * (ord("е") + ord("ж"))
+        elif letter == "Ё":  # Ё is between Е and Ж, but ord("Ё") is not between them
+            return 0.5 * (ord("Е") + ord("Ж"))
         else:
             return ord(letter)
 

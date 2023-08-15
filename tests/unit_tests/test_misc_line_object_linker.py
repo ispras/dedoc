@@ -5,7 +5,7 @@ from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLoc
 from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
 from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
-from tests.test_utils import get_test_config, create_line_by_coordinates
+from tests.test_utils import create_line_by_coordinates, get_test_config
 
 
 class TestLineObjectLinker(unittest.TestCase):

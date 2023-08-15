@@ -34,17 +34,17 @@ def _run(path: str = None, encoding: str = "utf-8") -> bytes:
             check=True,
         )
         if result.stderr:
-            logger.warning("Got stderr: {}".format(result.stderr.decode(encoding)))
+            logger.warning(f"Got stderr: {result.stderr.decode(encoding)}")
         return result.stdout
     except FileNotFoundError:
         raise JavaNotFoundError(JAVA_NOT_FOUND_ERROR)
     except subprocess.CalledProcessError as e:
-        logger.error("Error from tabby-java:\n{}\n".format(e.stderr.decode(encoding)))
+        logger.error(f"Error from tabby-java:\n{e.stderr.decode(encoding)}\n")
         raise
 
 
 def extract(path: str) -> dict:
     output = _run(path)
-    response = output.decode('UTF-8')
+    response = output.decode("UTF-8")
     document = json.loads(response)
     return document

@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from typing import List, Iterator, Optional, Tuple, Dict
+from typing import Dict, Iterator, List, Optional, Tuple
 
 import pandas as pd
 
@@ -25,12 +25,12 @@ class LawTextFeatures(AbstractFeatureExtractor):
         r"((к распоряжению)|(к постановлению)|(к приказу))?\s*$"
     )
     regexps_items = [
-        re.compile(r'^\s*(\d{1,3}\.)+\s*[a-zA-Zа-яА-ЯёЁ]'),
-        re.compile(r'^\s*\d{1,3}(\)|\})'),
+        re.compile(r"^\s*(\d{1,3}\.)+\s*[a-zA-Zа-яА-ЯёЁ]"),
+        re.compile(r"^\s*\d{1,3}(\)|\})"),
 
     ]  # 12
     regexps_subitem = [
-        re.compile(r'^\s*[а-яё]\)'),
+        re.compile(r"^\s*[а-яё]\)"),
     ]
     quote_start = re.compile(r"^([\"'«])")
     quote_end = re.compile(r".*[\"'»][.;]?$")
@@ -71,7 +71,7 @@ class LawTextFeatures(AbstractFeatureExtractor):
 
         one_line_features_dict = defaultdict(list)
 
-        for line_id, line in enumerate(lines):
+        for line in lines:
             for item in self._one_line_features(line,
                                                 total_lines=len(lines),
                                                 start_page=start_page,
@@ -88,8 +88,8 @@ class LawTextFeatures(AbstractFeatureExtractor):
             one_line_features_df = self.prev_next_line_features(one_line_features_df, 3, 3)
         result_matrix = pd.concat([one_line_features_df, features_df], axis=1)
 
-        '''for feature in result_matrix.keys():
-            result_matrix[feature] = self._normalize_features(result_matrix[feature])'''
+        """for feature in result_matrix.keys():
+            result_matrix[feature] = self._normalize_features(result_matrix[feature])"""
         return result_matrix
 
     def _look_at_prev_line(self, document: List[LineWithMeta], n: int = 1) -> Dict[str, List]:
@@ -110,7 +110,7 @@ class LawTextFeatures(AbstractFeatureExtractor):
 
             if line_id >= n:
                 prev_line = document[line_id - n]
-                is_prev_line_ends = prev_line.line.endswith(('.', ';'))
+                is_prev_line_ends = prev_line.line.endswith((".", ";"))
                 res["prev_line_ends"].append(1 if is_prev_line_ends else 0)
                 res["prev_ends_with_colon"].append(prev_line.line.endswith(":"))
                 res["prev_starts_with_article"].append(prev_line.line.lower().strip().startswith("статья"))
@@ -135,13 +135,13 @@ class LawTextFeatures(AbstractFeatureExtractor):
         yield "endswith_semicolon", float(line.line.strip().endswith(";"))
         yield "endswith_colon", float(line.line.strip().endswith(":"))
         yield "endswith_comma", float(line.line.strip().endswith(","))
-        yield "startswith_bracket", float(line.line.strip().startswith(('(', '{')))
+        yield "startswith_bracket", float(line.line.strip().startswith(("(", "{")))
 
         bracket_cnt = 0
         for char in line.line:
-            if char == '(':
+            if char == "(":
                 bracket_cnt += 1
-            elif char == ')':
+            elif char == ")":
                 bracket_cnt = max(0, bracket_cnt - 1)
         yield "bracket_num", bracket_cnt
 
@@ -172,7 +172,7 @@ class LawTextFeatures(AbstractFeatureExtractor):
             match = regexp.match(line.line)
             if match:
                 yield "subitem_regexp_len", len(match.group())
-                yield "subitem_regexp_num", ord(match.group().strip()[:-1]) - ord('а')
+                yield "subitem_regexp_num", ord(match.group().strip()[:-1]) - ord("а")
             else:
                 yield "subitem_regexp_len", 0
                 yield "subitem_regexp_num", 0
@@ -214,7 +214,7 @@ class LawTextFeatures(AbstractFeatureExtractor):
                 match = self.quote_start.match(text)
                 if match is not None and self.__any_item_found(text[1:]):  # quotation started
                     match = "»" if match.group() == "«" else match.group()
-                    quote_end = re.compile(r".*{}[.;]?$".format(match))
+                    quote_end = re.compile(rf".*{match}[.;]?$")
                     if quote_end.match(text) is None:
                         quote_started = True
                         new_quote.append(1)
