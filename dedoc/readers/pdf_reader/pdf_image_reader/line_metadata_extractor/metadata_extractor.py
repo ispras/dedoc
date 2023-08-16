@@ -152,8 +152,9 @@ class LineMetadataExtractor:
         median_bbox_size = median([line.location.bbox.height for line in lines])
         prev_line = None
         for line in lines:
-            new_page = prev_line.location.page_number != line.location.page_number or prev_line.location.bbox.y_bottom_right >= line.location.bbox.y_top_left
-            if prev_line is None or new_page:
+            if prev_line is None or \
+                    prev_line.location.page_number != line.location.page_number or \
+                    prev_line.location.bbox.y_bottom_right >= line.location.bbox.y_top_left:
                 space = self.default_spacing
             else:
                 space = (line.location.bbox.y_top_left - prev_line.location.bbox.y_bottom_right)
