@@ -11,7 +11,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
     def test_csv(self) -> None:
         file_name = "csv_coma.csv"
         result = self._send_request(file_name)
-        self.assertIn('delimiter is ","', result["warnings"])
+        self.assertIn("delimiter is ','", result["warnings"])
         tables = result["content"]["tables"]
         self.__check_content(tables)
 
@@ -35,7 +35,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
     def test_tsv(self) -> None:
         file_name = "csv_tab.tsv"
         result = self._send_request(file_name, data={"insert_table": "true", "structure_type": "tree"})
-        self.assertIn('delimiter is "\t"', result["warnings"])
+        self.assertIn("delimiter is '\t'", result["warnings"])
         tables = result["content"]["tables"]
         self.__check_content(tables)
         self.__check_content_tree(result)
@@ -43,7 +43,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
     def test_csv_semicolon(self) -> None:
         file_name = "csv_semicolon.csv"
         result = self._send_request(file_name, dict(delimiter=";", insert_table="true", structure_type="tree"))
-        self.assertIn('delimiter is ";"', result["warnings"])
+        self.assertIn("delimiter is ';'", result["warnings"])
         tables = result["content"]["tables"]
         self.__check_content(tables)
         self.__check_content_tree(result)
@@ -52,7 +52,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
         file_name = "books.csv"
         result = self._send_request(file_name, dict(different_param="some value"))
 
-        self.assertIn('delimiter is ","', result["warnings"])
+        self.assertIn("delimiter is ','", result["warnings"])
         self.assertIn("encoding is ascii", result["warnings"])
 
         tables = result["content"]["tables"]
@@ -66,7 +66,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
     def test_csv_books2(self) -> None:
         file_name = "books_2.csv"
         result = self._send_request(file_name)
-        self.assertIn('delimiter is ","', result["warnings"])
+        self.assertIn("delimiter is ','", result["warnings"])
         tables = result["content"]["tables"]
         table = tables[0]["cells"]
         self.assertListEqual(["0553573403", "book", "A Game of Throne, kings and other stuff",

@@ -37,7 +37,7 @@ class ReaderComposition(object):
         document_type = parameters.get("document_type")
 
         for reader in self.readers:
-            can_read = reader.can_read(path=file_path, mime=mime, extension=extension, document_type=document_type)
+            can_read = reader.can_read(path=file_path, mime=mime, extension=extension, document_type=document_type, parameters=parameters)
 
             if can_read:
                 unstructured_document = reader.read(path=file_path, document_type=document_type, parameters=parameters)

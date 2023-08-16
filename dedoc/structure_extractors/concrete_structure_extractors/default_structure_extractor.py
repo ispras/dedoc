@@ -72,8 +72,8 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
 
         if prefix.name == BracketPrefix.name:  # list like 1)
             # check if tesseract recognize russian б as 6 (bi as six)
-            previous_a = previous_line.line.lower().strip().startswith(("a)", "а)"))
-            if prefix.prefix_num == 6 and previous_line is not None and previous_a:  # here is russian and english letters
+            if prefix.prefix_num == 6 and previous_line is not None and \
+                    previous_line.line.lower().strip().startswith(("a)", "а)")):  # here is russian and english letters
                 return HierarchyLevel(4, 1, False, line_type=HierarchyLevel.list_item)
             return HierarchyLevel(3, 1, False, line_type=HierarchyLevel.list_item)
 

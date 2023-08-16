@@ -36,6 +36,7 @@ class PdfTxtlayerReader(PdfBaseReader):
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        parameters = {} if parameters is None else parameters
         return extension.lower().endswith("pdf") and (str(parameters.get("pdf_with_text_layer", "false")).lower() == "true")
 
     def _process_one_page(self,
