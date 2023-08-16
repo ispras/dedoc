@@ -42,7 +42,7 @@ class JsonAttachmentsExtractor(AbstractAttachmentsExtractor):
 
         for keys in field_keys:
             path = json.dumps(keys, ensure_ascii=False)
-            attached_filename = path + ".html"
+            attached_filename = f"{path}.html"
             attachment_file_path = os.path.join(tmpdir, attached_filename)
             field_content = self.__get_value_by_keys(data, keys)
 

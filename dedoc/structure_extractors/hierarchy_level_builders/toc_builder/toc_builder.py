@@ -7,9 +7,7 @@ from dedoc.structure_extractors.hierarchy_level_builders.abstract_hierarchy_leve
 
 
 class TocBuilder(AbstractHierarchyLevelBuilder):
-    def get_lines_with_hierarchy(self,
-                                 lines_with_labels: List[Tuple[LineWithMeta, str]],
-                                 init_hl_depth: int) -> List[LineWithMeta]:
+    def get_lines_with_hierarchy(self, lines_with_labels: List[Tuple[LineWithMeta, str]], init_hl_depth: int) -> List[LineWithMeta]:
         # TODO add analyse toc if tag 'toc' and 'toc_item' exist
         result = []
         is_toc_begun = False

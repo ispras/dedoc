@@ -61,33 +61,19 @@ class TablePatcher:
 
     @staticmethod
     def _create_table_line(table: Table, hierarchy_level: int) -> LineWithMeta:
-        hierarchy_level_new = HierarchyLevel(
-            level_1=hierarchy_level + 2,  # table hierarchy is lower than raw text
-            level_2=0,
-            can_be_multiline=False,
-            line_type="table"
-        )
+        # table hierarchy is lower than raw text
+        hierarchy_level_new = HierarchyLevel(level_1=hierarchy_level + 2, level_2=0, can_be_multiline=False, line_type="table")
         metadata = LineMetadata(hierarchy_level=hierarchy_level_new, page_id=table.metadata.page_id, line_id=None)
         return LineWithMeta(line="", metadata=metadata, annotations=[], uid=f"table_{table.metadata.uid}")
 
     @staticmethod
     def _create_row_line(table: Table, hierarchy_level: int) -> LineWithMeta:
-        hierarchy_level_new = HierarchyLevel(
-            level_1=hierarchy_level + 3,
-            level_2=0,
-            can_be_multiline=False,
-            line_type="table_row"
-        )
+        hierarchy_level_new = HierarchyLevel(level_1=hierarchy_level + 3, level_2=0, can_be_multiline=False, line_type="table_row")
         metadata = LineMetadata(hierarchy_level=hierarchy_level_new, page_id=table.metadata.page_id, line_id=None)
         return LineWithMeta(line="", metadata=metadata, annotations=[])
 
     @staticmethod
     def _create_cell_line(table: Table, hierarchy_level: int, cell: str) -> LineWithMeta:
-        hierarchy_level_new = HierarchyLevel(
-            level_1=hierarchy_level + 4,
-            level_2=0,
-            can_be_multiline=False,
-            line_type="table_cell"
-        )
+        hierarchy_level_new = HierarchyLevel(level_1=hierarchy_level + 4, level_2=0, can_be_multiline=False, line_type="table_cell")
         metadata = LineMetadata(hierarchy_level=hierarchy_level_new, page_id=table.metadata.page_id, line_id=None)
         return LineWithMeta(line=cell, metadata=metadata, annotations=[])

@@ -46,10 +46,7 @@ class Attention(nn.Module):
         feature_dim = self.feature_dim
         step_dim = self.step_dim
 
-        eij = torch.mm(
-            x.contiguous().view(-1, feature_dim),
-            self.weight
-        ).view(-1, step_dim)
+        eij = torch.mm(x.contiguous().view(-1, feature_dim), self.weight).view(-1, step_dim)
 
         if self.bias:
             eij = eij + self.b
@@ -82,11 +79,7 @@ class LSTM(nn.Module):
         # batch_first: If ``True``, then the input and output tensors are provided
         #             as (batch, seq, feature).
         # with_attention - use or not Attention NN
-        self.lstm = nn.LSTM(input_size=input_dim,
-                            hidden_size=hidden_dim,
-                            num_layers=lstm_layers,
-                            bidirectional=bidirectional,
-                            batch_first=True)
+        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim, num_layers=lstm_layers, bidirectional=bidirectional, batch_first=True)
         self.lstm_attention = Attention(hidden_dim * 2, maxlen).to(device)
         num_directions = 2 if bidirectional else 1
         self.fc1 = nn.Linear(hidden_dim * num_directions, hidden_dim_2)
@@ -103,8 +96,7 @@ class LSTM(nn.Module):
                 Variable(torch.zeros(self.lstm_layers * self.num_directions, batch_size, self.lstm_units)).to(device))
         return h, c
 
-    def forward(self, input_tensor: List[torch.Tensor], batch_lengths: torch.Tensor, device: torch.device) \
-            -> torch.Tensor:
+    def forward(self, input_tensor: List[torch.Tensor], batch_lengths: torch.Tensor, device: torch.device) -> torch.Tensor:
         batch_size = len(input_tensor)
         h_0, c_0 = self.init_hidden(batch_size, device)
         packed_embedded = pack_padded_sequence(input_tensor, batch_lengths, batch_first=True)
@@ -153,11 +145,7 @@ class LSTMTrainer:
         self.tmp_dir = "/tmp" if tmp_dir is None else tmp_dir
         url_hash = hashlib.md5(self.data_url.encode()).hexdigest()
         self.dataset_dir = os.path.join(self.tmp_dir, f"dataset_{url_hash}")
-        self.data_loader = DataLoader(dataset_dir=self.dataset_dir,
-                                      label_transformer=label_transformer,
-                                      logger=logger,
-                                      data_url=data_url,
-                                      config=config)
+        self.data_loader = DataLoader(dataset_dir=self.dataset_dir, label_transformer=label_transformer, logger=logger, data_url=data_url, config=config)
         self.path_scores = path_scores
         self.feature_extractor = feature_extractor
         self.class_dict = class_dict
@@ -325,8 +313,7 @@ class LSTMTrainer:
 
         return batch_features, batch_lens, labels
 
-    def train(self, model: nn.Module, iterator: Iterator, cnt_data: int, optimizer: Optimizer,
-              criteria: CrossEntropyLoss, batch_size: int) -> [float, float]:
+    def train(self, model: nn.Module, iterator: Iterator, cnt_data: int, optimizer: Optimizer, criteria: CrossEntropyLoss, batch_size: int) -> [float, float]:
         epoch_loss = 0
         epoch_acc = 0
         cnt = 0

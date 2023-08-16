@@ -25,8 +25,5 @@ class AlignmentAnnotation(Annotation):
         return api.model("AlignmentAnnotation", {
             "start": fields.Integer(description="annotation start index", required=True, example=0),
             "end": fields.Integer(description="annotation end index", required=True, example=4),
-            "value": fields.String(description="alignment of the text",
-                                   required=True,
-                                   example="left",
-                                   enum=AlignmentAnnotation.valid_values)
+            "value": fields.String(description="alignment of the text", required=True, example="left", enum=AlignmentAnnotation.valid_values)
         })

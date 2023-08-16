@@ -26,8 +26,7 @@ class ListFeaturesExtractor(AbstractFeatureExtractor):
     def __init__(self, window_size: int = 25, prefix_list: Optional[List[LinePrefix]] = None) -> None:
         super().__init__()
         self.window_size = window_size
-        self.prefix_list = prefix_list if prefix_list is not None \
-            else [BulletPrefix, LetterPrefix, BracketPrefix, DottedPrefix]
+        self.prefix_list = prefix_list if prefix_list is not None else [BulletPrefix, LetterPrefix, BracketPrefix, DottedPrefix]
 
     def parameters(self) -> dict:
         return {"window_size": self.window_size}
@@ -39,8 +38,7 @@ class ListFeaturesExtractor(AbstractFeatureExtractor):
         features = [self.one_document(doc)[1] for doc in documents]
         return pd.concat(features, axis=0, ignore_index=True)
 
-    def one_document(self,
-                     doc: List[LineWithMeta]) -> Tuple[List[LinePrefix], pd.DataFrame]:
+    def one_document(self, doc: List[LineWithMeta]) -> Tuple[List[LinePrefix], pd.DataFrame]:
         prefixes = [self._get_prefix(line) for line in doc]
         indents = np.array([prefix.indent for prefix in prefixes])
         res = []
@@ -55,20 +53,14 @@ class ListFeaturesExtractor(AbstractFeatureExtractor):
                 features_dict[feature_name].append(feature_value)
         return prefixes, pd.DataFrame(features_dict)
 
-    def _one_line_features(self,
-                           line: LineWithMeta,
-                           prefix: LinePrefix,
-                           line_id: int,
-                           window: Window) -> Dict[str, float]:
+    def _one_line_features(self, line: LineWithMeta, prefix: LinePrefix, line_id: int, window: Window) -> Dict[str, float]:
         predecessor_num = 0
         predecessor_num_same_indent = 0
         same_indent = 0
         same_prefix = 0
         for prefix_other in window.prefix_before + window.prefix_after:
             is_predecessor = prefix.predecessor(prefix_other) or prefix.successor(prefix_other)
-            is_same_indent = self._same_indent(this_indent=prefix.indent,
-                                               other_indent=prefix_other.indent,
-                                               std=window.indent_std)
+            is_same_indent = self._same_indent(this_indent=prefix.indent, other_indent=prefix_other.indent, std=window.indent_std)
             predecessor_num += is_predecessor
             same_indent += is_same_indent
             predecessor_num_same_indent += (is_same_indent and is_predecessor)

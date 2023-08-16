@@ -16,8 +16,7 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
     @unittest.skip("TODO")
     def test_pdf_with_text_style(self) -> None:
         file_name = "diff_styles.pdf"
-        result = self._send_request(file_name, dict(pdf_with_text_layer="true", document_type="",
-                                                    need_pdf_table_analysis="false"))
+        result = self._send_request(file_name, dict(pdf_with_text_layer="true", document_type="", need_pdf_table_analysis="false"))
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
 
@@ -69,8 +68,7 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
     @unittest.skip("TODO")
     def test_pdf_with_2_columns_text(self) -> None:
         file_name = "2-column-state.pdf"
-        result = self._send_request(file_name, dict(pdf_with_text_layer="true", document_type="",
-                                                    need_pdf_table_analysis="false"))
+        result = self._send_request(file_name, dict(pdf_with_text_layer="true", document_type="", need_pdf_table_analysis="false"))
 
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
@@ -96,8 +94,7 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
         tree = result["content"]["structure"]
 
         self.assertIn("References", self._get_by_tree_path(tree, "0.0")["text"])
-        self.assertIn("[1] Navaneeth Bodla, Bharat Singh, Rama Chellappa, and",
-                      self._get_by_tree_path(tree, "0.1")["text"])
+        self.assertIn("[1] Navaneeth Bodla, Bharat Singh, Rama Chellappa, and", self._get_by_tree_path(tree, "0.1")["text"])
 
     def test_pdf_with_some_tables(self) -> None:
         file_name = "VVP_6_tables.pdf"
@@ -116,15 +113,13 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
         file_name = "VVP_global_table.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="true"))
 
-        self.assertEqual(result["content"]["tables"][0]["metadata"]["uid"],
-                         result["content"]["structure"]["subparagraphs"][0]["annotations"][0]["value"])
+        self.assertEqual(result["content"]["tables"][0]["metadata"]["uid"], result["content"]["structure"]["subparagraphs"][0]["annotations"][0]["value"])
 
     def test_pdf_with_only_mp_table(self) -> None:
         file_name = os.path.join("..", "tables", "multipage_table.pdf")
         result = self._send_request(file_name, dict(pdf_with_text_layer="true", need_header_footer_analysis=True))
 
-        table_refs = [ann["value"] for ann in result["content"]["structure"]["subparagraphs"][0]["annotations"]
-                      if ann["name"] == "table"]
+        table_refs = [ann["value"] for ann in result["content"]["structure"]["subparagraphs"][0]["annotations"] if ann["name"] == "table"]
 
         self.assertTrue(len(result["content"]["tables"]), len(table_refs))
         for table in result["content"]["tables"]:

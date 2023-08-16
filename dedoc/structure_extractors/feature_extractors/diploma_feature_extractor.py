@@ -53,8 +53,7 @@ class DiplomaFeatureExtractor(AbstractFeatureExtractor):
                   toc_lines: Optional[List[List[LineWithMeta]]] = None) -> pd.DataFrame:
         toc_lines = [[] for _ in documents] if toc_lines is None else toc_lines
         assert len(toc_lines) == len(documents)
-        result_matrix = pd.concat([self.__process_document(document, d_toc_lines) for document, d_toc_lines in zip(documents, toc_lines)],
-                                  ignore_index=True)
+        result_matrix = pd.concat([self.__process_document(document, d_toc_lines) for document, d_toc_lines in zip(documents, toc_lines)], ignore_index=True)
         features = sorted(result_matrix.columns)
         return result_matrix[features].astype(float)
 

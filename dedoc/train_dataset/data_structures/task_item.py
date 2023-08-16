@@ -6,15 +6,8 @@ from dedoc.data_structures.serializable import Serializable
 
 class TaskItem(Serializable):
 
-    def __init__(self,
-                 task_id: int,
-                 task_path: str,
-                 data: any,
-                 labeled: Optional[List[str]],
-                 additional_info: str = "",
-                 default_label: str = None) -> None:
+    def __init__(self, task_id: int, task_path: str, data: any, labeled: Optional[List[str]], additional_info: str = "", default_label: str = None) -> None:
         """
-
         @param task_id: id of this item. unique in one task
         @param task_path: relative path to image
         @param data: any data, (features, comments and so on, it should not be used in annotation process and flow to

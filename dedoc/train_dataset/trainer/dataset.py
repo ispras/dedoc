@@ -8,14 +8,8 @@ import pandas as pd
 
 class LineClassifierDataset:
 
-    def __init__(self,
-                 dataframe: pd.DataFrame,
-                 feature_list: List[str],
-                 group_name: str,
-                 label_name: str,
-                 text_name: str) -> None:
+    def __init__(self, dataframe: pd.DataFrame, feature_list: List[str], group_name: str, label_name: str, text_name: str) -> None:
         """
-
         @param dataframe: pandas dataframe with features and metadata
         @param feature_list: list of feature columns name
         @param group_name: name of group column (for example "document")
@@ -45,10 +39,6 @@ class LineClassifierDataset:
         self.dataframe.to_csv(os.path.join(dir_out, "dataset.csv"))
         self.dataframe.to_pickle(os.path.join(dir_out, "dataset.pkl.gz"))
         with open(os.path.join(dir_out, "description.json"), "w") as out:
-            d = dict(
-                label_name=self.label_name,
-                group_name=self.group_name,
-                text_name=self.text_name,
-                feature_list=self.feature_list)
+            d = dict(label_name=self.label_name, group_name=self.group_name, text_name=self.text_name, feature_list=self.feature_list)
             json.dump(obj=d, fp=out, ensure_ascii=False, indent=4)
         return dir_out

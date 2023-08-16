@@ -29,8 +29,7 @@ class TableMetadata(Serializable):
         res["uid"] = self.uid
         res["page_id"] = self.page_id
         res["is_inserted"] = self.is_inserted
-        res["cell_properties"] = [[cell_prop.to_dict() for cell_prop in row_prop]
-                                  for row_prop in self.cell_properties] if self.cell_properties else None
+        res["cell_properties"] = [[cell_prop.to_dict() for cell_prop in row_prop] for row_prop in self.cell_properties] if self.cell_properties else None
         return res
 
     @staticmethod

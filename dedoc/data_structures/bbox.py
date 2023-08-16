@@ -68,10 +68,7 @@ class BBox(Serializable):
         """
         x_top_left, y_top_left = top_left
         x_bottom_right, y_bottom_right = bottom_right
-        return BBox(x_top_left=x_top_left,
-                    y_top_left=y_top_left,
-                    width=x_bottom_right - x_top_left,
-                    height=y_bottom_right - y_top_left)
+        return BBox(x_top_left=x_top_left, y_top_left=y_top_left, width=x_bottom_right - x_top_left, height=y_bottom_right - y_top_left)
 
     def have_intersection_with_box(self, box: "BBox", threshold: float = 0.3) -> bool:
         """

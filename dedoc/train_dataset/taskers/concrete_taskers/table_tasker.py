@@ -43,9 +43,7 @@ class TableTasker(AbstractTasker):
                 with ZipFile(archive_path, "a") as task_archive:
                     self.__add_task(archive=task_archive, files=batch, task_directory=task_directory)
                     dockerfile_directory = os.path.join(self.resources_path, "train_dataset/img_classifier_dockerfile")
-                    self._add_docker_files(archive=task_archive,
-                                           task_directory=task_directory,
-                                           dockerfile_directory=dockerfile_directory)
+                    self._add_docker_files(archive=task_archive, task_directory=task_directory, dockerfile_directory=dockerfile_directory)
                     self._add_config(task_archive=task_archive,
                                      task_name=task_directory,
                                      task_directory=task_directory,

@@ -2,14 +2,11 @@ import re
 from typing import List
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.structure_extractors.concrete_structure_extractors.abstract_law_structure_extractor import \
-    AbstractLawStructureExtractor
-from dedoc.structure_extractors.hierarchy_level_builders.header_builder.header_hierarchy_level_builder import \
-    HeaderHierarchyLevelBuilder
+from dedoc.structure_extractors.concrete_structure_extractors.abstract_law_structure_extractor import AbstractLawStructureExtractor
+from dedoc.structure_extractors.hierarchy_level_builders.header_builder.header_hierarchy_level_builder import HeaderHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.application_builder.application_law_hierarchy_level_builder import \
     ApplicationLawHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.body_law_hierarchy_level_builder import \
-    BodyLawHierarchyLevelBuilder
+from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.body_law_hierarchy_level_builder import BodyLawHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.cellar_builder import CellarHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_number
 

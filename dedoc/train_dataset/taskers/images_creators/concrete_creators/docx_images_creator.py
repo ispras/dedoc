@@ -139,10 +139,7 @@ class DocxImagesCreator(AbstractImagesCreator):
         return color
 
     @staticmethod
-    def __create_pdf_from_docx(tmp_dir: str,
-                               doc_name: str,
-                               namelist: List[str],
-                               doc_text: str) -> str:
+    def __create_pdf_from_docx(tmp_dir: str, doc_name: str, namelist: List[str], doc_text: str) -> str:
         with open(f"{tmp_dir}/word/document.xml", "w") as f:
             f.write(doc_text)
         docx_path = f"{tmp_dir}/{doc_name}.docx"
@@ -167,16 +164,14 @@ class DocxImagesCreator(AbstractImagesCreator):
                 raise ConversionError(msg=f"fail with {filename}", msg_api=f"Unsupported file format {filename}")
 
     @staticmethod
-    def __docx2pdf(out_dir: str,
-                   path: str) -> str:
+    def __docx2pdf(out_dir: str, path: str) -> str:
         os.system(f"soffice --headless --convert-to pdf {path} --outdir {out_dir}")
         out_file = f"{out_dir}/{os.path.split(path)[-1][:-4]}pdf"
         DocxImagesCreator.__await_for_conversion(out_file)
         return out_file
 
     @staticmethod
-    def __insert_border(bs_tree: Optional[BeautifulSoup],
-                        color: str) -> None:
+    def __insert_border(bs_tree: Optional[BeautifulSoup], color: str) -> None:
         if bs_tree is None:
             return
         border_str = f'<w:pBdr><w:top w:val="single" w:color="{color}" w:sz="20" w:space="0" w:shadow="0" w:frame="0"/><w:left w:val="single" ' \
@@ -205,10 +200,7 @@ class DocxImagesCreator(AbstractImagesCreator):
         image_name = get_original_document_path(self.path2docs, page)
         return image_name.endswith("docx")
 
-    def _create_images_from_pdf(self,
-                                pdfs: PairedPdf,
-                                page: List[dict],
-                                tmp_dir: str) -> Iterable[Tuple[str, Image.Image]]:
+    def _create_images_from_pdf(self, pdfs: PairedPdf, page: List[dict], tmp_dir: str) -> Iterable[Tuple[str, Image.Image]]:
         """
         we take two paired pdfs with bboxes and create images from them. Then we return images according to
         page order

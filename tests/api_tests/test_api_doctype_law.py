@@ -23,8 +23,7 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         self.assertIn("ЗАКОН", structure["text"])
         self.assertEqual(0, structure["metadata"]["line_id"])
         self.assertEqual("root", structure["metadata"]["paragraph_type"])
-        self.assertEqual("Статья   1.1.   Законодательство   города   Москвы   об    административных",
-                         body["subparagraphs"][0]["text"].split("\n")[0].strip())
+        self.assertEqual("Статья   1.1.   Законодательство   города   Москвы   об    административных", body["subparagraphs"][0]["text"].split("\n")[0].strip())
         self.assertTrue(body["subparagraphs"][2]["text"].strip().startswith("Статья"))
 
     def test_law_html(self) -> None:
@@ -144,19 +143,16 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         file_name = "ukodeksrf.pdf"
         result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
         document = result["content"]["structure"]
-        self.assertEqual("Уголовный кодекс Российской Федерации от 13 июня 1996 г. М 63-ФЗ",
-                         document["text"].split("\n")[0].strip())
+        self.assertEqual("Уголовный кодекс Российской Федерации от 13 июня 1996 г. М 63-ФЗ", document["text"].split("\n")[0].strip())
 
         section = self._get_by_tree_path(document, "0.0.0")
         self.assertEqual("Раздел I. Уголовный закон", section["text"].strip())
         self.assertEqual("section", section["metadata"]["paragraph_type"])
         subsection = self._get_by_tree_path(document, "0.0.0.0")
-        self.assertEqual("Глава 1. Задачи и принципы Уголовного кодекса Российской Федерации",
-                         subsection["text"].strip())
+        self.assertEqual("Глава 1. Задачи и принципы Уголовного кодекса Российской Федерации", subsection["text"].strip())
         self.assertEqual("chapter", subsection["metadata"]["paragraph_type"])
         article = self._get_by_tree_path(document, "0.0.0.0.0")
-        self.assertEqual("Статья 1. Уголовное законодательство Российской Федерации",
-                         article["text"].strip())
+        self.assertEqual("Статья 1. Уголовное законодательство Российской Федерации", article["text"].strip())
         self.assertEqual("article", article["metadata"]["paragraph_type"])
 
     def test_law_pdf_with_applications(self) -> None:
@@ -306,8 +302,7 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, dict(document_type="law"), expected_code=200)
         document_tree = result["content"]["structure"]
         node = self._get_by_tree_path(document_tree, "0.1")
-        self.assertTrue(node["text"].strip().startswith(
-            "УТВЕРЖДЕНЫ\n\nпостановлением Правительства\n\nРоссийской Федерации"))
+        self.assertTrue(node["text"].strip().startswith("УТВЕРЖДЕНЫ\n\nпостановлением Правительства\n\nРоссийской Федерации"))
         self.assertEqual("application", node["metadata"]["paragraph_type"])
 
         node = self._get_by_tree_path(document_tree, "0.1.0")
@@ -367,9 +362,7 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
     @unittest.skip("TODO fix this")
     def test_auto_paragraph(self) -> None:
         file_name = "fstec_1_cut.pdf"
-        result = self._send_request(file_name, dict(document_type="law",
-                                                    pdf_with_text_layer="false",
-                                                    is_one_column_document="auto"))
+        result = self._send_request(file_name, dict(document_type="law", pdf_with_text_layer="false", is_one_column_document="auto"))
         tree = result["content"]["structure"]
         self.__test_law_tree_sanity(tree)
         warnings = result["warnings"]
@@ -488,8 +481,7 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
 
         # source html-document had "Статья 16^1"
         node = self._get_by_tree_path(document_tree, "0.0.0.0.15")
-        self.assertEqual("Статья 161. Переход к рассмотрению дела по правилам гражданского судопроизводства",
-                         node["text"].strip())
+        self.assertEqual("Статья 161. Переход к рассмотрению дела по правилам гражданского судопроизводства", node["text"].strip())
         self.assertEqual("article", node["metadata"]["paragraph_type"])
 
     def test_law_html_with_table(self) -> None:
@@ -503,14 +495,9 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         self.assertEqual(1, len(tables))
         table = tables[0]["cells"]
         self.assertListEqual(["№\nп/п", "", "Ф.И.О.", "Должность"], list(map(str.strip, table[0])))
-        self.assertListEqual(["1",
-                              "Председатель\nкомиссии",
-                              "Городецкий \n\nЯрослав Иванович",
-                              "первый заместитель министра"],
-                             list(map(str.strip, table[1])))
+        self.assertListEqual(["1", "Председатель\nкомиссии", "Городецкий \n\nЯрослав Иванович", "первый заместитель министра"], list(map(str.strip, table[1])))
 
-        self.assertEqual("начальник управления по гражданской обороне, чрезвычайным ситуациям и пожарной безопасности",
-                         table[8][3].strip())
+        self.assertEqual("начальник управления по гражданской обороне, чрезвычайным ситуациям и пожарной безопасности", table[8][3].strip())
 
     def test_law_html_with_part_item_quotes(self) -> None:
         # документ разбирается как ФОИВ, тип вершин меняется. Тест теряет смысл в этом контексте
@@ -567,8 +554,7 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         applications = self._get_applications(document_tree)
         self.__test_law_tree_sanity(document_tree)
 
-        self.assertIn("Приложение\nк приказу МВД России\nот __.__.2019 "
-                      "N ___\nПЕРЕЧЕНЬ\nИЗМЕНЕНИЙ, ВНОСИМЫХ В НОРМАТИВНЫЕ ПРАВОВЫЕ АКТЫ МВД РОССИИ",
+        self.assertIn("Приложение\nк приказу МВД России\nот __.__.2019 N ___\nПЕРЕЧЕНЬ\nИЗМЕНЕНИЙ, ВНОСИМЫХ В НОРМАТИВНЫЕ ПРАВОВЫЕ АКТЫ МВД РОССИИ",
                       applications[0]["text"])
 
     def test_foiv_html(self) -> None:

@@ -43,8 +43,7 @@ class ParsedDocument(Serializable):
         res["warnings"] = self.warnings
         res["content"] = self.content.to_dict() if self.content is not None else []
         res["metadata"] = self.metadata.to_dict()
-        res["attachments"] = [attachment.to_dict(depth=depth + 1) for attachment in self.attachments] \
-            if self.attachments is not None and depth < 10 else []
+        res["attachments"] = [attachment.to_dict(depth=depth + 1) for attachment in self.attachments] if self.attachments is not None and depth < 10 else []
 
         return res
 

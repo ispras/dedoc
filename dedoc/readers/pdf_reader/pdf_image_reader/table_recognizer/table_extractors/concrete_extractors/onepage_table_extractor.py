@@ -13,8 +13,7 @@ from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdd
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.cell_splitter import CellSplitter
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.split_last_hor_union_cells import split_last_column
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.base_table_extractor import BaseTableExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import \
-    TableAttributeExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableAttributeExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.img_processing import detect_tables_by_contours
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.utils import get_cell_text_by_ocr
 from dedoc.utils.image_utils import rotate_image
@@ -109,9 +108,7 @@ class OnePageTableExtractor(BaseTableExtractor):
             for i, row in enumerate(attrs):
                 for j, attr in enumerate(row):
                     if self.__detect_diff_orient(attr.text):
-                        rotated_cell, rotated_image = self.__correct_orient_cell(attr,
-                                                                                 language=language,
-                                                                                 rotated_angle=rotated_angle)
+                        rotated_cell, rotated_image = self.__correct_orient_cell(attr, language=language, rotated_angle=rotated_angle)
                         table.matrix_cells[i][j] = rotated_cell
 
         return tables
@@ -154,10 +151,7 @@ class OnePageTableExtractor(BaseTableExtractor):
 
         bbox = BBox(table_tree.data_bb[0], table_tree.data_bb[1], table_tree.data_bb[2], table_tree.data_bb[3])
 
-        matrix_table = ScanTable(matrix_cells=matrix,
-                                 bbox=bbox,
-                                 page_number=self.page_number,
-                                 name=str(uuid.uuid1()))
+        matrix_table = ScanTable(matrix_cells=matrix, bbox=bbox, page_number=self.page_number, name=str(uuid.uuid1()))
 
         return matrix_table
 
@@ -174,14 +168,11 @@ class OnePageTableExtractor(BaseTableExtractor):
                     cur_table.matrix_cells = self.splitter.split(cells=cur_table.matrix_cells)
 
                     # Эвристика 2: таблица должна иметь больше одного столбца
-                    if len(cur_table.matrix_cells[0]) > 1 or \
-                            (self.table_options.detect_one_cell_table in table_type and cur_table.matrix_cells[0] != []):
+                    if len(cur_table.matrix_cells[0]) > 1 or (self.table_options.detect_one_cell_table in table_type and cur_table.matrix_cells[0] != []):
                         tables.append(cur_table)
 
                     if self.table_options.split_last_column in table_type:
-                        cur_table.matrix_cells = split_last_column(cur_table.matrix_cells,
-                                                                   language=self.language,
-                                                                   image=self.image)
+                        cur_table.matrix_cells = split_last_column(cur_table.matrix_cells, language=self.language, image=self.image)
             except Exception as ex:
                 self.logger.warning(f"Warning: unrecognized table into page {self.page_number}. {ex}")
                 if self.config.get("debug_mode", False):

@@ -31,18 +31,10 @@ def get_test_config() -> dict:
     return config
 
 
-def create_line_by_coordinates(x_top_left: int,
-                               y_top_left: int,
-                               width: int,
-                               height: int,
-                               page: int) -> LineWithLocation:
+def create_line_by_coordinates(x_top_left: int, y_top_left: int, width: int, height: int, page: int) -> LineWithLocation:
     bbox = BBox(x_top_left=x_top_left, y_top_left=y_top_left, width=width, height=height)
     location = Location(bbox=bbox, page_number=page)
-    line = LineWithLocation(
-        line="Some text",
-        metadata=LineMetadata(page_id=page, line_id=0),
-        annotations=[],
-        location=location)
+    line = LineWithLocation(line="Some text", metadata=LineMetadata(page_id=page, line_id=0), annotations=[], location=location)
     return line
 
 

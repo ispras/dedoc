@@ -19,13 +19,7 @@ from dedoc.utils.utils import flatten
 
 class DataLoader:
 
-    def __init__(self,
-                 dataset_dir: str,
-                 label_transformer: Callable[[str], str],
-                 logger: logging.Logger,
-                 data_url: str,
-                 *,
-                 config: dict) -> None:
+    def __init__(self, dataset_dir: str, label_transformer: Callable[[str], str], logger: logging.Logger, data_url: str, *, config: dict) -> None:
         self.label_transformer = label_transformer
         self.dataset_dir = dataset_dir
         self.logger = logger

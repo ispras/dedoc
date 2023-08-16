@@ -38,10 +38,7 @@ class AbstractTasker(ABC):
         else:
             raise Exception(f"file not found {path}")
 
-    def _add_docker_files(self,
-                          archive: zipfile.ZipFile,
-                          task_directory: str,
-                          dockerfile_directory: str) -> zipfile.ZipFile:
+    def _add_docker_files(self, archive: zipfile.ZipFile, task_directory: str, dockerfile_directory: str) -> zipfile.ZipFile:
         """
         add some common files to task archive (in place)
         @param archive: task archive
@@ -58,12 +55,7 @@ class AbstractTasker(ABC):
         archive.write(filename=run_path, arcname=f"{task_directory}/run.sh")
         return archive
 
-    def _add_config(self,
-                    task_archive: zipfile.ZipFile,
-                    task_name: str,
-                    task_directory: str,
-                    config_path: str,
-                    tmp_dir: str) -> None:
+    def _add_config(self, task_archive: zipfile.ZipFile, task_name: str, task_directory: str, config_path: str, tmp_dir: str) -> None:
         config = json.load(open(config_path))
         config["output_path"] = config.get("output_path", "labeled.json").replace("TASK_ID", task_name)
         new_config_path = os.path.join(tmp_dir, os.path.basename(config_path))

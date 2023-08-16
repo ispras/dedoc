@@ -27,8 +27,5 @@ class BoldAnnotation(Annotation):
         return api.model("BoldAnnotation", {
             "start": fields.Integer(description="annotation start index", required=True, example=0),
             "end": fields.Integer(description="annotation end index", required=True, example=4),
-            "value": fields.String(description="indicator if the text is bold or not",
-                                   required=True,
-                                   example="True",
-                                   enum=BoldAnnotation.valid_values)
+            "value": fields.String(description="indicator if the text is bold or not", required=True, example="True", enum=BoldAnnotation.valid_values)
         })

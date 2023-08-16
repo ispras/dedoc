@@ -55,8 +55,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, data=dict(structure_type="tree", insert_table=True))
         self.__check_doc_like_insert_table(result)
 
-        self._check_metainfo(result["metadata"],
-                             "application/vnd.openxmlformats-officedocument.wordprocessingml.document", file_name)
+        self._check_metainfo(result["metadata"], "application/vnd.openxmlformats-officedocument.wordprocessingml.document", file_name)
 
     def test_odt_insert_table(self) -> None:
         file_name = "example.odt"
@@ -146,8 +145,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
         table1, table2 = result["content"]["tables"]
 
-        self.assertListEqual(["N", "Фамилия", "Имя", "Организация", "Телефон", "Примечания"],
-                             table1["cells"][0])
+        self.assertListEqual(["N", "Фамилия", "Имя", "Организация", "Телефон", "Примечания"], table1["cells"][0])
         self.assertListEqual(["1", "Иванов", "Иван", "ИСП", "8-800", ""], table1["cells"][1])
 
         self.assertListEqual(["Фамилия", "Имя", "Отчество"], table2["cells"][0])

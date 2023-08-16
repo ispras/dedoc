@@ -1,3 +1,5 @@
+from typing import Optional
+
 from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
 from dedoc.converters.concrete_converters.binary_converter import BinaryConverter
 from dedoc.converters.concrete_converters.docx_converter import DocxConverter
@@ -123,7 +125,7 @@ class ConfigurationManager(object):
 
         return cls.__instance
 
-    def init_config(self, config: dict, new_config: dict = None) -> None:
+    def init_config(self, config: dict, new_config: Optional[dict] = None) -> None:
         if new_config is None:
             self.__config = _get_manager_config(config)
         else:

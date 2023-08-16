@@ -17,8 +17,7 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         table = res["content"]["tables"][0]
         self._check_similarity(table["cells"][0][1], "Наименование участкового лестничества")
         self._check_similarity(table["cells"][2][1], "Итого")
-        self._check_similarity(table["cells"][13][0], "Выращивание лесных, плодовых, ягодных, "
-                                                      "декоративных растений, лекарственных растений")
+        self._check_similarity(table["cells"][13][0], "Выращивание лесных, плодовых, ягодных, декоративных растений, лекарственных растений")
         self._check_similarity(table["cells"][13][3], "1272100,0")
 
     def test_api_table_recognition_4(self) -> None:
@@ -114,8 +113,7 @@ class TestRecognizedTable(AbstractTestApiDocReader):
 
         self.assertEqual("1", rows[1][0])
         self.assertEqual('ООО "Айтехникс"', rows[1][1])
-        self.assertEqual("Емельяновский район, МО\nСолонцовский сельсовет, площадка\nЗападная, 2a cr3",
-                         rows[1][2])
+        self.assertEqual("Емельяновский район, МО\nСолонцовский сельсовет, площадка\nЗападная, 2a cr3", rows[1][2])
         self.assertEqual("Наталья Медведева\n8-908-215-75-05", rows[1][3])
 
         self.assertEqual("6", rows[6][0])

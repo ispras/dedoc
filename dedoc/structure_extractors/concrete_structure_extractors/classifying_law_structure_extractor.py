@@ -197,8 +197,7 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
         return batch_lines
 
     def __text_clean(self, text: str) -> str:
-        bad_characters = OrderedDict({"\u0438\u0306": "й", "\u0439\u0306": "й",
-                                      "\u0418\u0306": "Й", "\u0419\u0306": "Й"})
+        bad_characters = OrderedDict({"\u0438\u0306": "й", "\u0439\u0306": "й", "\u0418\u0306": "Й", "\u0419\u0306": "Й"})
         for bad_c, good_c in bad_characters.items():
             text = text.replace(bad_c, good_c)
         return text

@@ -11,9 +11,7 @@ from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_build
 
 class TzBodyBuilder(AbstractHierarchyLevelBuilder):
 
-    def get_lines_with_hierarchy(self,
-                                 lines_with_labels: List[Tuple[LineWithMeta, str]],
-                                 init_hl_depth: int) -> List[LineWithMeta]:
+    def get_lines_with_hierarchy(self, lines_with_labels: List[Tuple[LineWithMeta, str]], init_hl_depth: int) -> List[LineWithMeta]:
         if len(lines_with_labels) > 0:
             line = lines_with_labels[0][0]
             page_id = line.metadata.page_id
@@ -38,11 +36,7 @@ class TzBodyBuilder(AbstractHierarchyLevelBuilder):
                 result.append(line)
         return result
 
-    def __handle_item(self,
-                      init_hl_depth: int,
-                      line: LineWithMeta,
-                      prediction: str,
-                      previous_hl: Optional[HierarchyLevel]) -> LineWithMeta:
+    def __handle_item(self, init_hl_depth: int, line: LineWithMeta, prediction: str, previous_hl: Optional[HierarchyLevel]) -> LineWithMeta:
         text = line.line.lower().strip()
         item_min_depth = 5 + init_hl_depth
         if prediction == "part":

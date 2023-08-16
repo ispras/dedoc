@@ -44,11 +44,7 @@ class Tasker(object):
         resources_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "resources", "train_dataset")
         self.resources = os.path.abspath(resources_path)
 
-    def create_tasks(self,
-                     type_of_task: str,
-                     count_tasks: int = None,
-                     task_size: int = None,
-                     task_uid: Optional[str] = None) -> Tuple[str, int]:
+    def create_tasks(self, type_of_task: str, count_tasks: int = None, task_size: int = None, task_uid: Optional[str] = None) -> Tuple[str, int]:
         """
         creates subtasks with help of ConcreteTaskers and return common archive of tasks
         :param type_of_task: task type for calling concrete tasker (for example type_of_task='line_classifier')

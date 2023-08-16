@@ -95,12 +95,7 @@ class HtmlReader(BaseReader):
         header_level = int(tag.name[1:]) if tag.name in HtmlTags.header_tags else 0
         line_type = HierarchyLevel.unknown if header_level == 0 else HierarchyLevel.header
         tag_uid = hashlib.md5((uid + text).encode()).hexdigest()
-        line = self.__make_line(line=text,
-                                line_type=line_type,
-                                header_level=header_level,
-                                uid=tag_uid,
-                                path_hash=uid,
-                                annotations=annotations)
+        line = self.__make_line(line=text, line_type=line_type, header_level=header_level, uid=tag_uid, path_hash=uid, annotations=annotations)
         line.metadata.extend_other_fields({"html_tag": tag.name})
         return [line]
 
@@ -226,10 +221,7 @@ class HtmlReader(BaseReader):
             text = " ".join(row)
             if text.strip() != "":
                 tag_uid = hashlib.md5((uid + text).encode()).hexdigest()
-                line = self.__make_line(line=text,
-                                        line_type=HierarchyLevel.unknown,
-                                        uid=tag_uid,
-                                        path_hash=path_hash)
+                line = self.__make_line(line=text, line_type=HierarchyLevel.unknown, uid=tag_uid, path_hash=path_hash)
                 result.append(line)
         return result
 

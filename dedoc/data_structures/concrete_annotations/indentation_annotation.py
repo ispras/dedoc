@@ -27,7 +27,5 @@ class IndentationAnnotation(Annotation):
         return api.model("IndentationAnnotation", {
             "start": fields.Integer(description="annotation start index", required=True, example=0),
             "end": fields.Integer(description="annotation end index", required=True, example=4),
-            "value": fields.String(description="text indentation in twentieths of a point (1/1440 of an inch)",
-                                   required=True,
-                                   example="720")
+            "value": fields.String(description="text indentation in twentieths of a point (1/1440 of an inch)", required=True, example="720")
         })

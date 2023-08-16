@@ -51,9 +51,7 @@ class JsonReader(BaseReader):
             except (JSONDecodeError, ValueError):
                 raise BadParametersError(f"can't read html_fields {fields}")
             json_data = self.__exclude_html_fields(json_data, key_fields)
-            attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path),
-                                                                    filename=os.path.basename(path),
-                                                                    parameters=parameters)
+            attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path), filename=os.path.basename(path), parameters=parameters)
         else:
             attachments = []
 
@@ -67,10 +65,7 @@ class JsonReader(BaseReader):
             if isinstance(element, list) and len(element) > 0:
                 self.__handle_list(depth, element, result, stack)
             elif self.__is_flat(element):
-                line = self.__handle_one_element(depth=depth,
-                                                 value=str(element),
-                                                 line_type=HierarchyLevel.raw_text,
-                                                 line_type_meta=HierarchyLevel.raw_text)
+                line = self.__handle_one_element(depth=depth, value=str(element), line_type=HierarchyLevel.raw_text, line_type_meta=HierarchyLevel.raw_text)
                 result.append(line)
         return UnstructuredDocument(tables=[], lines=result, attachments=attachments)
 
@@ -97,10 +92,7 @@ class JsonReader(BaseReader):
     def __handle_list(self, depth: int, element: list, result: list, stack: list) -> None:
         for _ in range(len(element)):
             sub_element = element.pop(0)
-            line = self.__handle_one_element(depth=depth,
-                                             value=sub_element,
-                                             line_type=HierarchyLevel.list_item,
-                                             line_type_meta=HierarchyLevel.list_item)
+            line = self.__handle_one_element(depth=depth, value=sub_element, line_type=HierarchyLevel.list_item, line_type_meta=HierarchyLevel.list_item)
             result.append(line)
             if not self.__is_flat(sub_element):
                 stack.append((element, depth))
@@ -111,10 +103,7 @@ class JsonReader(BaseReader):
         for key in sorted(element.keys()):
             # key = min(element.keys()) if len(element) < 100 else list(element.keys())[0]
             value = element.pop(key)
-            line = self.__handle_one_element(depth=depth,
-                                             value=key,
-                                             line_type="key",
-                                             line_type_meta="key")
+            line = self.__handle_one_element(depth=depth, value=key, line_type="key", line_type_meta="key")
             result.append(line)
             stack.append((element, depth))
 

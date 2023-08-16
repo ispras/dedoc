@@ -40,7 +40,8 @@ class Cell:
                  is_attribute_required: bool = False,
                  rotated_angle: int = 0,
                  uid: str = None,
-                 contour_coord: BBox = BBox(0, 0, 0, 0)) -> None:  # noqa
+                 contour_coord: Optional[BBox] = None) -> None:
+
         assert x_top_left <= x_bottom_right
         assert y_top_left <= y_bottom_right
         self.x_top_left = x_top_left
@@ -58,7 +59,7 @@ class Cell:
         self.colspan = 1
         self.rowspan = 1
         self.invisible = False
-        self.con_coord = contour_coord
+        self.con_coord = contour_coord or BBox(0, 0, 0, 0)
 
     def __str__(self) -> str:
         return f"Cell((cs={self.colspan}, rs={self.rowspan}, {self.text})"

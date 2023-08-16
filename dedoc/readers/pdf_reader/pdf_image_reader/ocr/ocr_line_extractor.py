@@ -25,8 +25,7 @@ class OCRLineExtractor:
                           language: str = "rus+eng",
                           is_one_column_document: bool = True,
                           cells: bool = False) -> PageWithBBox:
-        bboxes = self.__split_image2bboxes(image=image, page_num=page_num, language=language,
-                                           is_one_column_document=is_one_column_document, cells=cells)
+        bboxes = self.__split_image2bboxes(image=image, page_num=page_num, language=language, is_one_column_document=is_one_column_document, cells=cells)
 
         filtered_bboxes = list(self._filtered_bboxes(bboxes))
         if len(filtered_bboxes) >= 0:
@@ -56,12 +55,7 @@ class OCRLineExtractor:
         y_inside = (box1.y_top_left >= box2.y_top_left) and (box1.y_bottom_right <= box2.y_bottom_right)
         return x_inside and y_inside
 
-    def __split_image2bboxes(self,
-                             image: np.ndarray,
-                             page_num: int,
-                             language: str,
-                             is_one_column_document: bool,
-                             cells: bool = False) -> List[TextWithBBox]:
+    def __split_image2bboxes(self, image: np.ndarray, page_num: int, language: str, is_one_column_document: bool, cells: bool = False) -> List[TextWithBBox]:
         ocr_conf_thr = self.config.get("ocr_conf_threshold", -1)
         if not cells:
             if is_one_column_document:

@@ -75,8 +75,7 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         file_name = "json/with_html.json"
         parameters = dict()
         parameters["with_attachments"] = True
-        parameters["html_fields"] = json.dumps(
-            [["title"], ["body"], ["example"], ["deep_key1", "deep_key2", "deep_key3"]])
+        parameters["html_fields"] = json.dumps([["title"], ["body"], ["example"], ["deep_key1", "deep_key2", "deep_key3"]])
 
         result = self._send_request(file_name, parameters)
         attachments = result["attachments"]
@@ -87,10 +86,8 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         file_name = "json/with_html.json"
         parameters = dict()
         parameters["with_attachments"] = True
-        parameters["html_fields"] = json.dumps(
-            [["title"], ["example"], ["another_field"], ["test"], ["lists"],
-             ["log"], ["text"], ["deep_key1", "deep_key2", "deep_key3"]]
-        )
+        parameters["html_fields"] = json.dumps([["title"], ["example"], ["another_field"], ["test"], ["lists"], ["log"], ["text"],
+                                                ["deep_key1", "deep_key2", "deep_key3"]])
 
         result = self._send_request(file_name, parameters)
         attachments = result["attachments"]
@@ -99,11 +96,7 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
 
     def test_json_with_html_fields_with_scripts(self) -> None:
         file_name = "json/example2.json"
-        parameters = dict(
-            with_attachments=True,
-            html_fields=json.dumps([["text"]]),
-            need_content_analysis=True
-        )
+        parameters = dict(with_attachments=True, html_fields=json.dumps([["text"]]), need_content_analysis=True)
 
         result = self._send_request(file_name, parameters)
         attachments = result["attachments"]
@@ -119,10 +112,7 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         file_name = "json/0001-p1.json"
         parameters = dict()
         parameters["with_attachments"] = True
-        parameters["html_fields"] = json.dumps(
-            [["news_link"], ["publication_title"], ["publication_date"],
-             ["publication_author"], ["text_publication"]]
-        )
+        parameters["html_fields"] = json.dumps([["news_link"], ["publication_title"], ["publication_date"], ["publication_author"], ["text_publication"]])
 
         result = self._send_request(file_name, parameters)
         attachments = result["attachments"]
@@ -140,15 +130,12 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         self.assertIn("lorem.txt", names)
         self.assertIn("books.csv", names)
 
-        arch = [attachment for attachment in attachments
-                if attachment["metadata"]["file_name"] == "arch_with_attachs.zip"][0]
+        arch = [attachment for attachment in attachments if attachment["metadata"]["file_name"] == "arch_with_attachs.zip"][0]
         self.assertEqual(len(arch["attachments"]), 4)
 
-        txt = [attachment for attachment in attachments
-               if attachment["metadata"]["file_name"] == "lorem.txt"][0]
+        txt = [attachment for attachment in attachments if attachment["metadata"]["file_name"] == "lorem.txt"][0]
 
-        self.assertIn("Adipisicing est non minim aute reprehenderit incididunt magna"
-                      " ad consectetur ad occaecat anim voluptate culpa fugiat",
+        self.assertIn("Adipisicing est non minim aute reprehenderit incididunt magna ad consectetur ad occaecat anim voluptate culpa fugiat",
                       txt["content"]["structure"]["subparagraphs"][0]["text"], )
 
     def test_docx_images_base64(self) -> None:

@@ -23,9 +23,9 @@ class ExcelConverter(AbstractConverter):
         """
         Convert the xlsx-like documents into files with .xlsx extension using the soffice application.
         """
-        path_in = f"{tmp_dir}/{filename}{extension}"
+        path_in = os.path.join(tmp_dir, f"{filename}{extension}")
         command = ["soffice", "--headless", "--convert-to", "xlsx", "--outdir", tmp_dir, path_in]
-        file_out = filename + ".xlsx"
+        file_out = f"{filename}.xlsx"
         expected_path = os.path.join(tmp_dir, file_out)
         self._run_subprocess(command=command, filename=filename, expected_path=expected_path)
 

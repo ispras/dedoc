@@ -82,21 +82,19 @@ class PdfImageReader(PdfBaseReader):
 
         #  --- Step 3: table detection and recognition ---
         if parameters.need_pdf_table_analysis:
-            clean_image, tables = self.table_recognizer. \
-                recognize_tables_from_image(image=rotated_image,
-                                            page_number=page_number,
-                                            language=parameters.language,
-                                            orient_analysis_cells=parameters.orient_analysis_cells,
-                                            orient_cell_angle=parameters.orient_cell_angle,
-                                            table_type=parameters.table_type)
+            clean_image, tables = self.table_recognizer.recognize_tables_from_image(
+                image=rotated_image,
+                page_number=page_number,
+                language=parameters.language,
+                orient_analysis_cells=parameters.orient_analysis_cells,
+                orient_cell_angle=parameters.orient_cell_angle,
+                table_type=parameters.table_type
+            )
         else:
             clean_image, tables = rotated_image, []
 
         # --- Step 4: plain text recognition and text style detection ---
-        page = self.ocr.split_image2lines(image=clean_image,
-                                          language=parameters.language,
-                                          is_one_column_document=is_one_column_document,
-                                          page_num=page_number)
+        page = self.ocr.split_image2lines(image=clean_image, language=parameters.language, is_one_column_document=is_one_column_document, page_num=page_number)
 
         lines = self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page)
         if self.config.get("labeling_mode"):

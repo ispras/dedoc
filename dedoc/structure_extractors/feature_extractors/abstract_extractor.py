@@ -14,8 +14,8 @@ from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnot
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_number, regexps_subitem, \
-    regexps_subitem_extended, regexps_year
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_number, regexps_subitem, regexps_subitem_extended, \
+    regexps_year
 from dedoc.utils.utils import list_get
 
 
@@ -67,19 +67,16 @@ class AbstractFeatureExtractor(ABC):
         add previous and next features with their names
         """
         feature_names = matrix.columns
-        prev_line_features = [pd.DataFrame(data=self._prev_line_features(matrix.values, i),
-                                           columns=self._create_features_name(feature_names, "prev", i))
+        prev_line_features = [pd.DataFrame(data=self._prev_line_features(matrix.values, i), columns=self._create_features_name(feature_names, "prev", i))
                               for i in range(1, n_prev + 1)]
-        next_line_features = [pd.DataFrame(data=self._next_line_features(matrix.values, i),
-                                           columns=self._create_features_name(feature_names, "next", i))
+        next_line_features = [pd.DataFrame(data=self._next_line_features(matrix.values, i), columns=self._create_features_name(feature_names, "next", i))
                               for i in range(1, n_next + 1)]
 
         matrices = [matrix] + prev_line_features + next_line_features
         result_matrix = pd.concat(matrices, axis=1)
         return result_matrix
 
-    def _start_regexp(self, line: str, regexps: List[Pattern],
-                      suffix: Optional[str] = None) -> Iterable[Tuple[str, float]]:
+    def _start_regexp(self, line: str, regexps: List[Pattern], suffix: Optional[str] = None) -> Iterable[Tuple[str, float]]:
         matches = 0
         text = line.strip()
         for i, pattern in enumerate(regexps):  # list patterns
@@ -105,8 +102,7 @@ class AbstractFeatureExtractor(ABC):
 
     @staticmethod
     def _get_bold(line: LineWithMeta) -> float:
-        bold = [annotation for annotation in line.annotations
-                if annotation.name == BoldAnnotation.name and annotation.value == "True"]
+        bold = [annotation for annotation in line.annotations if annotation.name == BoldAnnotation.name and annotation.value == "True"]
         return 1. if len(bold) > 0 else 0
 
     @staticmethod
@@ -202,7 +198,7 @@ class AbstractFeatureExtractor(ABC):
             result.extend([0. for _ in document])
         else:
             special_line_id = special_line_position[-1]
-            for line_id, _ in enumerate(document):
+            for line_id in range(len(document)):
                 result.append(line_id - special_line_id)
         return result
 
@@ -257,6 +253,5 @@ class AbstractFeatureExtractor(ABC):
         Output: normalized feature vector  [-1; 1]
         """
         feature_mean, feature_min, feature_max = feature_column.mean(), feature_column.min(), feature_column.max()
-        new_feature_column = (feature_column - feature_mean) / (feature_max - feature_min) if \
-            feature_max - feature_min != 0.0 else 0.0
+        new_feature_column = (feature_column - feature_mean) / (feature_max - feature_min) if feature_max - feature_min != 0.0 else 0.0
         return new_feature_column

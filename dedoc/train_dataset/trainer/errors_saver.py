@@ -28,10 +28,7 @@ class ErrorsSaver:
         self.dataset_path = os.path.join(dataset_path, "dataset.zip")
         self.config = config
 
-    def save_errors(self, error_cnt: Counter,
-                    errors_uids: List[str],
-                    csv_path: str,
-                    save_errors_images: bool = False) -> None:
+    def save_errors(self, error_cnt: Counter, errors_uids: List[str], csv_path: str, save_errors_images: bool = False) -> None:
         assert len(set(errors_uids)) == len(errors_uids)
         self.logger.info(f"save errors in {self.errors_path}")
         errors_total_num = sum(error_cnt.values())
@@ -95,7 +92,8 @@ class ErrorsSaver:
                     self.__process_uid(errors_images_archive, filtered_dataset, images_archive, images_creators,
                                        ready_documents, ready_images, uid)
 
-    def __process_uid(self, errors_images_archive: zipfile.ZipFile,
+    def __process_uid(self,
+                      errors_images_archive: zipfile.ZipFile,
                       filtered_dataset: pd.DataFrame,
                       images_archive: zipfile.ZipFile,
                       images_creators: List[AbstractImagesCreator],

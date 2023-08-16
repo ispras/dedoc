@@ -32,9 +32,7 @@ class AbstractBodyHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
         page_id = page_id
         line_id = line_id
         return LineWithMeta(line="",
-                            metadata=LineMetadata(hierarchy_level=HierarchyLevel(init_hl_depth, 0, False, "body"),
-                                                  page_id=page_id,
-                                                  line_id=line_id),
+                            metadata=LineMetadata(hierarchy_level=HierarchyLevel(init_hl_depth, 0, False, "body"), page_id=page_id, line_id=line_id),
                             annotations=[],
                             uid=line_uid)
 
@@ -60,12 +58,7 @@ class AbstractBodyHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
                 result.append(self.get_body_line(init_hl_depth=init_hl_depth))
                 is_body_begun = True
 
-            line = LineWithMeta(
-                line=line.line,
-                metadata=metadata,
-                annotations=line.annotations,
-                uid=line.uid
-            )
+            line = LineWithMeta(line=line.line, metadata=metadata, annotations=line.annotations, uid=line.uid)
             result.append(line)
         if not is_body_begun:
             result.append(self.get_body_line(init_hl_depth=init_hl_depth))

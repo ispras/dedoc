@@ -53,11 +53,7 @@ class BaseSklearnLineClassifierTrainer:
         self.tmp_dir = "/tmp" if tmp_dir is None else tmp_dir
         url_hash = hashlib.md5(self.data_url.encode()).hexdigest()
         self.dataset_dir = os.path.join(self.tmp_dir, f"dataset_{url_hash}")
-        self.data_loader = DataLoader(dataset_dir=self.dataset_dir,
-                                      label_transformer=label_transformer,
-                                      logger=logger,
-                                      data_url=data_url,
-                                      config=config)
+        self.data_loader = DataLoader(dataset_dir=self.dataset_dir, label_transformer=label_transformer, logger=logger, data_url=data_url, config=config)
         self.random_seed = random_seed
         self.get_sample_weight = get_sample_weight if get_sample_weight is not None else lambda t: 1
         os.makedirs(self.tmp_dir, exist_ok=True)
@@ -81,10 +77,7 @@ class BaseSklearnLineClassifierTrainer:
         self.config = config
         self.n_splits = n_splits
 
-    def fit(self, no_cache: bool = False,
-            cross_val_only: bool = False,
-            save: bool = False,
-            save_errors_images: bool = False) -> None:
+    def fit(self, no_cache: bool = False, cross_val_only: bool = False, save: bool = False, save_errors_images: bool = False) -> None:
         data = self.data_loader.get_data(no_cache=no_cache)
         if save:
             self.__save(data=data, path=self.tmp_dir)
@@ -136,11 +129,7 @@ class BaseSklearnLineClassifierTrainer:
         features_train[uid_name] = [line.uid for line in flatten(data)]
         text_name = "text"
         features_train[text_name] = [line.line for line in flatten(data)]
-        dataset = LineClassifierDataset(dataframe=features_train,
-                                        feature_list=features_list,
-                                        group_name=group_name,
-                                        label_name=label_name,
-                                        text_name=text_name)
+        dataset = LineClassifierDataset(dataframe=features_train, feature_list=features_list, group_name=group_name, label_name=label_name, text_name=text_name)
         path = dataset.save(path, csv_only=csv_only)
         self.logger.info(f"Save dataset into {path}")
         return path
@@ -158,7 +147,7 @@ class BaseSklearnLineClassifierTrainer:
 
         data = np.array(data, dtype=object)
         kf = KFold(n_splits=self.n_splits)
-        for _, (train_index, val_index) in tqdm(enumerate(kf.split(data)), total=self.n_splits):
+        for train_index, val_index in tqdm(kf.split(data), total=self.n_splits):
             data_train, data_val = data[train_index].tolist(), data[val_index].tolist()
             labels_train = self.__get_labels(data_train)
             labels_val = self.__get_labels(data_val)

@@ -28,11 +28,7 @@ def get_bbox_from_image(image: Image, bbox: BBox, resize: Tuple[int, int] = (300
     return image as is
     @return: PIL image
     """
-    rectangle = (bbox.x_top_left,
-                 bbox.y_top_left,
-                 bbox.x_bottom_right,
-                 bbox.y_bottom_right
-                 )
+    rectangle = (bbox.x_top_left, bbox.y_top_left, bbox.x_bottom_right, bbox.y_bottom_right)
     if isinstance(image, np.ndarray):
         image = PIL.Image.fromarray(image)
     cropped = image.crop(rectangle)
@@ -58,9 +54,7 @@ def rotate_image(image: np.ndarray, angle: float, color_bound: Tuple[int, int, i
     rotation_mat[0, 2] += bound_w / 2 - image_center[0]
     rotation_mat[1, 2] += bound_h / 2 - image_center[1]
 
-    rotated_mat = cv2.warpAffine(image, rotation_mat, (bound_w, bound_h),
-                                 borderMode=cv2.BORDER_CONSTANT,
-                                 borderValue=color_bound)
+    rotated_mat = cv2.warpAffine(image, rotation_mat, (bound_w, bound_h), borderMode=cv2.BORDER_CONSTANT, borderValue=color_bound)
     return rotated_mat
 
 
@@ -87,12 +81,7 @@ def crop_image_text(image: np.ndarray) -> np.ndarray:
     return image_crop
 
 
-def draw_rectangle(image: PIL.Image,
-                   x_top_left: int,
-                   y_top_left: int,
-                   width: int,
-                   height: int,
-                   color: Tuple[int, int, int] = (0, 0, 0)) -> np.ndarray:
+def draw_rectangle(image: PIL.Image, x_top_left: int, y_top_left: int, width: int, height: int, color: Tuple[int, int, int] = (0, 0, 0)) -> np.ndarray:
     if color == "black":
         color = (0, 0, 0)
     source_img = deepcopy(image).convert("RGBA")

@@ -23,7 +23,5 @@ class StyleAnnotation(Annotation):
         return api.model("StyleAnnotation", {
             "start": fields.Integer(description="annotation start index", required=True, example=0),
             "end": fields.Integer(description="annotation end index", required=True, example=4),
-            "value": fields.String(description="style name",
-                                   required=True,
-                                   example="heading 1")
+            "value": fields.String(description="style name", required=True, example="heading 1")
         })

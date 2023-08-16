@@ -74,10 +74,7 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
                     user = note.get("/T")
                     data = note.get("/Contents", "")
 
-                    name, content = create_note(content=data,
-                                                modified_time=modified_time,
-                                                created_time=created_time,
-                                                author=user)
+                    name, content = create_note(content=data, modified_time=modified_time, created_time=created_time, author=user)
                     attachments.append((name, bytes(content)))
         return attachments
 

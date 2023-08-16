@@ -11,8 +11,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from pdfminer.converter import PDFPageAggregator
-from pdfminer.layout import LAParams, LTAnno, LTChar, LTContainer, LTCurve, LTFigure, LTImage, LTRect, LTTextBox, LTTextBoxHorizontal, \
-    LTTextLineHorizontal
+from pdfminer.layout import LAParams, LTAnno, LTChar, LTContainer, LTCurve, LTFigure, LTImage, LTRect, LTTextBox, LTTextBoxHorizontal, LTTextLineHorizontal
 from pdfminer.pdfinterp import PDFPageInterpreter
 from pdfminer.pdfinterp import PDFResourceManager
 from pdfminer.pdfpage import PDFPage
@@ -55,8 +54,7 @@ class ExtractorPdfTextLayer(object):
             for page_num, page in enumerate(pages):
                 if page_num != page_number:
                     continue
-                return self.__handle_page(page=page, page_number=page_number, path=path,
-                                          is_one_column_document=is_one_column_document)
+                return self.__handle_page(page=page, page_number=page_number, path=path, is_one_column_document=is_one_column_document)
 
     def __handle_page(self, page: PDFPage, page_number: int, path: str, is_one_column_document: bool) -> PageWithBBox:
         directory = os.path.dirname(path)
@@ -121,11 +119,7 @@ class ExtractorPdfTextLayer(object):
             path_out = os.path.join(directory, file_name)
             Image.fromarray(cropped).save(path_out)
             image_page[bbox.y_top_left: bbox.y_bottom_right, bbox.x_top_left: bbox.x_bottom_right] = 255
-            attachment = PdfImageAttachment(original_name=file_name,
-                                            tmp_file_path=path_out,
-                                            need_content_analysis=False,
-                                            uid=uid,
-                                            location=location)
+            attachment = PdfImageAttachment(original_name=file_name, tmp_file_path=path_out, need_content_analysis=False, uid=uid, location=location)
         except Exception as ex:
             self.logger.error(ex)
             attachment = None
@@ -236,8 +230,7 @@ class ExtractorPdfTextLayer(object):
 
     def _create_bbox(self, height: int, k_h: float, k_w: float, lobj: LTContainer) -> BBox:
         curr_box_line = ExtractorPdfTextLayer.convert_coordinates_pdf_to_image(lobj, k_w, k_h, height)
-        bbox = BBox.from_two_points((curr_box_line.x_top_left, curr_box_line.y_top_left),
-                                    (curr_box_line.x_bottom_right, curr_box_line.y_bottom_right))
+        bbox = BBox.from_two_points((curr_box_line.x_top_left, curr_box_line.y_top_left), (curr_box_line.x_bottom_right, curr_box_line.y_bottom_right))
         return bbox
 
     def _get_style_and_text_from_layout_object(self, lobj: LTContainer) -> [str, List[Annotation]]:

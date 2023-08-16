@@ -27,7 +27,5 @@ class SizeAnnotation(Annotation):
         return api.model("SizeAnnotation", {
             "start": fields.Integer(description="annotation start index", required=True, example=0),
             "end": fields.Integer(description="annotation end index", required=True, example=4),
-            "value": fields.String(description="the size of the text in points (1/72 of an inch)",
-                                   required=True,
-                                   example="18.5")
+            "value": fields.String(description="the size of the text in points (1/72 of an inch)", required=True, example="18.5")
         })

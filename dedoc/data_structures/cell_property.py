@@ -31,5 +31,5 @@ class CellProperty(Serializable):
         return api.model("CellProperty", {
             "colspan": fields.Integer(description="attribute of union column count"),
             "rowspan": fields.Integer(description="attribute of union row count"),
-            "invisible": fields.Boolean(description='flag for cell display (for example: if invisible==true then style=\"display: none\")'),
+            "invisible": fields.Boolean(description='flag for cell display (for example: if invisible==true then style="display: none")'),
         })

@@ -54,10 +54,7 @@ class PdfTabbyReader(PdfBaseReader):
         self.tabby_java_version = "2.0.0"
         self.jar_name = "ispras_tbl_extr.jar"
         self.jar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "tabbypdf", "jars"))
-        self.java_not_found_error = (
-            "`java` command is not found from this Python process."
-            "Please ensure Java is installed and PATH is set for `java`"
-        )
+        self.java_not_found_error = "`java` command is not found from this Python process. Please ensure Java is installed and PATH is set for `java`"
         self.default_config = {"JAR_PATH": os.path.join(self.jar_dir, self.jar_name)}
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:

@@ -43,8 +43,7 @@ class TzTextFeatures(AbstractFeatureExtractor):
     def transform(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None) -> pd.DataFrame:
         list_features = self.list_feature_extractor.transform(documents)
         result_matrix = pd.concat([self.__process_document(document) for document in documents], ignore_index=True)
-        result_matrix["is_in_toc"] = list(
-            flatten(self.toc_extractor.is_line_in_toc(document) for document in documents))
+        result_matrix["is_in_toc"] = list(flatten(self.toc_extractor.is_line_in_toc(document) for document in documents))
         result_matrix = pd.concat([result_matrix, list_features], axis=1)
         features = sorted(result_matrix.columns)
         cnt = Counter(features)
@@ -77,11 +76,7 @@ class TzTextFeatures(AbstractFeatureExtractor):
         result_matrix = pd.concat([one_line_features_df, features_df], axis=1)
         return result_matrix
 
-    def _one_line_features(self,
-                           line: LineWithMeta,
-                           total_lines: int,
-                           start_page: int,
-                           finish_page: int) -> Iterator[Tuple[str, int]]:
+    def _one_line_features(self, line: LineWithMeta, total_lines: int, start_page: int, finish_page: int) -> Iterator[Tuple[str, int]]:
         text = line.line.lower()
 
         yield from self._start_regexp(line.line, self.list_item_regexp)

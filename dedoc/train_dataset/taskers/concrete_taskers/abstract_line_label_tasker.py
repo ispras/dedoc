@@ -99,11 +99,7 @@ class AbstractLineLabelTasker(AbstractTasker):
         if len(task) > 0:
             yield task
 
-    def _create_one_task(self,
-                         task: List[List[dict]],
-                         task_id: int,
-                         job_uid: str,
-                         *, images: ImagesArchive) -> str:
+    def _create_one_task(self, task: List[List[dict]], task_id: int, job_uid: str, *, images: ImagesArchive) -> str:
         task_name = f"{task_id:06d}_{''.join(random.sample(self._symbols, 3))}"
         task_directory = f"task_{task_name}"
         path = os.path.join(self.tmp_dir, f"{task_directory}.zip")
@@ -119,10 +115,7 @@ class AbstractLineLabelTasker(AbstractTasker):
                 page = [line for line in page if line["_line"].strip() != ""]
                 if len(page) == 0:
                     continue
-                items = self._one_scanned_page(page=page,
-                                               task_archive=task_archive,
-                                               task_directory=task_directory,
-                                               images=images)
+                items = self._one_scanned_page(page=page, task_archive=task_archive, task_directory=task_directory, images=images)
                 for item in items:
                     item.task_id = item_id
                     item_id += 1
@@ -131,19 +124,12 @@ class AbstractLineLabelTasker(AbstractTasker):
                     self.progress_bar[job_uid] += f"\n done = {page_id} total = {len(task)}"
             task_archive.writestr(f"{task_directory}/tasks.json", json.dumps(task_items, ensure_ascii=False, indent=4).encode("utf-8"))
             task_archive.write(self.manifest_path, os.path.join(task_directory, os.path.basename(self.manifest_path)))
-            self._add_config(task_archive, task_name=task_name, task_directory=task_directory,
-                             config_path=self.config_path, tmp_dir=self.tmp_dir)
-            self._add_docker_files(archive=task_archive,
-                                   task_directory=task_directory,
-                                   dockerfile_directory="img_classifier_dockerfile")
+            self._add_config(task_archive, task_name=task_name, task_directory=task_directory, config_path=self.config_path, tmp_dir=self.tmp_dir)
+            self._add_docker_files(archive=task_archive, task_directory=task_directory, dockerfile_directory="img_classifier_dockerfile")
         return path
 
     @abstractmethod
-    def _one_scanned_page(self,
-                          page: List[dict],
-                          task_archive: zipfile.ZipFile,
-                          task_directory: str, *,
-                          images: ImagesArchive) -> List[TaskItem]:
+    def _one_scanned_page(self, page: List[dict], task_archive: zipfile.ZipFile, task_directory: str, *, images: ImagesArchive) -> List[TaskItem]:
         pass
 
     def _get_pages(self) -> List[List[dict]]:

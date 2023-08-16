@@ -9,7 +9,7 @@ T = TypeVar("T")
 class AnyNotNullField(fields.Raw):
     __schema_type__ = "any"
 
-    def format(self, value: T) -> Optional[T]:  # NOQA
+    def format(self, value: T) -> Optional[T]:  # noqa
         if not isinstance(value, WeakSet):
             return value
 
@@ -17,7 +17,7 @@ class AnyNotNullField(fields.Raw):
 class ForbiddenField(fields.Raw):
     __schema_type__ = "any"
 
-    def format(self, value: T) -> None:  # NOQA
+    def format(self, value: T) -> None:  # noqa
         return
 
 

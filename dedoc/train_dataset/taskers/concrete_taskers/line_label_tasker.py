@@ -40,11 +40,7 @@ class LineLabelTasker(AbstractLineLabelTasker):
                 line["color"] = color
         return self.images_creators.create_images(pages=pages, tmpdir=tmpdir)
 
-    def _one_scanned_page(self,
-                          page: List[dict],
-                          task_archive: zipfile.ZipFile,
-                          task_directory: str, *,
-                          images: ImagesArchive) -> List[TaskItem]:
+    def _one_scanned_page(self, page: List[dict], task_archive: zipfile.ZipFile, task_directory: str, *, images: ImagesArchive) -> List[TaskItem]:
         self._page_counter += 1
         task_items = []
 

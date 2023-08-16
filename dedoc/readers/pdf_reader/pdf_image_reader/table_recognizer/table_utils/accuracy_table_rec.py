@@ -12,12 +12,7 @@ from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageR
 
 
 def _create_cell(c: str, text_cells: list) -> Cell:
-    cell = Cell(
-        x_bottom_right=-1,
-        x_top_left=-1,
-        y_top_left=-1,
-        y_bottom_right=-1,
-    )
+    cell = Cell(x_bottom_right=-1, x_top_left=-1, y_top_left=-1, y_bottom_right=-1)
     if "a" in c:
         cell.is_attribute = True
     # loading cell text
@@ -86,10 +81,8 @@ def draw_recognized_cell(tables: List[ScanTable], path_image: str, path_save: st
         cv2.rectangle(img, (bbox.x_top_left, bbox.y_top_left), (bbox.width, bbox.height), blue_color, 6)
         for i in range(0, len(table)):
             for j in range(0, len(table[i])):
-                cv2.rectangle(img, (table[i][j].x_top_left, table[i][j].y_top_left), (table[i][j].x_bottom_right, table[i][j].y_bottom_right), red_color,
-                              4)
-                cv2.putText(img, str(table[i][j].id_con), (table[i][j].x_top_left, table[i][j].y_bottom_right), cv2.FONT_HERSHEY_PLAIN, 4,
-                            green_color)
+                cv2.rectangle(img, (table[i][j].x_top_left, table[i][j].y_top_left), (table[i][j].x_bottom_right, table[i][j].y_bottom_right), red_color, 4)
+                cv2.putText(img, str(table[i][j].id_con), (table[i][j].x_top_left, table[i][j].y_bottom_right), cv2.FONT_HERSHEY_PLAIN, 4, green_color)
     cv2.imwrite(path_save, img)
 
 
@@ -99,11 +92,7 @@ def save_json(tables: List[ScanTable], number_test_string: str, path_output: str
             json.dump(tables[i].to_dict(), out, ensure_ascii=False, indent=2)
 
 
-def calc_accuracy(path_image: str,
-                  path_gt_struct: str,
-                  path_gt_text: str,
-                  path_save_image: str,
-                  path_save_json: str) -> None:
+def calc_accuracy(path_image: str, path_gt_struct: str, path_gt_text: str, path_save_image: str, path_save_json: str) -> None:
     from os import listdir
     from os.path import isfile, join
 
@@ -113,13 +102,13 @@ def calc_accuracy(path_image: str,
     image_files = [f for f in listdir(path_image) if isfile(join(path_image, f))]
     agreements = []
 
-    for i in range(0, len(image_files)):
-        name_example = image_files[i].split(".")[0].split("_")[0]
+    for image_file in image_files:
+        name_example = image_file.split(".")[0].split("_")[0]
         # predict tables
-        image = cv2.imread(path_image + image_files[i], 0)
+        image = cv2.imread(path_image + image_file, 0)
         # TODO fix this
         clean_images, tables = PdfImageReader(config=get_config()).get_tables([image])
-        draw_recognized_cell(tables, path_image + image_files[i], path_save_image + image_files[i])
+        draw_recognized_cell(tables, path_image + image_file, path_save_image + image_file)
         save_json(tables, name_example, path_save_json)
 
         gt_files = [f for f in listdir(path_gt_struct) if isfile(join(path_gt_struct, f)) and name_example + "_" in f]

@@ -38,8 +38,7 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, dict(document_type=""))
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
-        self.assertEqual("2. Срок поставки в течении 70 дней с момента внесения авансового платежа.\n",
-                         self._get_by_tree_path(tree, "0.2.1")["text"])
+        self.assertEqual("2. Срок поставки в течении 70 дней с момента внесения авансового платежа.\n", self._get_by_tree_path(tree, "0.2.1")["text"])
         self.assertEqual("3. Срок изготовления не ранее 2018г.\n", self._get_by_tree_path(tree, "0.2.2")["text"])
 
         self.__check_metainfo(result["metadata"], "image/vnd.djvu", file_name)
@@ -109,8 +108,8 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
         # check, that handwritten text was filtered
-        self._check_similarity("ФИО  года рождения, паспорт: серия \n№ выдан _, дата выдачи\n"
-                               "т. код подразделения зарегистрированный по адресу:\n \n", tree["subparagraphs"][3]["text"])
+        self._check_similarity("ФИО  года рождения, паспорт: серия \n№ выдан _, дата выдачи\nт. код подразделения зарегистрированный по адресу:\n \n",
+                               tree["subparagraphs"][3]["text"])
 
     def test_rotated_image(self) -> None:
         result = self._send_request("orient_1.png", data=dict(need_pdf_table_analysis="false"))
@@ -128,8 +127,7 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         file_name = os.path.join("..", "tables", "multipage_table.pdf")
         result = self._send_request(file_name)
 
-        table_refs = [ann["value"] for ann in result["content"]["structure"]["subparagraphs"][0]["annotations"]
-                      if ann["name"] == "table"]
+        table_refs = [ann["value"] for ann in result["content"]["structure"]["subparagraphs"][0]["annotations"] if ann["name"] == "table"]
 
         self.assertTrue(len(result["content"]["tables"]), len(table_refs))
         for table in result["content"]["tables"]:
@@ -152,8 +150,7 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         file_name = os.path.join("..", "pdf_with_text_layer", "VVP_global_table.pdf")
         result = self._send_request(file_name)
 
-        self.assertEqual(result["content"]["tables"][0]["metadata"]["uid"],
-                         result["content"]["structure"]["subparagraphs"][0]["annotations"][0]["value"])
+        self.assertEqual(result["content"]["tables"][0]["metadata"]["uid"], result["content"]["structure"]["subparagraphs"][0]["annotations"][0]["value"])
 
     def test_2_columns(self) -> None:
         file_name = os.path.join("..", "scanned", "example_2_columns.png")

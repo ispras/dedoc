@@ -55,14 +55,11 @@ class TreeNode(Serializable):
                                                  "it may occur) The identifier has the form 0.2.1 where each number "
                                                  "means a serial number at the corresponding level of the hierarchy.",
                                      required=True,
-                                     example="0.2.1"
-                                     ),
+                                     example="0.2.1"),
             "text": fields.String(description="text of node", required=True, example="Закон"),
-            "annotations": fields.List(fields.Nested(Annotation.get_api_dict(api),
-                                                     description="Text annotations (font, size, bold, italic and etc)")),
+            "annotations": fields.List(fields.Nested(Annotation.get_api_dict(api), description="Text annotations (font, size, bold, italic and etc)")),
             "metadata": fields.Nested(LineMetadata.get_api_dict(api), skip_none=True, allow_null=False, description="Line meta information"),
-            "subparagraphs": fields.List(fields.Nested(api.model("others_TreeNode", {})),
-                                         description='Node childes (with type "TreeNode") of structure tree')
+            "subparagraphs": fields.List(fields.Nested(api.model("others_TreeNode", {})), description='Node childes (with type "TreeNode") of structure tree')
             if depth == 30  # TODO delete this
             else fields.List(fields.Nested(TreeNode.get_api_dict(api, depth=depth + 1, name="refTreeNode" + str(depth))),
                              description='Node childes (with type "TreeNode") of structure tree')

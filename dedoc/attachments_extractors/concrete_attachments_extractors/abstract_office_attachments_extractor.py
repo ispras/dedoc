@@ -84,7 +84,7 @@ class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
                     if ole.exists("CONTENTS"):
                         data = ole.openstream("CONTENTS").read()
                         if data[0:5] == b"%PDF-":
-                            result.append((os.path.splitext(original_name)[-2] + ".pdf", data))
+                            result.append((f"{os.path.splitext(original_name)[-2]}.pdf", data))
 
                     # extracting files in other formats
                     elif ole.exists("\x01Ole10Native"):

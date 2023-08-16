@@ -18,8 +18,7 @@ class ImageTransform(object):
             transforms.Lambda(ColumnsOrientationClassifier.my_resize),
             transforms.CenterCrop(1200),
             transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
         ])
 
     def __call__(self, image: np.ndarray) -> Image:
@@ -38,8 +37,7 @@ class TransformWithLabels(object):
             transforms.Lambda(ColumnsOrientationClassifier.my_resize),
             transforms.CenterCrop(1200),
             transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
         ])
 
     def __call__(self, sample: dict) -> Dict[str, Any]:

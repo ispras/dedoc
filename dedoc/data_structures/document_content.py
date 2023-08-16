@@ -12,7 +12,7 @@ class DocumentContent(Serializable):
     """
     This class holds the document content - structured text and tables.
     """
-    def __init__(self, tables: List[Table], structure: "TreeNode", warnings: List[str] = None) -> None:
+    def __init__(self, tables: List[Table], structure: TreeNode, warnings: List[str] = None) -> None:
         """
         :param tables: list of document tables
         :param structure: tree structure in which content of the document is organized

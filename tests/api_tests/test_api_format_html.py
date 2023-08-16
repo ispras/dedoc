@@ -117,11 +117,9 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         content = result["content"]["structure"]
         self._check_tree_sanity(content)
         self.assertEqual("Лесные слоны", content["subparagraphs"][0]["text"].strip())
-        self.assertEqual("В данном разделе мы поговорим о малоизвестных лесных слонах...",
-                         content["subparagraphs"][0]["subparagraphs"][0]["text"].strip())
+        self.assertEqual("В данном разделе мы поговорим о малоизвестных лесных слонах...", content["subparagraphs"][0]["subparagraphs"][0]["text"].strip())
         self.assertEqual("Среда обитания", content["subparagraphs"][0]["subparagraphs"][1]["text"].strip())
-        self.assertEqual("Лесные слоны живут не на деревьях, а под ними.",
-                         content["subparagraphs"][0]["subparagraphs"][1]["subparagraphs"][0]["text"].strip())
+        self.assertEqual("Лесные слоны живут не на деревьях, а под ними.", content["subparagraphs"][0]["subparagraphs"][1]["subparagraphs"][0]["text"].strip())
 
     def test_plain_text_html(self) -> None:
         file_name = "plain.html"
@@ -191,8 +189,7 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         expected_text = ('"I can’t bring myself to feel too sorry for Amazon or textbook publishers, given how much '
                          'they tend to gouge on the prices of those books."')
         self.assertEqual(expected_text, text.strip())
-        italics = [text[annotation["start"]: annotation["end"]] for annotation in node["annotations"] if
-                   annotation["name"] == "italic"]
+        italics = [text[annotation["start"]: annotation["end"]] for annotation in node["annotations"] if annotation["name"] == "italic"]
         self.assertIn("or", italics)
 
     def test_html_none_display(self) -> None:

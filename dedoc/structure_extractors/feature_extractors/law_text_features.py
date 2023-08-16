@@ -6,8 +6,7 @@ import pandas as pd
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
-from dedoc.structure_extractors.feature_extractors.list_features.list_features_extractor import \
-    ListFeaturesExtractor
+from dedoc.structure_extractors.feature_extractors.list_features.list_features_extractor import ListFeaturesExtractor
 from dedoc.structure_extractors.feature_extractors.utils_feature_extractor import normalization_by_min_max
 
 
@@ -50,8 +49,7 @@ class LawTextFeatures(AbstractFeatureExtractor):
     def transform(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None) -> pd.DataFrame:
         assert len(documents) > 0
 
-        result_matrix = pd.concat([self.__process_document(document) for document in documents],
-                                  ignore_index=True)
+        result_matrix = pd.concat([self.__process_document(document) for document in documents], ignore_index=True)
         list_features = self.list_feature_extractor.transform(documents)
         result_matrix = pd.concat([result_matrix, list_features], axis=1)
         features = sorted(result_matrix.columns)
@@ -72,10 +70,7 @@ class LawTextFeatures(AbstractFeatureExtractor):
         one_line_features_dict = defaultdict(list)
 
         for line in lines:
-            for item in self._one_line_features(line,
-                                                total_lines=len(lines),
-                                                start_page=start_page,
-                                                finish_page=finish_page):
+            for item in self._one_line_features(line, total_lines=len(lines), start_page=start_page, finish_page=finish_page):
                 feature_name, feature = item[0], item[1]
                 one_line_features_dict[feature_name].append(feature)
         one_line_features_df = pd.DataFrame(one_line_features_dict)

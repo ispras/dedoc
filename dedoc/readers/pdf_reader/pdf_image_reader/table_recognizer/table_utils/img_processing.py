@@ -63,13 +63,13 @@ def apply_houph_line(img: np.ndarray, threshold_gap: int = 10, *, config: dict) 
 
 def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict) -> [Any, Any, np.ndarray, float]:
     """
-    function"s steps:
+    function's steps:
     1) detects Houph lines for detecting rotate angle. Then input image has rotated on the rotate angle.
     2) performs morphological operations under rotated images for detecting horizontal and vertical lines
     3) on found lines detects tree contours with help cv2.findContours
     :param img: input image
     :param config: dict from config.py
-    :return: contours, contours"s hierarchy, rotated image, rotate angle
+    :return: contours, contours's hierarchy, rotated image, rotate angle
     """
 
     # Thresholding the image
@@ -114,8 +114,7 @@ def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict) -> [An
     return contours, hierarchy, img, angle_alignment
 
 
-def __get_contours_for_table_wo_external_bounds(img: np.ndarray, img_with_contours: np.ndarray,
-                                                contours: List, hierarchy: List) -> [Any, Any]:
+def __get_contours_for_table_wo_external_bounds(img: np.ndarray, img_with_contours: np.ndarray, contours: List, hierarchy: List) -> [Any, Any]:
     # get children (get table counters)
     contours = np.array(contours)
     list_contours, table_contours = __get_table_contours(contours, hierarchy)

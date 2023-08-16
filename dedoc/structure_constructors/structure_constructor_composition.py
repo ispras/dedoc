@@ -22,10 +22,7 @@ class StructureConstructorComposition(AbstractStructureConstructor):
         self.default_constructor = default_constructor
         self.table_patcher = TablePatcher()
 
-    def structure_document(self,
-                           document: UnstructuredDocument,
-                           structure_type: Optional[str] = None,
-                           parameters: Optional[dict] = None) -> ParsedDocument:
+    def structure_document(self, document: UnstructuredDocument, structure_type: Optional[str] = None, parameters: Optional[dict] = None) -> ParsedDocument:
         """
         Construct the result document structure according to the `structure_type` parameter.
         If `structure_type` is empty string or None the default constructor will be used.

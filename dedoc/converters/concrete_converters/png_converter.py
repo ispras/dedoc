@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 import cv2
@@ -25,11 +26,13 @@ class PNGConverter(AbstractConverter):
         """
         Convert the image-like documents into files with .png extension.
         """
+        path_in = os.path.join(tmp_dir, f"{filename}{extension}")
+        path_out = os.path.join(tmp_dir, f"{filename}.png")
         if extension in [".hdr", ".pic", ".sr", ".ras", ".j2k"]:
-            img = cv2.imread(f"{tmp_dir}/{filename}{extension}")
-            cv2.imwrite(f"{tmp_dir}/{filename}.png", img)
+            img = cv2.imread(path_in)
+            cv2.imwrite(path_out, img)
         else:
-            img = Image.open(f"{tmp_dir}/{filename}{extension}")
-            img.save(f"{tmp_dir}/{filename}.png")
+            img = Image.open(path_in)
+            img.save(path_out)
 
-        return filename + ".png"
+        return f"{filename}.png"

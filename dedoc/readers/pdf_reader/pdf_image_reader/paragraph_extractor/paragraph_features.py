@@ -82,10 +82,7 @@ class ParagraphFeatureExtractor(AbstractFeatureExtractor):
                 df_results[col] /= (df_results[col].max() - df_results[col].min() + 1)
         return df_results[sorted(df_results.columns)]
 
-    def _relative_indent(self,
-                         this_bbox: Optional[BBox],
-                         prev_bbox: Optional[BBox],
-                         left: bool = True) -> Optional[float]:
+    def _relative_indent(self, this_bbox: Optional[BBox], prev_bbox: Optional[BBox], left: bool = True) -> Optional[float]:
         if this_bbox is None or prev_bbox is None:
             return None
         elif left:

@@ -24,7 +24,7 @@ def __prettify_text(text: str) -> Iterator[str]:
         yield " ".join(res)
 
 
-def _node2tree(paragraph: "TreeNode", depth: int, depths: Set[int] = None) -> str:
+def _node2tree(paragraph: TreeNode, depth: int, depths: Set[int] = None) -> str:
     if depths is None:
         depths = set()
 
@@ -54,7 +54,7 @@ def _node2tree(paragraph: "TreeNode", depth: int, depths: Set[int] = None) -> st
                 """
 
 
-def json2collapsed_tree(paragraph: "TreeNode") -> str:
+def json2collapsed_tree(paragraph: TreeNode) -> str:
     result = f"""
     <!DOCTYPE html>
     <html>
@@ -72,7 +72,7 @@ def json2collapsed_tree(paragraph: "TreeNode") -> str:
     return result
 
 
-def json2tree(paragraph: "TreeNode") -> str:
+def json2tree(paragraph: TreeNode) -> str:
     stack = [paragraph]
     nodes = []
     while len(stack) > 0:
@@ -108,11 +108,7 @@ def __add_vertical_line(depths: Set[int], space: List[str]) -> str:
     return "".join(space)
 
 
-def json2html(text: str,
-              paragraph: "TreeNode",
-              tables: Optional[List[Table]],
-              tabs: int = 0,
-              table2id: Dict[str, int] = None) -> str:
+def json2html(text: str, paragraph: TreeNode, tables: Optional[List[Table]], tabs: int = 0, table2id: Dict[str, int] = None) -> str:
     if tables is None:
         tables = []
 
@@ -167,7 +163,7 @@ def __value2tag(name: str, value: str) -> str:
     return value
 
 
-def __annotations2html(paragraph: "TreeNode", table2id: Dict[str, int]) -> str:
+def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int]) -> str:
     indexes = dict()
 
     for annotation in paragraph.annotations:

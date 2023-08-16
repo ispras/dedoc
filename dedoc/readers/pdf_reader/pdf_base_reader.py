@@ -214,8 +214,6 @@ class PdfBaseReader(BaseReader):
                              orient_cell_angle: int = 270,
                              table_type: str = "") -> Tuple[List[np.ndarray], List[ScanTable]]:
 
-        result_batch = Parallel(n_jobs=self.config["n_jobs"])(
-            delayed(self.table_recognizer.recognize_tables_from_image)(
-                image, page_number_begin + i, language, orient_analysis_cells, orient_cell_angle, table_type)
-            for i, image in enumerate(batch))  # noqa
+        result_batch = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.table_recognizer.recognize_tables_from_image)(
+            image, page_number_begin + i, language, orient_analysis_cells, orient_cell_angle, table_type) for i, image in enumerate(batch))
         return result_batch

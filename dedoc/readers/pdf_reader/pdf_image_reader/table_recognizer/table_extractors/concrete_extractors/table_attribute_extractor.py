@@ -127,16 +127,14 @@ class TableAttributeExtractor(object):
             # один (1) - с обязательными поляями, один (2) - с необязательными
             # поэтому len(matrix_table) > first_required_column + 2
             if len(horizontal_union_rows) > 0 and \
-                    self.__is_indexable_column(scan_table.matrix_cells, first_required_column,
-                                               max_raw_of_search=horizontal_union_rows[-1]) \
+                    self.__is_indexable_column(scan_table.matrix_cells, first_required_column, max_raw_of_search=horizontal_union_rows[-1]) \
                     and len(scan_table.matrix_cells) > first_required_column + 2:
                 scan_table.matrix_cells[0][first_required_column + 1].is_attribute_required = True
 
             # Полностью пустые строки не могут быть атрибутами (не информативны)
             # Перенос атрибутов на след строку таблицы
             index_empty_rows = horizontal_union_rows[-1]
-            if self.__is_empty_row(scan_table.matrix_cells, index_empty_rows) and len(
-                    scan_table.matrix_cells) != index_empty_rows + 1:
+            if self.__is_empty_row(scan_table.matrix_cells, index_empty_rows) and len(scan_table.matrix_cells) != index_empty_rows + 1:
                 horizontal_union_rows.append(index_empty_rows + 1)
                 for j in range(0, len(scan_table.matrix_cells[index_empty_rows + 1])):
                     scan_table.matrix_cells[index_empty_rows + 1][j].is_attribute = True
@@ -160,6 +158,5 @@ class TableAttributeExtractor(object):
         # один один столбец должен быть (0) - нумерованным,
         # один (1) - с обязательными поляями, один (2) - с необязательными
         # поэтому len(matrix_table) > first_required_column + 2
-        if self.__is_indexable_column(scan_table.matrix_cells, first_required_column, 0) and len(
-                scan_table.matrix_cells) > first_required_column + 2:
+        if self.__is_indexable_column(scan_table.matrix_cells, first_required_column, 0) and len(scan_table.matrix_cells) > first_required_column + 2:
             scan_table.matrix_cells[0][first_required_column + 1].is_attribute_required = True

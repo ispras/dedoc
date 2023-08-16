@@ -25,20 +25,12 @@ class HeaderHierarchyLevelBuilder(AbstractHierarchyLevelBuilder):
 
         for line, label in lines_with_labels:
             # postprocessing of others units
-            hierarchy_level, previous_hl = self._line_2level(text=line.line,
-                                                             label=label,
-                                                             init_hl_depth=init_hl_depth,
-                                                             previous_hl=previous_hl)
+            hierarchy_level, previous_hl = self._line_2level(text=line.line, label=label, init_hl_depth=init_hl_depth, previous_hl=previous_hl)
 
             self._postprocess_roman(hierarchy_level, line)
 
             metadata = deepcopy(line.metadata)
             metadata.hierarchy_level = hierarchy_level
-            line = LineWithMeta(
-                line=line.line,
-                metadata=metadata,
-                annotations=line.annotations,
-                uid=line.uid
-            )
+            line = LineWithMeta(line=line.line, metadata=metadata, annotations=line.annotations, uid=line.uid)
             result.append(line)
         return result

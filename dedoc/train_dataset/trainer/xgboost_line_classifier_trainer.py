@@ -35,5 +35,4 @@ class XGBoostLineClassifierTrainer(BaseSklearnLineClassifierTrainer):
         return XGBClassifier(random_state=self.random_seed, **self.classifier_parameters)
 
     def _save_features_importances(self, cls: XGBClassifier, feature_names: List[str]) -> None:
-        xgbfir.saveXgbFI(cls, feature_names=feature_names,
-                         OutputXlsxFile=self.path_features_importances)
+        xgbfir.saveXgbFI(cls, feature_names=feature_names, OutputXlsxFile=self.path_features_importances)

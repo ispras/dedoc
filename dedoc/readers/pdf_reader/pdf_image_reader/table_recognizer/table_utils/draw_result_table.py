@@ -25,9 +25,7 @@ if __name__ == "__main__":
         image = cv2.imread(img_path)
         color_backgr = np.max(image)
         padding = 40
-        image_bigger = np.full((image.shape[0] + padding * 2,
-                                image.shape[1] + padding * 2,
-                                image.shape[2]), color_backgr)
+        image_bigger = np.full((image.shape[0] + padding * 2, image.shape[1] + padding * 2, image.shape[2]), color_backgr)
         image_bigger[padding:-padding, padding:-padding] = image
         # TODO fix this
         clean_images, tables = PdfImageReader(config={}).get_tables([cv2.cvtColor(image_bigger, cv2.COLOR_BGR2GRAY)])

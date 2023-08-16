@@ -124,8 +124,7 @@ class TestRecognizedTable(unittest.TestCase):
         self.assertTrue(similarity(tables[0].matrix_cells[0][1].text, "Наименование данных"))
         self.assertTrue(similarity(tables[0].matrix_cells[0][2].text, "Данные"))
         self.assertTrue(similarity(tables[0].matrix_cells[4][1].text.capitalize(), "Инн"))
-        self.assertTrue(
-            similarity(tables[0].matrix_cells[3][1].text, "Руководитель (ФИО, телефон,\nфакс, электронный адрес)"))
+        self.assertTrue(similarity(tables[0].matrix_cells[3][1].text, "Руководитель (ФИО, телефон,\nфакс, электронный адрес)"))
 
     def test_table_recognition_2(self) -> None:
         image = cv2.imread(get_full_path("data/tables/example_with_table4.jpg"), 0)

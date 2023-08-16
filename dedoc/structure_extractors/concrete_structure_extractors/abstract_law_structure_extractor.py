@@ -182,9 +182,7 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
             line.set_line(prefix + suffix)
         return line
 
-    def __finish_chunk(self,
-                       is_application_begun: bool,
-                       lines_with_labels: List[Tuple[LineWithMeta, str]]) -> List[LineWithMeta]:
+    def __finish_chunk(self, is_application_begun: bool, lines_with_labels: List[Tuple[LineWithMeta, str]]) -> List[LineWithMeta]:
         if len(lines_with_labels) == 0:
             return []
 

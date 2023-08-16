@@ -115,7 +115,7 @@ class TOCFeatureExtractor:
         Second TOC item ... 2
         Third TOC item .... 5
         """
-        assert (len(corrected_result) > 1)
+        assert len(corrected_result) > 1
         right_page_order = True
         prev_page = int(corrected_result[0]["page"])
         for item in corrected_result[1:]:

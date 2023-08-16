@@ -87,11 +87,7 @@ class PdfAutoReader(BaseReader):
         result = self.pdf_image_reader.read(path=path, parameters=parameters_copy)
         return result
 
-    def __handle_correct_text_layer(self,
-                                    is_first_page_correct: bool,
-                                    parameters: dict,
-                                    path: str,
-                                    warnings: list) -> UnstructuredDocument:
+    def __handle_correct_text_layer(self, is_first_page_correct: bool, parameters: dict, path: str, warnings: list) -> UnstructuredDocument:
         self.logger.info(f"Assume document {os.path.basename(path)} has a correct textual layer")
         warnings.append("Assume document has a correct textual layer")
         recognized_first_page = None
@@ -153,7 +149,4 @@ class PdfAutoReader(BaseReader):
                            if not (isinstance(annotation, TableAnnotation) and annotation.value in dropped_tables)]
             new_line = LineWithMeta(line=line.line, metadata=line.metadata, annotations=annotations, uid=line.uid)
             lines.append(new_line)
-        return UnstructuredDocument(tables=tables,
-                                    lines=lines,
-                                    attachments=first.attachments + second.attachments,
-                                    metadata=second.metadata)
+        return UnstructuredDocument(tables=tables, lines=lines, attachments=first.attachments + second.attachments, metadata=second.metadata)

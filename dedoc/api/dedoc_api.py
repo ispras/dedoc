@@ -55,8 +55,7 @@ def get_version() -> Response:
 def _get_static_file_path(request: Request) -> str:
     file = request.query_params.get("fname")
     directory_name = request.query_params.get("directory")
-    directory = static_files_dirs[
-        directory_name] if directory_name is not None and directory_name in static_files_dirs else static_path
+    directory = static_files_dirs[directory_name] if directory_name is not None and directory_name in static_files_dirs else static_path
     return os.path.abspath(os.path.join(directory, file))
 
 

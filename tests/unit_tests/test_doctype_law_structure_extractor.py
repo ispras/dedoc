@@ -9,8 +9,7 @@ from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
-from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.body_law_hierarchy_level_builder import \
-    BodyLawHierarchyLevelBuilder
+from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.body_law_hierarchy_level_builder import BodyLawHierarchyLevelBuilder
 from tests.test_utils import TestTimeout, get_test_config
 
 
@@ -25,11 +24,9 @@ class TestLawStructureExtractor(unittest.TestCase):
         self.assertEqual("item", hl.line_type)
         hl, _ = self.body_builder._line_2level(text="3) пункт первый", label="structure_unit", init_hl_depth=self.depth)
         self.assertEqual("item", hl.line_type)
-        hl, _ = self.body_builder._line_2level(text="1000) пункт первый", label="structure_unit",
-                                               init_hl_depth=self.depth)
+        hl, _ = self.body_builder._line_2level(text="1000) пункт первый", label="structure_unit", init_hl_depth=self.depth)
         self.assertEqual("item", hl.line_type)
-        hl, _ = self.body_builder._line_2level(text="1.1.3) пункт первый", label="structure_unit",
-                                               init_hl_depth=self.depth)
+        hl, _ = self.body_builder._line_2level(text="1.1.3) пункт первый", label="structure_unit", init_hl_depth=self.depth)
         self.assertEqual("item", hl.line_type)
 
     def test_subitem(self) -> None:
@@ -45,11 +42,9 @@ class TestLawStructureExtractor(unittest.TestCase):
         self.assertEqual("articlePart", hl.line_type)
         hl, _ = self.body_builder._line_2level(text="2. пункт первый", label="structure_unit", init_hl_depth=self.depth)
         self.assertEqual("articlePart", hl.line_type)
-        hl, _ = self.body_builder._line_2level(text="1.2.1. пункт первый", label="structure_unit",
-                                               init_hl_depth=self.depth)
+        hl, _ = self.body_builder._line_2level(text="1.2.1. пункт первый", label="structure_unit", init_hl_depth=self.depth)
         self.assertEqual("articlePart", hl.line_type)
-        hl, _ = self.body_builder._line_2level(text="1.2.1.2. пункт первый", label="structure_unit",
-                                               init_hl_depth=self.depth)
+        hl, _ = self.body_builder._line_2level(text="1.2.1.2. пункт первый", label="structure_unit", init_hl_depth=self.depth)
         self.assertEqual("articlePart", hl.line_type)
 
     def test_begin_application(self) -> None:
@@ -64,10 +59,7 @@ class TestLawStructureExtractor(unittest.TestCase):
                  "правонарушениях. (В редакции Закона Москвы от 24.06.2015 г. № 39)",
                  "2. Нарушение  административного регламента",
                  "1.2.2)", "1.2.4.6}", "1.23.005 ", "1.4.5 ", "1.4.5\n", "1.5.6.Закон о ...."]
-        answers = [False,
-                   False,
-                   True,
-                   True, True, False, True, True, True]
+        answers = [False, False, True, True, True, False, True, True, True]
 
         for num, line in enumerate(lines):
             self.assertEqual(answers[num], self.structure_extractor.regexps_part.match(line) is not None, line)
@@ -108,19 +100,16 @@ class TestLawStructureExtractor(unittest.TestCase):
         self.assertListEqual([], self.structure_extractor.classifier.predict([]))
 
     def test_fix_labels(self) -> None:
-        labels = ["title", "raw_text", "title", "structure_unit", "title", "cellar", "structure_unit", "cellar",
-                  "application"]
-        labels_expected = ["title", "title", "title", "structure_unit", "raw_text", "raw_text", "structure_unit",
-                           "cellar", "application"]
+        labels = ["title", "raw_text", "title", "structure_unit", "title", "cellar", "structure_unit", "cellar", "application"]
+        labels_expected = ["title", "title", "title", "structure_unit", "raw_text", "raw_text", "structure_unit", "cellar", "application"]
         self.assertListEqual(labels_expected, self.__fix_labels(labels))
 
         labels = ["title", "structure_unit", "application", "structure_unit"]
         self.assertListEqual(labels, self.__fix_labels(labels))
 
-        labels = ["structure_unit", "application", "title", "cellar", "title", "application", "structure_unit",
-                  "structure_unit", "structure_unit", "title"]
-        labels_expected = ["structure_unit", "application", "raw_text", "raw_text", "raw_text", "application",
-                           "structure_unit", "structure_unit", "structure_unit", "raw_text"]
+        labels = ["structure_unit", "application", "title", "cellar", "title", "application", "structure_unit", "structure_unit", "structure_unit", "title"]
+        labels_expected = ["structure_unit", "application", "raw_text", "raw_text", "raw_text", "application", "structure_unit", "structure_unit",
+                           "structure_unit", "raw_text"]
         self.assertListEqual(labels_expected, self.__fix_labels(labels))
 
         classes = ["structure_unit", "cellar", "application", "title", "footer"]
