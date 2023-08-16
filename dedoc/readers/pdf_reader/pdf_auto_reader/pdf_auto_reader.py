@@ -23,8 +23,8 @@ class PdfAutoReader(BaseReader):
 
     :class:`~dedoc.readers.PdfAutoReader` is used for automatic detection of a correct textual layer in the given PDF file:
 
-    * if PDF document has a correct textual layer then :class:`~dedoc.readers.PdfTxtLayerReader` or :class:`~dedoc.readers.PdfTabbyReader` is used
-        for document content extraction;
+    * if PDF document has a correct textual layer then :class:`~dedoc.readers.PdfTxtLayerReader` or :class:`~dedoc.readers.PdfTabbyReader` is used \
+    for document content extraction;
 
     * if PDF document doesn't have a correct textual layer then :class:`~dedoc.readers.PdfImageReader` is used for document content extraction.
 
