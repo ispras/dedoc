@@ -10,6 +10,6 @@ def create_note(content: str, modified_time: int, created_time: int, author: str
                  "created_time": created_time,
                  "size": size if size else len(content),
                  "author": author}
-    encode_data = json.dumps(note_dict).encode('utf-8')
+    encode_data = json.dumps(note_dict).encode("utf-8")
 
     return filename, encode_data

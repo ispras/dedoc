@@ -4,7 +4,7 @@ import os
 from typing import Optional, Union
 
 import piexif
-from PIL import Image, ExifTags
+from PIL import ExifTags, Image
 from dateutil import parser
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument

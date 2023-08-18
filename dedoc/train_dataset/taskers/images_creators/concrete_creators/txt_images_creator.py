@@ -4,10 +4,10 @@ import tempfile
 import zipfile
 from typing import List, Tuple
 
-from PIL import ImageFont, ImageDraw, Image
+from PIL import Image, ImageDraw, ImageFont
+
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
-
 from dedoc.train_dataset.taskers.images_creators.concrete_creators.abstract_images_creator import AbstractImagesCreator
 from dedoc.train_dataset.train_dataset_utils import get_original_document_path
 from dedoc.utils.utils import get_batch
@@ -58,14 +58,13 @@ class TxtImagesCreator(AbstractImagesCreator):
 
             for i, (uid, line) in enumerate(batch_lines):
                 if line[0].isspace():
-                    self.logger.info(
-                        "\n{} / {} image processed (empty line)".format(i + batch_start + 1, len(txt_lines)))
+                    self.logger.info(f"\n{i + batch_start + 1} / {len(txt_lines)} image processed (empty line)")
                     continue
 
                 image = self.__make_image(width, height, batch_lines)
-                self.logger.info("\n{} / {} image processed".format(i + batch_start + 1, len(txt_lines)))
+                self.logger.info(f"\n{i + batch_start + 1} / {len(txt_lines)} image processed")
                 image_with_bbox = self.__make_bbox_image(image, batch_lines, i)
-                img_name = "{}.jpg".format(uid)
+                img_name = f"{uid}.jpg"
                 with tempfile.TemporaryDirectory() as tmpdir:
                     img_path = os.path.join(tmpdir, img_name)
                     image_with_bbox.save(img_path, format="jpeg")
@@ -116,13 +115,13 @@ class TxtImagesCreator(AbstractImagesCreator):
         return txt_lines
 
     def __make_image(self, width: int, height: int, txt_lines: List[Tuple[str, List[str]]]) -> Image:
-        image = Image.new('RGB', (width, height), color=self.background_color)
+        image = Image.new("RGB", (width, height), color=self.background_color)
 
         draw = ImageDraw.Draw(image)
         x = self.horizontal_padding
         y = self.vertical_padding
 
-        for i, (uid, line) in enumerate(txt_lines):
+        for _, (_, line) in enumerate(txt_lines):
             for part in line:
                 draw.text((x, y), part, font=self.font, fill=self.text_color)
                 y += self.row_height

@@ -1,7 +1,9 @@
 import re
 from typing import List, Optional, Tuple, Union
+
 import numpy as np
 from Levenshtein._levenshtein import ratio
+
 from dedoc.data_structures.line_with_meta import LineWithMeta
 
 
@@ -59,8 +61,9 @@ class TOCFeatureExtractor:
             if sum(marks[:idx]) > 5 and not np.any(marks[idx: idx + self.window_size]):
                 corrected_marks.extend([False] * (len_lines - self.window_size - idx))
                 break
-            corrected_marks.append(np.any(marks[idx: idx + self.window_size]) and np.any(marks[:idx]) or
-                                   marks[idx] and np.any(marks[idx + 1: idx + self.window_size]))
+            marked_before = np.any(marks[idx: idx + self.window_size]) and np.any(marks[:idx])
+            marked_after = marks[idx] and np.any(marks[idx + 1: idx + self.window_size])
+            corrected_marks.append(marked_before or marked_after)
         corrected_marks.extend([False] * self.window_size)
         result = list(corrected_lines[corrected_marks])
         return result
@@ -75,7 +78,7 @@ class TOCFeatureExtractor:
         corrected_lines = []
         # First step: we check each line with regular expressions and find the TOC title and TOC items
         # We filter too short probable TOCs (< 6 TOC items) or too long probable TOC items (> 5 lines long)
-        for i, line in enumerate(document):
+        for line in document:
             line_text = line.line
 
             # check if the line is a TOC title
@@ -112,7 +115,7 @@ class TOCFeatureExtractor:
         Second TOC item ... 2
         Third TOC item .... 5
         """
-        assert(len(corrected_result) > 1)
+        assert len(corrected_result) > 1
         right_page_order = True
         prev_page = int(corrected_result[0]["page"])
         for item in corrected_result[1:]:

@@ -95,26 +95,26 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree=tree)
         sub1 = self._get_by_tree_path(tree, "0.0.0")
-        self.assertEqual('1.1 TimesNewRomanItalicBold20\n', sub1["text"])
-        self.assertIn({'start': 0, 'end': 29, "name": "size", 'value': '20'}, sub1['annotations'])
+        self.assertEqual("1.1 TimesNewRomanItalicBold20\n", sub1["text"])
+        self.assertIn({"start": 0, "end": 29, "name": "size", "value": "20"}, sub1["annotations"])
 
         sub1sub1 = self._get_by_tree_path(tree, "0.0.0.0")
-        self.assertEqual('Different styles(Arial16):\n', sub1sub1['text'])
-        self.assertIn({'start': 0, 'end': 26, "name": "size", 'value': '15'}, sub1sub1['annotations'])
+        self.assertEqual("Different styles(Arial16):\n", sub1sub1["text"])
+        self.assertIn({"start": 0, "end": 26, "name": "size", "value": "15"}, sub1sub1["annotations"])
 
         sub2 = self._get_by_tree_path(tree, "0.1.0")
-        self.assertEqual('1. TimesNewRoman18\n', sub2['text'])
-        self.assertIn({'start': 3, 'end': 18, "name": "size", 'value': '18'}, sub2['annotations'])
+        self.assertEqual("1. TimesNewRoman18\n", sub2["text"])
+        self.assertIn({"start": 3, "end": 18, "name": "size", "value": "18"}, sub2["annotations"])
 
         sub3 = self._get_by_tree_path(tree, "0.1.1")
-        self.assertEqual('2. TimesNewRoman9, TimesNewRomanBold7.5, TimesNewRoman6.5\n', sub3['text'])
-        self.assertIn({'start': 3, 'end': 18, "name": "size", 'value': '9'}, sub3['annotations'])
-        self.assertIn({'start': 19, 'end': 57, "name": "size", 'value': '6'}, sub3['annotations'])
+        self.assertEqual("2. TimesNewRoman9, TimesNewRomanBold7.5, TimesNewRoman6.5\n", sub3["text"])
+        self.assertIn({"start": 3, "end": 18, "name": "size", "value": "9"}, sub3["annotations"])
+        self.assertIn({"start": 19, "end": 57, "name": "size", "value": "6"}, sub3["annotations"])
 
         sub4 = self._get_by_tree_path(tree, "0.1.2")
-        self.assertEqual('3. TimesNewRomanItalic14, Calibri18, Tahoma16\n', sub4['text'])
-        self.assertIn({'start': 3, 'end': 25, "name": "size", 'value': '14'}, sub4['annotations'])
-        self.assertIn({'start': 26, 'end': 36, "name": "size", 'value': '18'}, sub4['annotations'])
+        self.assertEqual("3. TimesNewRomanItalic14, Calibri18, Tahoma16\n", sub4["text"])
+        self.assertIn({"start": 3, "end": 25, "name": "size", "value": "14"}, sub4["annotations"])
+        self.assertIn({"start": 26, "end": 36, "name": "size", "value": "18"}, sub4["annotations"])
 
     def test_tables2(self) -> None:
         file_name = "VVP_global_table.pdf"

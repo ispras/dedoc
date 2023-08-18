@@ -1,9 +1,10 @@
 import copy
 from typing import List
+
 import numpy as np
 
-from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
+from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.utils import get_cell_text_by_ocr
 
 
@@ -54,9 +55,7 @@ def split_last_column(matrix_table: List[List[Cell]], language: str, image: np.a
         if row_id == len(last_column) - 1 and len(union_cells) > 1 or \
                 cell.id_con != prev_cell.id_con and len(union_cells) > 1:
             result_matrix[start_union_cell:start_union_cell + len(union_cells)] = \
-                _split_each_row(union_cells, matrix_table[start_union_cell:start_union_cell + len(union_cells)],
-                                language=language,
-                                image=image)
+                _split_each_row(union_cells, matrix_table[start_union_cell:start_union_cell + len(union_cells)], language=language, image=image)
             union_cells = [cell]
             start_union_cell = -1
 
@@ -73,8 +72,7 @@ def split_last_column(matrix_table: List[List[Cell]], language: str, image: np.a
     return result_matrix
 
 
-def _split_each_row(union_cells: List[Cell], matrix_table: List[List[Cell]], language: str, image: np.array) \
-        -> List[List[Cell]]:
+def _split_each_row(union_cells: List[Cell], matrix_table: List[List[Cell]], language: str, image: np.array) -> List[List[Cell]]:
     assert len(union_cells) == len(matrix_table)
     if len(matrix_table[0]) < 1:
         return matrix_table

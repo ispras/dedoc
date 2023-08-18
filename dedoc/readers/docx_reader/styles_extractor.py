@@ -1,9 +1,9 @@
 import logging
 import re
 from enum import Enum
-from typing import Optional, List
+from typing import List, Optional
 
-from bs4 import Tag, BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.data_structures.run import Run
@@ -33,12 +33,12 @@ class StylesExtractor:
         # extract information from docDefaults
         # docDefaults: rPrDefault + pPrDefault
         self.doc_defaults = self.styles.docDefaults
-        self.default_style = self.styles.find_all('w:style', attrs={'w:default': "1", 'w:type': "paragraph"})
+        self.default_style = self.styles.find_all("w:style", attrs={"w:default": "1", "w:type": "paragraph"})
         self.default_style = self.default_style[0] if self.default_style else None
 
         self.__styles_cache = {}
         self.__styles_hierarchy_cache = {}
-        self.style_regexp = re.compile(r'heading\s*(\d+)')
+        self.style_regexp = re.compile(r"heading\s*(\d+)")
 
     def parse(self, style_id: Optional[str], old_properties: BaseProperties, style_type: StyleType) -> None:
         """
@@ -82,7 +82,7 @@ class StylesExtractor:
             try:
                 numbering_run = Run(old_properties, self)
                 self.numbering_extractor.parse(style, old_properties, numbering_run)
-                if hasattr(old_properties, 'runs'):
+                if hasattr(old_properties, "runs"):
                     old_properties.runs.append(numbering_run)
             except KeyError as error:
                 self.logger.info(error)
@@ -101,7 +101,7 @@ class StylesExtractor:
         current_style = style
         while current_style.basedOn:
             try:
-                parent_style_id = current_style.basedOn['w:val']
+                parent_style_id = current_style.basedOn["w:val"]
                 current_style = self.__find_style(parent_style_id, style_type)
                 if current_style:
                     styles.append(current_style)
@@ -136,7 +136,7 @@ class StylesExtractor:
         if key in self.__styles_cache:
             return self.__styles_cache[key]
 
-        styles = self.styles.find_all('w:style', attrs={'w:styleId': style_id, 'w:type': style_type.value})
+        styles = self.styles.find_all("w:style", attrs={"w:styleId": style_id, "w:type": style_type.value})
         if not styles:
             return None
 

@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
@@ -23,9 +24,9 @@ class PDFConverter(AbstractConverter):
         """
         Convert the pdf-like documents into files with .pdf extension using the ddjvu application.
         """
-        path_in = f"{tmp_dir}/{filename}{extension}"
-        expected_path = f"{tmp_dir}/{filename}.pdf"
+        path_in = os.path.join(tmp_dir, f"{filename}{extension}")
+        expected_path = os.path.join(tmp_dir, f"{filename}.pdf")
         command = ["ddjvu", "--format=pdf", path_in, expected_path]
         self._run_subprocess(command=command, filename=filename, expected_path=expected_path)
 
-        return filename + '.pdf'
+        return filename + ".pdf"

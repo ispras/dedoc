@@ -1,8 +1,8 @@
 import os
 from unittest import TestCase
 
-from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from dedoc.config import get_config
+from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from tests.test_utils import get_test_config
 
 
@@ -35,5 +35,5 @@ class TestRawTextReader(TestCase):
         file = os.path.join(self.path, "txt", "pr_17.txt")
         reader = RawTextReader(config=get_config())
         for line in reader._get_lines_with_meta(path=file, encoding="utf-8"):
-            expected_uid = "txt_1a3cd561910506d56a65db1d1dcb5049_{}".format(line.metadata.line_id)
+            expected_uid = f"txt_1a3cd561910506d56a65db1d1dcb5049_{line.metadata.line_id}"
             self.assertEqual(expected_uid, line.uid)

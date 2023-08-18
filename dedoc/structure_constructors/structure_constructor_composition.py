@@ -1,6 +1,6 @@
-from typing import Optional, Dict
+from typing import Dict, Optional
 
-from dedoc.common.exceptions.structure_extractor_exception import StructureExtractorException
+from dedoc.common.exceptions.structure_extractor_error import StructureExtractorError
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_constructors.abstract_structure_constructor import AbstractStructureConstructor
@@ -22,10 +22,7 @@ class StructureConstructorComposition(AbstractStructureConstructor):
         self.default_constructor = default_constructor
         self.table_patcher = TablePatcher()
 
-    def structure_document(self,
-                           document: UnstructuredDocument,
-                           structure_type: Optional[str] = None,
-                           parameters: Optional[dict] = None) -> ParsedDocument:
+    def structure_document(self, document: UnstructuredDocument, structure_type: Optional[str] = None, parameters: Optional[dict] = None) -> ParsedDocument:
         """
         Construct the result document structure according to the `structure_type` parameter.
         If `structure_type` is empty string or None the default constructor will be used.
@@ -42,4 +39,4 @@ class StructureConstructorComposition(AbstractStructureConstructor):
         if structure_type is None or structure_type == "":
             return self.default_constructor.structure_document(document)
 
-        raise StructureExtractorException(f"Bad structure type {structure_type}, available structure types is: {' '.join(self.constructors.keys())}")
+        raise StructureExtractorError(f"Bad structure type {structure_type}, available structure types is: {' '.join(self.constructors.keys())}")

@@ -3,9 +3,9 @@ import os
 import subprocess
 import time
 from abc import ABC, abstractmethod
-from typing import Optional, List
+from typing import List, Optional
 
-from dedoc.common.exceptions.conversion_exception import ConversionException
+from dedoc.common.exceptions.conversion_error import ConversionError
 
 
 class AbstractConverter(ABC):
@@ -57,12 +57,12 @@ class AbstractConverter(ABC):
                 else:
                     error_message = f"Could not convert file {filename}\n{error_message}"
                     self.logger.error(error_message)
-                    raise ConversionException(msg=error_message)
+                    raise ConversionError(msg=error_message)
 
         except subprocess.TimeoutExpired:
             message = f"Conversion of the {filename} hadn't terminated after {self.timeout} seconds"
             self.logger.error(message)
-            raise ConversionException(msg=message)
+            raise ConversionError(msg=message)
 
     def _await_for_conversion(self, filename: str, tmp_dir: str) -> None:
         t = 0
@@ -71,4 +71,4 @@ class AbstractConverter(ABC):
             t += self.period_checking
 
             if t >= self.timeout:
-                raise ConversionException(msg=f"fail with {tmp_dir}/{filename}", msg_api=f"Unsupported file format {filename}")
+                raise ConversionError(msg=f"fail with {tmp_dir}/{filename}", msg_api=f"Unsupported file format {filename}")

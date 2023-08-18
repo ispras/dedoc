@@ -1,0 +1,26 @@
+[flake8]
+
+max-line-length = 160
+max-complexity = 13
+inline-quotes = "
+
+application-import-names = dedoc, tests
+import-order-style = pycharm
+
+exclude =
+    .git,
+    __pycache__,
+    .idea,
+    .github,
+    *__init__.py,
+    resources,
+    dedoc/scripts,
+    examples,
+    docs,
+    venv,
+    build,
+    dedoc.egg-info
+
+# ANN101 - type annotations for self
+ignore =
+    ANN101

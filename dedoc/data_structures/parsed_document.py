@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from typing import List, Optional
 
-from flask_restx import fields, Api, Model
+from flask_restx import Api, Model, fields
 
 import dedoc
 from dedoc.data_structures.document_content import DocumentContent
@@ -43,20 +43,19 @@ class ParsedDocument(Serializable):
         res["warnings"] = self.warnings
         res["content"] = self.content.to_dict() if self.content is not None else []
         res["metadata"] = self.metadata.to_dict()
-        res["attachments"] = [attachment.to_dict(depth=depth + 1) for attachment in self.attachments] \
-            if self.attachments is not None and depth < 10 else []
+        res["attachments"] = [attachment.to_dict(depth=depth + 1) for attachment in self.attachments] if self.attachments is not None and depth < 10 else []
 
         return res
 
     @staticmethod
-    def get_api_dict(api: Api, depth: int = 0, name: str = 'ParsedDocument') -> Model:
+    def get_api_dict(api: Api, depth: int = 0, name: str = "ParsedDocument") -> Model:
         return api.model(name, {
-            'content': fields.Nested(DocumentContent.get_api_dict(api), description='Document content structure'),
-            'metadata': fields.Nested(DocumentMetadata.get_api_dict(api), allow_null=False, skip_none=True, description='Document meta information'),
-            'version': fields.String(description='the version of the program that parsed this document', example="0.9.1"),
-            'warnings': fields.List(fields.String(description='list of warnings and possible errors', example="DOCX: seems that document corrupted")),
-            'attachments': fields.List(fields.Nested(api.model('others_ParsedDocument', {})), description='structure of attachments', required=False)
+            "content": fields.Nested(DocumentContent.get_api_dict(api), description="Document content structure"),
+            "metadata": fields.Nested(DocumentMetadata.get_api_dict(api), allow_null=False, skip_none=True, description="Document meta information"),
+            "version": fields.String(description="the version of the program that parsed this document", example="0.9.1"),
+            "warnings": fields.List(fields.String(description="list of warnings and possible errors", example="DOCX: seems that document corrupted")),
+            "attachments": fields.List(fields.Nested(api.model("others_ParsedDocument", {})), description="structure of attachments", required=False)
             if depth == 10  # TODO delete this
-            else fields.List(fields.Nested(ParsedDocument.get_api_dict(api, depth=depth + 1, name='refParsedDocument' + str(depth)),
-                                           description='Attachment structure',
+            else fields.List(fields.Nested(ParsedDocument.get_api_dict(api, depth=depth + 1, name="refParsedDocument" + str(depth)),
+                                           description="Attachment structure",
                                            required=False))})

@@ -4,9 +4,9 @@ from copy import deepcopy
 from typing import List
 
 from dedoc.data_structures import LineWithMeta
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier import TxtlayerClassifier
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 from dedoc.utils.pdf_utils import get_pdf_page_count
 
 PdfTxtlayerParameters = namedtuple("PdfTxtlayerParameters", ["is_correct_text_layer", "is_first_page_correct"])

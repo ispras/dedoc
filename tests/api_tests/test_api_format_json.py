@@ -81,7 +81,7 @@ class TestApiJSONReader(AbstractTestApiDocReader):
 
     def test_json_attachments2(self) -> None:
         file_name = "test2.json"
-        data = {'html_fields': '[["e"], ["f"]]', 'with_attachments': 'True', 'return_base64': 'true'}
+        data = {"html_fields": '[["e"], ["f"]]', "with_attachments": "True", "return_base64": "true"}
         self._send_request(file_name, expected_code=200, data=data)
 
     def test_json_null(self) -> None:
@@ -104,7 +104,7 @@ class TestApiJSONReader(AbstractTestApiDocReader):
 
     def test_json_broken_parameters(self) -> None:
         file_name = "test2.json"
-        data = {'html_fields': '[[ef]]', 'with_attachments': 'True', 'return_base64': 'true'}
+        data = {"html_fields": "[[ef]]", "with_attachments": "True", "return_base64": "true"}
         with self.assertRaises(JSONDecodeError):
             json.loads(data["html_fields"])
         self._send_request(file_name, expected_code=400, data=data)

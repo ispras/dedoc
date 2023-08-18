@@ -2,21 +2,22 @@ import hashlib
 import logging
 import string
 import uuid
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
 from bs4 import BeautifulSoup
-from bs4 import Tag, Doctype, Comment
-from dedoc.data_structures.line_with_meta import LineWithMeta
+from bs4 import Comment, Doctype, Tag
+
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.utils.utils import calculate_file_hash
 from dedoc.readers.html_reader.html_line_postprocessing import HtmlLinePostprocessing
 from dedoc.readers.html_reader.html_tag_annotation_parser import HtmlTagAnnotationParser
 from dedoc.readers.html_reader.html_tags import HtmlTags
+from dedoc.utils.utils import calculate_file_hash
 
 
 class HtmlReader(BaseReader):
@@ -46,7 +47,7 @@ class HtmlReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        with open(path, 'rb') as f:
+        with open(path, "rb") as f:
             soup = BeautifulSoup(f.read(), "html.parser")
 
         handle_invisible_table = str(parameters.get("handle_invisible_table", "false")).lower() == "true"
@@ -68,7 +69,7 @@ class HtmlReader(BaseReader):
         elif isinstance(tag, str):
             block_lines = self._handle_text_line(block=tag, path_hash=uid)
         elif tag.name not in HtmlTags.available_tags:
-            self.logger.debug("skip tag {}".format(tag.name.encode()))
+            self.logger.debug(f"skip tag {tag.name.encode()}")
             block_lines = []
         elif tag.name in HtmlTags.special_symbol_tags:
             tag_value = HtmlTags.special_symbol_tags[tag.name]
@@ -94,12 +95,7 @@ class HtmlReader(BaseReader):
         header_level = int(tag.name[1:]) if tag.name in HtmlTags.header_tags else 0
         line_type = HierarchyLevel.unknown if header_level == 0 else HierarchyLevel.header
         tag_uid = hashlib.md5((uid + text).encode()).hexdigest()
-        line = self.__make_line(line=text,
-                                line_type=line_type,
-                                header_level=header_level,
-                                uid=tag_uid,
-                                path_hash=uid,
-                                annotations=annotations)
+        line = self.__make_line(line=text, line_type=line_type, header_level=header_level, uid=tag_uid, path_hash=uid, annotations=annotations)
         line.metadata.extend_other_fields({"html_tag": tag.name})
         return [line]
 
@@ -138,11 +134,11 @@ class HtmlReader(BaseReader):
         level = None if header_level == 0 else HierarchyLevel(1, header_level, False, line_type=line_type)
         metadata = LineMetadata(page_id=0, line_id=None, tag_hierarchy_level=level)  # TODO line_id
 
-        uid = "{}_{}".format(path_hash, uid)
+        uid = f"{path_hash}_{uid}"
         return LineWithMeta(line=line, metadata=metadata, annotations=annotations, uid=uid)
 
     def __get_li_header(self, list_type: str, index: int) -> LineWithMeta:
-        end = ') ' if list_type in ["a", 'A'] else '. '
+        end = ") " if list_type in ["a", "A"] else ". "
         if list_type == "":
             header = ""
 
@@ -200,7 +196,7 @@ class HtmlReader(BaseReader):
 
     # not currently used, but may be useful in the future
     def __get_text(self, tag: Tag) -> [str, int, int]:
-        text = tag.getText() + '\n' if tag.name == "p" else tag.getText()
+        text = tag.getText() + "\n" if tag.name == "p" else tag.getText()
         text = "" if text is None else text
         return text
 
@@ -221,14 +217,11 @@ class HtmlReader(BaseReader):
         uid = hashlib.md5(block.name.encode()).hexdigest()
         result = []
         rows = self._read_table(block).cells
-        for row_id, row in enumerate(rows):
+        for row in rows:
             text = " ".join(row)
             if text.strip() != "":
                 tag_uid = hashlib.md5((uid + text).encode()).hexdigest()
-                line = self.__make_line(line=text,
-                                        line_type=HierarchyLevel.unknown,
-                                        uid=tag_uid,
-                                        path_hash=path_hash)
+                line = self.__make_line(line=text, line_type=HierarchyLevel.unknown, uid=tag_uid, path_hash=path_hash)
                 result.append(line)
         return result
 
@@ -242,7 +235,7 @@ class HtmlReader(BaseReader):
     def _visible_table(self, table: Tag, handle_invisible_table: bool) -> bool:
         if handle_invisible_table:
             return True
-        assert table.name == "table", "block {} is not table".format(table)
+        assert table.name == "table", f"block {table} is not table"
         for td in table.find_all("td"):
             style = td.attrs.get("style", "")
             if "border-bottom-style:solid" in style or "border-top-style:solid" in style:

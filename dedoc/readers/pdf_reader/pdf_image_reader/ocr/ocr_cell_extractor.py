@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import List, Tuple, Iterator, Optional
+from typing import Iterator, List, Optional, Tuple
+
 import numpy as np
 from PIL import Image
 
@@ -29,10 +30,10 @@ class OCRCellExtractor:
                 if self.config.get("debug_mode", False):
                     tmp_dir = "/tmp/docreader/debug_tables/batches/"
                     os.makedirs(tmp_dir, exist_ok=True)
-                    tmp_dir = os.path.join(tmp_dir, "{}".format(len(os.listdir(tmp_dir))))
+                    tmp_dir = os.path.join(tmp_dir, f"{len(os.listdir(tmp_dir))}")
                     os.makedirs(tmp_dir, exist_ok=True)
                     for i, image in enumerate(batch):
-                        image.save(os.path.join(tmp_dir, "image_{}.png".format(i)))
+                        image.save(os.path.join(tmp_dir, f"image_{i}.png"))
 
                 res.extend(self.__handle_one_batch(batch, language))
             assert len(res) == len(img_cells)

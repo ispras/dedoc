@@ -1,8 +1,8 @@
 from typing import Optional
 
-from dedoc.utils import supported_image_types
 from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
 from dedoc.converters.concrete_converters.png_converter import PNGConverter
+from dedoc.utils import supported_image_types
 
 
 class BinaryConverter(AbstractConverter):
@@ -18,7 +18,7 @@ class BinaryConverter(AbstractConverter):
         """
         Checks if the document is image-like (e.g. it has .bmp, .jpg, .tiff, etc. extension) and has `mime=application/octet-stream`.
         """
-        return mime == 'application/octet-stream' and extension in supported_image_types
+        return mime == "application/octet-stream" and extension in supported_image_types
 
     def do_convert(self, tmp_dir: str, filename: str, extension: str) -> str:
         """

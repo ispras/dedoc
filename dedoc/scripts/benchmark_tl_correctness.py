@@ -5,9 +5,9 @@ from collections import OrderedDict, namedtuple
 
 import requests
 import wget
+from config import get_config
 from tqdm import tqdm
 
-from config import get_config
 from dedoc.utils.utils import send_file
 
 path_result = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "benchmarks"))

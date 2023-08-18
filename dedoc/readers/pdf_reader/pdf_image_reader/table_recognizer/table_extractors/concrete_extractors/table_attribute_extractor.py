@@ -52,7 +52,7 @@ class TableAttributeExtractor(object):
     def __is_indexable_column(self, matrix_table: List[List[Cell]], column_id: int, max_raw_of_search: int) -> bool:
         # № п/п
         for i in range(0, max_raw_of_search + 1):
-            if column_id < len(matrix_table[i]) and '№' in matrix_table[i][column_id].text and len(
+            if column_id < len(matrix_table[i]) and "№" in matrix_table[i][column_id].text and len(
                     matrix_table[i][column_id].text) < len("№ п/п\n"):
                 return True
         return False
@@ -88,7 +88,7 @@ class TableAttributeExtractor(object):
     def __analyze_attr_for_vertical_union_columns(self, scan_table: ScanTable) -> List[int]:
         vertical_union_columns = []
         if len(vertical_union_columns) != 0 and len(scan_table.matrix_cells) > 1:
-            self.logger.debug('ATTR_TYPE: vertical union table')
+            self.logger.debug("ATTR_TYPE: vertical union table")
             row_max_attr = 1
             i = 1
 
@@ -127,16 +127,14 @@ class TableAttributeExtractor(object):
             # один (1) - с обязательными поляями, один (2) - с необязательными
             # поэтому len(matrix_table) > first_required_column + 2
             if len(horizontal_union_rows) > 0 and \
-                    self.__is_indexable_column(scan_table.matrix_cells, first_required_column,
-                                               max_raw_of_search=horizontal_union_rows[-1]) \
+                    self.__is_indexable_column(scan_table.matrix_cells, first_required_column, max_raw_of_search=horizontal_union_rows[-1]) \
                     and len(scan_table.matrix_cells) > first_required_column + 2:
                 scan_table.matrix_cells[0][first_required_column + 1].is_attribute_required = True
 
             # Полностью пустые строки не могут быть атрибутами (не информативны)
             # Перенос атрибутов на след строку таблицы
             index_empty_rows = horizontal_union_rows[-1]
-            if self.__is_empty_row(scan_table.matrix_cells, index_empty_rows) and len(
-                    scan_table.matrix_cells) != index_empty_rows + 1:
+            if self.__is_empty_row(scan_table.matrix_cells, index_empty_rows) and len(scan_table.matrix_cells) != index_empty_rows + 1:
                 horizontal_union_rows.append(index_empty_rows + 1)
                 for j in range(0, len(scan_table.matrix_cells[index_empty_rows + 1])):
                     scan_table.matrix_cells[index_empty_rows + 1][j].is_attribute = True
@@ -144,7 +142,7 @@ class TableAttributeExtractor(object):
         return horizontal_union_rows
 
     def __analyze_attr_for_simple_table(self, scan_table: ScanTable) -> None:
-        self.logger.debug('ATTR_TYPE: simple table')
+        self.logger.debug("ATTR_TYPE: simple table")
         for j in range(0, len(scan_table.matrix_cells[0])):
             scan_table.matrix_cells[0][j].is_attribute = True
         # set first required column
@@ -160,6 +158,5 @@ class TableAttributeExtractor(object):
         # один один столбец должен быть (0) - нумерованным,
         # один (1) - с обязательными поляями, один (2) - с необязательными
         # поэтому len(matrix_table) > first_required_column + 2
-        if self.__is_indexable_column(scan_table.matrix_cells, first_required_column, 0) and len(
-                scan_table.matrix_cells) > first_required_column + 2:
+        if self.__is_indexable_column(scan_table.matrix_cells, first_required_column, 0) and len(scan_table.matrix_cells) > first_required_column + 2:
             scan_table.matrix_cells[0][first_required_column + 1].is_attribute_required = True

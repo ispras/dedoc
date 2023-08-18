@@ -1,17 +1,18 @@
 import logging
 import os
 from datetime import datetime
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
 import cv2
 import numpy as np
 
 from dedoc.config import get_config
-from dedoc.extensions import recognized_mimes, recognized_extensions
-from dedoc.readers.pdf_reader.pdf_image_reader.adaptive_binarizer import AdaptiveBinarizer
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
-from dedoc.readers.pdf_reader.pdf_base_reader import PdfBaseReader, ParametersForParseDoc
+from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
+from dedoc.readers.pdf_reader.pdf_image_reader.adaptive_binarizer import AdaptiveBinarizer
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.scan_rotator import ScanRotator
@@ -81,21 +82,19 @@ class PdfImageReader(PdfBaseReader):
 
         #  --- Step 3: table detection and recognition ---
         if parameters.need_pdf_table_analysis:
-            clean_image, tables = self.table_recognizer. \
-                recognize_tables_from_image(image=rotated_image,
-                                            page_number=page_number,
-                                            language=parameters.language,
-                                            orient_analysis_cells=parameters.orient_analysis_cells,
-                                            orient_cell_angle=parameters.orient_cell_angle,
-                                            table_type=parameters.table_type)
+            clean_image, tables = self.table_recognizer.recognize_tables_from_image(
+                image=rotated_image,
+                page_number=page_number,
+                language=parameters.language,
+                orient_analysis_cells=parameters.orient_analysis_cells,
+                orient_cell_angle=parameters.orient_cell_angle,
+                table_type=parameters.table_type
+            )
         else:
             clean_image, tables = rotated_image, []
 
         # --- Step 4: plain text recognition and text style detection ---
-        page = self.ocr.split_image2lines(image=clean_image,
-                                          language=parameters.language,
-                                          is_one_column_document=is_one_column_document,
-                                          page_num=page_number)
+        page = self.ocr.split_image2lines(image=clean_image, language=parameters.language, is_one_column_document=is_one_column_document, page_num=page_number)
 
         lines = self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page)
         if self.config.get("labeling_mode"):
@@ -118,7 +117,7 @@ class PdfImageReader(PdfBaseReader):
             self.logger.info("Call orientation and columns classifier")
             columns, angle = self.column_orientation_classifier.predict(image)
 
-            self.logger.debug("Predict {}".format(angle))
+            self.logger.debug(f"Predict {angle}")
             if columns is not None:
                 self.logger.info(f"Final number of columns: {columns}")
             else:

@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Tuple, Dict
+from typing import Dict, Tuple
 
 from dedoc.data_structures.serializable import Serializable
 
@@ -46,7 +46,7 @@ class BBox(Serializable):
         return self.y_top_left + self.height
 
     def __str__(self) -> str:
-        return "BBox(x = {} y = {}, w = {}, h = {})".format(self.x_top_left, self.y_top_left, self.width, self.height)
+        return f"BBox(x = {self.x_top_left} y = {self.y_top_left}, w = {self.width}, h = {self.height})"
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -68,10 +68,7 @@ class BBox(Serializable):
         """
         x_top_left, y_top_left = top_left
         x_bottom_right, y_bottom_right = bottom_right
-        return BBox(x_top_left=x_top_left,
-                    y_top_left=y_top_left,
-                    width=x_bottom_right - x_top_left,
-                    height=y_bottom_right - y_top_left)
+        return BBox(x_top_left=x_top_left, y_top_left=y_top_left, width=x_bottom_right - x_top_left, height=y_bottom_right - y_top_left)
 
     def have_intersection_with_box(self, box: "BBox", threshold: float = 0.3) -> bool:
         """
@@ -81,12 +78,12 @@ class BBox(Serializable):
         :param threshold: the lowest value of the intersection over union used get boolean result
         """
         # determine the (x, y)-coordinates of the intersection rectangle
-        xA = max(self.x_top_left, box.x_top_left)
-        yA = max(self.y_top_left, box.y_top_left)
-        xB = min(self.x_top_left + self.width, box.x_top_left + box.width)
-        yB = min(self.y_top_left + self.height, box.y_top_left + box.height)
+        x_a = max(self.x_top_left, box.x_top_left)
+        y_a = max(self.y_top_left, box.y_top_left)
+        x_b = min(self.x_top_left + self.width, box.x_top_left + box.width)
+        y_b = min(self.y_top_left + self.height, box.y_top_left + box.height)
         # compute the area of intersection rectangle
-        inter_a_area = max(0, xB - xA) * max(0, yB - yA)
+        inter_a_area = max(0, x_b - x_a) * max(0, y_b - y_a)
         # compute the area of both the prediction and ground-truth
         # rectangles
         box_b_area = float(box.width * box.height)

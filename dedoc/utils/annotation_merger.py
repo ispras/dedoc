@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from typing import List, Dict, Union, Optional
+from typing import Dict, List, Optional, Union
 
 from dedoc.data_structures.annotation import Annotation
 
@@ -62,7 +62,7 @@ class ExtendedAnnotation:
 
 
 class AnnotationMerger:
-    spaces = re.compile(r'\s+')
+    spaces = re.compile(r"\s+")
 
     def merge_annotations(self, annotations: List[Annotation], text: str) -> List[Annotation]:
         """

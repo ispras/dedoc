@@ -10,8 +10,8 @@ from dedoc.data_structures.bbox import BBox
 from dedoc.train_dataset.data_path_config import table_path
 from dedoc.train_dataset.data_structures.task_item import TaskItem
 from dedoc.train_dataset.taskers.concrete_taskers.abstract_tasker import AbstractTasker
-from dedoc.utils.utils import get_batch
 from dedoc.utils.image_utils import draw_rectangle
+from dedoc.utils.utils import get_batch
 
 
 class File:
@@ -37,15 +37,13 @@ class TableTasker(AbstractTasker):
         files = self._get_files()
         with tempfile.TemporaryDirectory() as tmp_dir:
             for i, batch in enumerate(get_batch(task_size, files)):
-                task_directory = "task_{:03d}".format(i)
-                archive_path = "/tmp/{}.zip".format(task_directory)
-                image_directory = "{}/images".format(task_directory)
+                task_directory = f"task_{i:03d}"
+                archive_path = f"/tmp/{task_directory}.zip"
+                image_directory = f"{task_directory}/images"
                 with ZipFile(archive_path, "a") as task_archive:
                     self.__add_task(archive=task_archive, files=batch, task_directory=task_directory)
                     dockerfile_directory = os.path.join(self.resources_path, "train_dataset/img_classifier_dockerfile")
-                    self._add_docker_files(archive=task_archive,
-                                           task_directory=task_directory,
-                                           dockerfile_directory=dockerfile_directory)
+                    self._add_docker_files(archive=task_archive, task_directory=task_directory, dockerfile_directory=dockerfile_directory)
                     self._add_config(task_archive=task_archive,
                                      task_name=task_directory,
                                      task_directory=task_directory,
@@ -58,15 +56,14 @@ class TableTasker(AbstractTasker):
         task_items = {}
         for task_id, file in enumerate(files):
             data = file.data
-            data["original_document"] = "{}.png".format(file.name)
+            data["original_document"] = f"{file.name}.png"
             task_items[task_id] = TaskItem(task_id=task_id,
-                                           task_path="images/{}".format(os.path.basename(file.image_path)),
+                                           task_path=f"images/{os.path.basename(file.image_path)}",
                                            labeled=None,
                                            data=data,
                                            additional_info="",
                                            default_label="table").to_dict()
-        archive.writestr("{}/tasks.json".format(task_directory),
-                         json.dumps(task_items, ensure_ascii=False, indent=4).encode("utf-8"))
+        archive.writestr(f"{task_directory}/tasks.json", json.dumps(task_items, ensure_ascii=False, indent=4).encode("utf-8"))
 
     def get_original_documents(self) -> str:
         archive_path = "/tmp/original_documents.zip"
@@ -77,8 +74,8 @@ class TableTasker(AbstractTasker):
         files = {file.split(".")[0] for file in os.listdir(table_path)}
         result = []
         for file_name in sorted(files):
-            image_path = os.path.join(table_path, "{}.png".format(file_name))
-            json_path = os.path.join(table_path, "{}.json".format(file_name))
+            image_path = os.path.join(table_path, f"{file_name}.png")
+            json_path = os.path.join(table_path, f"{file_name}.json")
             file = File(image_path=image_path, json_path=json_path)
             result.append(file)
         return result
@@ -104,6 +101,6 @@ class TableTasker(AbstractTasker):
                                                  height=bbox.height,
                                                  color=(255, 0, 0))
                 image_rectangle = Image.fromarray(image_rectangle)
-                image_path = os.path.join(tmpdir, "{}.png".format(file.name))
+                image_path = os.path.join(tmpdir, f"{file.name}.png")
                 image_rectangle.save(image_path)
-                archive.write(image_path, "{}/{}.png".format(image_directory, file.name))
+                archive.write(image_path, f"{image_directory}/{file.name}.png")

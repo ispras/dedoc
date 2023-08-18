@@ -1,7 +1,7 @@
 import abc
 import copy
 from copy import deepcopy
-from typing import Tuple, Optional, List
+from typing import List, Optional, Tuple
 
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -22,26 +22,18 @@ class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, ab
     def structure_unit_builder(self) -> AbstractStructureUnit:
         pass
 
-    def get_lines_with_hierarchy(self,
-                                 lines_with_labels: List[Tuple[LineWithMeta, str]],
-                                 init_hl_depth: int) -> List[LineWithMeta]:
+    def get_lines_with_hierarchy(self, lines_with_labels: List[Tuple[LineWithMeta, str]], init_hl_depth: int) -> List[LineWithMeta]:
         if len(lines_with_labels) == 0:
             return []
         result = []
         # detect begin of body
-        previous_hl = HierarchyLevel(level_1=init_hl_depth,  # 2
-                                     level_2=0,
-                                     can_be_multiline=True,
-                                     line_type='application')
+        previous_hl = HierarchyLevel(level_1=init_hl_depth, level_2=0, can_be_multiline=True, line_type="application")
 
         lines_with_labels[0] = lines_with_labels[0][0], "application"
         previous_line_start_of_application = False
         for line_id, (line, label) in enumerate(lines_with_labels):
             # postprocessing of others units
-            hierarchy_level, previous_hl = self._line_2level(text=line.line,
-                                                             label=label,
-                                                             init_hl_depth=init_hl_depth,
-                                                             previous_hl=previous_hl)
+            hierarchy_level, previous_hl = self._line_2level(text=line.line, label=label, init_hl_depth=init_hl_depth, previous_hl=previous_hl)
             assert previous_hl is None or hierarchy_level == previous_hl
 
             # postprocess multiple applications
@@ -58,12 +50,7 @@ class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, ab
             if line_id == 0:
                 hierarchy_level.can_be_multiline = False
             metadata.hierarchy_level = hierarchy_level
-            line = LineWithMeta(
-                line=line.line,
-                metadata=metadata,
-                annotations=line.annotations,
-                uid=line.uid
-            )
+            line = LineWithMeta(line=line.line, metadata=metadata, annotations=line.annotations, uid=line.uid)
             result.append(line)
 
         return result
@@ -84,9 +71,7 @@ class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, ab
             label = "structure_unit"
 
         if label == "structure_unit":
-            return self.structure_unit_builder.structure_unit(text=text,
-                                                              init_hl_depth=init_hl_depth,
-                                                              previous_hl=previous_hl)
+            return self.structure_unit_builder.structure_unit(text=text, init_hl_depth=init_hl_depth, previous_hl=previous_hl)
         elif label == "footer":
             return HierarchyLevel(None, None, False, HierarchyLevel.raw_text), None
         elif label == "raw_text" and previous_hl is not None and previous_hl.line_type == "chapter":
@@ -99,12 +84,11 @@ class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, ab
             return HierarchyLevel(1, 1, False, "Other"), None
 
         elif label in ("application", "header", "raw_text"):
-            if label == "application" or (label == "raw_text" and
-                                          previous_hl is not None and
-                                          previous_hl.line_type == "application"):
+            application_continue = label == "raw_text" and previous_hl is not None and previous_hl.line_type == "application"
+            if label == "application" or application_continue:
                 hl = HierarchyLevel(init_hl_depth, 0, True, "application")
                 return hl, hl
             else:
                 return HierarchyLevel.create_raw_text(), None
         else:
-            raise Exception("{} {}".format(text, label))
+            raise Exception(f"{text} {label}")

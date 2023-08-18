@@ -7,7 +7,7 @@ from pdf2image import convert_from_path
 
 def get_pdf_page_count(path: str) -> Optional[int]:
     try:
-        with open(path, 'rb') as fl:
+        with open(path, "rb") as fl:
             reader = PdfFileReader(fl)
             return reader.getNumPages()
     except Exception:

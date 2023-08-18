@@ -8,7 +8,7 @@ class BaseProperties:
         Contains style properties for paragraphs and runs.
         :param properties: Paragraph or Run for copying its properties
         """
-        self.jc = properties.jc if properties else 'left'
+        self.jc = properties.jc if properties else "left"
         self.indentation = properties.indentation if properties and properties.indentation else 0
         self.size = properties.size if properties else 0
         self.bold = properties.bold if properties else False

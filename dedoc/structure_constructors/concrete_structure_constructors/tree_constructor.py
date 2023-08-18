@@ -1,14 +1,14 @@
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.document_metadata import DocumentMetadata
-from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.tree_node import TreeNode
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_constructors.abstract_structure_constructor import AbstractStructureConstructor
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
 
 
 class TreeConstructor(AbstractStructureConstructor):
@@ -44,9 +44,9 @@ class TreeConstructor(AbstractStructureConstructor):
         for line in not_document_name:
             # add raw text line
             # multiline header
-            if (line.metadata.hierarchy_level.can_be_multiline and
-                    line.metadata.hierarchy_level == tree.metadata.hierarchy_level and
-                    line.metadata.hierarchy_level.line_type == tree.metadata.hierarchy_level.line_type):
+            hl_equal = line.metadata.hierarchy_level == tree.metadata.hierarchy_level
+            line_type_equal = line.metadata.hierarchy_level.line_type == tree.metadata.hierarchy_level.line_type
+            if line.metadata.hierarchy_level.can_be_multiline and hl_equal and line_type_equal:
                 tree.add_text(line)
             # move up and add child
 

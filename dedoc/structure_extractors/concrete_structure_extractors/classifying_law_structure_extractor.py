@@ -3,7 +3,7 @@ import re
 from abc import ABC
 from collections import OrderedDict
 from enum import Enum
-from typing import List, Dict, Iterable, Optional
+from typing import Dict, Iterable, List, Optional
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
@@ -13,18 +13,18 @@ from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excr
 
 
 class LawDocType(Enum):
-    decree = 'постановление'
-    order = 'приказ'
-    bylaw = 'распоряжение'
-    definition = 'определение'
-    directive = 'директива'
-    code = 'кодекс'
-    law = 'закон'
-    constitution = 'конституция'
-    edict = 'указ'
-    state = 'положение'
-    instruction = 'инструкция'
-    federalLaw = 'федеральный закон'
+    decree = "постановление"
+    order = "приказ"
+    bylaw = "распоряжение"
+    definition = "определение"
+    directive = "директива"
+    code = "кодекс"
+    law = "закон"
+    constitution = "конституция"
+    edict = "указ"
+    state = "положение"
+    instruction = "инструкция"
+    federal_law = "федеральный закон"
 
     @staticmethod
     def doc_types() -> List[str]:
@@ -33,7 +33,7 @@ class LawDocType(Enum):
                 LawDocType.order,
                 LawDocType.bylaw,
                 LawDocType.code,
-                LawDocType.federalLaw,
+                LawDocType.federal_law,
                 LawDocType.edict,
                 LawDocType.law,
                 LawDocType.decree,
@@ -43,7 +43,7 @@ class LawDocType(Enum):
                 LawDocType.instruction]
 
     @staticmethod
-    def foiv_types() -> List['LawDocType']:
+    def foiv_types() -> List["LawDocType"]:
         return [LawDocType.order, LawDocType.state, LawDocType.instruction]
 
 
@@ -67,42 +67,42 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
 
         self.main_templates = dict()
         federal_law_ws = self.__add_whitespace_match("федеральный закон")
-        self.main_templates[LawDocType.federalLaw] = {r"\b{}\b".format(federal_law_ws)}
+        self.main_templates[LawDocType.federal_law] = {rf"\b{federal_law_ws}\b"}
 
         decree_ws = self.__add_whitespace_match("постановление")
-        self.main_templates[LawDocType.decree] = {r"\b{}\b".format(decree_ws)}
+        self.main_templates[LawDocType.decree] = {rf"\b{decree_ws}\b"}
 
         # Hot fix for tesseract common error
         order_char_map = {"з": "[з3]"}
         order_ws = self.__add_whitespace_match("приказ", char_map=order_char_map)
-        self.main_templates[LawDocType.order] = {r"\b{}\b".format(order_ws)}
+        self.main_templates[LawDocType.order] = {rf"\b{order_ws}\b"}
 
         bylaw_ws = self.__add_whitespace_match("распоряжение")
-        self.main_templates[LawDocType.bylaw] = {r"\b{}\b".format(bylaw_ws)}
+        self.main_templates[LawDocType.bylaw] = {rf"\b{bylaw_ws}\b"}
 
         law_ws = self.__add_whitespace_match("закон")
-        self.main_templates[LawDocType.law] = {r"\b{}\b".format(law_ws)}
+        self.main_templates[LawDocType.law] = {rf"\b{law_ws}\b"}
 
         edict_ws = self.__add_whitespace_match("указ")
-        self.main_templates[LawDocType.edict] = {r"\b{}\b".format(edict_ws)}
+        self.main_templates[LawDocType.edict] = {rf"\b{edict_ws}\b"}
 
         definition_ws = self.__add_whitespace_match("определение")
-        self.main_templates[LawDocType.definition] = {r"\b{}\b".format(definition_ws)}
+        self.main_templates[LawDocType.definition] = {rf"\b{definition_ws}\b"}
 
         directive_ws = self.__add_whitespace_match("директива")
-        self.main_templates[LawDocType.directive] = {r"\b{}\b".format(directive_ws)}  # TODO no data
+        self.main_templates[LawDocType.directive] = {rf"\b{directive_ws}\b"}  # TODO no data
 
         code_ws = self.__add_whitespace_match("кодекс")
-        self.main_templates[LawDocType.code] = {r"\b{}\b".format(code_ws)}
+        self.main_templates[LawDocType.code] = {rf"\b{code_ws}\b"}
 
         constitution_ws = self.__add_whitespace_match("конституция")
-        self.main_templates[LawDocType.constitution] = {r"\b{}\b".format(constitution_ws)}
+        self.main_templates[LawDocType.constitution] = {rf"\b{constitution_ws}\b"}
 
         state_ws = self.__add_whitespace_match("положение")
-        self.main_templates[LawDocType.state] = {r"\b{}\b".format(state_ws)}
+        self.main_templates[LawDocType.state] = {rf"\b{state_ws}\b"}
 
         instruction_ws = self.__add_whitespace_match("инструкция")
-        self.main_templates[LawDocType.instruction] = {r"\b{}\b".format(instruction_ws)}
+        self.main_templates[LawDocType.instruction] = {rf"\b{instruction_ws}\b"}
 
     def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
         """
@@ -112,7 +112,7 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
         """
         selected_extractor = self._predict_extractor(lines=document.lines)
         result = selected_extractor.extract_structure(document, parameters)
-        warning = "Use {} classifier".format(selected_extractor.document_type)
+        warning = f"Use {selected_extractor.document_type} classifier"
         result.warnings = result.warnings + [warning]
         return result
 
@@ -138,7 +138,7 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
                     for line in batch:
                         # - for ЯМАЛО-НЕНЕЦКИЙ, \.№ for ПОСТАНОВЛЕНИЕ от 1.1.2000 № 34
                         # / for Приказ № 47/823 от 17.12.2013 г.
-                        if re.fullmatch(r'[\s\w-]*' + template + r'[()/\.№\s\w-]*', line, re.IGNORECASE):
+                        if re.fullmatch(r"[\s\w-]*" + template + r"[()/\.№\s\w-]*", line, re.IGNORECASE):
                             if doc_type is LawDocType.law:
                                 law_matched = True
                             else:
@@ -150,20 +150,18 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
 
     def __get_extractor_by_type(self, doc_type: Optional[LawDocType]) -> AbstractStructureExtractor:
         if doc_type is None:
-            self.logger.info("Dynamic document type not found, using base: {}".format(
-                LawStructureExtractor.document_type))
+            self.logger.info(f"Dynamic document type not found, using base: {LawStructureExtractor.document_type}")
             return self.extractors[LawStructureExtractor.document_type]
         elif doc_type in LawDocType.foiv_types():
             if FoivLawStructureExtractor.document_type in self.extractors:
-                self.logger.info("Dynamic document type predicted: {}".format(
-                    FoivLawStructureExtractor.document_type))
+                self.logger.info(f"Dynamic document type predicted: {FoivLawStructureExtractor.document_type}")
                 return self.extractors[FoivLawStructureExtractor.document_type]
             else:
-                self.logger.warning("No classifier for predicted dynamic document type {}, using {}".format(
-                    FoivLawStructureExtractor.document_type, LawStructureExtractor.document_type))
+                self.logger.warning(f"No classifier for predicted dynamic document type {FoivLawStructureExtractor.document_type}, "
+                                    f"using {LawStructureExtractor.document_type}")
                 return self.extractors[LawStructureExtractor.document_type]
         else:
-            self.logger.info("Dynamic document type predicted: {}".format(LawStructureExtractor.document_type))
+            self.logger.info(f"Dynamic document type predicted: {LawStructureExtractor.document_type}")
             return self.extractors[LawStructureExtractor.document_type]
 
     def __add_whitespace_match(self, pattern: Iterable, char_map: dict = None) -> str:
@@ -199,8 +197,7 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
         return batch_lines
 
     def __text_clean(self, text: str) -> str:
-        bad_characters = OrderedDict({"\u0438\u0306": "й", "\u0439\u0306": "й",
-                                      "\u0418\u0306": "Й", "\u0419\u0306": "Й"})
+        bad_characters = OrderedDict({"\u0438\u0306": "й", "\u0439\u0306": "й", "\u0418\u0306": "Й", "\u0419\u0306": "Й"})
         for bad_c, good_c in bad_characters.items():
             text = text.replace(bad_c, good_c)
         return text

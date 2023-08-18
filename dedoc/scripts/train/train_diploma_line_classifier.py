@@ -2,9 +2,8 @@ import logging
 import os
 from typing import Optional
 
-from dedoc.structure_extractors.feature_extractors.diploma_feature_extractor import DiplomaFeatureExtractor
-
 from dedoc.config import _config as config
+from dedoc.structure_extractors.feature_extractors.diploma_feature_extractor import DiplomaFeatureExtractor
 from dedoc.train_dataset.trainer.xgboost_line_classifier_trainer import XGBoostLineClassifierTrainer
 
 

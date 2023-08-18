@@ -1,5 +1,6 @@
 import os
 from typing import Optional
+
 import xlrd
 from xlrd.sheet import Sheet
 
@@ -42,9 +43,7 @@ class ExcelReader(BaseReader):
                 sheet = book.sheet_by_index(sheet_num)
                 tables.append(self.__parse_sheet(sheet_num, sheet))
             if self.attachment_extractor.with_attachments(parameters=parameters):
-                attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path),
-                                                                        filename=os.path.basename(path),
-                                                                        parameters=parameters)
+                attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path), filename=os.path.basename(path), parameters=parameters)
             else:
                 attachments = []
             return UnstructuredDocument(lines=[], tables=tables, attachments=attachments, warnings=[])

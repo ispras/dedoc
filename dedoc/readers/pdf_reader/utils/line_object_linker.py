@@ -1,12 +1,12 @@
 import logging
-from collections import deque, defaultdict
-from typing import List, Union, Dict
+from collections import defaultdict, deque
+from typing import Dict, List, Union
 
+from dedoc.data_structures.bbox import BBox
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
-from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.data_structures.bbox import BBox
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
@@ -23,10 +23,7 @@ class LineObjectLinker:
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
 
-    def link_objects(self,
-                     lines: List[LineWithLocation],
-                     tables: List[ScanTable],
-                     images: List[PdfImageAttachment]) -> List[LineWithLocation]:
+    def link_objects(self, lines: List[LineWithLocation], tables: List[ScanTable], images: List[PdfImageAttachment]) -> List[LineWithLocation]:
         """
         add annotations to lines. Add annotations with links to the tables, images and other objects. Add spacing links
         to the lines
@@ -36,13 +33,8 @@ class LineObjectLinker:
         @return:
         """
         if len(lines) == 0:
-            metadata = LineMetadata(tag_hierarchy_level=HierarchyLevel.create_raw_text(),
-                                    page_id=0,
-                                    line_id=0)
-            lines = [LineWithLocation(line="",
-                                      metadata=metadata,
-                                      annotations=[],
-                                      location=Location(page_number=0, bbox=BBox(0, 0, 1, 1)))]
+            metadata = LineMetadata(tag_hierarchy_level=HierarchyLevel.create_raw_text(), page_id=0, line_id=0)
+            lines = [LineWithLocation(line="", metadata=metadata, annotations=[], location=Location(page_number=0, bbox=BBox(0, 0, 1, 1)))]
         last_page_line = self._get_last_page_line(lines)
         all_objects = list(lines + tables + images)
         all_objects.sort(key=lambda o: (o.order, o.location))
@@ -50,7 +42,7 @@ class LineObjectLinker:
         self._add_lines(all_objects, "previous_lines", objects_with_line_candidate)
         self._add_lines(all_objects[::-1], "next_lines", objects_with_line_candidate)
 
-        for uid, object_with_lines in objects_with_line_candidate.items():
+        for object_with_lines in objects_with_line_candidate.values():
             page_object = object_with_lines["object"]
             best_line = self._find_closest_line(page_object=page_object,
                                                 lines_before=object_with_lines["previous_lines"],
@@ -61,9 +53,9 @@ class LineObjectLinker:
             elif isinstance(page_object, PdfImageAttachment):
                 annotation = AttachAnnotation(attach_uid=page_object.uid, start=0, end=len(best_line.line))
             else:
-                self.logger.warning("Unsupported page object type {}".format(page_object))
+                self.logger.warning(f"Unsupported page object type {page_object}")
                 if self.config.get("debug_mode", False):
-                    raise Exception("Unsupported page object type {}".format(page_object))
+                    raise Exception(f"Unsupported page object type {page_object}")
             best_line.annotations.append(annotation)  # noqa
         return lines
 
@@ -93,8 +85,7 @@ class LineObjectLinker:
         @return: best line to link with object
         """
         all_lines = lines_before + lines_after
-        line_on_same_page = [line for line in all_lines
-                             if line.location.page_number == page_object.location.page_number]
+        line_on_same_page = [line for line in all_lines if line.location.page_number == page_object.location.page_number]
         # no one line on the same page
         if len(line_on_same_page) == 0:
             previous_page_id = page_object.location.page_number - 1
@@ -105,8 +96,7 @@ class LineObjectLinker:
                 return max(lines_prev_page, key=lambda line: line.location)
             else:
                 return min(all_lines, key=lambda line: line.location)
-        line_with_distance = [(self._distance_bboxes(line, page_object.location.bbox), line)
-                              for line in line_on_same_page]
+        line_with_distance = [(self._distance_bboxes(line, page_object.location.bbox), line) for line in line_on_same_page]
         return min(line_with_distance, key=lambda t: t[0])[1]
 
     @staticmethod
@@ -115,8 +105,7 @@ class LineObjectLinker:
         calculate the "distance between two bboxes"
         """
         line_bbox = line.location.bbox
-        vertical_distance_abs = min(abs(line_bbox.y_top_left - object_bbox.y_bottom_right),
-                                    abs(line_bbox.y_bottom_right - object_bbox.y_top_left))
+        vertical_distance_abs = min(abs(line_bbox.y_top_left - object_bbox.y_bottom_right), abs(line_bbox.y_bottom_right - object_bbox.y_top_left))
         vertical_distance = vertical_distance_abs / (object_bbox.height + 1e-3)
 
         # calculate horizontal intersection

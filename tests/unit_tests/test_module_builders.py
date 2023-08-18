@@ -21,20 +21,20 @@ class TestBuilders(unittest.TestCase):
     composition_builder = HierarchyLevelBuilderComposition(builders=builders)
 
     def test_creation_of_builders(self) -> None:
-        builders = self.composition_builder._get_builders(["header"], 'law')
+        builders = self.composition_builder._get_builders(["header"], "law")
         self.assertTrue(isinstance(builders[0], HeaderHierarchyLevelBuilder))
 
-        builders = self.composition_builder._get_builders(["header"], 'foiv')
+        builders = self.composition_builder._get_builders(["header"], "foiv")
         self.assertTrue(isinstance(builders[0], HeaderHierarchyLevelBuilder))
 
-        builders = self.composition_builder._get_builders(["application"], 'law')
+        builders = self.composition_builder._get_builders(["application"], "law")
         self.assertTrue(isinstance(builders[0], ApplicationLawHierarchyLevelBuilder))
 
-        builders = self.composition_builder._get_builders(["application"], 'foiv')
+        builders = self.composition_builder._get_builders(["application"], "foiv")
         self.assertTrue(isinstance(builders[0], ApplicationFoivHierarchyLevelBuilder))
 
-        builders = self.composition_builder._get_builders(["body"], 'foiv')
+        builders = self.composition_builder._get_builders(["body"], "foiv")
         self.assertTrue(isinstance(builders[0], BodyFoivHierarchyLevelBuilder))
 
-        builders = self.composition_builder._get_builders(["body"], 'law')
+        builders = self.composition_builder._get_builders(["body"], "law")
         self.assertTrue(isinstance(builders[0], BodyLawHierarchyLevelBuilder))

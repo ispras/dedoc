@@ -15,7 +15,7 @@ def get_cell_text_by_ocr(img_cell: np.ndarray, language: str) -> str:
 
 def get_text_from_table_cell(image: np.ndarray, language: str) -> str:
     config = "--psm 6"
-    text = pytesseract.image_to_string(image, lang=language, output_type=pytesseract.Output.DICT, config=config)['text']
+    text = pytesseract.image_to_string(image, lang=language, output_type=pytesseract.Output.DICT, config=config)["text"]
     return text
 
 

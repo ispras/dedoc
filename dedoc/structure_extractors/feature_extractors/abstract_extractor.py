@@ -1,6 +1,6 @@
 import json
 from abc import ABC, abstractmethod
-from typing import List, Pattern, Iterable, Optional, Tuple
+from typing import Iterable, List, Optional, Pattern, Tuple
 
 import numpy as np
 import pandas as pd
@@ -14,8 +14,8 @@ from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnot
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import \
-    regexps_number, regexps_ends_of_number, regexps_subitem_extended, regexps_subitem, regexps_year
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_number, regexps_subitem, regexps_subitem_extended, \
+    regexps_year
 from dedoc.utils.utils import list_get
 
 
@@ -60,33 +60,30 @@ class AbstractFeatureExtractor(ABC):
 
     @staticmethod
     def _create_features_name(old_names: pd.Index, which: str, num: int) -> List[str]:
-        return ["{}_{}_{}".format(old_name, which, num) for old_name in old_names]
+        return [f"{old_name}_{which}_{num}" for old_name in old_names]
 
     def prev_next_line_features(self, matrix: pd.DataFrame, n_prev: int, n_next: int) -> pd.DataFrame:
         """
         add previous and next features with their names
         """
         feature_names = matrix.columns
-        prev_line_features = [pd.DataFrame(data=self._prev_line_features(matrix.values, i),
-                                           columns=self._create_features_name(feature_names, "prev", i))
+        prev_line_features = [pd.DataFrame(data=self._prev_line_features(matrix.values, i), columns=self._create_features_name(feature_names, "prev", i))
                               for i in range(1, n_prev + 1)]
-        next_line_features = [pd.DataFrame(data=self._next_line_features(matrix.values, i),
-                                           columns=self._create_features_name(feature_names, "next", i))
+        next_line_features = [pd.DataFrame(data=self._next_line_features(matrix.values, i), columns=self._create_features_name(feature_names, "next", i))
                               for i in range(1, n_next + 1)]
 
         matrices = [matrix] + prev_line_features + next_line_features
         result_matrix = pd.concat(matrices, axis=1)
         return result_matrix
 
-    def _start_regexp(self, line: str, regexps: List[Pattern],
-                      suffix: Optional[str] = None) -> Iterable[Tuple[str, float]]:
+    def _start_regexp(self, line: str, regexps: List[Pattern], suffix: Optional[str] = None) -> Iterable[Tuple[str, float]]:
         matches = 0
         text = line.strip()
         for i, pattern in enumerate(regexps):  # list patterns
             if suffix is None:
-                feature_name = "start_regexp_{}".format(i)
+                feature_name = f"start_regexp_{i}"
             else:
-                feature_name = "start_regexp_{}_{}".format(i, suffix)
+                feature_name = f"start_regexp_{i}_{suffix}"
             match = pattern.match(text)
             if match is not None and match.end() > 0:
                 matches += 1
@@ -96,7 +93,7 @@ class AbstractFeatureExtractor(ABC):
         if suffix is None:
             yield "start_regexp_num_matches", matches
         else:
-            yield "start_regexp_num_matches_{}".format(suffix), matches
+            yield f"start_regexp_num_matches_{suffix}", matches
 
     @staticmethod
     def _get_size(line: LineWithMeta) -> float:
@@ -105,8 +102,7 @@ class AbstractFeatureExtractor(ABC):
 
     @staticmethod
     def _get_bold(line: LineWithMeta) -> float:
-        bold = [annotation for annotation in line.annotations
-                if annotation.name == BoldAnnotation.name and annotation.value == "True"]
+        bold = [annotation for annotation in line.annotations if annotation.name == BoldAnnotation.name and annotation.value == "True"]
         return 1. if len(bold) > 0 else 0
 
     @staticmethod
@@ -186,7 +182,7 @@ class AbstractFeatureExtractor(ABC):
             return prev_item_list == this_item_prefix and this_item_list[-1] == "1"
         if len(prev_item_list) == len(this_item_list):
             return prev_item_prefix == this_item_prefix and int(this_item_list[-1]) - int(prev_item_list[-1]) == 1
-        raise Exception("Unexpected case where this_item = {} prev_item = {}".format(this_item, prev_item))
+        raise Exception(f"Unexpected case where this_item = {this_item} prev_item = {prev_item}")
 
     def _before_special_line(self, document: List[LineWithMeta], find_special_line: method) -> List[float]:
         """
@@ -202,7 +198,7 @@ class AbstractFeatureExtractor(ABC):
             result.extend([0. for _ in document])
         else:
             special_line_id = special_line_position[-1]
-            for line_id, line in enumerate(document):
+            for line_id in range(len(document)):
                 result.append(line_id - special_line_id)
         return result
 
@@ -216,7 +212,7 @@ class AbstractFeatureExtractor(ABC):
             searched = self.ends_of_number.search(number)
             if searched is not None:
                 numbers[num] = (line_id, number[:searched.start()])
-            if number.endswith((')', '}', '.')):
+            if number.endswith((")", "}", ".")):
                 numbers[num] = (line_id, number[:-1])
 
         if len(numbers) == 0:
@@ -257,6 +253,5 @@ class AbstractFeatureExtractor(ABC):
         Output: normalized feature vector  [-1; 1]
         """
         feature_mean, feature_min, feature_max = feature_column.mean(), feature_column.min(), feature_column.max()
-        new_feature_column = (feature_column - feature_mean) / (feature_max - feature_min) if \
-            feature_max - feature_min != 0.0 else 0.0
+        new_feature_column = (feature_column - feature_mean) / (feature_max - feature_min) if feature_max - feature_min != 0.0 else 0.0
         return new_feature_column

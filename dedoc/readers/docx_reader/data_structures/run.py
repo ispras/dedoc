@@ -1,4 +1,5 @@
 from typing import Optional
+
 from bs4 import Tag
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
@@ -31,12 +32,12 @@ class Run(BaseProperties):
                 self.text += self.name2char[tag_name]
                 continue
 
-            if tag_name == 't' and tag.text:
+            if tag_name == "t" and tag.text:
                 self.text += tag.text
 
-            elif tag_name == 'sym':
+            elif tag_name == "sym":
                 try:
-                    self.text += chr(int("0x" + tag['w:char'], 16))
+                    self.text += chr(int("0x" + tag["w:char"], 16))
                 except KeyError:
                     pass
 
@@ -45,14 +46,14 @@ class Run(BaseProperties):
             self.text = self.text.upper()
 
     def __repr__(self) -> str:
-        return "Run({})".format(self.text[:30].replace("\n", r"\n"))
+        text = self.text[:30].replace("\n", r"\n")
+        return f"Run({text})"
 
     def __eq__(self, other: "Run") -> bool:
         if not isinstance(other, Run):
             return False
-        return (self.size == other.size and
-                self.bold == other.bold and
-                self.italic == other.italic and
-                self.underlined == other.underlined and
-                self.superscript == other.superscript and
-                self.subscript == other.subscript)
+
+        size_eq = self.size == other.size
+        font_eq = self.bold == other.bold and self.italic == other.italic and self.underlined == other.underlined
+        script_eq = self.superscript == other.superscript and self.subscript == other.subscript
+        return size_eq and font_eq and script_eq

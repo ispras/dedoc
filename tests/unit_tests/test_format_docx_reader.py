@@ -4,8 +4,8 @@ import unittest
 from tempfile import TemporaryDirectory
 
 from dedoc.config import get_config
-from dedoc.metadata_extractors.concrete_metadata_extractors.docx_metadata_extractor import DocxMetadataExtractor
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
+from dedoc.metadata_extractors.concrete_metadata_extractors.docx_metadata_extractor import DocxMetadataExtractor
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 
 
@@ -106,15 +106,15 @@ class TestDocxReader(unittest.TestCase):
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("caps_1.docx")
         result = docx_reader.read(path)
-        self.assertEqual('ШИЖМАШ МОГАЙ ЛИЕШ ГЫН?	', result.lines[2].line)
-        self.assertEqual('АНАСТАСИЯ АЙГУЗИНА', result.lines[3].line)
+        self.assertEqual("ШИЖМАШ МОГАЙ ЛИЕШ ГЫН?	", result.lines[2].line)
+        self.assertEqual("АНАСТАСИЯ АЙГУЗИНА", result.lines[3].line)
 
     def test_caps_letters2(self) -> None:
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("caps_2.docx")
         result = docx_reader.read(path)
         self.assertEqual('И. Одар "Таргылтыш"\n', result.lines[0].line)
-        self.assertEqual('I глава\n', result.lines[2].line)
+        self.assertEqual("I глава\n", result.lines[2].line)
 
     def test_justification(self) -> None:
         docx_reader = DocxReader(config=get_config())
@@ -222,7 +222,8 @@ class TestDocxReader(unittest.TestCase):
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("big_table_with_merged_cells.docx")
         result = docx_reader.read(path)
-        hidden_cells_big_table = [(0, 1), (0, 2), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (3, 1), (3, 2), (3, 3), (4, 0), (4, 1), (4, 2), (4, 3), (5, 0), (5, 1), (5, 2), (5, 3), (5, 6), (5, 7), (5, 8), (5, 9)]
+        hidden_cells_big_table = [(0, 1), (0, 2), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (3, 1), (3, 2), (3, 3),
+                                  (4, 0), (4, 1), (4, 2), (4, 3), (5, 0), (5, 1), (5, 2), (5, 3), (5, 6), (5, 7), (5, 8), (5, 9)]
         for i, j in hidden_cells_big_table:
             self.assertTrue(result.tables[0].metadata.cell_properties[i][j].invisible)
             self.assertEqual(result.tables[0].metadata.cell_properties[i][j].rowspan, 1)

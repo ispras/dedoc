@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import List, Tuple
 
 from dedoc.data_structures import BoldAnnotation
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
@@ -18,9 +18,7 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
         super().__init__()
         self.digits_with_dots_regexp = regexps_digits_with_dots
 
-    def get_lines_with_hierarchy(self,
-                                 lines_with_labels: List[Tuple[LineWithMeta, str]],
-                                 init_hl_depth: int) -> List[LineWithMeta]:
+    def get_lines_with_hierarchy(self, lines_with_labels: List[Tuple[LineWithMeta, str]], init_hl_depth: int) -> List[LineWithMeta]:
         if len(lines_with_labels) > 0:
             line = lines_with_labels[0][0]
             page_id = line.metadata.page_id

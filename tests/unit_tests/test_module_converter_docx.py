@@ -1,6 +1,6 @@
 import os
 
-from dedoc.common.exceptions.conversion_exception import ConversionException
+from dedoc.common.exceptions.conversion_error import ConversionError
 from dedoc.converters.concrete_converters.docx_converter import DocxConverter
 from tests.unit_tests.abstract_converter_test import AbstractConverterTest
 
@@ -13,7 +13,7 @@ class TestDocxConverter(AbstractConverterTest):
     def test_convert_broken_file(self) -> None:
         extension = ".odt"
         filename = "broken"
-        with self.assertRaises(ConversionException):
+        with self.assertRaises(ConversionError):
             self._convert(filename=filename, extension=extension, converter=self.converter)
 
     def test_convert_odt(self) -> None:

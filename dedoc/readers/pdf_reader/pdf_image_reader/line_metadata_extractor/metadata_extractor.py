@@ -29,7 +29,7 @@ class LineMetadataExtractor:
 
         for bbox in page_with_fonts.bboxes:
             font_size = self.__get_font_size(bbox, image_height)
-            bbox.annotations.append(SizeAnnotation(start=0, end=len(bbox.text), value="{}".format(font_size)))
+            bbox.annotations.append(SizeAnnotation(start=0, end=len(bbox.text), value=str(font_size)))
 
         return page_with_fonts
 
@@ -47,7 +47,7 @@ class LineMetadataExtractor:
             self.predict_annotations(page_with_lines)
 
         lines = []
-        for bbox_id, bbox in enumerate(page_with_lines.bboxes):
+        for bbox in page_with_lines.bboxes:
             lines.append(self.get_line_with_meta(bbox=bbox))
             if page_with_lines.image.ndim == 3 and page_with_lines.image.shape[2] == 3:
                 color_annotation = self.__get_color_annotation(bbox, page_with_lines.image)
@@ -69,11 +69,11 @@ class LineMetadataExtractor:
     def convert_pixels_into_indentation(indentation_width: int, image_width: int) -> int:
         # ref from http://officeopenxml.com/WPindentation.php
         # Values are in twentieths of a point: 1440 twips = 1 inch; 567 twips = 1 centimeter.
-        INDENTATION_PER_CM = 567
+        indentation_per_cm = 567
 
         pixel2mm = 297 / image_width  # 297 mm it is height of A4 paper
         indentation_mm = indentation_width * pixel2mm
-        indentation = int(indentation_mm / 10 * INDENTATION_PER_CM)
+        indentation = int(indentation_mm / 10 * indentation_per_cm)
 
         return indentation
 
@@ -100,20 +100,20 @@ class LineMetadataExtractor:
 
     def __set_indentations(self, page: PageWithBBox) -> PageWithBBox:
         image_height, image_width, *_ = page.image.shape
-        SPACES_FOR_TAB = "    "
+        spaces_for_tab = "    "
 
         # TODO turn off for multicolumn pages (when we write columns-classifier). While turn on for all layout type.
         left_bound = self.__get_left_bound_of_text(page)
         if not left_bound:
             return page
 
-        for num, text_with_bbox in enumerate(page.bboxes):
+        for text_with_bbox in page.bboxes:
             indentation_text = re.findall("^[ \t]+", text_with_bbox.text)
             width_space_indentation = 0
             width_per_char = text_with_bbox.bbox.width / len(text_with_bbox.text)
 
             if indentation_text:
-                indentation_text = indentation_text[0].replace('\t', SPACES_FOR_TAB)
+                indentation_text = indentation_text[0].replace("\t", spaces_for_tab)
                 width_space_indentation = len(indentation_text) * width_per_char
 
             indentation_width = (text_with_bbox.bbox.x_top_left - left_bound) + width_space_indentation
@@ -122,9 +122,7 @@ class LineMetadataExtractor:
                 continue
 
             indentation = self.convert_pixels_into_indentation(indentation_width, image_width)
-            text_with_bbox.annotations.append(IndentationAnnotation(start=0,
-                                                                    end=len(text_with_bbox.text),
-                                                                    value=str(indentation)))
+            text_with_bbox.annotations.append(IndentationAnnotation(start=0, end=len(text_with_bbox.text), value=str(indentation)))
 
         return page
 
@@ -154,9 +152,9 @@ class LineMetadataExtractor:
         median_bbox_size = median([line.location.bbox.height for line in lines])
         prev_line = None
         for line in lines:
-            if (prev_line is None or
-                    prev_line.location.page_number != line.location.page_number or
-                    prev_line.location.bbox.y_bottom_right >= line.location.bbox.y_top_left):
+            if prev_line is None or \
+                    prev_line.location.page_number != line.location.page_number or \
+                    prev_line.location.bbox.y_bottom_right >= line.location.bbox.y_top_left:
                 space = self.default_spacing
             else:
                 space = (line.location.bbox.y_top_left - prev_line.location.bbox.y_bottom_right)
@@ -172,9 +170,7 @@ class LineMetadataExtractor:
 
         image_slice = image[bbox.y_top_left: bbox.y_bottom_right, bbox.x_top_left: bbox.x_bottom_right, :]
         threshold = 245
-        not_white = ((image_slice[:, :, 0] < threshold) &
-                     (image_slice[:, :, 1] < threshold) &
-                     (image_slice[:, :, 2] < threshold))
+        not_white = (image_slice[:, :, 0] < threshold) & (image_slice[:, :, 1] < threshold) & (image_slice[:, :, 2] < threshold)
         if not_white.sum() > 0:
             red, green, blue = [image_slice[not_white, i].mean() for i in range(3)]
         else:

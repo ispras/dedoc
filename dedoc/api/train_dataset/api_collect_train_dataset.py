@@ -3,7 +3,7 @@ import os
 import shutil
 
 import uvicorn
-from fastapi import FastAPI, Response, Request, UploadFile, File, Depends
+from fastapi import Depends, FastAPI, File, Request, Response, UploadFile
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, HTMLResponse
 from starlette.templating import Jinja2Templates
@@ -30,7 +30,7 @@ static_files_dirs = config.get("static_files_dirs")
 logger = config.get("logger", logging.getLogger())
 
 app = FastAPI()
-app.mount('/static', StaticFiles(directory=static_path), name="static")
+app.mount("/static", StaticFiles(directory=static_path), name="static")
 templates = Jinja2Templates(directory=os.path.join(static_path, "train_dataset"))
 
 manager = DedocManager(config=config)
@@ -84,7 +84,7 @@ taskers = {
         config_path=os.path.join(train_resources_path, "law", "config.json"),
         tmp_dir=UPLOAD_FOLDER,
         progress_bar=progress_bar,
-        item2label=lambda t: label2label_law.get(t['_metadata']['hierarchy_level']['line_type'], "raw_text"),
+        item2label=lambda t: label2label_law.get(t["_metadata"]["hierarchy_level"]["line_type"], "raw_text"),
         config=config),
     "paragraph_classifier": LineLabelTasker(
         path2bboxes=boxes_path,
@@ -104,7 +104,7 @@ taskers = {
         config_path=os.path.join(train_resources_path, "tz", "config.json"),
         tmp_dir=UPLOAD_FOLDER,
         progress_bar=progress_bar,
-        item2label=lambda t: label2label_tz.get(t['_metadata']['hierarchy_level']['line_type'], "raw_text"),
+        item2label=lambda t: label2label_tz.get(t["_metadata"]["hierarchy_level"]["line_type"], "raw_text"),
         config=config),
     "diploma_classifier": FilteredLineLabelTasker(
         path2bboxes=boxes_path,
@@ -114,7 +114,7 @@ taskers = {
         config_path=os.path.join(train_resources_path, "diploma", "config.json"),
         tmp_dir=UPLOAD_FOLDER,
         progress_bar=progress_bar,
-        item2label=lambda t: label2label_diploma.get(t['_metadata']['hierarchy_level']['line_type'], "raw_text"),
+        item2label=lambda t: label2label_diploma.get(t["_metadata"]["hierarchy_level"]["line_type"], "raw_text"),
         config=config),
     "header_classifier": HeaderFooterTasker(
         path2bboxes=boxes_path,
@@ -139,12 +139,12 @@ tasker = Tasker(boxes_label_path=os.path.join(config["intermediate_data_path"], 
 handler = AsyncHandler(tasker=tasker, manager=manager, config=config)
 
 
-@app.get('/')
+@app.get("/")
 def get_info() -> Response:
     """
     Returns the main page for the labeling mode.
     """
-    return FileResponse(os.path.join(static_path, 'train_dataset/info_labeling_mode.html'))
+    return FileResponse(os.path.join(static_path, "train_dataset/info_labeling_mode.html"))
 
 
 @app.get("/handle_archive")
@@ -152,11 +152,11 @@ def handle_archive() -> Response:
     """
     Returns the page for running the whole pipeline of task making.
     """
-    return FileResponse(os.path.join(static_path, 'train_dataset/form_input_archive.html'))
+    return FileResponse(os.path.join(static_path, "train_dataset/form_input_archive.html"))
 
 
-@app.post('/upload_archive')
-def upload_archive(file: UploadFile = File(...), query_params: TrainDatasetParameters = Depends()) -> Response:
+@app.post("/upload_archive")
+def upload_archive(file: UploadFile = File(...), query_params: TrainDatasetParameters = Depends()) -> Response:  # noqa
     """
     Run the whole pipeline of task making.
     """
@@ -169,7 +169,7 @@ def upload_archive(file: UploadFile = File(...), query_params: TrainDatasetParam
     )
 
 
-@app.get('/get_result_archive')
+@app.get("/get_result_archive")
 def get_result_archive(request: Request, uid: str) -> Response:
     """
     Get the archive with the result tasks.
@@ -180,33 +180,33 @@ def get_result_archive(request: Request, uid: str) -> Response:
         path_out = os.path.join(UPLOAD_FOLDER, file)
         shutil.move(handler.get_results(uid), path_out)
         hash_sum = calculate_file_hash(path=path_out)
-        logger.info("md5sum {}".format(hash_sum))
+        logger.info(f"md5sum {hash_sum}")
         return templates.TemplateResponse("download.html", dict(request=request, value=file, cnt_per_one=1, hash_sum=hash_sum, filename=file))
     else:
         response = "<h2>Ещё не готово</h2>"
         for line in handler.get_progress(uid).split("\n"):
-            response += "<p> {} </p>".format(line)
+            response += f"<p> {line} </p>"
         return HTMLResponse(response, status_code=202)
 
 
-@app.get('/info_classifiers')
+@app.get("/info_classifiers")
 def get_classifiers_info() -> Response:
     return FileResponse(os.path.join(static_path, "train_dataset/refit_classifier.html"))
 
 
-@app.get('/static_file')
+@app.get("/static_file")
 def get_static_file(request: Request) -> Response:
     path = _get_static_file_path(request)
     return FileResponse(path)
 
 
-@app.get('/return-file/{filename}')
+@app.get("/return-file/{filename}")
 def return_files(filename: str) -> Response:
     file_path = os.path.join(UPLOAD_FOLDER, filename)
     return FileResponse(file_path)
 
 
-@app.get('/clear')
+@app.get("/clear")
 def clear() -> Response:
     shutil.rmtree(config["intermediate_data_path"])
     os.makedirs(config["intermediate_data_path"])

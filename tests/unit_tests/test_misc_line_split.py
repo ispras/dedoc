@@ -4,9 +4,9 @@ from typing import List
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
-from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
 
 
 class TestLineSplit(unittest.TestCase):

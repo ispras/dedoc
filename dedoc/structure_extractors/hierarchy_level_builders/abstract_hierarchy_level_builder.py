@@ -43,7 +43,7 @@ class AbstractHierarchyLevelBuilder(abc.ABC):
             match = LawTextFeatures.roman_regexp.match(line.line)
             prefix = line.line[match.start(): match.end()]
             suffix = line.line[match.end():]
-            symbols = [('T', 'I'), ('Т', 'I'), ('У', 'V'), ('П', "II"), ('Ш', "III"), ('Г', 'I')]
+            symbols = [("T", "I"), ("Т", "I"), ("У", "V"), ("П", "II"), ("Ш", "III"), ("Г", "I")]
             for symbol_from, symbol_to in symbols:
                 prefix = prefix.replace(symbol_from, symbol_to)
             line.set_line(prefix + suffix)

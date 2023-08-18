@@ -1,11 +1,11 @@
 from typing import List
 
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.data_structures.line_metadata import LineMetadata
 
 
 class TablePatcher:
@@ -61,33 +61,19 @@ class TablePatcher:
 
     @staticmethod
     def _create_table_line(table: Table, hierarchy_level: int) -> LineWithMeta:
-        hierarchy_level_new = HierarchyLevel(
-            level_1=hierarchy_level + 2,  # table hierarchy is lower than raw text
-            level_2=0,
-            can_be_multiline=False,
-            line_type="table"
-        )
+        # table hierarchy is lower than raw text
+        hierarchy_level_new = HierarchyLevel(level_1=hierarchy_level + 2, level_2=0, can_be_multiline=False, line_type="table")
         metadata = LineMetadata(hierarchy_level=hierarchy_level_new, page_id=table.metadata.page_id, line_id=None)
-        return LineWithMeta(line="", metadata=metadata, annotations=[], uid="table_{}".format(table.metadata.uid))
+        return LineWithMeta(line="", metadata=metadata, annotations=[], uid=f"table_{table.metadata.uid}")
 
     @staticmethod
     def _create_row_line(table: Table, hierarchy_level: int) -> LineWithMeta:
-        hierarchy_level_new = HierarchyLevel(
-            level_1=hierarchy_level + 3,
-            level_2=0,
-            can_be_multiline=False,
-            line_type="table_row"
-        )
+        hierarchy_level_new = HierarchyLevel(level_1=hierarchy_level + 3, level_2=0, can_be_multiline=False, line_type="table_row")
         metadata = LineMetadata(hierarchy_level=hierarchy_level_new, page_id=table.metadata.page_id, line_id=None)
         return LineWithMeta(line="", metadata=metadata, annotations=[])
 
     @staticmethod
     def _create_cell_line(table: Table, hierarchy_level: int, cell: str) -> LineWithMeta:
-        hierarchy_level_new = HierarchyLevel(
-            level_1=hierarchy_level + 4,
-            level_2=0,
-            can_be_multiline=False,
-            line_type="table_cell"
-        )
+        hierarchy_level_new = HierarchyLevel(level_1=hierarchy_level + 4, level_2=0, can_be_multiline=False, line_type="table_cell")
         metadata = LineMetadata(hierarchy_level=hierarchy_level_new, page_id=table.metadata.page_id, line_id=None)
         return LineWithMeta(line=cell, metadata=metadata, annotations=[])

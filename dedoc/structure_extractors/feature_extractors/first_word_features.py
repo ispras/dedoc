@@ -1,4 +1,4 @@
-from typing import List, Iterable, Optional
+from typing import Iterable, List, Optional
 
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer

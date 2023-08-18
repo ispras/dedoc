@@ -2,10 +2,10 @@ from unittest import TestCase
 
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
-from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.line_metadata import LineMetadata
-from dedoc.data_structures.tree_node import TreeNode
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.data_structures.tree_node import TreeNode
 
 
 class TestTreeNode(TestCase):

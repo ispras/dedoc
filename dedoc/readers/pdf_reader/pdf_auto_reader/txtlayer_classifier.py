@@ -34,7 +34,7 @@ class TxtlayerClassifier:
             download_from_hub(out_dir=out_dir, out_name=out_name, repo_name="txtlayer_classifier", hub_name="model.pkl.gz")
 
         assert os.path.isfile(self.path)
-        with gzip.open(self.path, 'rb') as f:
+        with gzip.open(self.path, "rb") as f:
             self.__model = pickle.load(f)
 
         return self.__model

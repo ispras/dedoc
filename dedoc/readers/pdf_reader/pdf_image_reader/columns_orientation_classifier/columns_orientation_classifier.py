@@ -1,19 +1,20 @@
 import logging
 import warnings
-from typing import Tuple, Optional
+from os import path
+from typing import Optional, Tuple
+
+import cv2
 import numpy as np
 import torch
 from PIL import Image
 from torchvision import transforms
 from torchvision.transforms.functional import resize
-import cv2
-from os import path
 
+from dedoc.config import get_config
 from dedoc.download_models import download_from_hub
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.model import ClassificationModelTorch
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.img_processing import \
     __detect_horizontal_and_vertical_lines as detect_horizontal_and_vertical_lines
-from dedoc.config import get_config
 
 
 class ColumnsOrientationClassifier(object):
@@ -62,7 +63,7 @@ class ColumnsOrientationClassifier(object):
             self.location = lambda storage, loc: storage.cuda()
         else:
             self.device = torch.device("cpu")
-            self.location = 'cpu'
+            self.location = "cpu"
 
     def _load_weights(self, net: ClassificationModelTorch) -> None:
         path_checkpoint = path.join(self.checkpoint_path, "scan_orientation_efficient_net_b0.pth")
@@ -75,11 +76,11 @@ class ColumnsOrientationClassifier(object):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             net.load_state_dict(torch.load(path_checkpoint, map_location=self.location))
-            self.logger.info('Weights were loaded from {}'.format(path_checkpoint))
+            self.logger.info(f"Weights were loaded from {path_checkpoint}")
 
     def save_weights(self, path_checkpoint: str) -> None:
         torch.save(self.net.state_dict(), path_checkpoint)
-        self.logger.info('Weights were saved into {}'.format(path_checkpoint))
+        self.logger.info(f"Weights were saved into {path_checkpoint}")
 
     def _set_transform_image(self) -> None:
         """
@@ -112,7 +113,7 @@ class ColumnsOrientationClassifier(object):
         Get features for image with horizontal and vertical lines
         """
         image = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
-        pil_image = Image.fromarray(np.uint8(image)).convert('RGB')
+        pil_image = Image.fromarray(np.uint8(image)).convert("RGB")
         tensor_image = self.transform(pil_image).unsqueeze(0).float().to(self.device)
         return tensor_image
 

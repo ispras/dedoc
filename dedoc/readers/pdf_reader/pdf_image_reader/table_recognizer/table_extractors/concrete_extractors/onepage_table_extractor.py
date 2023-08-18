@@ -2,6 +2,7 @@ import copy
 import logging
 import uuid
 from typing import List
+
 import numpy as np
 
 from dedoc.data_structures.bbox import BBox
@@ -76,7 +77,7 @@ class OnePageTableExtractor(BaseTableExtractor):
         :return: True if cell is vertical and False otherwise
         """
         # 1 - разбиваем на строки длины которых состоят хотя бы из одного символа
-        parts = cell_text.split('\n')
+        parts = cell_text.split("\n")
         parts = [p for p in parts if len(p) > 0]
 
         # 2 - подсчитываем среднюю длину строк ячейки
@@ -84,8 +85,8 @@ class OnePageTableExtractor(BaseTableExtractor):
         avg_len_part = np.average(len_parts)
 
         # Эвристика: считаем что ячейка повернута, если у нас большое количество строк и строки короткие
-        if len(parts) > self.config['minimal_cell_cnt_line'] \
-                and avg_len_part < self.config['minimal_cell_avg_length_line']:
+        if len(parts) > self.config["minimal_cell_cnt_line"] \
+                and avg_len_part < self.config["minimal_cell_avg_length_line"]:
             return True
         return False
 
@@ -107,9 +108,7 @@ class OnePageTableExtractor(BaseTableExtractor):
             for i, row in enumerate(attrs):
                 for j, attr in enumerate(row):
                     if self.__detect_diff_orient(attr.text):
-                        rotated_cell, rotated_image = self.__correct_orient_cell(attr,
-                                                                                 language=language,
-                                                                                 rotated_angle=rotated_angle)
+                        rotated_cell, rotated_image = self.__correct_orient_cell(attr, language=language, rotated_angle=rotated_angle)
                         table.matrix_cells[i][j] = rotated_cell
 
         return tables
@@ -152,10 +151,7 @@ class OnePageTableExtractor(BaseTableExtractor):
 
         bbox = BBox(table_tree.data_bb[0], table_tree.data_bb[1], table_tree.data_bb[2], table_tree.data_bb[3])
 
-        matrix_table = ScanTable(matrix_cells=matrix,
-                                 bbox=bbox,
-                                 page_number=self.page_number,
-                                 name=str(uuid.uuid1()))
+        matrix_table = ScanTable(matrix_cells=matrix, bbox=bbox, page_number=self.page_number, name=str(uuid.uuid1()))
 
         return matrix_table
 
@@ -172,16 +168,13 @@ class OnePageTableExtractor(BaseTableExtractor):
                     cur_table.matrix_cells = self.splitter.split(cells=cur_table.matrix_cells)
 
                     # Эвристика 2: таблица должна иметь больше одного столбца
-                    if len(cur_table.matrix_cells[0]) > 1 or \
-                            (self.table_options.detect_one_cell_table in table_type and cur_table.matrix_cells[0] != []):
+                    if len(cur_table.matrix_cells[0]) > 1 or (self.table_options.detect_one_cell_table in table_type and cur_table.matrix_cells[0] != []):
                         tables.append(cur_table)
 
                     if self.table_options.split_last_column in table_type:
-                        cur_table.matrix_cells = split_last_column(cur_table.matrix_cells,
-                                                                   language=self.language,
-                                                                   image=self.image)
+                        cur_table.matrix_cells = split_last_column(cur_table.matrix_cells, language=self.language, image=self.image)
             except Exception as ex:
-                self.logger.warning("Warning: unrecognized table into page {}. {}".format(self.page_number, ex))
+                self.logger.warning(f"Warning: unrecognized table into page {self.page_number}. {ex}")
                 if self.config.get("debug_mode", False):
                     raise ex
         return tables

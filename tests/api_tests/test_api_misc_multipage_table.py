@@ -11,9 +11,9 @@ class TestMultipageTable(AbstractTestApiDocReader):
 
     def _get_tables(self, file_name: str) -> List[dict]:
         result = self._send_request(file_name, {"pdf_with_text_layer": "false"})
-        content = result['content']
+        content = result["content"]
         self._test_table_refs(content=content)
-        tables = content['tables']
+        tables = content["tables"]
         tree = content["structure"]
         self._check_tree_sanity(tree=tree)
         return tables
@@ -49,20 +49,16 @@ class TestMultipageTable(AbstractTestApiDocReader):
         self.assertEqual(len(tables), 1)
         table = tables[0]
         rows = table["cells"]
-        self.assertListEqual(["Заголовок\nБольшой", "Еще один большой заголовок", "Еще один большой заголовок",
-                              "Еще один большой заголовок", "Еще один большой заголовок"], rows[0])
-        self.assertListEqual(["Заголовок\nБольшой", "Заголовок поменьше 1", "Заголовок поменьше 1",
-                              "Заголовок поменьше 2", "Заголовок поменьше 2"], rows[1])
-        self.assertListEqual(["Заголовок\nБольшой", "Заголовочек 1", "Заголовочек 2",
-                              "Заголовочек 3", "Заголовочек 4"], rows[2])
+        self.assertListEqual(["Заголовок\nБольшой", "Еще один большой заголовок", "Еще один большой заголовок", "Еще один большой заголовок",
+                              "Еще один большой заголовок"], rows[0])
+        self.assertListEqual(["Заголовок\nБольшой", "Заголовок поменьше 1", "Заголовок поменьше 1", "Заголовок поменьше 2", "Заголовок поменьше 2"], rows[1])
+        self.assertListEqual(["Заголовок\nБольшой", "Заголовочек 1", "Заголовочек 2", "Заголовочек 3", "Заголовочек 4"], rows[2])
         self.assertListEqual(["Данные 1", "Данные 1", "Данные 1", "Данные 1", "Данные 1"], rows[3])
         self.assertListEqual(["Данные 2", "Данные 2", "Данные 2", "Данные 2", "Данные 2"], rows[4])
         self.assertListEqual(["Данные 3", "Данные 3", "Данные 3", "Данные 3", "Данные 3"], rows[5])
         self.assertListEqual(["Данные 4", "Данные 4", "Данные 4", "Данные 4", "Данные 4"], rows[6])
         self.assertListEqual(["Данные 5", "Данные 5", "Данные 5", "Данные 5", "Данные 5"], rows[7])
-        self.assertListEqual(["Заголовок\nБольшой", "Заголовок поменьше 1", "Заголовок поменьше 1",
-                              "Заголовок поменьше 2", "Заголовок поменьше 2"], rows[8])
-        self.assertListEqual(["Заголовок\nБольшой", "Заголовочек 1", "Заголовочек 2",
-                              "Заголовочек 3", "Заголовочек 4"], rows[9])
+        self.assertListEqual(["Заголовок\nБольшой", "Заголовок поменьше 1", "Заголовок поменьше 1", "Заголовок поменьше 2", "Заголовок поменьше 2"], rows[8])
+        self.assertListEqual(["Заголовок\nБольшой", "Заголовочек 1", "Заголовочек 2", "Заголовочек 3", "Заголовочек 4"], rows[9])
         self.assertListEqual(["Данные 6", "Данные 6", "Данные 6", "Данные 6", "Данные 6"], rows[10])
         self.assertListEqual(["Данные 7", "Данные 7", "Данные 7", "Данные 7", "Данные 7"], rows[11])

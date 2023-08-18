@@ -29,6 +29,6 @@ class OcrBlock:
             elif element.level == OcrBlock.level:
                 head = element
             else:
-                raise ValueError("Some element {} has level greater than this {}".format(element, OcrBlock.level))
+                raise ValueError(f"Some element {element} has level greater than this {OcrBlock.level}")
         paragraphs = [OcrParagraph.from_list(paragraph2elements[key], ocr_conf_thr) for key in sorted(paragraph2elements.keys())]
         return OcrBlock(paragraphs=paragraphs, order=head.block_num, bbox=head.bbox)

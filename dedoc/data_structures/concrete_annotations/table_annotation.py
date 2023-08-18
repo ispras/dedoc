@@ -1,4 +1,4 @@
-from flask_restx import Model, Api, fields
+from flask_restx import Api, Model, fields
 
 from dedoc.data_structures.annotation import Annotation
 
@@ -20,6 +20,6 @@ class TableAnnotation(Annotation):
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
-        return api.model('TableAnnotation', {
-            'value': fields.String(description='ref to table', required=True, example="table fafffa145agh")
+        return api.model("TableAnnotation", {
+            "value": fields.String(description="ref to table", required=True, example="table fafffa145agh")
         })

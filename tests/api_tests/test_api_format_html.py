@@ -1,7 +1,6 @@
 import os
 
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
-
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
@@ -53,10 +52,10 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         node = self._get_by_tree_path(tree, "0.0.0.1.0")
         self.assertEqual("raw_text", node["metadata"]["paragraph_type"])
         self.assertEqual("Определим определения  \nТекст ", node["text"].strip()[:30])
-        self.assertIn({'start': 1, 'end': 31, 'name': 'bold', 'value': 'True'}, node["annotations"])
-        self.assertIn({'start': 46, 'end': 52, 'name': 'bold', 'value': 'True'}, node["annotations"])
-        self.assertIn({'start': 42, 'end': 45, 'name': 'underlined', 'value': 'True'}, node["annotations"])
-        self.assertIn({'start': 32, 'end': 42, 'name': 'italic', 'value': 'True'}, node["annotations"])
+        self.assertIn({"start": 1, "end": 31, "name": "bold", "value": "True"}, node["annotations"])
+        self.assertIn({"start": 46, "end": 52, "name": "bold", "value": "True"}, node["annotations"])
+        self.assertIn({"start": 42, "end": 45, "name": "underlined", "value": "True"}, node["annotations"])
+        self.assertIn({"start": 32, "end": 42, "name": "italic", "value": "True"}, node["annotations"])
 
         node = self._get_by_tree_path(tree, "0.0.0.2")
         self.assertEqual("header", node["metadata"]["paragraph_type"])
@@ -109,7 +108,7 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         self.assertListEqual(["Петров", "Пётр", "Петрович"], table2["cells"][2])
         self.assertListEqual(["Сидоров", "Сидор", "Сидорович"], table2["cells"][3])
 
-        self.__check_metainfo(result['metadata'], 'text/html', file_name)
+        self.__check_metainfo(result["metadata"], "text/html", file_name)
 
     def test_part_html(self) -> None:
         file_name = "part.html"
@@ -118,11 +117,9 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         content = result["content"]["structure"]
         self._check_tree_sanity(content)
         self.assertEqual("Лесные слоны", content["subparagraphs"][0]["text"].strip())
-        self.assertEqual("В данном разделе мы поговорим о малоизвестных лесных слонах...",
-                         content["subparagraphs"][0]["subparagraphs"][0]["text"].strip())
+        self.assertEqual("В данном разделе мы поговорим о малоизвестных лесных слонах...", content["subparagraphs"][0]["subparagraphs"][0]["text"].strip())
         self.assertEqual("Среда обитания", content["subparagraphs"][0]["subparagraphs"][1]["text"].strip())
-        self.assertEqual("Лесные слоны живут не на деревьях, а под ними.",
-                         content["subparagraphs"][0]["subparagraphs"][1]["subparagraphs"][0]["text"].strip())
+        self.assertEqual("Лесные слоны живут не на деревьях, а под ними.", content["subparagraphs"][0]["subparagraphs"][1]["subparagraphs"][0]["text"].strip())
 
     def test_plain_text_html(self) -> None:
         file_name = "plain.html"
@@ -173,15 +170,15 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         self.assertIn("For service repair (Part 145) returned material authorizations (RMA):", text)
 
     def __check_metainfo(self, metainfo: dict, actual_type: str, actual_name: str) -> None:
-        self.assertEqual(metainfo['file_type'], actual_type)
-        self.assertEqual(metainfo['file_name'], actual_name)
+        self.assertEqual(metainfo["file_type"], actual_type)
+        self.assertEqual(metainfo["file_name"], actual_name)
 
     def test_html_encoding(self) -> None:
         file_name = "53.html"
         result = self._send_request(file_name)
         content = result["content"]["structure"]
         text = content["subparagraphs"][0]["text"]
-        self.assertTrue(text.startswith('\n\n'))
+        self.assertTrue(text.startswith("\n\n"))
 
     def test_html_no_newline(self) -> None:
         file_name = "no_new_line.html"
@@ -192,8 +189,7 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         expected_text = ('"I can’t bring myself to feel too sorry for Amazon or textbook publishers, given how much '
                          'they tend to gouge on the prices of those books."')
         self.assertEqual(expected_text, text.strip())
-        italics = [text[annotation["start"]: annotation["end"]] for annotation in node["annotations"] if
-                   annotation["name"] == "italic"]
+        italics = [text[annotation["start"]: annotation["end"]] for annotation in node["annotations"] if annotation["name"] == "italic"]
         self.assertIn("or", italics)
 
     def test_html_none_display(self) -> None:

@@ -2,6 +2,7 @@ import gzip
 import os
 import pickle
 from typing import List
+
 from xgboost import XGBClassifier
 
 from dedoc.config import get_config
