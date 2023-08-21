@@ -13,14 +13,14 @@ class ConfidenceAnnotation(Annotation):
         """
         :param start: start of the text
         :param end: end of the text (not included)
-        :param value: confidence level in "percents" (float or integer number from 0 to 100)
+        :param value: confidence level in "percents" (float number from 0 to 1)
         """
         try:
-            assert 0.0 <= float(value) <= 100.0
+            assert 0.0 <= float(value) <= 1.0
         except ValueError:
             raise ValueError("the value of confidence annotation should be float value")
         except AssertionError:
-            raise ValueError("the value of confidence annotation should be in range [0, 100]")
+            raise ValueError("the value of confidence annotation should be in range [0, 1]")
         super().__init__(start=start, end=end, name=ConfidenceAnnotation.name, value=value, is_mergeable=False)
 
     @staticmethod

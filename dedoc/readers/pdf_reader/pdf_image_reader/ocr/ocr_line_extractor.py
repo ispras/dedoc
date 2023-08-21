@@ -64,7 +64,9 @@ class OCRLineExtractor:
                 output_dict = get_text_with_bbox_from_document_page(image, language, ocr_conf_thr)
         else:
             output_dict = get_text_with_bbox_from_cells(image, language, ocr_conf_threshold=0.0)
-        line_boxes = [TextWithBBox(text=line.text, page_num=page_num, bbox=line.bbox, line_num=line_num, annotations=line.get_annotations())
+
+        height, width = image.shape[:2]
+        line_boxes = [TextWithBBox(text=line.text, page_num=page_num, bbox=line.bbox, line_num=line_num, annotations=line.get_annotations(width, height))
                       for line_num, line in enumerate(output_dict.lines)]
 
         return line_boxes

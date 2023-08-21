@@ -4,7 +4,6 @@ from uuid import uuid1
 
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.bbox import BBox
-from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
 from dedoc.data_structures.serializable import Serializable
 
 
@@ -24,8 +23,6 @@ class TextWithBBox(Serializable):
         self.text = text
         self.label = label
         self.annotations = [] if annotations is None else annotations
-        if BBoxAnnotation.name not in [annotation.name for annotation in self.annotations]:
-            self.annotations.append(BBoxAnnotation(start=0, end=len(text), value=bbox))
         self.uid = f"bbox_{uuid1()}" if uid is None else uid
 
     def __str__(self) -> str:

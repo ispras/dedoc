@@ -22,7 +22,7 @@ class OcrLine:
     def text(self) -> str:
         return " ".join(word.text for word in self.words if word.text != "") + "\n"
 
-    def get_annotations(self) -> List[Annotation]:
+    def get_annotations(self, page_width: int, page_height: int) -> List[Annotation]:
         start = 0
         annotations = []
 
@@ -31,11 +31,11 @@ class OcrLine:
                 continue
 
             end = start + len(word.text)
-            annotations.append(ConfidenceAnnotation(start, end, str(word.confidence)))
-            annotations.append(BBoxAnnotation(start, end, word.bbox))
+            annotations.append(ConfidenceAnnotation(start, end, str(word.confidence / 100)))
+            annotations.append(BBoxAnnotation(start, end, word.bbox, page_width, page_height))
             start += len(word.text) + 1
 
-        annotations.append(BBoxAnnotation(0, start, self.bbox))
+        annotations.append(BBoxAnnotation(0, start, self.bbox, page_width, page_height))
         return annotations
 
     @staticmethod
