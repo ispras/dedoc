@@ -17,6 +17,8 @@ class BBoxAnnotation(Annotation):
         :param start: start of the annotated text (usually zero)
         :param end: end of the annotated text (usually end of the line)
         :param value: bounding box where line is located
+        :param page_width: width of original image with this bbox
+        :param page_height: height of original image with this bbox
         """
         if not isinstance(value, BBox):
             raise ValueError("the value of bounding box annotation should be instance of BBox")
