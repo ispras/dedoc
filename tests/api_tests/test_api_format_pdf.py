@@ -1,5 +1,7 @@
 import os
 
+from dedoc.data_structures import BBoxAnnotation
+
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.confidence_annotation import ConfidenceAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
@@ -20,6 +22,7 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self.assertIn(BoldAnnotation.name, annotation_names)
         self.assertIn(SpacingAnnotation.name, annotation_names)
         self.assertIn(ConfidenceAnnotation.name, annotation_names)
+        self.assertIn(BBoxAnnotation.name, annotation_names)
         self._check_similarity("1.2.1 Поясним за непонятное", content[3]["subparagraphs"][0]["text"])
 
     def __check_metainfo(self, metainfo: dict, actual_type: str, actual_name: str) -> None:
