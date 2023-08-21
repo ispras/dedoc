@@ -1,7 +1,6 @@
 import os
 
 from dedoc.data_structures import BBoxAnnotation
-
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.confidence_annotation import ConfidenceAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation

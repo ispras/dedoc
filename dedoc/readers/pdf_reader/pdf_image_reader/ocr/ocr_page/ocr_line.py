@@ -1,9 +1,9 @@
 from typing import List
 
-from dedoc.data_structures.bbox import BBox
-from dedoc.data_structures.concrete_annotations.confidence_annotation import ConfidenceAnnotation
-from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
 from dedoc.data_structures.annotation import Annotation
+from dedoc.data_structures.bbox import BBox
+from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
+from dedoc.data_structures.concrete_annotations.confidence_annotation import ConfidenceAnnotation
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_page.ocr_tuple import OcrElement
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_page.ocr_word import OcrWord
 
