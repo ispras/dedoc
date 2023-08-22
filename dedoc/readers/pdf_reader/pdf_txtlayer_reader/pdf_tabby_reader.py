@@ -9,6 +9,7 @@ import numpy as np
 
 from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
 from dedoc.common.exceptions.tabby_pdf_error import TabbyPdfError
+from dedoc.data_structures import BBoxAnnotation
 from dedoc.data_structures.bbox import BBox
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
@@ -173,9 +174,15 @@ class PdfTabbyReader(PdfBaseReader):
                 url = annotation["url"]
                 start = annotation["start"]
                 end = annotation["end"]
+                x_top_left = annotation["x_top_left"]
+                y_top_left = annotation["y_top_left"]
+                x_bottom_right = bx_top_left + annotation["width"]
+                y_bottom_right = by_top_left + annotation["height"]
 
                 annotations.append(SizeAnnotation(start, end, str(font_size)))
                 annotations.append(StyleAnnotation(start, end, font_name))
+                bbox = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))
+                annotations.append(BBoxAnnotation(start, end, bbox))
 
                 if is_bold:
                     annotations.append(BoldAnnotation(start, end, "True"))

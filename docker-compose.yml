@@ -9,9 +9,9 @@ services:
     restart: always
     tty: true
     ports:
-      - 1231:1231
+      - 1232:1231
     environment:
-      DOCREADER_PORT: 1231
+      DOCREADER_PORT: 1232
 
 
   test:
