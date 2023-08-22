@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.11.0 (2023-08-22)
+--------------------
+Release note: `v0.11.0 <https://github.com/ispras/dedoc/releases/tag/v0.11.0>`_
+
+* Rename exceptions classes.
+* Update style tests.
+* Change `ConfidenceAnnotation` value range to `[0, 1]`.
+* Add bbox annotations for words in `PdfImageReader`.
+
 v0.10.0 (2023-08-01)
 --------------------
 Release note: `v0.10.0 <https://github.com/ispras/dedoc/releases/tag/v0.10.0>`_
