@@ -9,6 +9,7 @@ import numpy as np
 
 from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
 from dedoc.common.exceptions.tabby_pdf_error import TabbyPdfError
+from dedoc.data_structures import BBoxAnnotation
 from dedoc.data_structures.bbox import BBox
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
@@ -164,6 +165,9 @@ class PdfTabbyReader(PdfBaseReader):
             annotations.append(IndentationAnnotation(0, len_block, str(indent)))
             annotations.append(SpacingAnnotation(0, len_block, str(spacing)))
 
+            bbox = BBox.from_two_points((bx_top_left, by_top_left), (bx_bottom_right, by_bottom_right))
+            annotations.append(BBoxAnnotation(0, len_block, bbox))
+
             for annotation in block["annotations"]:
                 is_bold = annotation["is_bold"]
                 is_italic = annotation["is_italic"]
@@ -173,9 +177,15 @@ class PdfTabbyReader(PdfBaseReader):
                 url = annotation["url"]
                 start = annotation["start"]
                 end = annotation["end"]
-
+                wx_top_left = annotation["x_top_left"]
+                wy_top_left = annotation["y_top_left"]
+                wx_bottom_right = wx_top_left + annotation["width"]
+                wy_bottom_right = wy_top_left + annotation["height"]
+                wbbox = BBox.from_two_points((wx_top_left, wy_top_left),
+                                             (wx_bottom_right, wy_bottom_right))
                 annotations.append(SizeAnnotation(start, end, str(font_size)))
                 annotations.append(StyleAnnotation(start, end, font_name))
+                annotations.append(BBoxAnnotation, start, end, wbbox)
 
                 if is_bold:
                     annotations.append(BoldAnnotation(start, end, "True"))
@@ -188,7 +198,6 @@ class PdfTabbyReader(PdfBaseReader):
 
             meta = block["metadata"].lower()
             uid = f"txt_{file_hash}_{order}"
-            bbox = BBox.from_two_points((bx_top_left, by_top_left), (bx_bottom_right, by_bottom_right))
 
             metadata = LineMetadata(page_id=page_number, line_id=order)
             line_with_location = LineWithLocation(line=block_text,
