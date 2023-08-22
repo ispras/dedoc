@@ -10,27 +10,30 @@ from typing import IO, List, Match, Optional, Tuple
 import cv2
 import numpy as np
 from PIL import Image
-from pdfminer.converter import PDFPageAggregator
-from pdfminer.layout import LAParams, LTAnno, LTChar, LTContainer, LTCurve, LTFigure, LTImage, LTRect, LTTextBox, LTTextBoxHorizontal, LTTextLineHorizontal
-from pdfminer.pdfinterp import PDFPageInterpreter
-from pdfminer.pdfinterp import PDFResourceManager
-from pdfminer.pdfpage import PDFPage
 
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
+from dedoc.data_structures import BBoxAnnotation
 from dedoc.data_structures.annotation import Annotation
-from dedoc.data_structures.bbox import BBox
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
+from pdfminer.converter import PDFPageAggregator
+from pdfminer.layout import LAParams, LTChar, LTAnno, LTTextBoxHorizontal, LTTextLineHorizontal, LTContainer, LTRect, \
+    LTFigure, LTImage, LTCurve, LTTextBox, LTExpandableContainer, LTTextContainer
+from pdfminer.pdfinterp import PDFPageInterpreter
+from pdfminer.pdfinterp import PDFResourceManager
+from pdfminer.pdfpage import PDFPage
+
+from dedoc.utils.pdf_utils import get_page_image
+from dedoc.data_structures.bbox import BBox
 from dedoc.readers.pdf_reader.data_classes.page_with_bboxes import PageWithBBox
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
-from dedoc.utils.pdf_utils import get_page_image
 
-StyleLine = namedtuple("StyleLine", ["begin", "end", "bold", "italic", "font_size", "font_style", "table_name"])
-logging.getLogger("pdfminer").setLevel(logging.ERROR)
+logging.getLogger('pdfminer').setLevel(logging.ERROR)
+WordObj = namedtuple("Word", ["start", "end", "value"])
 
 
 class ExtractorPdfTextLayer(object):
@@ -81,10 +84,13 @@ class ExtractorPdfTextLayer(object):
         layout_objects = [lobj for lobj in layout]
         lobjs_textline = []
         for lobj in layout_objects:
+            if isinstance(lobj, LTTextContainer):
+                pass
             if isinstance(lobj, LTTextBoxHorizontal):
                 lines = [lobj_text for lobj_text in lobj if isinstance(lobj_text, LTTextLineHorizontal)]
                 lines.sort(key=lambda lobj: float(height - lobj.y1))
                 lobjs_textline.extend(lines)
+
             elif isinstance(lobj, LTTextLineHorizontal):
                 lobjs_textline.append(lobj)
             elif isinstance(lobj, LTFigure) and not page_broken:
@@ -102,6 +108,22 @@ class ExtractorPdfTextLayer(object):
         attachments = images if len(images) < 10 else []
         return PageWithBBox(bboxes=bboxes, image=image_page, page_num=page_number, attachments=attachments)
 
+    def __extract_characters(self, lobj: LTTextBoxHorizontal) -> List[List[LTText]]:
+        lobjs_word = []
+        lobjs_words = []
+        for text_line in lobj:
+            for character in text_line:
+                if not isinstance(character, LTChar) and not isinstance(character, LTAnno):
+                    continue
+
+                if character.get_text() in {'\n', '\t', ' '}:
+                    lobjs_words.append(lobjs_word)
+                    lobjs_word = []
+                else:
+                    lobjs_word.append(character)
+
+        return lobjs_words
+
     def __extract_image(self,
                         directory: str,
                         height: int,
@@ -111,7 +133,7 @@ class ExtractorPdfTextLayer(object):
                         lobj: LTContainer,
                         page_number: int) -> Optional[PdfImageAttachment]:
         try:
-            bbox = self._create_bbox(k_h=k_h, k_w=k_w, height=height, lobj=lobj)
+            bbox = self.__create_bbox(k_h=k_h, k_w=k_w, height=height, lobj=lobj)
             location = Location(bbox=bbox, page_number=page_number)
             cropped = image_page[bbox.y_top_left: bbox.y_bottom_right, bbox.x_top_left: bbox.x_bottom_right]
             uid = f"fig_{uuid.uuid1()}"
@@ -223,37 +245,37 @@ class ExtractorPdfTextLayer(object):
 
     def get_info_layout_object(self, lobj: LTContainer, page_num: int, line_num: int, k_w: float, k_h: float, height: int) -> TextWithBBox:
         # 1 - converting coordinate from pdf format into image
-        bbox = self._create_bbox(height, k_h, k_w, lobj)
+        bbox = self.__create_bbox(height, k_h, k_w, lobj)
         # 2 - extract text and text annotations from current object
-        text, text_anns = self._get_style_and_text_from_layout_object(lobj)
-        return TextWithBBox(bbox=bbox, page_num=page_num, text=text, line_num=line_num, annotations=text_anns)
-
-    def _create_bbox(self, height: int, k_h: float, k_w: float, lobj: LTContainer) -> BBox:
-        curr_box_line = ExtractorPdfTextLayer.convert_coordinates_pdf_to_image(lobj, k_w, k_h, height)
-        bbox = BBox.from_two_points((curr_box_line.x_top_left, curr_box_line.y_top_left), (curr_box_line.x_bottom_right, curr_box_line.y_bottom_right))
-        return bbox
-
-    def _get_style_and_text_from_layout_object(self, lobj: LTContainer) -> [str, List[Annotation]]:
-
+        text = ""
+        annotations = []
         if isinstance(lobj, LTTextLineHorizontal):
             # cleaning text from (cid: *)
             text = self._cleaning_text_from_hieroglyphics(lobj.get_text())
             # get line's style
-            anns = self._get_line_style(lobj)
+            annotations = self.__get_line_annotations(lobj, k_w, k_h, height, width)
 
-            return text, anns
-        else:
-            return "", None
+        return TextWithBBox(bbox=bbox, page_num=page_num, text=text, line_num=line_num, annotations=annotations)
 
-    def _get_line_style(self, lobj: LTTextLineHorizontal) -> List[Annotation]:
-        # 1 - prepare data for groupby name
+    def __create_bbox(self, height: int, k_h: float, k_w: float, lobj: LTContainer) -> BBox:
+        curr_box_line = ExtractorPdfTextLayer.convert_coordinates_pdf_to_image(lobj, k_w, k_h, height)
+        bbox = BBox.from_two_points((curr_box_line.x_top_left, curr_box_line.y_top_left), (curr_box_line.x_bottom_right, curr_box_line.y_bottom_right))
+        return bbox
+
+    def __get_line_annotations(self, lobj: LTTextLineHorizontal, k_w: float, k_h: float, height: int, width: int) -> List[Annotation]:
+        # 1 - prepare data for group by name
         chars_with_style = []
         rand_weight = self._get_new_weight()
         prev_style = ""
-        for lobj_char in lobj:
+        words: List[WordObj] = []
+        word: WordObj = WordObj(start=0, end=-1, value=LTExpandableContainer())
+        annotations: List[Annotation]
+
+        for item, lobj_char in enumerate(lobj):
             if isinstance(lobj_char, LTChar) or isinstance(lobj_char, LTAnno):
+
+                # get styles
                 if len(chars_with_style) > 0:
-                    # check next char different from previously then we fresh rand_weight
                     prev_style, prev_size = chars_with_style[-1].split("_rand_")
                 if isinstance(lobj_char, LTChar):
                     curr_style = f"{lobj_char.fontname}_{round(lobj_char.size, 0)}"
@@ -261,23 +283,30 @@ class ExtractorPdfTextLayer(object):
                     if curr_style != prev_style:
                         rand_weight = self._get_new_weight()
 
-                    chars_with_style.append(f"{curr_style}_rand_{rand_weight}")
-                elif isinstance(lobj_char, LTAnno) and lobj_char.get_text() in (" ", "\n") and len(chars_with_style) > 0:
+                    chars_with_style.append("{}_rand_{}".format(curr_style, rand_weight))
+                elif isinstance(lobj_char, LTAnno) \
+                        and lobj_char.get_text() in (" ", "\n") \
+                        and len(chars_with_style) > 0:
                     # check on the space or \n (in pdfminer is type LTAnno)
                     # duplicated previous style
+                    word.end = item - 1
+                    words.append(word)
+                    word = WordObj(start=item + 1, end=-1, value=LTExpandableContainer())
                     chars_with_style.append(chars_with_style[-1])
 
-        styles = []
+        annotations = [BBoxAnnotation(start=word.start,
+                                      end=word.end,
+                                      value=self.__create_bbox(height=height, k_h=k_h, k_w=k_w, lobj=word.value)) for word in words]
 
-        # 2 - extract diapasons from the style char array (chars_with_style)
+        # 3 - extract diapasons from the style char array (chars_with_style)
         pointer_into_string = 0
 
         for key, group in itertools.groupby(chars_with_style, lambda x: x):
             count_chars = len(list(group))
-            styles.extend(self.__parse_style_string(key, pointer_into_string, pointer_into_string + count_chars - 1))
+            annotations.extend(self.__parse_style_string(key, pointer_into_string, pointer_into_string + count_chars - 1))
             pointer_into_string += count_chars
 
-        return styles
+        return annotations
 
     def _cleaning_text_from_hieroglyphics(self, text_str: str) -> str:
         """
