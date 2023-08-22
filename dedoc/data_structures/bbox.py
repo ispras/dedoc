@@ -102,6 +102,16 @@ class BBox(Serializable):
         res["height"] = self.height
         return res
 
+    def to_relative_dict(self, page_width: int, page_height: int) -> dict:
+        res = OrderedDict()
+        res["x_top_left"] = self.x_top_left / page_width
+        res["y_top_left"] = self.y_top_left / page_height
+        res["width"] = self.width / page_width
+        res["height"] = self.height / page_height
+        res["page_width"] = page_width
+        res["page_height"] = page_height
+        return res
+
     @staticmethod
     def from_dict(some_dict: Dict[str, int]) -> "BBox":
         return BBox(**some_dict)
