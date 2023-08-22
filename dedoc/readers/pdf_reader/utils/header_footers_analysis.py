@@ -1,14 +1,15 @@
-from typing import List, Optional
-import numpy as np
 import difflib
 import re
 from collections import Counter
+from typing import List, Optional, Tuple
+
+import numpy as np
 
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 
 
 def _get_pattern(s: str) -> str:
-    return re.sub(r'[0-9]+', '@', s.lower().strip())
+    return re.sub(r"\d+", "@", s.lower().strip())
 
 
 def _similarity_with_replacement(s1: str, s2: str) -> float:
@@ -42,9 +43,10 @@ def _strip_empty_lines(lines: List[List[LineWithLocation]]) -> List[List[LineWit
     return lines
 
 
-def _remove_header_footer(is_footer_header: List[bool], popular_patterns: List[List[str]],
-                          lines: List[List[LineWithLocation]], page_id: int, line_id: int) \
-        -> Optional[LineWithLocation]:
+def _remove_header_footer(is_footer_header: List[bool],
+                          popular_patterns: List[List[str]],
+                          lines: List[List[LineWithLocation]],
+                          page_id: int, line_id: int) -> Optional[LineWithLocation]:
 
     if not is_footer_header[line_id] or abs(line_id) >= len(lines[page_id]):
         return None
@@ -58,8 +60,7 @@ def _remove_header_footer(is_footer_header: List[bool], popular_patterns: List[L
     return None
 
 
-def _get_popular_pattern(is_footer_header: List[bool], max_cnt_lines: int, threshold: float, patterns: List[List[str]]) \
-        -> List[List[str]]:
+def _get_popular_pattern(is_footer_header: List[bool], max_cnt_lines: int, threshold: float, patterns: List[List[str]]) -> List[List[str]]:
     # Algorithm if header takes more than 40% of changed header-footer of doc
     #                       and more 70% in the doc with const header-footers
     #                        is_footer_header = [True,              False, False, False, True,            True         ]
@@ -68,10 +69,10 @@ def _get_popular_pattern(is_footer_header: List[bool], max_cnt_lines: int, thres
 
     popular_patterns = [[] for _ in range(max_cnt_lines)]
 
-    for num, patterns_on_line in enumerate(patterns):
+    for num, pattern in enumerate(patterns):
         if not is_footer_header[num]:
             continue
-        filter_pattern = [p for p in patterns[num] if p != '' and p]
+        filter_pattern = [p for p in pattern if p]
         uniques = np.array(list(Counter(filter_pattern).keys()))
         freqs = np.array(list(Counter(filter_pattern).values())) / len(filter_pattern)
 
@@ -80,8 +81,8 @@ def _get_popular_pattern(is_footer_header: List[bool], max_cnt_lines: int, thres
     return popular_patterns
 
 
-def footer_header_analysis(lines: List[List[LineWithLocation]], threshold: float = 0.5) -> \
-        [List[List[LineWithLocation]], List[List[LineWithLocation]], List[List[LineWithLocation]]]:
+def footer_header_analysis(lines: List[List[LineWithLocation]], threshold: float = 0.5) \
+        -> Tuple[List[List[LineWithLocation]], List[List[LineWithLocation]], List[List[LineWithLocation]]]:
     # 1. инициализация весов, окна скольжения и скоров
     # first 4 weight for header, last 4 weight for footer
     weights = [1.0, 1.0, 0.85, 0.75, 0.75, 0.85, 1.0, 1.0]
@@ -116,13 +117,11 @@ def footer_header_analysis(lines: List[List[LineWithLocation]], threshold: float
         # calc score for header
         for line_index in range(max_cnt_lines // 2):
             # calculation header score
-            scores[line_index] += weights[line_index] * _similarity_with_replacement(s1=patterns[line_index][page_one],
-                                                                                     s2=patterns[line_index][page_two])
+            scores[line_index] += weights[line_index] * _similarity_with_replacement(s1=patterns[line_index][page_one], s2=patterns[line_index][page_two])
 
             # calculation footer score
-            scores[-line_index - 1] += weights[-line_index - 1] * _similarity_with_replacement(
-                s1=patterns[-line_index - 1][page_one],
-                s2=patterns[-line_index - 1][page_two])
+            similarity = _similarity_with_replacement(s1=patterns[-line_index - 1][page_one], s2=patterns[-line_index - 1][page_two])
+            scores[-line_index - 1] += weights[-line_index - 1] * similarity
 
         cnt_cmpr += 1
 
@@ -130,9 +129,7 @@ def footer_header_analysis(lines: List[List[LineWithLocation]], threshold: float
     is_footer_header = scores > threshold
 
     # 4 - get the popular pattern from lines with high scores
-    popular_patterns = _get_popular_pattern(is_footer_header, max_cnt_lines,
-                                            threshold=0.4 if step_hf == 2 else 0.7,
-                                            patterns=patterns)
+    popular_patterns = _get_popular_pattern(is_footer_header, max_cnt_lines, threshold=0.4 if step_hf == 2 else 0.7, patterns=patterns)
     # 5 - delete only those lines which match with popular patterns
     headers, footers = [], []
 

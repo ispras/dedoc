@@ -1,4 +1,4 @@
-from flask_restx import fields, Api, Model
+from flask_restx import Api, Model, fields
 
 from dedoc.data_structures.annotation import Annotation
 
@@ -20,9 +20,8 @@ class LinkedTextAnnotation(Annotation):
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
-        return api.model('LinkedTextAnnotation', {
-            'start': fields.Integer(description='annotation start index', required=True, example=0),
-            'end': fields.Integer(description='annotation end index', required=True, example=4),
-            'value': fields.String(description='text, linked to given, for example text of the footnote',
-                                   required=True,)
+        return api.model("LinkedTextAnnotation", {
+            "start": fields.Integer(description="annotation start index", required=True, example=0),
+            "end": fields.Integer(description="annotation end index", required=True, example=4),
+            "value": fields.String(description="text, linked to given, for example text of the footnote", required=True)
         })

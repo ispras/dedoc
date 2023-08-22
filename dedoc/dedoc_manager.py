@@ -2,14 +2,14 @@ import logging
 import os.path
 import shutil
 import tempfile
-from typing import Optional, Dict
+from typing import Dict, Optional
 
-from dedoc.common.exceptions.dedoc_exception import DedocException
+from dedoc.common.exceptions.dedoc_error import DedocError
 from dedoc.config import get_config
-from dedoc.manager_config import get_manager_config
 from dedoc.data_structures import ParsedDocument, UnstructuredDocument
+from dedoc.manager_config import get_manager_config
 from dedoc.metadata_extractors import BaseMetadataExtractor
-from dedoc.train_dataset.train_dataset_utils import save_line_with_meta, get_path_original_documents
+from dedoc.train_dataset.train_dataset_utils import get_path_original_documents, save_line_with_meta
 from dedoc.utils.utils import get_unique_name
 
 
@@ -67,7 +67,7 @@ class DedocManager:
 
         try:
             return self.__parse_no_error_handling(file_path=file_path, parameters=parameters)
-        except DedocException as e:
+        except DedocError as e:
             file_dir, file_name = os.path.split(file_path)
             e.filename = file_name
             e.metadata = BaseMetadataExtractor._get_base_meta_information(directory=file_dir, filename=file_name, name_actual=file_name)

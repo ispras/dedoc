@@ -1,11 +1,9 @@
-import inspect
 import os
-import warnings
 from stat import S_IREAD, S_IRGRP, S_IROTH
 from typing import List, Optional
 
 from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
-from dedoc.utils.utils import splitext_, get_file_mime_type
+from dedoc.utils.utils import get_file_mime_type, splitext_
 
 
 class FileConverterComposition(object):
@@ -35,13 +33,7 @@ class FileConverterComposition(object):
         name, extension = splitext_(filename)
         mime = get_file_mime_type(os.path.join(tmp_dir, filename))
         for converter in self.converters:
-            if "parameters" in inspect.getfullargspec(converter.can_convert).args:
-                can_convert = converter.can_convert(extension=extension, mime=mime, parameters=parameters)
-            else:
-                warnings.warn("!WARNING! you converter requires an update\n" +
-                              "Please specify parameters argument in method can_convert in {}\n".format(type(converter).__name__) +
-                              " These parameters would be mandatory in the near future")
-                can_convert = converter.can_convert(extension=extension, mime=mime)
+            can_convert = converter.can_convert(extension=extension, mime=mime, parameters=parameters)
             if can_convert:
                 filename = converter.do_convert(tmp_dir, name, extension)
                 break

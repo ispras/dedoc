@@ -12,7 +12,6 @@ from torch.utils.data import DataLoader
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.dataset_executor import DataLoaderImageOrient
 
-
 parser = argparse.ArgumentParser()
 checkpoint_path_save = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                     "../../resources/efficient_net_b0_fixed.pth"))

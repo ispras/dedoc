@@ -1,13 +1,11 @@
-import inspect
 import os
-import warnings
 from typing import Dict, List
 
-from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
+from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils.utils import splitext_, get_file_mime_type
+from dedoc.utils.utils import get_file_mime_type, splitext_
 
 
 class ReaderComposition(object):
@@ -39,13 +37,7 @@ class ReaderComposition(object):
         document_type = parameters.get("document_type")
 
         for reader in self.readers:
-            if "parameters" in inspect.getfullargspec(reader.can_read).args:
-                can_read = reader.can_read(path=file_path, mime=mime, extension=extension, document_type=document_type, parameters=parameters)
-            else:
-                warnings.warn("!WARNING! you reader requires an update\n" +
-                              "Please specify parameters argument in method can_read in {}\n".format(reader) +
-                              " This parameters would be mandatory in the near future")
-                can_read = reader.can_read(path=file_path, mime=mime, extension=extension, document_type=document_type)
+            can_read = reader.can_read(path=file_path, mime=mime, extension=extension, document_type=document_type, parameters=parameters)
 
             if can_read:
                 unstructured_document = reader.read(path=file_path, document_type=document_type, parameters=parameters)
@@ -53,7 +45,7 @@ class ReaderComposition(object):
                 assert isinstance(unstructured_document, UnstructuredDocument)  # TODO remove
                 return unstructured_document
 
-        raise BadFileFormatException(
+        raise BadFileFormatError(
             msg=f"No one can read file: name = {filename}, extension = {extension}, mime = {mime}, document type = {document_type}",
             msg_api=f"Unsupported file format {mime} of the input file {filename}"
         )

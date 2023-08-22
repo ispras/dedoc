@@ -1,15 +1,15 @@
-import os
 import argparse
-import zipfile
-from typing import List, Dict
-from texttable import Texttable
+import os
 import re
-import pytesseract
+import shutil
+import zipfile
+from tempfile import TemporaryDirectory
+from typing import Dict, List
+
 import cv2
 import numpy as np
-from tempfile import TemporaryDirectory
-import shutil
-
+import pytesseract
+from texttable import Texttable
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--input_path", "-i", type=str, default="../../resources/benchmarks/data_tesseract_benchmarks.zip")

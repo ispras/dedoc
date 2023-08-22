@@ -1,4 +1,5 @@
 import difflib
+
 import numpy as np
 
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_utils import get_text_from_table_cell
@@ -42,7 +43,7 @@ MINIMAL_CELL_AVG_LENGTH_LINE = 10
 
 def detect_diff_orient(cell_text: str) -> bool:
     # 1 - разбиваем на строки длины которых состоят хотя бы из одного символа
-    parts = cell_text.split('\n')
+    parts = cell_text.split("\n")
     parts = [p for p in parts if len(p) > 0]
 
     # 2 - подсчитываем среднюю длину строк ячейки

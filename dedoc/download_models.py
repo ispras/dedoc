@@ -6,7 +6,6 @@ from huggingface_hub import hf_hub_download
 
 from dedoc.config import get_config
 
-
 """
 These are versions of the models that are used at the current moment - hashes of commits from https://huggingface.co/dedoc.
 Keys are the names of repositories with models.

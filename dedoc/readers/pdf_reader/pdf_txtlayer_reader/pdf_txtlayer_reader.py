@@ -1,14 +1,15 @@
 import os
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
+
 import numpy as np
 
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.extractor_pdf_textlayer import ExtractorPdfTextLayer
+from dedoc.data_structures.bbox import BBox
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
-from dedoc.readers.pdf_reader.pdf_base_reader import PdfBaseReader, ParametersForParseDoc
+from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.extractor_pdf_textlayer import ExtractorPdfTextLayer
 from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
-from dedoc.data_structures.bbox import BBox
 
 
 class PdfTxtlayerReader(PdfBaseReader):
@@ -35,6 +36,7 @@ class PdfTxtlayerReader(PdfBaseReader):
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        parameters = {} if parameters is None else parameters
         return extension.lower().endswith("pdf") and (str(parameters.get("pdf_with_text_layer", "false")).lower() == "true")
 
     def _process_one_page(self,
@@ -44,22 +46,20 @@ class PdfTxtlayerReader(PdfBaseReader):
                           path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
         gray_image = self._convert_to_gray(image)
         if parameters.need_pdf_table_analysis:
-            cleaned_image, tables = self.table_recognizer. \
-                recognize_tables_from_image(image=gray_image,
-                                            page_number=page_number,
-                                            language=parameters.language,
-                                            orient_analysis_cells=parameters.orient_analysis_cells,
-                                            orient_cell_angle=parameters.orient_cell_angle,
-                                            table_type=parameters.table_type)
+            cleaned_image, tables = self.table_recognizer.recognize_tables_from_image(
+                image=gray_image,
+                page_number=page_number,
+                language=parameters.language,
+                orient_analysis_cells=parameters.orient_analysis_cells,
+                orient_cell_angle=parameters.orient_cell_angle,
+                table_type=parameters.table_type
+            )
         else:
             tables = []
 
-        is_one_column_document_list = None if parameters.is_one_column_document_list is None \
-            else parameters.is_one_column_document_list[page_number]
+        is_one_column_document_list = None if parameters.is_one_column_document_list is None else parameters.is_one_column_document_list[page_number]
 
-        page = self.extractor_layer.extract_text_layer(path=path,
-                                                       page_number=page_number,
-                                                       is_one_column_document=is_one_column_document_list)
+        page = self.extractor_layer.extract_text_layer(path=path, page_number=page_number, is_one_column_document=is_one_column_document_list)
         if page is None:
             return [], [], []
         unreadable_blocks = [location.bbox for table in tables for location in table.locations]

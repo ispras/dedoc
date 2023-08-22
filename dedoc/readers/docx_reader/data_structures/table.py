@@ -1,5 +1,6 @@
 import hashlib
 from collections import namedtuple
+
 from bs4 import Tag
 
 from dedoc.data_structures.table import Table
@@ -7,7 +8,7 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.readers.docx_reader.data_structures.run import Run
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 
-CellPropertyInfo = namedtuple('NamedTuple', 'colspan, rowspan, invisible')
+CellPropertyInfo = namedtuple("NamedTuple", "colspan, rowspan, invisible")
 
 
 class DocxTable:
@@ -65,7 +66,7 @@ class DocxTable:
                     cell_property_row_list.append(CellPropertyInfo(grid_span, 1, False))
 
                 # split merged cells
-                for span in range(grid_span - 1):
+                for _ in range(grid_span - 1):
                     cell_property_row_list.append(CellPropertyInfo(1, 1, True))
                     cell_ind += 1
                     cells_text.append(cell_text)
@@ -87,7 +88,7 @@ class DocxTable:
                 run = Run(None, self.styles_extractor)
                 run.get_text(run_bs)
                 cell_text += run.text
-            cell_text += '\n'
+            cell_text += "\n"
 
         if cell_text:
             cell_text = cell_text[:-1]  # remove \n in the end

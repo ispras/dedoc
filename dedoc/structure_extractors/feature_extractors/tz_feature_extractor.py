@@ -1,6 +1,6 @@
 import re
-from collections import defaultdict, Counter
-from typing import List, Iterable, Tuple, Optional, Iterator
+from collections import Counter, defaultdict
+from typing import Iterable, Iterator, List, Optional, Tuple
 
 import pandas as pd
 
@@ -43,8 +43,7 @@ class TzTextFeatures(AbstractFeatureExtractor):
     def transform(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None) -> pd.DataFrame:
         list_features = self.list_feature_extractor.transform(documents)
         result_matrix = pd.concat([self.__process_document(document) for document in documents], ignore_index=True)
-        result_matrix["is_in_toc"] = list(
-            flatten(self.toc_extractor.is_line_in_toc(document) for document in documents))
+        result_matrix["is_in_toc"] = list(flatten(self.toc_extractor.is_line_in_toc(document) for document in documents))
         result_matrix = pd.concat([result_matrix, list_features], axis=1)
         features = sorted(result_matrix.columns)
         cnt = Counter(features)
@@ -65,7 +64,7 @@ class TzTextFeatures(AbstractFeatureExtractor):
             start_page, finish_page = 0, 0
 
         one_line_features_dict = defaultdict(list)
-        for line_id, line in enumerate(lines):
+        for line in lines:
             for item in self._one_line_features(line, len(lines), start_page=start_page, finish_page=finish_page):
                 feature_name, feature = item[0], item[1]
                 one_line_features_dict[feature_name].append(feature)
@@ -77,11 +76,7 @@ class TzTextFeatures(AbstractFeatureExtractor):
         result_matrix = pd.concat([one_line_features_df, features_df], axis=1)
         return result_matrix
 
-    def _one_line_features(self,
-                           line: LineWithMeta,
-                           total_lines: int,
-                           start_page: int,
-                           finish_page: int) -> Iterator[Tuple[str, int]]:
+    def _one_line_features(self, line: LineWithMeta, total_lines: int, start_page: int, finish_page: int) -> Iterator[Tuple[str, int]]:
         text = line.line.lower()
 
         yield from self._start_regexp(line.line, self.list_item_regexp)
@@ -93,7 +88,7 @@ class TzTextFeatures(AbstractFeatureExtractor):
 
         number = self.number_regexp.match(text)
         number = number.group().strip() if number else ""
-        if number.endswith((')', '}')):
+        if number.endswith((")", "}")):
             number = number[:-1]
         yield ("dot_number_regexp", 1) if number.endswith(".") else ("dot_number_regexp", 0)
         yield "dot_number_regexp_len", len(number.split("."))

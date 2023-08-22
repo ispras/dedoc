@@ -1,11 +1,10 @@
 from collections import OrderedDict
-from typing import Optional, List
+from typing import List, Optional
 from uuid import uuid1
 
 from dedoc.data_structures.annotation import Annotation
-from dedoc.data_structures.serializable import Serializable
-from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
 from dedoc.data_structures.bbox import BBox
+from dedoc.data_structures.serializable import Serializable
 
 
 class TextWithBBox(Serializable):
@@ -24,12 +23,10 @@ class TextWithBBox(Serializable):
         self.text = text
         self.label = label
         self.annotations = [] if annotations is None else annotations
-        if BBoxAnnotation.name not in [annotation.name for annotation in self.annotations]:
-            self.annotations.append(BBoxAnnotation(start=0, end=len(text), value=bbox))
-        self.uid = "bbox_{}".format(uuid1()) if uid is None else uid
+        self.uid = f"bbox_{uuid1()}" if uid is None else uid
 
     def __str__(self) -> str:
-        return "TextWithBBox(bbox = {}, page = {}, text = {})".format(self.bbox, self.page_num, self.text)
+        return f"TextWithBBox(bbox = {self.bbox}, page = {self.page_num}, text = {self.text})"
 
     def __repr__(self) -> str:
         return self.__str__()

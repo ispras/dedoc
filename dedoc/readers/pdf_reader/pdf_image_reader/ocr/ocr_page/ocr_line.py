@@ -1,6 +1,8 @@
 from typing import List
 
+from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.bbox import BBox
+from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
 from dedoc.data_structures.concrete_annotations.confidence_annotation import ConfidenceAnnotation
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_page.ocr_tuple import OcrElement
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_page.ocr_word import OcrWord
@@ -20,7 +22,7 @@ class OcrLine:
     def text(self) -> str:
         return " ".join(word.text for word in self.words if word.text != "") + "\n"
 
-    def get_confidence(self) -> List[ConfidenceAnnotation]:
+    def get_annotations(self, page_width: int, page_height: int) -> List[Annotation]:
         start = 0
         annotations = []
 
@@ -28,9 +30,12 @@ class OcrLine:
             if word.text == "":
                 continue
 
-            annotations.append(ConfidenceAnnotation(start, start + len(word.text), str(word.confidence)))
+            end = start + len(word.text)
+            annotations.append(ConfidenceAnnotation(start, end, str(word.confidence / 100)))
+            annotations.append(BBoxAnnotation(start, end, word.bbox, page_width, page_height))
             start += len(word.text) + 1
 
+        annotations.append(BBoxAnnotation(0, start, self.bbox, page_width, page_height))
         return annotations
 
     @staticmethod
@@ -39,7 +44,7 @@ class OcrLine:
         words = []
         head = None
         for element in line:
-            assert element.level >= OcrLine.level, "get {} in line".format(element)
+            assert element.level >= OcrLine.level, f"get {element} in line"
             if element.level == OcrLine.level:
                 head = element
             else:

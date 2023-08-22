@@ -1,4 +1,4 @@
-from typing import List, Callable
+from typing import Callable, List
 
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta

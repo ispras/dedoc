@@ -4,7 +4,7 @@ from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 
 
 def check_if_true(value: str) -> bool:
-    if value == '1' or value == 'True' or value == 'true':
+    if value == "1" or value == "True" or value == "true":
         return True
     return False
 
@@ -40,7 +40,7 @@ def change_run_properties(old_properties: BaseProperties, tree: Tag) -> None:
 
     if tree.u:
         u_tag = tree.u.get("w:val", False)
-        if u_tag == 'none':
+        if u_tag == "none":
             old_properties.underlined = False
         elif isinstance(u_tag, str):
             old_properties.underlined = True
@@ -76,7 +76,7 @@ def change_indent(old_properties: BaseProperties, tree: Tag) -> None:
 
     attributes = {attribute: 0 for attribute in ["firstLine", "firstLineChars", "hanging", "hangingChars", "start", "startChars", "left"]}
     for attribute in attributes:
-        attributes[attribute] = float(tree.ind.get("w:{}".format(attribute), 0))
+        attributes[attribute] = float(tree.ind.get(f"w:{attribute}", 0))
 
     indentation = 0
     if attributes["left"] != 0:
@@ -106,7 +106,7 @@ def change_size(old_properties: BaseProperties, tree: Tag) -> None:
     :param tree: BeautifulSoup tree with properties
     """
     if tree.sz:
-        old_properties.size = int(tree.sz.get('w:val', old_properties.size))
+        old_properties.size = int(tree.sz.get("w:val", old_properties.size))
 
 
 def change_jc(old_properties: BaseProperties, tree: Tag) -> None:
@@ -120,23 +120,23 @@ def change_jc(old_properties: BaseProperties, tree: Tag) -> None:
         return
 
     if tree.bidi:
-        bidi_tag = tree.bidi.get('w:val', True)
+        bidi_tag = tree.bidi.get("w:val", True)
         right_to_left = check_if_true(bidi_tag) if isinstance(bidi_tag, str) else bidi_tag
     else:
         right_to_left = False
 
-    jc_tag = tree.jc.get('w:val', old_properties.jc)
+    jc_tag = tree.jc.get("w:val", old_properties.jc)
 
-    if jc_tag == 'both':
-        old_properties.jc = 'both'
-    elif jc_tag == 'center':
-        old_properties.jc = 'center'
-    elif jc_tag == 'right':
-        old_properties.jc = 'right'
-    elif jc_tag == 'end' and not right_to_left:
-        old_properties.jc = 'right'
-    elif jc_tag == 'start' and right_to_left:
-        old_properties.jc = 'right'
+    if jc_tag == "both":
+        old_properties.jc = "both"
+    elif jc_tag == "center":
+        old_properties.jc = "center"
+    elif jc_tag == "right":
+        old_properties.jc = "right"
+    elif jc_tag == "end" and not right_to_left:
+        old_properties.jc = "right"
+    elif jc_tag == "start" and right_to_left:
+        old_properties.jc = "right"
 
 
 def change_caps(old_properties: BaseProperties, tree: Tag) -> None:
@@ -148,7 +148,7 @@ def change_caps(old_properties: BaseProperties, tree: Tag) -> None:
     if not tree.caps:
         return
 
-    caps_tag = tree.caps.get('w:val', True)
+    caps_tag = tree.caps.get("w:val", True)
     old_properties.caps = check_if_true(caps_tag) if isinstance(caps_tag, str) else caps_tag
 
 

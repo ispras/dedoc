@@ -1,4 +1,4 @@
-from typing import Tuple, List, Optional
+from typing import List, Optional, Tuple
 
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -11,9 +11,7 @@ from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_build
 
 class TzBodyBuilder(AbstractHierarchyLevelBuilder):
 
-    def get_lines_with_hierarchy(self,
-                                 lines_with_labels: List[Tuple[LineWithMeta, str]],
-                                 init_hl_depth: int) -> List[LineWithMeta]:
+    def get_lines_with_hierarchy(self, lines_with_labels: List[Tuple[LineWithMeta, str]], init_hl_depth: int) -> List[LineWithMeta]:
         if len(lines_with_labels) > 0:
             line = lines_with_labels[0][0]
             page_id = line.metadata.page_id
@@ -25,9 +23,9 @@ class TzBodyBuilder(AbstractHierarchyLevelBuilder):
         previous_hl = None
         for line, prediction in lines_with_labels:
             if prediction in ("part", "named_item", "item"):
-                # TODO: add analyse tag 'header' if tag exist then analyse what type of header here by using regexps
+                # TODO: add analyse tag "header" if tag exist then analyse what type of header here by using regexps
                 #  (part, named_item, number, NonLetterPrefix.regexp, TzTextFeatures.item_regexp )
-                #  Q: set HL of tag 'header'? A: (need analyse document) in some all headers can have the same HL, in the other document otherside
+                #  Q: set HL of tag "header"? A: (need analyse document) in some all headers can have the same HL, in the other document otherside
                 #  I think we must set HL of regular expression
                 #  For Understanding header you need example of doc files.
                 line = self.__handle_item(init_hl_depth, line, prediction, previous_hl=previous_hl)
@@ -38,11 +36,7 @@ class TzBodyBuilder(AbstractHierarchyLevelBuilder):
                 result.append(line)
         return result
 
-    def __handle_item(self,
-                      init_hl_depth: int,
-                      line: LineWithMeta,
-                      prediction: str,
-                      previous_hl: Optional[HierarchyLevel]) -> LineWithMeta:
+    def __handle_item(self, init_hl_depth: int, line: LineWithMeta, prediction: str, previous_hl: Optional[HierarchyLevel]) -> LineWithMeta:
         text = line.line.lower().strip()
         item_min_depth = 5 + init_hl_depth
         if prediction == "part":
@@ -55,7 +49,7 @@ class TzBodyBuilder(AbstractHierarchyLevelBuilder):
         elif TzTextFeatures.number_regexp.match(text):
             match = TzTextFeatures.number_regexp.match(text)
             number = text[match.start(): match.end()]
-            number_splitted = [n for n in number.strip().split('.') if n.isnumeric()]
+            number_splitted = [n for n in number.strip().split(".") if n.isnumeric()]
             hierarchy_level = HierarchyLevel(item_min_depth + 3, len(number_splitted), False, prediction)
         elif BulletPrefix.regexp.match(text):
             hierarchy_level = HierarchyLevel(item_min_depth + 4, 0, False, prediction)

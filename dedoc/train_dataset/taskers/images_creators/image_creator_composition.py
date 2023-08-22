@@ -3,8 +3,8 @@ import zipfile
 from typing import List
 
 from dedoc.train_dataset.data_structures.images_archive import ImagesArchive
-from dedoc.train_dataset.exceptions.empty_page_exception import EmptyPageException
-from dedoc.train_dataset.exceptions.task_creation_exception import TaskCreationException
+from dedoc.train_dataset.exceptions.empty_page_error import EmptyPageError
+from dedoc.train_dataset.exceptions.task_creation_error import TaskCreationError
 from dedoc.train_dataset.taskers.images_creators.concrete_creators.abstract_images_creator import AbstractImagesCreator
 
 
@@ -19,12 +19,12 @@ class ImageCreatorComposition:
             for page in pages:
                 assert len(page) > 0
                 if len(pages) == 0:
-                    raise EmptyPageException("You try create task with 0 line in document")
+                    raise EmptyPageError("You try create task with 0 line in document")
                 find_handler = False
                 for creator in self.creators:
                     if creator.can_read(page):
                         creator.add_images(page=page, archive=archive)
                         find_handler = True
                 if not find_handler:
-                    raise TaskCreationException("No one can handle this task, first line = {}".format(pages[0]))
+                    raise TaskCreationError(f"No one can handle this task, first line = {pages[0]}")
         return ImagesArchive(archive_path)

@@ -1,6 +1,6 @@
 import os
 
-from dedoc.common.exceptions.conversion_exception import ConversionException
+from dedoc.common.exceptions.conversion_error import ConversionError
 from dedoc.converters.concrete_converters.pptx_converter import PptxConverter
 from tests.unit_tests.abstract_converter_test import AbstractConverterTest
 
@@ -13,7 +13,7 @@ class TestPPTXConverter(AbstractConverterTest):
     def test_convert_broken_file(self) -> None:
         extension = ".odp"
         filename = "broken"
-        with self.assertRaises(ConversionException):
+        with self.assertRaises(ConversionError):
             self._convert(filename=filename, extension=extension, converter=self.converter)
 
     def test_convert_odp(self) -> None:

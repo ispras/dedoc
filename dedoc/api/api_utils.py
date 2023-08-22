@@ -1,4 +1,4 @@
-from typing import Optional, List, Dict, Iterator, Set
+from typing import Dict, Iterator, List, Optional, Set
 
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
@@ -24,7 +24,7 @@ def __prettify_text(text: str) -> Iterator[str]:
         yield " ".join(res)
 
 
-def _node2tree(paragraph: 'TreeNode', depth: int, depths: Set[int] = None) -> str:
+def _node2tree(paragraph: TreeNode, depth: int, depths: Set[int] = None) -> str:
     if depths is None:
         depths = set()
 
@@ -33,31 +33,29 @@ def _node2tree(paragraph: 'TreeNode', depth: int, depths: Set[int] = None) -> st
     space = "".join(space)
     node_result = []
 
-    node_result.append("  {} {} ".format(
-        space, paragraph.metadata.hierarchy_level.line_type + "&nbsp" + paragraph.node_id))
+    node_result.append(f"  {space} {paragraph.metadata.hierarchy_level.line_type}&nbsp{paragraph.node_id} ")
     for text in __prettify_text(paragraph.text):
         space = [space_symbol] * 4 * (depth - 1) + 4 * [space_symbol]
         space = "".join(space)
-        node_result.append("<p>  {} {}  </p>".format(space, text))
+        node_result.append(f"<p>  {space} {text}  </p>")
     if len(paragraph.subparagraphs) > 0:
-        sub_nodes = "\n".join([_node2tree(sub_node, depth=depth + 1, depths=depths.union({depth}))
-                               for sub_node in paragraph.subparagraphs])
-        return """
+        sub_nodes = "\n".join([_node2tree(sub_node, depth=depth + 1, depths=depths.union({depth})) for sub_node in paragraph.subparagraphs])
+        return f"""
         <details>
-            <summary> <tt> {} </tt> </summary>
-            {}
+            <summary> <tt> {"".join(node_result)} </tt> </summary>
+            {sub_nodes}
         </details>
-        """.format("".join(node_result), sub_nodes)
+        """
     else:
-        return """
+        return f"""
                 <p>
-                     {}
+                     {"".join(node_result)}
                 </p>
-                """.format("".join(node_result))
+                """
 
 
-def json2collapsed_tree(paragraph: 'TreeNode') -> str:
-    result = """
+def json2collapsed_tree(paragraph: TreeNode) -> str:
+    result = f"""
     <!DOCTYPE html>
     <html>
      <head>
@@ -66,15 +64,15 @@ def json2collapsed_tree(paragraph: 'TreeNode') -> str:
      </head>
      <body>
      <tt>
-      {}
+      {_node2tree(paragraph, depth=0)}
       </tt>
      </body>
     </html>
-    """.format(_node2tree(paragraph, depth=0))
+    """
     return result
 
 
-def json2tree(paragraph: 'TreeNode') -> str:
+def json2tree(paragraph: TreeNode) -> str:
     stack = [paragraph]
     nodes = []
     while len(stack) > 0:
@@ -94,14 +92,13 @@ def json2tree(paragraph: 'TreeNode') -> str:
         depths = {d for d in depths if d <= depth}
         space = [space_symbol] * 4 * (depth - 1) + 4 * ["-"]
         space = __add_vertical_line(depths, space)
-        node_result.append("<p> <tt> <em>  {} {} </em> </tt> </p>".format(
-            space, node.metadata.hierarchy_level.line_type + "&nbsp" + node.node_id))
+        node_result.append(f"<p> <tt> <em>  {space} {node.metadata.hierarchy_level.line_type}&nbsp{node.node_id} </em> </tt> </p>")
         for text in __prettify_text(node.text):
             space = [space_symbol] * 4 * (depth - 1) + 4 * [space_symbol]
             space = __add_vertical_line(depths, space)
-            node_result.append("<p> <tt> {} {} </tt> </p>".format(space, text))
+            node_result.append(f"<p> <tt> {space} {text} </tt> </p>")
         result.extend(reversed(node_result))
-    result.append("<h3>{}</h3>".format(root.text))
+    result.append(f"<h3>{root.text}</h3>")
     return "".join(reversed(result))
 
 
@@ -111,11 +108,7 @@ def __add_vertical_line(depths: Set[int], space: List[str]) -> str:
     return "".join(space)
 
 
-def json2html(text: str,
-              paragraph: 'TreeNode',
-              tables: Optional[List[Table]],
-              tabs: int = 0,
-              table2id: Dict[str, int] = None) -> str:
+def json2html(text: str, paragraph: TreeNode, tables: Optional[List[Table]], tabs: int = 0, table2id: Dict[str, int] = None) -> str:
     if tables is None:
         tables = []
 
@@ -125,18 +118,13 @@ def json2html(text: str,
     ptext = __annotations2html(paragraph, table2id)
 
     if paragraph.metadata.hierarchy_level.line_type in [HierarchyLevel.header, HierarchyLevel.root]:
-        ptext = "<strong>{}</strong>".format(ptext.strip())
+        ptext = f"<strong>{ptext.strip()}</strong>"
     elif paragraph.metadata.hierarchy_level.line_type == HierarchyLevel.list_item:
-        ptext = "<em>{}</em>".format(ptext.strip())
+        ptext = f"<em>{ptext.strip()}</em>"
     else:
         ptext = ptext.strip()
 
-    text += "<p> {tab} {text}     <sub> id = {id} ; type = {type} </sub></p>".format(
-        tab="&nbsp;" * tabs,
-        text=ptext,
-        type=str(paragraph.metadata.hierarchy_level.line_type),
-        id=paragraph.node_id
-    )
+    text += f'<p> {"&nbsp;" * tabs} {ptext}     <sub> id = {paragraph.node_id} ; type = {paragraph.metadata.hierarchy_level.line_type} </sub></p>'
 
     for subparagraph in paragraph.subparagraphs:
         text = json2html(text=text, paragraph=subparagraph, tables=None, tabs=tabs + 4, table2id=table2id)
@@ -175,7 +163,7 @@ def __value2tag(name: str, value: str) -> str:
     return value
 
 
-def __annotations2html(paragraph: 'TreeNode', table2id: Dict[str, int]) -> str:
+def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int]) -> str:
     indexes = dict()
 
     for annotation in paragraph.annotations:
@@ -198,8 +186,7 @@ def __annotations2html(paragraph: 'TreeNode', table2id: Dict[str, int]) -> str:
         indexes.setdefault(annotation.start, "")
         indexes.setdefault(annotation.end, "")
         if name == "table":
-            indexes[annotation.start] += '<p> <sub> <a href="#{uid}"> table#{index_table} </a> </sub> </p>' \
-                .format(uid=tag, index_table=table2id[tag])
+            indexes[annotation.start] += f'<p> <sub> <a href="#{tag}"> table#{table2id[tag]} </a> </sub> </p>'
         else:
             indexes[annotation.start] += "<" + tag + ">"
             indexes[annotation.end] = "</" + tag + ">" + indexes[annotation.end]
@@ -215,10 +202,8 @@ def __annotations2html(paragraph: 'TreeNode', table2id: Dict[str, int]) -> str:
 
 def __table2html(table: Table, table2id: Dict[str, int]) -> str:
     uid = table.metadata.uid
-    text = "<h4> table {}:</h4>".format(table2id[uid])
-    text += '<table border="1" id={uid} style="border-collapse: collapse; width: 100%;">\n<tbody>\n'.format(
-        uid=uid
-    )
+    text = f"<h4> table {table2id[uid]}:</h4>"
+    text += f'<table border="1" id={uid} style="border-collapse: collapse; width: 100%;">\n<tbody>\n'
     cell_properties = table.metadata.cell_properties
     for row_id, row in enumerate(table.cells):
         text += "<tr>\n"
@@ -227,10 +212,10 @@ def __table2html(table: Table, table2id: Dict[str, int]) -> str:
             if cell_properties:
                 prop = cell_properties[row_id][col_id]
                 if prop.invisible:
-                    text += " style=\"display: none\" "
-                text += " colspan=\"{}\" rowspan=\"{}\">{}</td>\n".format(prop.colspan, prop.rowspan, cell)
+                    text += ' style="display: none" '
+                text += f' colspan="{prop.colspan}" rowspan="{prop.rowspan}">{cell}</td>\n'
             else:
                 text += f">{cell}</td>\n"
         text += "</tr>\n"
-    text += '</tbody>\n</table>'
+    text += "</tbody>\n</table>"
     return text

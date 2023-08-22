@@ -1,5 +1,4 @@
 import os
-import unittest
 from typing import List
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
@@ -58,11 +57,9 @@ class TestApiCSVReader(AbstractTestApiDocReader):
 
         tables = result["content"]["tables"]
         table = tables[0]["cells"]
-        self.assertListEqual(["id", "cat", "name", "price", "inStock", "author", "series_t", "sequence_i", "genre_s"],
-                             table[0])
-        self.assertListEqual(
-            ["055357342X", "book", "A Storm of Swords", "7.99", "true", "George R.R. Martin", "A Song of Ice and Fire",
-             "3", "fantasy"], table[3])
+        self.assertListEqual(["id", "cat", "name", "price", "inStock", "author", "series_t", "sequence_i", "genre_s"], table[0])
+        self.assertListEqual(["055357342X", "book", "A Storm of Swords", "7.99", "true", "George R.R. Martin", "A Song of Ice and Fire", "3", "fantasy"],
+                             table[3])
 
     def test_csv_books2(self) -> None:
         file_name = "books_2.csv"
@@ -70,12 +67,10 @@ class TestApiCSVReader(AbstractTestApiDocReader):
         self.assertIn("delimiter is ','", result["warnings"])
         tables = result["content"]["tables"]
         table = tables[0]["cells"]
-        self.assertListEqual(['0553573403', 'book', "A Game of Throne, kings and other stuff",
-                              '7.99', 'True', 'George R.R. Martin', 'A Song of Ice and Fire', '1', 'fantasy'],
-                             table[1])
-        self.assertListEqual(
-            ["0553579908", "book", 'A Clash of "Kings"', '7.99', 'True', 'George R.R. Martin',
-             'A Song of Ice and Fire', '2', 'fantasy'], table[2])
+        self.assertListEqual(["0553573403", "book", "A Game of Throne, kings and other stuff", "7.99", "True", "George R.R. Martin", "A Song of Ice and Fire",
+                              "1", "fantasy"], table[1])
+        self.assertListEqual(["0553579908", "book", 'A Clash of "Kings"', "7.99", "True", "George R.R. Martin", "A Song of Ice and Fire", "2", "fantasy"],
+                             table[2])
 
     def __check_content(self, tables: List[dict]) -> None:
         self.assertEqual(1, len(tables))
@@ -84,7 +79,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
 
         self.assertEqual("1", rows1[0][0])
         self.assertEqual("2", rows1[0][1])
-        self.assertEqual('3', rows1[0][2])
+        self.assertEqual("3", rows1[0][2])
 
         self.assertEqual("2", rows1[1][0])
         self.assertEqual("1", rows1[1][1])

@@ -1,4 +1,5 @@
 import re
+
 import roman
 
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.prefix import LinePrefix
@@ -14,7 +15,7 @@ class BracketRomanPrefix(LinePrefix):
     iv) forth item
     """
 
-    regexp = re.compile(r'^\s*[ivxl]\)')
+    regexp = re.compile(r"^\s*[ivxl]\)")
     name = "roman"
 
     def __init__(self, prefix: str, indent: float) -> None:
@@ -29,4 +30,4 @@ class BracketRomanPrefix(LinePrefix):
         if len(prefix_str) <= 1 or not prefix_str.endswith(")"):
             return False
         prefix_set = set(prefix_str[:-1])
-        return prefix_set.issubset(set('ivxl'))
+        return prefix_set.issubset(set("ivxl"))

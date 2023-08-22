@@ -2,8 +2,8 @@ import unittest
 from typing import List, Set, Tuple
 
 from dedoc.data_structures.annotation import Annotation
-from dedoc.utils.annotation_merger import AnnotationMerger
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
+from dedoc.utils.annotation_merger import AnnotationMerger
 from tests.test_utils import TestTimeout
 
 

@@ -4,7 +4,6 @@ import unittest
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor
-
 from tests.test_utils import get_test_config
 
 

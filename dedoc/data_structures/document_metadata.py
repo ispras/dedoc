@@ -1,7 +1,7 @@
 import uuid
 from collections import OrderedDict
 
-from flask_restx import fields, Api, Model
+from flask_restx import Api, Model, fields
 
 from dedoc.api.models.custom_fields import wild_any_fields
 from dedoc.data_structures.serializable import Serializable
@@ -43,7 +43,7 @@ class DocumentMetadata(Serializable):
         self.other_fields = {}
         if other_fields is not None and len(other_fields) > 0:
             self.extend_other_fields(other_fields)
-        self.uid = "doc_uid_auto_{}".format(uuid.uuid1()) if uid is None else uid
+        self.uid = f"doc_uid_auto_{uuid.uuid1()}" if uid is None else uid
 
     def set_uid(self, uid: str) -> None:
         self.uid = uid  # noqa
@@ -79,14 +79,14 @@ class DocumentMetadata(Serializable):
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
-        return api.model('DocumentMetadata', {
-            "uid": fields.String(description='unique document identifier', example="doc_uid_auto_ba73d76a-326a-11ec-8092-417272234cb0"),
-            'file_name': fields.String(description='file name', example="example.odt"),
-            'temporary_file_name': fields.String(description='file name', example="123.odt"),
-            'size': fields.Integer(description='file size in bytes', example="20060"),
-            'modified_time': fields.Integer(description='modification time of the document in the format UnixTime', example="1590579805"),
-            'created_time': fields.Integer(description='creation time of the document in the format UnixTime', example="1590579805"),
-            'access_time': fields.Integer(description='file access time in format UnixTime', example="1590579805"),
-            'file_type': fields.String(description='mime-type file', example="application/vnd.oasis.opendocument.text"),
-            '[a-z]*': wild_any_fields
+        return api.model("DocumentMetadata", {
+            "uid": fields.String(description="unique document identifier", example="doc_uid_auto_ba73d76a-326a-11ec-8092-417272234cb0"),
+            "file_name": fields.String(description="file name", example="example.odt"),
+            "temporary_file_name": fields.String(description="file name", example="123.odt"),
+            "size": fields.Integer(description="file size in bytes", example="20060"),
+            "modified_time": fields.Integer(description="modification time of the document in the format UnixTime", example="1590579805"),
+            "created_time": fields.Integer(description="creation time of the document in the format UnixTime", example="1590579805"),
+            "access_time": fields.Integer(description="file access time in format UnixTime", example="1590579805"),
+            "file_type": fields.String(description="mime-type file", example="application/vnd.oasis.opendocument.text"),
+            "[a-z]*": wild_any_fields
         })

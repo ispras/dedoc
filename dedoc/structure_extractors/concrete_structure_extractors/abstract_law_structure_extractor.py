@@ -104,9 +104,8 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
     def __call_builder(self, start_tag: str, lines_with_labels: List[Tuple[LineWithMeta, str]]) -> List[LineWithMeta]:
         for builder in self.hierarchy_level_builders:
             if builder.can_build(start_tag, self.hl_type):
-                return builder.get_lines_with_hierarchy(lines_with_labels=lines_with_labels,
-                                                        init_hl_depth=self.init_hl_depth)
-        raise ValueError("No one can handle {} {}".format(start_tag, self.hl_type))
+                return builder.get_lines_with_hierarchy(lines_with_labels=lines_with_labels, init_hl_depth=self.init_hl_depth)
+        raise ValueError(f"No one can handle {start_tag} {self.hl_type}")
 
     def _fix_labels(self, labels: List[str]) -> List[str]:
         """
@@ -138,10 +137,14 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
         if last_body_unit is None:
             last_body_unit = title_end
 
-        assert title_end <= application_start, "{} <= {}".format(title_end, application_start)
-        assert title_end <= last_body_unit, "{} <= {}".format(title_end, last_body_unit)
-        assert last_body_unit <= application_start, "{} <= {}".format(last_body_unit, application_start)
+        assert title_end <= application_start, f"{title_end} <= {application_start}"
+        assert title_end <= last_body_unit, f"{title_end} <= {last_body_unit}"
+        assert last_body_unit <= application_start, f"{last_body_unit} <= {application_start}"
 
+        result = self.__get_result(application_start, labels, last_body_unit, title_end)
+        return result
+
+    def __get_result(self, application_start: int, labels: List[str], last_body_unit: int, title_end: int) -> List[str]:
         result = []
         for index, label in enumerate(labels):
             if label == "footer":
@@ -173,15 +176,13 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
             match = LawTextFeatures.roman_regexp.match(line.line)
             prefix = line.line[match.start(): match.end()]
             suffix = line.line[match.end():]
-            symbols = [('T', 'I'), ('Т', 'I'), ('У', 'V'), ('П', "II"), ('Ш', "III"), ('Г', 'I')]
+            symbols = [("T", "I"), ("Т", "I"), ("У", "V"), ("П", "II"), ("Ш", "III"), ("Г", "I")]
             for symbol_from, symbol_to in symbols:
                 prefix = prefix.replace(symbol_from, symbol_to)
             line.set_line(prefix + suffix)
         return line
 
-    def __finish_chunk(self,
-                       is_application_begun: bool,
-                       lines_with_labels: List[Tuple[LineWithMeta, str]]) -> List[LineWithMeta]:
+    def __finish_chunk(self, is_application_begun: bool, lines_with_labels: List[Tuple[LineWithMeta, str]]) -> List[LineWithMeta]:
         if len(lines_with_labels) == 0:
             return []
 

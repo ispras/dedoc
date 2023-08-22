@@ -1,4 +1,4 @@
-class TrainDatasetException(Exception):
+class TrainDatasetError(Exception):
     """
     Raise if there is some problem with completing new train dataset.
     """

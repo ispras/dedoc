@@ -1,10 +1,9 @@
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.structure_unit.abstract_structure_unit import AbstractStructureUnit
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_subitem, regexps_item_with_bracket, \
-    regexps_foiv_item
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_foiv_item, regexps_item_with_bracket, regexps_subitem
 
 
 class FoivStructureUnitBuilder(AbstractStructureUnit):

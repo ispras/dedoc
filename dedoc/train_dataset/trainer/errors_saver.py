@@ -28,17 +28,14 @@ class ErrorsSaver:
         self.dataset_path = os.path.join(dataset_path, "dataset.zip")
         self.config = config
 
-    def save_errors(self, error_cnt: Counter,
-                    errors_uids: List[str],
-                    csv_path: str,
-                    save_errors_images: bool = False) -> None:
+    def save_errors(self, error_cnt: Counter, errors_uids: List[str], csv_path: str, save_errors_images: bool = False) -> None:
         assert len(set(errors_uids)) == len(errors_uids)
-        self.logger.info("save errors in {}".format(self.errors_path))
+        self.logger.info(f"save errors in {self.errors_path}")
         errors_total_num = sum(error_cnt.values())
-        print("{:16s} -> {:16s} {:6s} {:16s}".format("true", "predicted", "cnt", "(percent)"))  # noqa
+        print(f"{'true':16s} -> {'predicted':16s} {'cnt':6s} {'(percent)':16s}")  # noqa
         for error, cnt in error_cnt.most_common():
             y_true, y_pred = error
-            print("{:16s} -> {:16s} {:06,} ({:02.2f}%)".format(y_true, y_pred, cnt, 100 * cnt / errors_total_num))  # noqa
+            print(f"{y_true:16s} -> {y_pred:16s} {cnt:06,} ({100 * cnt / errors_total_num:02.2f}%)")  # noqa
 
         if save_errors_images:
             self.__save_images(errors_uids, csv_path)
@@ -50,10 +47,7 @@ class ErrorsSaver:
                 lines = file.readlines()
             lines_cnt = Counter(lines)
             lines.sort(key=lambda l: (-lines_cnt[l], l))
-            path_out = os.path.join(self.errors_path, "{:04d}_{}".format(
-                int(1000 * len(lines) / errors_total_num),
-                file_name
-            ))
+            path_out = os.path.join(self.errors_path, f"{int(1000 * len(lines) / errors_total_num):04d}_{file_name}")
 
             with open(path_out, "w") as file_out:
                 for line in lines:
@@ -79,7 +73,7 @@ class ErrorsSaver:
         if not os.path.isfile(self.dataset_path) or not os.path.isfile(csv_dataset_path):
             return
         with tempfile.TemporaryDirectory() as documents_tmp_dir:
-            with zipfile.ZipFile(self.dataset_path, 'r') as dataset_archive:
+            with zipfile.ZipFile(self.dataset_path, "r") as dataset_archive:
                 dataset_archive.extractall(documents_tmp_dir)
             path2docs = os.path.join(documents_tmp_dir, "original_documents")
             images_creators = [ScannedImagesCreator(path2docs=path2docs),
@@ -92,13 +86,14 @@ class ErrorsSaver:
 
             ready_documents, ready_images = self.__prepare_files()
 
-            with zipfile.ZipFile(self.images_archive, 'a') as images_archive, \
-                    zipfile.ZipFile(self.errors_images_archive, 'w') as errors_images_archive:
+            with zipfile.ZipFile(self.images_archive, "a") as images_archive, \
+                    zipfile.ZipFile(self.errors_images_archive, "w") as errors_images_archive:
                 for uid in tqdm(errors_uids):
                     self.__process_uid(errors_images_archive, filtered_dataset, images_archive, images_creators,
                                        ready_documents, ready_images, uid)
 
-    def __process_uid(self, errors_images_archive: zipfile.ZipFile,
+    def __process_uid(self,
+                      errors_images_archive: zipfile.ZipFile,
                       filtered_dataset: pd.DataFrame,
                       images_archive: zipfile.ZipFile,
                       images_creators: List[AbstractImagesCreator],
@@ -107,7 +102,7 @@ class ErrorsSaver:
                       uid: str) -> None:
         done_set = set()
         document_name = filtered_dataset[filtered_dataset.uid == uid].head(1).group.item()
-        img_name = "{}.jpg".format(uid)
+        img_name = f"{uid}.jpg"
         if img_name in done_set:
             return  # skip done image
         done_set.add(img_name)
@@ -136,11 +131,11 @@ class ErrorsSaver:
             with open(self.errors_documents, "w") as json_file:
                 json.dump([], json_file)
         if not os.path.isfile(self.images_archive):
-            with zipfile.ZipFile(self.images_archive, 'w'):
+            with zipfile.ZipFile(self.images_archive, "w"):
                 ready_images = []
                 ready_documents = []
         else:
-            with zipfile.ZipFile(self.images_archive, 'r') as images_archive:
+            with zipfile.ZipFile(self.images_archive, "r") as images_archive:
                 ready_images = images_archive.namelist()
                 with open(self.errors_documents, "r") as json_file:
                     ready_documents = json.load(json_file)

@@ -8,7 +8,7 @@ from typing import List, Tuple
 
 import numpy as np
 import requests
-from PIL import ImageFont, Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 

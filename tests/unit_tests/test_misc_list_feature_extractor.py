@@ -1,15 +1,16 @@
 from unittest import TestCase
 
 import numpy as np
+
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
-from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.list_features.list_features_extractor import ListFeaturesExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.bracket_prefix import BracketPrefix
+from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.dotted_prefix import DottedPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.empty_prefix import EmptyPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.letter_prefix import LetterPrefix
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
 
 
 class TestListFeatures(TestCase):
@@ -103,7 +104,7 @@ class TestListFeatures(TestCase):
         self.assertEqual(EmptyPrefix(indent=10), self.feature_extractor._get_prefix(line))
 
     def test_get_window(self) -> None:
-        prefixes = [BracketPrefix("{})".format(i), 1.01 * i) for i in range(0, 300)]
+        prefixes = [BracketPrefix(f"{i})", 1.01 * i) for i in range(0, 300)]
         doc_size = len(prefixes)
         assert doc_size == 300
         indents = np.array([prefix.indent for prefix in prefixes])

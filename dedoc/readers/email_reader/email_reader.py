@@ -1,4 +1,5 @@
 import email
+import json
 import logging
 import mimetypes
 import os
@@ -7,17 +8,16 @@ import uuid
 from email.header import decode_header
 from email.message import Message
 from tempfile import NamedTemporaryFile
-from typing import Optional, List
-import json
+from typing import List, Optional
 
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.utils.utils import save_data_to_unique_file, get_unique_name
 from dedoc.readers.html_reader.html_reader import HtmlReader
+from dedoc.utils.utils import get_unique_name, save_data_to_unique_file
 
 
 class EmailReader(BaseReader):
@@ -55,17 +55,17 @@ class EmailReader(BaseReader):
 
         all_header_fields = dict(msg.items())
         lines = self.__get_main_fields(msg)
-        header_filename = "message_header_" + get_unique_name('message_header.json')
+        header_filename = "message_header_" + get_unique_name("message_header.json")
 
         # saving message header into separated file as an attachment
         header_file_path = os.path.join(os.path.dirname(path), header_filename)
-        with open(header_file_path, 'w', encoding='utf-8') as f:
+        with open(header_file_path, "w", encoding="utf-8") as f:
             json.dump(all_header_fields, f, ensure_ascii=False, indent=4)
 
         need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
         attachments.append(AttachedFile(original_name=header_filename,
                                         tmp_file_path=header_file_path,
-                                        uid="attach_{}".format(uuid.uuid1()),
+                                        uid=f"attach_{uuid.uuid1()}",
                                         need_content_analysis=need_content_analysis))
 
         html_found = False
@@ -111,22 +111,22 @@ class EmailReader(BaseReader):
             return
 
         filename = message.get_filename()
-        filename = '' if filename is None else self.__get_decoded(filename)
+        filename = "" if filename is None else self.__get_decoded(filename)
         filename, extension = os.path.splitext(filename)
         filename = self.__fix_filename(filename)
-        filename = str(uuid.uuid4()) if filename == '' else filename
+        filename = str(uuid.uuid4()) if filename == "" else filename
 
         fixed_extension = self.__fix_filename(extension)
-        if extension == '' or fixed_extension != extension:
+        if extension == "" or fixed_extension != extension:
             extension = mimetypes.guess_extension(content_type)
-        extension = '.txt' if extension == '.bat' else extension
+        extension = ".txt" if extension == ".bat" else extension
 
         tmpdir = os.path.dirname(path)
         filename = f"{filename}{extension}"
         tmp_file_name = save_data_to_unique_file(directory=tmpdir, filename=filename, binary_data=payload)
         attachments.append(AttachedFile(original_name=filename,
                                         tmp_file_path=os.path.join(tmpdir, tmp_file_name),
-                                        uid="attach_{}".format(uuid.uuid1()),
+                                        uid=f"attach_{uuid.uuid1()}",
                                         need_content_analysis=need_content_analysis))
 
     def __add_content_from_html(self, message: Message, lines: list, tables: list) -> None:

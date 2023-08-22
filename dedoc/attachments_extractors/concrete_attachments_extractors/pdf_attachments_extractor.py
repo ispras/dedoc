@@ -1,17 +1,17 @@
 import logging
 import os
 import uuid
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import PyPDF2
 from PyPDF2.pdf import PageObject
 from PyPDF2.utils import PdfReadError
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
+from dedoc.attachments_extractors.utils import create_note
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.utils.utils import convert_datetime
-from dedoc.attachments_extractors.utils import create_note
 
 
 class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
@@ -38,7 +38,7 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
         Look to the :class:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor` documentation to get the information about \
         the methods' parameters.
         """
-        with open(os.path.join(tmpdir, filename), 'rb') as handler:
+        with open(os.path.join(tmpdir, filename), "rb") as handler:
             try:
                 reader = PyPDF2.PdfFileReader(handler)
             except Exception as e:
@@ -59,25 +59,22 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
 
     def __get_notes(self, page: PageObject) -> List[Tuple[str, bytes]]:
         attachments = []
-        if '/Annots' in page.keys():
-            for annot in page['/Annots']:
+        if "/Annots" in page.keys():
+            for annot in page["/Annots"]:
                 # Other subtypes, such as /Link, cause errors
-                subtype = annot.getObject().get('/Subtype')
+                subtype = annot.getObject().get("/Subtype")
                 if subtype == "/FileAttachment":
-                    name = annot.getObject()['/FS']['/UF']
-                    data = annot.getObject()['/FS']['/EF']['/F'].getData()  # The file containing the stream data.
+                    name = annot.getObject()["/FS"]["/UF"]
+                    data = annot.getObject()["/FS"]["/EF"]["/F"].getData()  # The file containing the stream data.
                     attachments.append([name, data])
-                if subtype == "/Text" and annot.getObject().get('/Name') == '/Comment':  # it is messages (notes) in PDF
+                if subtype == "/Text" and annot.getObject().get("/Name") == "/Comment":  # it is messages (notes) in PDF
                     note = annot.getObject()
                     created_time = convert_datetime(note["/CreationDate"]) if "/CreationDate" in note else None
                     modified_time = convert_datetime(note["/M"]) if "/M" in note else None
                     user = note.get("/T")
                     data = note.get("/Contents", "")
 
-                    name, content = create_note(content=data,
-                                                modified_time=modified_time,
-                                                created_time=created_time,
-                                                author=user)
+                    name, content = create_note(content=data, modified_time=modified_time, created_time=created_time, author=user)
                     attachments.append((name, bytes(content)))
         return attachments
 
@@ -99,15 +96,15 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
         """
         attachments = []
         catalog = reader.trailer["/Root"]
-        if '/Names' in catalog.keys() and '/EmbeddedFiles' in catalog['/Names'].keys() and '/Names' in catalog['/Names']['/EmbeddedFiles'].keys():
-            file_names = catalog['/Names']['/EmbeddedFiles']['/Names']
+        if "/Names" in catalog.keys() and "/EmbeddedFiles" in catalog["/Names"].keys() and "/Names" in catalog["/Names"]["/EmbeddedFiles"].keys():
+            file_names = catalog["/Names"]["/EmbeddedFiles"]["/Names"]
             for f in file_names:
                 if isinstance(f, str):
                     data_index = file_names.index(f) + 1
                     dict_object = file_names[data_index].getObject()
-                    if '/EF' in dict_object and '/F' in dict_object['/EF']:
-                        data = dict_object['/EF']['/F'].getData()
-                        name = dict_object.get('/UF', "pdf_attach_{}".format(uuid.uuid1()))
+                    if "/EF" in dict_object and "/F" in dict_object["/EF"]:
+                        data = dict_object["/EF"]["/F"].getData()
+                        name = dict_object.get("/UF", f"pdf_attach_{uuid.uuid1()}")
                         attachments.append((name, data))
 
         return attachments

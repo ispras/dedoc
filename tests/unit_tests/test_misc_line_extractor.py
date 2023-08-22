@@ -2,8 +2,8 @@ import json
 import os
 import unittest
 
-from tests.test_utils import get_test_config
 from dedoc.train_dataset.extractors.line_with_meta_extractor import LineWithMetaExtractor
+from tests.test_utils import get_test_config
 
 
 class TestLineWithMetaExtractor(unittest.TestCase):

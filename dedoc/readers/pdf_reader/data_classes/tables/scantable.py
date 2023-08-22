@@ -1,6 +1,7 @@
 import copy
 from collections import OrderedDict
-from typing import List, Any
+from typing import Any, List
+
 import numpy as np
 
 from dedoc.data_structures.bbox import BBox
@@ -9,12 +10,7 @@ from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 
 
 class ScanTable:
-    def __init__(self,
-                 page_number: int,
-                 matrix_cells: List[List[Cell]] = None,
-                 bbox: BBox = None,
-                 name: str = "",
-                 order: int = -1) -> None:
+    def __init__(self, page_number: int, matrix_cells: List[List[Cell]] = None, bbox: BBox = None, name: str = "", order: int = -1) -> None:
         self.matrix_cells = matrix_cells
         self.page_number = page_number
         self.locations = []
@@ -40,7 +36,7 @@ class ScanTable:
         return attrs
 
     @staticmethod
-    def get_key_value_attrs(attrs: List, val: Any) -> dict:
+    def get_key_value_attrs(attrs: List, val: Any) -> dict:  # noqa
         res_attrs = []
         for i in range(0, len(attrs)):
             res_attrs.append({"attr": attrs[i]})

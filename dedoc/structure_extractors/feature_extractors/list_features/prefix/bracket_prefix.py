@@ -11,7 +11,7 @@ class BracketPrefix(LinePrefix):
     2) second element
     """
 
-    regexp = re.compile(r'^\s*\d\)')
+    regexp = re.compile(r"^\s*\d\)")
     name = "bracket"
 
     def __init__(self, prefix: str, indent: float) -> None:

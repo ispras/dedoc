@@ -14,7 +14,7 @@ class FootnoteExtractor:
         if not xml:
             return
 
-        for footnote in xml.find_all("w:{}".format(key)):
+        for footnote in xml.find_all(f"w:{key}"):
             footnote_id = footnote.get("w:id")
             footnote_text = " ".join(t.text for t in footnote.find_all("w:t") if t.text)
             if footnote_id and footnote_text:

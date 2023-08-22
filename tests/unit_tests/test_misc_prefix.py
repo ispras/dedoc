@@ -2,10 +2,10 @@ import unittest
 from typing import List, Type
 
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.bracket_prefix import BracketPrefix
+from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.dotted_prefix import DottedPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.empty_prefix import EmptyPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.letter_prefix import LetterPrefix
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.prefix import LinePrefix
 
 
@@ -140,8 +140,8 @@ class TestPrefix(unittest.TestCase):
             for first, second in zip(letters[:-1], letters[1:]):
                 first = LetterPrefix(first, 0)
                 second = LetterPrefix(second, 0)
-                self.assertTrue(second.predecessor(first), "{} should be predecessor of {}".format(first, second))
-                self.assertFalse(first.predecessor(second), "{} should not be predecessor of {}".format(first, second))
+                self.assertTrue(second.predecessor(first), f"{first} should be predecessor of {second}")
+                self.assertFalse(first.predecessor(second), f"{first} should not be predecessor of {second}")
 
     def _check_three_prefix(self, one: LinePrefix, three: LinePrefix, two: LinePrefix) -> None:
         self.assertTrue(two.predecessor(one))
@@ -149,7 +149,7 @@ class TestPrefix(unittest.TestCase):
         self.assertFalse(one.predecessor(one))
         self.assertFalse(one.predecessor(two))
         self.assertFalse(one.predecessor(three))
-        self.assertFalse(three.predecessor(one), "{} {}".format(three, one))
+        self.assertFalse(three.predecessor(one), f"{three} {one}")
 
     def test_dotted_predecessor_one_num(self) -> None:
         one = DottedPrefix("1.", 0)
@@ -205,7 +205,7 @@ class TestPrefix(unittest.TestCase):
         self.assertFalse(one.predecessor(two))
 
     def test_dotted_list_regexp(self) -> None:
-        self.assertTrue(BulletPrefix.regexp.fullmatch(' -'))
-        self.assertTrue(BulletPrefix.regexp.fullmatch('*'))
-        self.assertTrue(BulletPrefix.regexp.fullmatch('     ©'))
-        self.assertTrue(BulletPrefix.regexp.fullmatch('     ©   ') is None)
+        self.assertTrue(BulletPrefix.regexp.fullmatch(" -"))
+        self.assertTrue(BulletPrefix.regexp.fullmatch("*"))
+        self.assertTrue(BulletPrefix.regexp.fullmatch("     ©"))
+        self.assertTrue(BulletPrefix.regexp.fullmatch("     ©   ") is None)

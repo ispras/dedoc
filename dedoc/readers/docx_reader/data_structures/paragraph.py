@@ -1,4 +1,5 @@
 from typing import Optional
+
 from bs4 import Tag
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
@@ -6,7 +7,7 @@ from dedoc.readers.docx_reader.data_structures.run import Run
 from dedoc.readers.docx_reader.footnote_extractor import FootnoteExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
-from dedoc.readers.docx_reader.styles_extractor import StylesExtractor, StyleType
+from dedoc.readers.docx_reader.styles_extractor import StyleType, StylesExtractor
 
 
 class Paragraph(BaseProperties):
@@ -63,7 +64,7 @@ class Paragraph(BaseProperties):
         # 3) paragraph styles
         # 4) numbering styles within styles_extractor
         if self.xml.pStyle:
-            self.styles_extractor.parse(self.xml.pStyle['w:val'], self, StyleType.PARAGRAPH)
+            self.styles_extractor.parse(self.xml.pStyle["w:val"], self, StyleType.PARAGRAPH)
 
         # 5) character style parsed later for each run
         # 6) paragraph direct formatting
@@ -111,13 +112,13 @@ class Paragraph(BaseProperties):
         """
         Make runs of the paragraph and adds them to the paragraph list.
         """
-        run_list = self.xml.find_all('w:r')
+        run_list = self.xml.find_all("w:r")
 
         for run_tree in run_list:
             new_run = Run(self, self.styles_extractor)
 
             if run_tree.rStyle:
-                self.styles_extractor.parse(run_tree.rStyle['w:val'], new_run, StyleType.CHARACTER)
+                self.styles_extractor.parse(run_tree.rStyle["w:val"], new_run, StyleType.CHARACTER)
                 if self.xml.pPr and self.xml.pPr.rPr:
                     change_run_properties(new_run, self.xml.pPr.rPr)
 

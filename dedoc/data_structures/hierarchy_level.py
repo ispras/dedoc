@@ -18,7 +18,7 @@ class HierarchyLevel:
     toc = "toc"
     header = "header"
     toc_item = "toc_item"
-    list = "list"
+    list = "list"  # noqa
     list_item = "list_item"
     bullet_list_item = "bullet_list_item"
     raw_text = "raw_text"

@@ -35,10 +35,10 @@ class Annotation(Serializable):
         return self.name == o.name and self.value == o.value and self.start == o.start and self.end == o.end
 
     def __str__(self) -> str:
-        return "{name}({start}:{end}, {value})".format(name=self.name.capitalize(), start=self.start, end=self.end, value=self.value)
+        return f"{self.name.capitalize()}({self.start}:{self.end}, {self.value})"
 
     def __repr__(self) -> str:
-        return "{name}(...)".format(name=self.name.capitalize())
+        return f"{self.name.capitalize()}(...)"
 
     def to_dict(self) -> dict:
         res = OrderedDict()
@@ -52,12 +52,12 @@ class Annotation(Serializable):
     def get_api_dict(api: Api) -> Model:
         names = ["style", "bold", "italic", "underlined", "size", "indentation", "alignment", "table",
                  "attachment", "spacing", "strike", "subscript", "superscript"]
-        return api.model('Annotation', {
-            'start': fields.Integer(description='annotation start index', required=True, example=0),
-            'end': fields.Integer(description='annotation end index', required=True, example=4),
-            'name': fields.String(description='annotation name', required=True, example='bold', enum=names),
-            'value': fields.String(description='annotation value. For example, it may be font size value for size type '
-                                               'or type of alignment for alignment type',
+        return api.model("Annotation", {
+            "start": fields.Integer(description="annotation start index", required=True, example=0),
+            "end": fields.Integer(description="annotation end index", required=True, example=4),
+            "name": fields.String(description="annotation name", required=True, example="bold", enum=names),
+            "value": fields.String(description="annotation value. For example, it may be font size value for size type "
+                                               "or type of alignment for alignment type",
                                    required=True,
                                    example="left")
         })

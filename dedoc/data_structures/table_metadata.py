@@ -1,9 +1,10 @@
 from collections import OrderedDict
-from typing import Optional, List
-from flask_restx import fields, Api, Model
+from typing import List, Optional
 
-from dedoc.data_structures.serializable import Serializable
+from flask_restx import Api, Model, fields
+
 from dedoc.data_structures.cell_property import CellProperty
+from dedoc.data_structures.serializable import Serializable
 
 
 class TableMetadata(Serializable):
@@ -28,17 +29,16 @@ class TableMetadata(Serializable):
         res["uid"] = self.uid
         res["page_id"] = self.page_id
         res["is_inserted"] = self.is_inserted
-        res["cell_properties"] = [[cell_prop.to_dict() for cell_prop in row_prop]
-                                  for row_prop in self.cell_properties] if self.cell_properties else None
+        res["cell_properties"] = [[cell_prop.to_dict() for cell_prop in row_prop] for row_prop in self.cell_properties] if self.cell_properties else None
         return res
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
-        return api.model('TableMetadata', {
-            'page_id': fields.Integer(readonly=False, description='table start page number'),
-            'uid': fields.String(description="table unique id"),
-            'is_inserted': fields.Boolean(description="was the table inserted into document body"),
-            'cell_properties': fields.List(fields.List(fields.Nested(CellProperty.get_api_dict(api),
+        return api.model("TableMetadata", {
+            "page_id": fields.Integer(readonly=False, description="table start page number"),
+            "uid": fields.String(description="table unique id"),
+            "is_inserted": fields.Boolean(description="was the table inserted into document body"),
+            "cell_properties": fields.List(fields.List(fields.Nested(CellProperty.get_api_dict(api),
                                                                      description="cell properties, colspan, rowspan, etc",
                                                                      allow_null=True,
                                                                      skip_none=True)))
