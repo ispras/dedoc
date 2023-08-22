@@ -1,5 +1,5 @@
 import csv
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
 
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
@@ -38,7 +38,7 @@ class CSVReader(BaseReader):
             data = list(csv_reader)
         table_metadata = TableMetadata(page_id=0)
         tables = [Table(cells=data, metadata=table_metadata)]
-        warnings = ["delimiter is '{}'".format(delimiter)]
+        warnings = [f"delimiter is '{delimiter}'"]
         warnings.extend(encoding_warning)
         return UnstructuredDocument(lines=[], tables=tables, attachments=[], warnings=warnings)
 

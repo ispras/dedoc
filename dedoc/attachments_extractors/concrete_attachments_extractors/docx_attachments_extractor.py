@@ -8,7 +8,7 @@ from typing import List, Optional
 from bs4 import BeautifulSoup, Tag
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_office_attachments_extractor import AbstractOfficeAttachmentsExtractor
-from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
+from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.extensions import recognized_extensions, recognized_mimes
 
@@ -32,7 +32,7 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
         """
         result = []
         try:
-            with zipfile.ZipFile(os.path.join(tmpdir, filename), 'r') as zfile:
+            with zipfile.ZipFile(os.path.join(tmpdir, filename), "r") as zfile:
                 diagram_attachments = self.__extract_diagrams(zfile)
                 need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
                 result += self._content2attach_file(content=diagram_attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis)
@@ -40,7 +40,7 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
             result += self._get_attachments(tmpdir=tmpdir, filename=filename, parameters=parameters, attachments_dir="word")
 
         except zipfile.BadZipFile:
-            raise BadFileFormatException("Bad docx file:\n file_name = {}. Seems docx is broken".format(filename))
+            raise BadFileFormatError(f"Bad docx file:\n file_name = {filename}. Seems docx is broken")
         return result
 
     def __extract_diagrams(self, document: zipfile.ZipFile) -> List[tuple]:
@@ -52,12 +52,12 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
         """
         result = []
         try:
-            content = document.read('word/document.xml')
+            content = document.read("word/document.xml")
         except KeyError:
-            content = document.read('word/document2.xml')
+            content = document.read("word/document2.xml")
 
         content = re.sub(br"\n[\t ]*", b"", content)
-        bs = BeautifulSoup(content, 'xml')
+        bs = BeautifulSoup(content, "xml")
 
         paragraphs = [p for p in bs.body]
         diagram_paragraphs = []
@@ -81,10 +81,10 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
                 paragraph = p.extract()
                 uid = hashlib.md5(paragraph.encode()).hexdigest()
 
-                with open(f'{tmpdir}/word/document.xml', 'w') as f:
+                with open(f"{tmpdir}/word/document.xml", "w") as f:
                     f.write(doc_text)
                 diagram_name = f"{uid}.docx"
-                with zipfile.ZipFile(os.path.join(tmpdir, diagram_name), mode='w') as new_d:
+                with zipfile.ZipFile(os.path.join(tmpdir, diagram_name), mode="w") as new_d:
                     for filename in namelist:
                         new_d.write(os.path.join(tmpdir, filename), arcname=filename)
                 with open(os.path.join(tmpdir, diagram_name), "rb") as f:

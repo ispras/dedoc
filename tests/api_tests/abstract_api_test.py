@@ -1,6 +1,8 @@
 import json
 import os
+
 import requests
+
 from dedoc.utils.utils import similarity as utils_similarity
 from tests.api_tests.content_checker import ContentChecker
 from tests.test_utils import tree2linear
@@ -14,15 +16,15 @@ class AbstractTestApiDocReader(ContentChecker):
             self.assertEqual(expected, actual)
 
     def _check_metainfo(self, metainfo: dict, actual_type: str, actual_name: str) -> None:
-        self.assertEqual(metainfo['file_type'], actual_type)
-        self.assertEqual(metainfo['file_name'], actual_name)
+        self.assertEqual(metainfo["file_type"], actual_type)
+        self.assertEqual(metainfo["file_name"], actual_name)
 
     def _get_host(self) -> str:
-        host = os.environ.get('DOC_READER_HOST', 'localhost')
+        host = os.environ.get("DOC_READER_HOST", "localhost")
         return host
 
     def _get_port(self) -> int:
-        port = int(os.environ.get('DOCREADER_PORT', '1231'))
+        port = int(os.environ.get("DOCREADER_PORT", "1231"))
         return port
 
     def _get_abs_path(self, file_name: str) -> str:
@@ -45,9 +47,9 @@ class AbstractTestApiDocReader(ContentChecker):
         port = self._get_port()
         abs_path = self._get_abs_path(file_name)
 
-        with open(abs_path, 'rb') as file:
-            files = {'file': (file_name, file)}
-            r = requests.post("http://{host}:{port}/upload".format(host=host, port=port), files=files, data=data)
+        with open(abs_path, "rb") as file:
+            files = {"file": (file_name, file)}
+            r = requests.post(f"http://{host}:{port}/upload", files=files, data=data)
             self.assertEqual(expected_code, r.status_code)
             if expected_code != 200:
                 return r.content.decode()
@@ -63,7 +65,7 @@ class AbstractTestApiDocReader(ContentChecker):
         if data is None:
             data = {}
 
-        r = requests.post("http://{host}:{port}/upload".format(host=host, port=port), data=data)
+        r = requests.post(f"http://{host}:{port}/upload", data=data)
 
         self.assertEqual(expected_code, r.status_code)
         if expected_code != 200:
@@ -74,7 +76,7 @@ class AbstractTestApiDocReader(ContentChecker):
 
     def _test_table_refs(self, content: dict) -> None:
         tree = content["structure"]
-        tables = content['tables']
+        tables = content["tables"]
         lines = tree2linear(tree)
         annotations = []
         for line in lines:

@@ -62,7 +62,7 @@ class LineWithMetaExtractor:
             elif document_name.endswith(".html"):
                 reader = self.html_reader
             else:
-                raise Exception("Unknown document type {}".format(document_name))
+                raise Exception(f"Unknown document type {document_name}")
             document = reader.read(os.path.join(self.documents_path, document_name), parameters={})
             lines = document.lines
             return self.__add_labels(document_name, labels, lines)
@@ -119,14 +119,8 @@ class LineWithMetaExtractor:
             else:
                 image = convert_from_path(path, first_page=page_num + 1, last_page=page_num + 2)[0]
 
-            page_with_bboxes = PageWithBBox(
-                image=np.array(image),
-                page_num=page_num,
-                bboxes=bboxes
-            )
-            label_dict = {
-                data["data"]["_uid"]: data["labeled"][0] for data in labels
-            }
+            page_with_bboxes = PageWithBBox(image=np.array(image), page_num=page_num, bboxes=bboxes)
+            label_dict = {data["data"]["_uid"]: data["labeled"][0] for data in labels}
 
             lines = self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page_with_bboxes)
             for line in lines:
@@ -141,5 +135,5 @@ class LineWithMetaExtractor:
                     )
                     result.append(line_with_label)
                 else:
-                    print("unknown line {}".format(line.uid))  # noqa
+                    print(f"unknown line {line.uid}")  # noqa
         return result

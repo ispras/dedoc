@@ -1,5 +1,6 @@
 import unittest
 from typing import List
+
 import numpy as np
 
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor

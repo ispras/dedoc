@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from typing import Optional
 
-from flask_restx import fields, Api, Model
+from flask_restx import Api, Model, fields
 
 from dedoc.api.models.custom_fields import wild_any_fields, wild_forbid_fields
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
@@ -62,12 +62,12 @@ class LineMetadata(Serializable):
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
-        return api.model('LineMetadata', {
-            'paragraph_type': fields.String(description="paragraph type (header, list_item, list) and etc.", required=True, example="header"),
-            'page_id': fields.Integer(description="page number of begin paragraph", required=False, example=0),
-            'line_id': fields.Integer(description="line number of begin paragraph", required=True, example=13),
-            '_*': wild_forbid_fields,  # don't get private fields
-            'tag_hierarchy_level': wild_forbid_fields,
-            'hierarchy_level': wild_forbid_fields,
-            '[a-z]*': wild_any_fields
+        return api.model("LineMetadata", {
+            "paragraph_type": fields.String(description="paragraph type (header, list_item, list) and etc.", required=True, example="header"),
+            "page_id": fields.Integer(description="page number of begin paragraph", required=False, example=0),
+            "line_id": fields.Integer(description="line number of begin paragraph", required=True, example=13),
+            "_*": wild_forbid_fields,  # don't get private fields
+            "tag_hierarchy_level": wild_forbid_fields,
+            "hierarchy_level": wild_forbid_fields,
+            "[a-z]*": wild_any_fields
         })

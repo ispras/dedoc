@@ -39,7 +39,7 @@ class OcrLine:
         words = []
         head = None
         for element in line:
-            assert element.level >= OcrLine.level, "get {} in line".format(element)
+            assert element.level >= OcrLine.level, f"get {element} in line"
             if element.level == OcrLine.level:
                 head = element
             else:

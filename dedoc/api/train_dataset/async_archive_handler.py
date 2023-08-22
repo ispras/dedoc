@@ -10,7 +10,7 @@ from threading import Thread
 
 from fastapi import UploadFile
 
-from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
+from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.dedoc_manager import DedocManager
 from dedoc.train_dataset.taskers.tasker import Tasker
 
@@ -35,19 +35,15 @@ class _ArchiveHandler(Thread):
             else:
                 uid, parameters, file = self.queue.get()
                 self.results[uid] = self._handle_archive(path=file, parameters=parameters, uid=uid)
-                self.logger.info("FINISH {}".format(uid))
+                self.logger.info(f"FINISH {uid}")
 
     def _handle_archive(self, uid: str, path: str, parameters: dict) -> str:
         try:
             with zipfile.ZipFile(path, "r") as archive:
                 for i, file in enumerate(archive.namelist()):
-                    self.progress[uid] = "files done\t= {} \n files_in_progress\t= {}\n total\t= {}".format(
-                        i, 1, len(archive.namelist())
-                    )
+                    self.progress[uid] = f"files done\t= {i} \n files_in_progress\t= {1}\n total\t= {len(archive.namelist())}"
                     self.__handle_one_file(archive, file, parameters)
-                    self.progress[uid] = "files done\t= {} \n files_in_progress\t= {}\n total\t= {}".format(
-                        i + 1, 0, len(archive.namelist())
-                    )
+                    self.progress[uid] = f"files done\t= {i + 1} \n files_in_progress\t= {0}\n total\t= {len(archive.namelist())}"
 
             task, _ = self.tasker.create_tasks(
                 type_of_task=parameters["type_of_task"],
@@ -56,11 +52,11 @@ class _ArchiveHandler(Thread):
             )
             return task
         except Exception as e:
-            self.progress[uid] = "Fail with\n {}".format(e)
+            self.progress[uid] = f"Fail with\n{e}"
             raise e
 
     def __handle_one_file(self, archive: zipfile.ZipFile, file: str, parameters: dict) -> None:
-        self.logger.info("Start handle {}".format(file))
+        self.logger.info(f"Start handle {file}")
         with TemporaryDirectory() as tmpdir:
             try:
                 with archive.open(file) as item:
@@ -71,9 +67,9 @@ class _ArchiveHandler(Thread):
                         with open(path_out, "wb") as file_out:
                             file_out.write(item.read())
                         self.manager.parse(file_path=path_out, parameters=parameters)
-            except BadFileFormatException as e:
-                self.logger.warning("Can't handle file {}, exception {}".format(file, str(e)))
-        self.logger.info("Finish handle {}".format(file))
+            except BadFileFormatError as e:
+                self.logger.warning(f"Can't handle file {file}, exception {str(e)}")
+        self.logger.info(f"Finish handle {file}")
 
 
 class AsyncHandler:

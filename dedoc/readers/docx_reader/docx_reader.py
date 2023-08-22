@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Optional, List
+from typing import List, Optional
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
@@ -47,11 +47,11 @@ class DocxReader(BaseReader):
         for i, line in enumerate(lines[1:]):
             if lines[i].metadata.tag_hierarchy_level != line.metadata.tag_hierarchy_level \
                     or lines[i].metadata.tag_hierarchy_level.line_type != HierarchyLevel.unknown \
-                    or lines[i].line.endswith('\n'):
+                    or lines[i].line.endswith("\n"):
                 continue
 
             old_len = len(lines[i].line)
-            lines[i].set_line(lines[i].line + '\n')
+            lines[i].set_line(lines[i].line + "\n")
 
             for annotation in lines[i].annotations:
                 if annotation.end == old_len:

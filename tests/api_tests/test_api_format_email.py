@@ -14,7 +14,7 @@ class TestApiEmailReader(AbstractTestApiDocReader):
         attachments = result["attachments"]
 
         self.assertEqual(len(attachments), 1)  # message header fields
-        self.assertIn("message_header_", attachments[0]['metadata']['file_name'])
+        self.assertIn("message_header_", attachments[0]["metadata"]["file_name"])
         content = result["content"]
         structure = content["structure"]
         self._check_tree_sanity(structure)

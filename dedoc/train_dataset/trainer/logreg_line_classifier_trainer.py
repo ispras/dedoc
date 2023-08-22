@@ -1,5 +1,6 @@
 import logging
-from typing import Optional, Callable
+from typing import Callable, Optional
+
 from sklearn.linear_model import LogisticRegression
 
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor

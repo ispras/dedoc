@@ -3,7 +3,7 @@ import gzip
 import logging
 import re
 import time
-from typing import Optional, Tuple, Iterable, List
+from typing import Iterable, List, Optional, Tuple
 from unicodedata import normalize
 
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
@@ -44,7 +44,7 @@ class RawTextReader(BaseReader):
         parameters = {} if parameters is None else parameters
         encoding = self.__get_encoding(path=path, parameters=parameters)
         lines = self._get_lines_with_meta(path=path, encoding=encoding)
-        encoding_warning = "encoding is {}".format(encoding)
+        encoding_warning = f"encoding is {encoding}"
         result = UnstructuredDocument(lines=lines, tables=[], attachments=[], warnings=[encoding_warning])
         return self._postprocess(result)
 
@@ -63,11 +63,11 @@ class RawTextReader(BaseReader):
 
         for line_id, line in self.__get_lines(path=path, encoding=encoding):
             if time.time() - previous_log_time > 5:
-                self.logger.info("done {} lines".format(line_id))
+                self.logger.info(f"done {line_id} lines")
                 previous_log_time = time.time()
 
             metadata = LineMetadata(page_id=0, line_id=line_id)
-            uid = "txt_{}_{}".format(file_hash, line_id)
+            uid = f"txt_{file_hash}_{line_id}"
             spacing_annotation_value = str(int(100 * (0.5 if number_of_empty_lines == 0 else number_of_empty_lines)))
             spacing_annotation = SpacingAnnotation(start=0, end=len(line), value=spacing_annotation_value)
             indent_annotation = self.__get_indent_annotation(line)
@@ -88,13 +88,13 @@ class RawTextReader(BaseReader):
         if path.lower().endswith("txt"):
             with codecs.open(path, errors="ignore", encoding=encoding) as file:
                 for line_id, line in enumerate(file):
-                    line = normalize('NFC', line).replace("й", "й")  # й replace matter
+                    line = normalize("NFC", line).replace("й", "й")  # й replace matter
                     yield line_id, line
         else:
             with gzip.open(path) as file:
                 for line_id, line in enumerate(file):
                     line = line.decode(encoding)
-                    line = normalize('NFC', line).replace("й", "й")
+                    line = normalize("NFC", line).replace("й", "й")
                     yield line_id, line
 
     def __get_starting_spacing(self, line: Optional[LineWithMeta]) -> int:

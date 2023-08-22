@@ -1,10 +1,11 @@
 import os
+import re
 import shutil
 import unittest
 from tempfile import TemporaryDirectory
 from typing import List
+
 import cv2
-import re
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
@@ -27,7 +28,7 @@ class TestPDFReader(unittest.TestCase):
 
     def test_scan_rotator(self) -> None:
         scan_rotator = ScanRotator(config=get_test_config())
-        imgs_path = [f'../data/scan_rotator/rotated_{i}.jpg' for i in range(1, 5)]
+        imgs_path = [f"../data/scan_rotator/rotated_{i}.jpg" for i in range(1, 5)]
         angles = [0.061732858955328755, -0.017535263190370427, 0.12228411148417097, 0]
 
         for i in range(len(imgs_path)):
@@ -40,7 +41,7 @@ class TestPDFReader(unittest.TestCase):
 
     def test_scan_orientation(self) -> None:
         scan_rotator = ScanRotator(config=get_test_config())
-        imgs_path = [f'../data/scanned/orient_{i}.png'for i in range(1, 5)]
+        imgs_path = [f"../data/scanned/orient_{i}.png"for i in range(1, 5)]
         angles = [90.0, 90.0, 270.0, 270.0]
         max_delta = 10.0
         for i in range(len(imgs_path)):
@@ -63,7 +64,7 @@ class TestPDFReader(unittest.TestCase):
 
         lines_by_page = self._split_lines_on_pages(result.lines)
 
-        headers = [lines[0] for lines in lines_by_page if lines[0] == 'Richelieu Bond \n']
+        headers = [lines[0] for lines in lines_by_page if lines[0] == "Richelieu Bond \n"]
         footers = [lines[-1] for lines in lines_by_page if re.match(r"^\s*-( )*[0-9]+( )*-\s*$", lines[-1])]
 
         self.assertEqual(len(headers), 0)
@@ -82,10 +83,8 @@ class TestPDFReader(unittest.TestCase):
 
         lines_by_page = self._split_lines_on_pages(result.lines)
 
-        headers = [lines[0] for lines in lines_by_page
-                   if lines[0] == 'Richelieu Bond \n']
-        footers = [lines[-1] for lines in lines_by_page
-                   if re.match(r"^\s*-( )*[0-9]+( )*-\s*$", lines[-1])]
+        headers = [lines[0] for lines in lines_by_page if lines[0] == "Richelieu Bond \n"]
+        footers = [lines[-1] for lines in lines_by_page if re.match(r"^\s*-( )*[0-9]+( )*-\s*$", lines[-1])]
 
         self.assertEqual(len(headers), 0)
         self.assertEqual(len(footers), 0)
@@ -103,10 +102,8 @@ class TestPDFReader(unittest.TestCase):
 
         lines_by_page = self._split_lines_on_pages(result.lines)
 
-        headers = [lines[0] for lines in lines_by_page
-                   if lines[0] == 'QUEST MANAGEMENT, SICAV\n']
-        footers = [lines[-1] for lines in lines_by_page
-                   if re.match(r"^\s*[0-9]\s*$", lines[-1])]
+        headers = [lines[0] for lines in lines_by_page if lines[0] == "QUEST MANAGEMENT, SICAV\n"]
+        footers = [lines[-1] for lines in lines_by_page if re.match(r"^\s*[0-9]\s*$", lines[-1])]
 
         self.assertEqual(len(headers), 1)
         self.assertEqual(len(footers), 0)
@@ -125,8 +122,7 @@ class TestPDFReader(unittest.TestCase):
         self.assertEqual(list_elements[5].line.lower().strip(), "6. июнь")
         self.assertEqual(list_elements[6].line.lower().strip(), "7. июль")
         self.assertEqual(list_elements[7].line.lower().strip(), "8. август")
-        self.assertEqual(list_elements[8].line.lower().strip(),
-                         "9. сентябрь в сентябре, в сентябре много листьев на земле желтые и красные! все такие")
+        self.assertEqual(list_elements[8].line.lower().strip(), "9. сентябрь в сентябре, в сентябре много листьев на земле желтые и красные! все такие")
         self.assertEqual(list_elements[9].line.lower().strip(), "разные!")
         self.assertEqual(list_elements[10].line.lower().strip(), "10. октябрь")
         self.assertEqual(list_elements[11].line.lower().strip(), "11. ноябрь")

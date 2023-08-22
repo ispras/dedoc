@@ -8,8 +8,8 @@ import pandas as pd
 class TxtlayerFeatureExtractor:
 
     def __init__(self) -> None:
-        eng = "".join(list(map(chr, range(ord('a'), ord('z') + 1))))
-        rus = "".join([chr(i) for i in range(ord('а'), ord('а') + 32)] + ["ё"])
+        eng = "".join(list(map(chr, range(ord("a"), ord("z") + 1))))
+        rus = "".join([chr(i) for i in range(ord("а"), ord("а") + 32)] + ["ё"])
 
         self.lower_letters = eng + rus
         self.upper_letters = self.lower_letters.upper()

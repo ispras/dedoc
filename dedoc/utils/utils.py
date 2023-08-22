@@ -10,7 +10,7 @@ import re
 import shutil
 import time
 from os.path import splitext
-from typing import List, Optional, TypeVar, Tuple, Iterable, Iterator, Dict, Any
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, TypeVar
 
 import requests
 from Levenshtein._levenshtein import ratio
@@ -44,7 +44,7 @@ def identity(x: T) -> T:
 
 def get_batch(size: int, iterable: Iterator[T]) -> Iterator[List[T]]:
     """
-    it is batch generator. Generating batch with 'size'. Last batch can be less then size or equals []
+    it is batch generator. Generating batch with "size". Last batch can be less then size or equals []
     :param size: batch size
     :param iterable: input data iterator
     :return: iterator of element of current batch
@@ -63,8 +63,8 @@ def splitext_(path: str) -> Tuple[str, str]:
     """
     get extensions with several dots
     """
-    if len(path.split('.')) > 2:
-        return path.split('.')[0], '.' + '.'.join(path.split('.')[-2:])
+    if len(path.split(".")) > 2:
+        return path.split(".")[0], "." + ".".join(path.split(".")[-2:])
     return splitext(path)
 
 
@@ -90,7 +90,7 @@ def get_unique_name(filename: str) -> str:
     _, ext = splitext_(filename)
     ts = int(time.time())
     rnd = random.randint(0, 1000)
-    return str(ts) + '_' + str(rnd) + ext
+    return str(ts) + "_" + str(rnd) + ext
 
 
 def save_upload_file(upload_file: UploadFile, output_dir: str) -> str:
@@ -122,7 +122,7 @@ def save_data_to_unique_file(directory: str, filename: str, binary_data: bytes) 
 
 
 def get_file_mime_type(path: str) -> str:
-    return mimetypes.guess_type(path)[0] or 'application/octet-stream'
+    return mimetypes.guess_type(path)[0] or "application/octet-stream"
 
 
 def get_extensions_by_mime(mime: str) -> List[str]:
@@ -136,7 +136,7 @@ def get_extensions_by_mimes(mimes: List[str]) -> List[str]:
     return exts
 
 
-def special_match(strg: str, regular_pattern: str = r'[^.?!,:;"\'\n\r ]') -> bool:
+def special_match(strg: str, regular_pattern: str = r"[^.?!,:;'\"\n\r ]") -> bool:
     """
     checks if a string only contains certain characters
     """
@@ -231,12 +231,12 @@ def check_filename_length(filename: str) -> str:
 
 
 def send_file(host: str, file_name: str, file_path: str, parameters: dict) -> Dict[str, Any]:
-    with open(file_path, 'rb') as file:
+    with open(file_path, "rb") as file:
         # file we want to parse
-        files = {'file': (file_name, file)}
+        files = {"file": (file_name, file)}
         # dict with additional parameters
         # and now we send post request with attached file and parameters.
-        r = requests.post("{}/upload".format(host), files=files, data=parameters)
+        r = requests.post(f"{host}/upload", files=files, data=parameters)
         # wait for response, parse json result and print it
         assert r.status_code == 200
         result = json.loads(r.content.decode())

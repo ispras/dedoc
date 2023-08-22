@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from typing import List
 
-from flask_restx import fields, Api, Model
+from flask_restx import Api, Model, fields
 
 from dedoc.data_structures.serializable import Serializable
 from dedoc.data_structures.table import Table
@@ -12,7 +12,7 @@ class DocumentContent(Serializable):
     """
     This class holds the document content - structured text and tables.
     """
-    def __init__(self, tables: List[Table], structure: 'TreeNode', warnings: List[str] = None) -> None:
+    def __init__(self, tables: List[Table], structure: TreeNode, warnings: List[str] = None) -> None:
         """
         :param tables: list of document tables
         :param structure: tree structure in which content of the document is organized
@@ -30,7 +30,7 @@ class DocumentContent(Serializable):
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
-        return api.model('DocumentContent', {
-            'structure': fields.Nested(TreeNode.get_api_dict(api), readonly=True, description='document content structure'),
-            'tables': fields.List(fields.Nested(Table.get_api_dict(api), description="tables structure"))
+        return api.model("DocumentContent", {
+            "structure": fields.Nested(TreeNode.get_api_dict(api), readonly=True, description="document content structure"),
+            "tables": fields.List(fields.Nested(Table.get_api_dict(api), description="tables structure"))
         })

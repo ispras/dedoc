@@ -4,12 +4,12 @@ import tarfile
 import uuid
 import zipfile
 import zlib
-from typing import List, Optional, IO, Iterator
+from typing import IO, Iterator, List, Optional
 
 import py7zlib
 import rarfile
 
-from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
+from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
@@ -47,30 +47,30 @@ class ArchiveReader(BaseReader):
     def __get_attachments(self, path: str) -> List[AttachedFile]:
         tmp_dir = os.path.dirname(path)
         mime = get_file_mime_type(path)
-        if zipfile.is_zipfile(path) and mime == 'application/zip':
+        if zipfile.is_zipfile(path) and mime == "application/zip":
             return list(self.__read_zip_archive(path=path, tmp_dir=tmp_dir))
         if tarfile.is_tarfile(path):
             return list(self.__read_tar_archive(path=path, tmp_dir=tmp_dir))
         if rarfile.is_rarfile(path):
             return list(self.__read_rar_archive(path=path, tmp_dir=tmp_dir))
-        if mime == 'application/x-7z-compressed':
+        if mime == "application/x-7z-compressed":
             return list(self.__read_7z_archive(path=path, tmp_dir=tmp_dir))
         # if no one can handle this archive raise exception
-        raise BadFileFormatException("bad archive {}".format(path))
+        raise BadFileFormatError(f"bad archive {path}")
 
     def __read_zip_archive(self, path: str, tmp_dir: str) -> Iterator[AttachedFile]:
         try:
-            with zipfile.ZipFile(path, 'r') as arch_file:
+            with zipfile.ZipFile(path, "r") as arch_file:
                 names = [member.filename for member in arch_file.infolist() if member.file_size > 0]
                 for name in names:
                     with arch_file.open(name) as file:
                         yield self.__save_archive_file(tmp_dir=tmp_dir, file_name=name, file=file)
         except (zipfile.BadZipFile, zlib.error) as e:
-            self.logger.warning("Can't read file {} ({})".format(path, e))
-            raise BadFileFormatException("Can't read file {} ({})".format(path, e))
+            self.logger.warning(f"Can't read file {path} ({e})")
+            raise BadFileFormatError(f"Can't read file {path} ({e})")
 
     def __read_tar_archive(self, path: str, tmp_dir: str) -> Iterator[AttachedFile]:
-        with tarfile.open(path, 'r') as arch_file:
+        with tarfile.open(path, "r") as arch_file:
             names = [member.name for member in arch_file.getmembers() if member.isfile()]
             for name in names:
                 file = arch_file.extractfile(name)
@@ -78,7 +78,7 @@ class ArchiveReader(BaseReader):
                 file.close()
 
     def __read_rar_archive(self, path: str, tmp_dir: str) -> Iterator[AttachedFile]:
-        with rarfile.RarFile(path, 'r') as arch_file:
+        with rarfile.RarFile(path, "r") as arch_file:
             names = [item.filename for item in arch_file.infolist() if item.compress_size > 0]
             for name in names:
                 with arch_file.open(name) as file:
@@ -102,6 +102,6 @@ class ArchiveReader(BaseReader):
             original_name=file_name,
             tmp_file_path=os.path.join(tmp_dir, tmp_path),
             need_content_analysis=True,
-            uid="attach_{}".format(uuid.uuid1())
+            uid=f"attach_{uuid.uuid1()}"
         )
         return attachment

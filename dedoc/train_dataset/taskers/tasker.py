@@ -3,12 +3,11 @@ import math
 import os
 import random
 import uuid
-from typing import Tuple, Dict, Optional
+from typing import Dict, Optional, Tuple
 from zipfile import ZipFile
 
-from dedoc.train_dataset.exceptions.unknown_task import UnknownTaskException
+from dedoc.train_dataset.exceptions.unknown_task_error import UnknownTaskError
 from dedoc.train_dataset.taskers.concrete_taskers.abstract_tasker import AbstractTasker
-import warnings
 
 
 class Tasker(object):
@@ -45,15 +44,11 @@ class Tasker(object):
         resources_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "resources", "train_dataset")
         self.resources = os.path.abspath(resources_path)
 
-    def create_tasks(self,
-                     type_of_task: str,
-                     count_tasks: int = None,
-                     task_size: int = None,
-                     task_uid: Optional[str] = None) -> Tuple[str, int]:
+    def create_tasks(self, type_of_task: str, count_tasks: int = None, task_size: int = None, task_uid: Optional[str] = None) -> Tuple[str, int]:
         """
         creates subtasks with help of ConcreteTaskers and return common archive of tasks
         :param type_of_task: task type for calling concrete tasker (for example type_of_task='line_classifier')
-        :param task_size: size of one task, task should not be large than this. For example number of page.
+        :param task_size: size of one task, task should not be larger than this. For example number of page.
         :param count_tasks: number of tasks
         :param task_uid: unique id of task
         :return: archive of tasks, task size
@@ -63,16 +58,15 @@ class Tasker(object):
         if task_size is None and count_tasks is None:
             raise Exception("Task size undefined")
         elif count_tasks is not None and task_size is None:
-            warnings.warn("count_tasks is deprecated, use task_size")
+            self.logger.warning("count_tasks is deprecated, use task_size")
             task_size = math.ceil(len(os.listdir(self.images_path)) / count_tasks)
         elif count_tasks is not None and task_size is not None:
-            warnings.warn("count_tasks is deprecated, ignore its value and use task_size")
+            self.logger.warning("count_tasks is deprecated, ignore its value and use task_size")
 
         if type_of_task not in self.concrete_taskers:
-            raise UnknownTaskException(type_of_task)
+            raise UnknownTaskError(type_of_task)
         tasker = self.concrete_taskers[type_of_task]
-        path_to_common_zip = os.path.join(self.save_path,
-                                          "{}_{:06d}.zip".format(type_of_task, random.randint(0, 1000000)))
+        path_to_common_zip = os.path.join(self.save_path, f"{type_of_task}_{random.randint(0, 1000000):06d}.zip")
 
         with ZipFile(path_to_common_zip, "w") as tasks_archive:
             for task_path in tasker.create_tasks(task_size=task_size,

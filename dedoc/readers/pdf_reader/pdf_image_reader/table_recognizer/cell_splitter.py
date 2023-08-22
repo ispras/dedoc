@@ -1,4 +1,5 @@
-from typing import List, Dict, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
+
 import numpy as np
 
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
@@ -49,10 +50,7 @@ class CellSplitter:
         # fill the result matrix
         for row in cells_fixed_boarder:
             for cell in row:
-                self.__split_one_cell(cell=cell,
-                                      horizontal_borders=horizontal_borders,
-                                      result_matrix=result_matrix,
-                                      vertical_borders=vertical_borders)
+                self.__split_one_cell(cell=cell, horizontal_borders=horizontal_borders, result_matrix=result_matrix, vertical_borders=vertical_borders)
 
         for row_id, row in enumerate(result_matrix):
             for col_id, cell in enumerate(row):
@@ -116,19 +114,15 @@ class CellSplitter:
         horizontal_dict = self.__get_border_dict(borders=horizontal_borders, threshold=eps_horizontal)
         vertical_dict = self.__get_border_dict(borders=vertical_borders, threshold=eps_vertical)
         result = []
-        for row_id, row in enumerate(cells):
+        for row in cells:
             new_row = []
-            for cell_id, cell in enumerate(row):
+            for cell in row:
                 x_top_left = vertical_dict[cell.x_top_left]
                 x_bottom_right = vertical_dict[cell.x_bottom_right]
                 y_top_left = horizontal_dict[cell.y_top_left]
                 y_bottom_right = horizontal_dict[cell.y_bottom_right]
                 if y_top_left < y_bottom_right and x_top_left < x_bottom_right:
-                    new_cell = Cell.copy_from(cell,
-                                              x_top_left=x_top_left,
-                                              x_bottom_right=x_bottom_right,
-                                              y_top_left=y_top_left,
-                                              y_bottom_right=y_bottom_right)
+                    new_cell = Cell.copy_from(cell, x_top_left=x_top_left, x_bottom_right=x_bottom_right, y_top_left=y_top_left, y_bottom_right=y_bottom_right)
                     new_row.append(new_cell)
             result.append(new_row)
         return result

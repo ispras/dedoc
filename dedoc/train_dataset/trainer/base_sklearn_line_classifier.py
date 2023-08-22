@@ -7,7 +7,8 @@ import os
 import pickle
 from collections import Counter, OrderedDict
 from statistics import mean
-from typing import Optional, List, Callable, Any
+from typing import Any, Callable, List, Optional
+
 import numpy as np
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
@@ -23,7 +24,7 @@ from dedoc.utils.utils import flatten, identity
 
 
 class BaseClassifier(XGBClassifier):
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any) -> None:  # noqa
         super().__init__(**kwargs)
 
 
@@ -51,12 +52,8 @@ class BaseSklearnLineClassifierTrainer:
         self.feature_extractor = feature_extractor
         self.tmp_dir = "/tmp" if tmp_dir is None else tmp_dir
         url_hash = hashlib.md5(self.data_url.encode()).hexdigest()
-        self.dataset_dir = os.path.join(self.tmp_dir, "dataset_{}".format(url_hash))
-        self.data_loader = DataLoader(dataset_dir=self.dataset_dir,
-                                      label_transformer=label_transformer,
-                                      logger=logger,
-                                      data_url=data_url,
-                                      config=config)
+        self.dataset_dir = os.path.join(self.tmp_dir, f"dataset_{url_hash}")
+        self.data_loader = DataLoader(dataset_dir=self.dataset_dir, label_transformer=label_transformer, logger=logger, data_url=data_url, config=config)
         self.random_seed = random_seed
         self.get_sample_weight = get_sample_weight if get_sample_weight is not None else lambda t: 1
         os.makedirs(self.tmp_dir, exist_ok=True)
@@ -80,10 +77,7 @@ class BaseSklearnLineClassifierTrainer:
         self.config = config
         self.n_splits = n_splits
 
-    def fit(self, no_cache: bool = False,
-            cross_val_only: bool = False,
-            save: bool = False,
-            save_errors_images: bool = False) -> None:
+    def fit(self, no_cache: bool = False, cross_val_only: bool = False, save: bool = False, save_errors_images: bool = False) -> None:
         data = self.data_loader.get_data(no_cache=no_cache)
         if save:
             self.__save(data=data, path=self.tmp_dir)
@@ -91,7 +85,7 @@ class BaseSklearnLineClassifierTrainer:
         logging.info(json.dumps(scores, indent=4))
         if not cross_val_only:
             features = self.feature_extractor.fit_transform(data)
-            self.logger.info("data train shape {}".format(features.shape))
+            self.logger.info(f"data train shape {features.shape}")
             n = features.shape[0] // 10
             features_train, features_test = features[:-n], features[-n:]
             labels = self.__get_labels(data)
@@ -112,7 +106,7 @@ class BaseSklearnLineClassifierTrainer:
                 pickle.dump((cls, self.feature_extractor.parameters()), output_file)
 
             if self.path_scores is not None:
-                self.logger.info("Save scores in {}".format(self.path_scores))
+                self.logger.info(f"Save scores in {self.path_scores}")
                 os.makedirs(os.path.dirname(self.path_scores), exist_ok=True)
                 with open(self.path_scores, "w") as file:
                     json.dump(obj=scores, fp=file, indent=4)
@@ -120,7 +114,7 @@ class BaseSklearnLineClassifierTrainer:
                 os.makedirs(os.path.dirname(self.path_features_importances), exist_ok=True)
                 self._save_features_importances(cls, features_train.columns)
 
-    def _save_features_importances(self, cls: Any, feature_names: List[str]) -> None:
+    def _save_features_importances(self, cls: Any, feature_names: List[str]) -> None:  # noqa
         pass
 
     def __save(self, data: List[List[LineWithLabel]], path: str = "/tmp", csv_only: bool = False) -> str:
@@ -135,13 +129,9 @@ class BaseSklearnLineClassifierTrainer:
         features_train[uid_name] = [line.uid for line in flatten(data)]
         text_name = "text"
         features_train[text_name] = [line.line for line in flatten(data)]
-        dataset = LineClassifierDataset(dataframe=features_train,
-                                        feature_list=features_list,
-                                        group_name=group_name,
-                                        label_name=label_name,
-                                        text_name=text_name)
+        dataset = LineClassifierDataset(dataframe=features_train, feature_list=features_list, group_name=group_name, label_name=label_name, text_name=text_name)
         path = dataset.save(path, csv_only=csv_only)
-        self.logger.info("Save dataset into {}".format(path))
+        self.logger.info(f"Save dataset into {path}")
         return path
 
     @abc.abstractmethod
@@ -151,13 +141,13 @@ class BaseSklearnLineClassifierTrainer:
     def _cross_val(self, data: List[List[LineWithLabel]], save_errors_images: bool) -> dict:
         error_cnt = Counter()
         errors_uids = []
-        os.system("rm -rf {}/*".format(self.path_errors))
+        os.system(f"rm -rf {self.path_errors}/*")
         os.makedirs(self.path_errors, exist_ok=True)
         scores = []
 
         data = np.array(data, dtype=object)
         kf = KFold(n_splits=self.n_splits)
-        for iteration, (train_index, val_index) in tqdm(enumerate(kf.split(data)), total=self.n_splits):
+        for train_index, val_index in tqdm(kf.split(data), total=self.n_splits):
             data_train, data_val = data[train_index].tolist(), data[val_index].tolist()
             labels_train = self.__get_labels(data_train)
             labels_val = self.__get_labels(data_val)
@@ -166,8 +156,7 @@ class BaseSklearnLineClassifierTrainer:
             if features_train.shape[1] != features_val.shape[1]:
                 val_minus_train = set(features_val.columns) - set(features_train.columns)
                 train_minus_val = set(features_val.columns) - set(features_train.columns)
-                msg = "some features in train, but not in val {}\nsome features in val, but not in train {}".format(
-                    val_minus_train, train_minus_val)
+                msg = f"some features in train, but not in val {val_minus_train}\nsome features in val, but not in train {train_minus_val}"
                 raise ValueError(msg)
             cls = self._get_classifier()
             sample_weight = [self.get_sample_weight(line) for line in flatten(data_train)]
@@ -177,7 +166,7 @@ class BaseSklearnLineClassifierTrainer:
                 if y_true != y_pred:
                     error_cnt[(y_true, y_pred)] += 1
                     errors_uids.append(line.uid)
-                    with open(os.path.join(self.path_errors, "{}_{}.txt".format(y_true, y_pred)), "a") as file:
+                    with open(os.path.join(self.path_errors, f"{y_true}_{y_pred}.txt"), "a") as file:
                         result = OrderedDict()
                         result["text"] = line.line
                         result["uid"] = line.uid

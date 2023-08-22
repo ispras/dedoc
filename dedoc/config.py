@@ -2,14 +2,14 @@ import importlib.util
 import logging
 import os
 import sys
-from typing import Optional, Any
+from typing import Any, Optional
 
 logging.basicConfig(stream=sys.stdout,
                     level=logging.INFO,
                     format="%(asctime)s - %(pathname)s - %(levelname)s - %(message)s")
 
 DEBUG_MODE = False
-RESOURCES_PATH = os.environ.get('RESOURCES_PATH', os.path.join(os.path.expanduser('~'), ".cache", "dedoc", "resources"))
+RESOURCES_PATH = os.environ.get("RESOURCES_PATH", os.path.join(os.path.expanduser("~"), ".cache", "dedoc", "resources"))
 
 _config = dict(
     # -----------------------------------------RESOURCES PATH SETTINGS----------------------------------------------------
@@ -28,7 +28,7 @@ _config = dict(
     # max file size in bytes
     max_content_length=512 * 1024 * 1024,
     # application port
-    api_port=int(os.environ.get('DOCREADER_PORT', '1231')),
+    api_port=int(os.environ.get("DOCREADER_PORT", "1231")),
     static_files_dirs={},
     # log settings
     logger=logging.getLogger(),
@@ -65,7 +65,7 @@ class Configuration(object):
     __config = None
 
     @classmethod
-    def getInstance(cls: "Configuration") -> "Configuration":
+    def get_instance(cls: "Configuration") -> "Configuration":
         """
         Actual object creation will happen when we use Configuration.getInstance()
         """
@@ -74,7 +74,7 @@ class Configuration(object):
 
         return cls.__instance
 
-    def __initConfig(self, args: Optional[Any] = None) -> None:
+    def __init_config(self, args: Optional[Any] = None) -> None:
         if args is not None and args.config_path is not None:
             spec = importlib.util.spec_from_file_location("config_module", args.config_path)
             config_module = importlib.util.module_from_spec(spec)
@@ -83,11 +83,11 @@ class Configuration(object):
         else:
             self.__config = _config
 
-    def getConfig(self, args: Optional[Any] = None) -> dict:
+    def get_config(self, args: Optional[Any] = None) -> dict:
         if self.__config is None or args is not None:
-            self.__initConfig(args)
+            self.__init_config(args)
         return self.__config
 
 
 def get_config(args: Optional[Any] = None) -> dict:
-    return Configuration.getInstance().getConfig(args)
+    return Configuration.get_instance().get_config(args)

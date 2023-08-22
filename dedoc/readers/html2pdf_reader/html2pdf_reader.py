@@ -3,7 +3,7 @@ import os
 import re
 from copy import deepcopy
 from tempfile import TemporaryDirectory
-from typing import Optional, Dict, Tuple
+from typing import Dict, Optional, Tuple
 from uuid import uuid1
 
 from bs4 import BeautifulSoup
@@ -30,7 +30,7 @@ class Html2PdfReader(HtmlReader):
             modified_path, tables = self._modify_html(path, tmp_dir)
             converted_path = os.path.join(tmp_dir, os.path.basename(path).replace(".html", ".pdf"))
             HTML(filename=modified_path).write_pdf(converted_path)
-            self.logger.info("Convert {} to {}".format(modified_path, converted_path))
+            self.logger.info(f"Convert {modified_path} to {converted_path}")
             parameters_new = deepcopy(parameters)
             parameters_new["pdf_with_text_layer"] = "true"
             unstructured_document = self.pdf_reader.read(path=converted_path, document_type=document_type, parameters=parameters_new)
@@ -57,8 +57,8 @@ class Html2PdfReader(HtmlReader):
 
     def _handle_tables(self, soup: BeautifulSoup) -> dict:
         tables = {}
-        for table_id, table_tag in enumerate(soup.find_all("table")):
-            table_uid = "table_{}".format(uuid1())
+        for table_tag in soup.find_all("table"):
+            table_uid = f"table_{uuid1()}"
             table = self._read_table(table_tag)
             table.metadata.uid = table_uid
             tables[table_uid] = table
@@ -88,7 +88,7 @@ class Html2PdfReader(HtmlReader):
                 super_element.decompose()
 
     def _modify_html(self, path: str, tmp_dir: str) -> Tuple[str, dict]:
-        with open(path, encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             soup = BeautifulSoup(f.read(), "html.parser")
 
         tables = self._handle_tables(soup)

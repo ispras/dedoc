@@ -2,7 +2,7 @@ import os
 from typing import Optional
 
 from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
-from dedoc.extensions import converted_mimes, converted_extensions
+from dedoc.extensions import converted_extensions, converted_mimes
 
 
 class DocxConverter(AbstractConverter):
@@ -23,9 +23,9 @@ class DocxConverter(AbstractConverter):
         """
         Convert the docx-like documents into files with .docx extension using the soffice application.
         """
-        path_in = f"{tmp_dir}/{filename}{extension}"
+        path_in = os.path.join(tmp_dir, f"{filename}{extension}")
         command = ["soffice", "--headless", "--convert-to", "docx", "--outdir", tmp_dir, path_in]
-        file_out = filename + ".docx"
+        file_out = f"{filename}.docx"
         expected_path = os.path.join(tmp_dir, file_out)
         self._run_subprocess(command=command, filename=filename, expected_path=expected_path)
 

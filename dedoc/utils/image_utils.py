@@ -1,10 +1,11 @@
-from typing import Tuple, List
+from copy import deepcopy
+from typing import List, Tuple
+
 import PIL
 import cv2
 import numpy as np
-from scipy.ndimage import maximum_filter
-from copy import deepcopy
 from PIL import Image, ImageDraw
+from scipy.ndimage import maximum_filter
 
 from dedoc.data_structures.bbox import BBox
 
@@ -27,16 +28,12 @@ def get_bbox_from_image(image: Image, bbox: BBox, resize: Tuple[int, int] = (300
     return image as is
     @return: PIL image
     """
-    rectangle = (bbox.x_top_left,
-                 bbox.y_top_left,
-                 bbox.x_bottom_right,
-                 bbox.y_bottom_right
-                 )
+    rectangle = (bbox.x_top_left, bbox.y_top_left, bbox.x_bottom_right, bbox.y_bottom_right)
     if isinstance(image, np.ndarray):
         image = PIL.Image.fromarray(image)
     cropped = image.crop(rectangle)
     if resize is not None:
-        cropped = cropped.resize((300, 15)).convert('RGB')
+        cropped = cropped.resize((300, 15)).convert("RGB")
     return cropped
 
 
@@ -57,9 +54,7 @@ def rotate_image(image: np.ndarray, angle: float, color_bound: Tuple[int, int, i
     rotation_mat[0, 2] += bound_w / 2 - image_center[0]
     rotation_mat[1, 2] += bound_h / 2 - image_center[1]
 
-    rotated_mat = cv2.warpAffine(image, rotation_mat, (bound_w, bound_h),
-                                 borderMode=cv2.BORDER_CONSTANT,
-                                 borderValue=color_bound)
+    rotated_mat = cv2.warpAffine(image, rotation_mat, (bound_w, bound_h), borderMode=cv2.BORDER_CONSTANT, borderValue=color_bound)
     return rotated_mat
 
 
@@ -86,12 +81,7 @@ def crop_image_text(image: np.ndarray) -> np.ndarray:
     return image_crop
 
 
-def draw_rectangle(image: PIL.Image,
-                   x_top_left: int,
-                   y_top_left: int,
-                   width: int,
-                   height: int,
-                   color: Tuple[int, int, int] = (0, 0, 0)) -> np.ndarray:
+def draw_rectangle(image: PIL.Image, x_top_left: int, y_top_left: int, width: int, height: int, color: Tuple[int, int, int] = (0, 0, 0)) -> np.ndarray:
     if color == "black":
         color = (0, 0, 0)
     source_img = deepcopy(image).convert("RGBA")
@@ -111,7 +101,7 @@ def get_concat_v(images: List[Image.Image]) -> Image:
         return images[0]
     width = max((image.width for image in images))
     height = sum((image.height for image in images))
-    dst = Image.new('RGB', (width, height))
+    dst = Image.new("RGB", (width, height))
     height = 0
     for image in images:
         dst.paste(image, (0, height))

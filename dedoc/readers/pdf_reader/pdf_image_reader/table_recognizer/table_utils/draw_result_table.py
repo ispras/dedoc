@@ -1,6 +1,7 @@
 import argparse
 import glob
 import os
+
 import cv2
 import numpy as np
 
@@ -18,15 +19,13 @@ if __name__ == "__main__":
     if not os.path.exists(parser.output_folder):
         os.makedirs(parser.output_folder, exist_ok=True)
 
-    path_to_img = [parser.image] if parser.image is not None else glob.glob("{}/*".format(parser.input_folder))
+    path_to_img = [parser.image] if parser.image is not None else glob.glob(f"{parser.input_folder}/*")
 
     for img_path in path_to_img:
         image = cv2.imread(img_path)
         color_backgr = np.max(image)
         padding = 40
-        image_bigger = np.full((image.shape[0] + padding * 2,
-                                image.shape[1] + padding * 2,
-                                image.shape[2]), color_backgr)
+        image_bigger = np.full((image.shape[0] + padding * 2, image.shape[1] + padding * 2, image.shape[2]), color_backgr)
         image_bigger[padding:-padding, padding:-padding] = image
         # TODO fix this
         clean_images, tables = PdfImageReader(config={}).get_tables([cv2.cvtColor(image_bigger, cv2.COLOR_BGR2GRAY)])
@@ -44,4 +43,4 @@ if __name__ == "__main__":
             if len(path_to_img) == 1:
                 cv2.imwrite(parser.output_folder, res)
             else:
-                cv2.imwrite("{}/{}".format(parser.output_folder, img_path.split('/')[-1]), res)
+                cv2.imwrite(f"{parser.output_folder}/{img_path.split('/')[-1]}", res)

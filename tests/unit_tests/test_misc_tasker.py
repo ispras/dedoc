@@ -110,7 +110,7 @@ class TestTasker(unittest.TestCase):
                     self.assertEqual((1276, 1754), image.size)
 
     def test_images_creators(self) -> None:
-        test_dict = {'english_doc.docx': 3, 'txt_example.txt': 7}
+        test_dict = {"english_doc.docx": 3, "txt_example.txt": 7}
         config = get_test_config()
         config["labeling_mode"] = True
         path2docs = get_path_original_documents(config)
@@ -119,7 +119,7 @@ class TestTasker(unittest.TestCase):
 
         test_manager = DedocManager(manager_config=self.__create_test_manager_config(config), config=config)
         for doc in os.listdir(files_dir):
-            if not doc.endswith(('docx', 'txt')):
+            if not doc.endswith(("docx", "txt")):
                 continue
 
             with tempfile.TemporaryDirectory() as tmp_dir:

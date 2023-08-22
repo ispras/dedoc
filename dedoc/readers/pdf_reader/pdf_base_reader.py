@@ -3,7 +3,7 @@ import math
 import os
 from abc import abstractmethod
 from collections import namedtuple
-from typing import List, Optional, Tuple, Iterator
+from typing import Iterator, List, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -13,12 +13,12 @@ from pdf2image.exceptions import PDFPageCountError, PDFSyntaxError
 
 import dedoc.utils.parameter_utils as param_utils
 from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
-from dedoc.common.exceptions.bad_file_exception import BadFileFormatException
+from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_mimes, recognized_extensions
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
@@ -44,7 +44,7 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", ["orient_analysis_ce
                                                              "first_page",
                                                              "last_page",
                                                              "need_binarization",
-                                                             'table_type',
+                                                             "table_type",
                                                              "is_one_column_document_list"])
 
 
@@ -166,10 +166,10 @@ class PdfBaseReader(BaseReader):
         elif mime in recognized_mimes.image_like_format or path.endswith(tuple(recognized_extensions.image_like_format)):
             image = cv2.imread(path)
             if image is None:
-                raise BadFileFormatException("seems file {} not an image".format(os.path.basename(path)))
+                raise BadFileFormatError(f"seems file {os.path.basename(path)} not an image")
             yield image
         else:
-            raise BadFileFormatException("Unsupported input format: {}".format(splitext_(path)[1]))  # noqa
+            raise BadFileFormatError(f"Unsupported input format: {splitext_(path)[1]}")
 
     def _split_pdf2image(self, path: str, page_from: int, page_to: int) -> Iterator[np.ndarray]:
         if page_from >= page_to:
@@ -186,14 +186,14 @@ class PdfBaseReader(BaseReader):
                 # for convert_from_path function first_page should start from 1, last_page is included to the result
                 images = convert_from_path(path, first_page=left, last_page=right)  # noqa
                 # in logging we include both ends of the pages interval, numeration starts with 1
-                self.logger.info("Get page from {} to {} of {} file {}".format(left, min(right, page_count), page_count, os.path.basename(path)))
+                self.logger.info(f"Get page from {left} to {min(right, page_count)} of {page_count} file {os.path.basename(path)}")
                 for image in images:
                     left += 1
                     if left > page_to + 1:
                         break
                     yield np.array(image)
         except (PDFPageCountError, PDFSyntaxError) as error:
-            raise BadFileFormatException(f"Bad pdf file:\n file_name = {os.path.basename(path)} \n exception = {error.args}")
+            raise BadFileFormatError(f"Bad pdf file:\n file_name = {os.path.basename(path)} \n exception = {error.args}")
 
     def _convert_to_gray(self, image: np.ndarray) -> np.ndarray:
         gray_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
@@ -214,8 +214,6 @@ class PdfBaseReader(BaseReader):
                              orient_cell_angle: int = 270,
                              table_type: str = "") -> Tuple[List[np.ndarray], List[ScanTable]]:
 
-        result_batch = Parallel(n_jobs=self.config["n_jobs"])(
-            delayed(self.table_recognizer.recognize_tables_from_image)(
-                image, page_number_begin + i, language, orient_analysis_cells, orient_cell_angle, table_type)
-            for i, image in enumerate(batch))  # noqa
+        result_batch = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.table_recognizer.recognize_tables_from_image)(
+            image, page_number_begin + i, language, orient_analysis_cells, orient_cell_angle, table_type) for i, image in enumerate(batch))
         return result_batch

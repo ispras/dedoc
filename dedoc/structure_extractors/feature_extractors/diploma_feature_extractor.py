@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from typing import List, Tuple, Optional, Iterator
+from typing import Iterator, List, Optional, Tuple
 
 import pandas as pd
 from Levenshtein import ratio
@@ -12,7 +12,7 @@ from dedoc.structure_extractors.feature_extractors.list_features.list_utils impo
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.dotted_prefix import DottedPrefix
 from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.utils_feature_extractor import normalization_by_min_max
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_item, regexps_digits_with_dots
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_digits_with_dots, regexps_item
 
 
 class DiplomaFeatureExtractor(AbstractFeatureExtractor):
@@ -53,8 +53,7 @@ class DiplomaFeatureExtractor(AbstractFeatureExtractor):
                   toc_lines: Optional[List[List[LineWithMeta]]] = None) -> pd.DataFrame:
         toc_lines = [[] for _ in documents] if toc_lines is None else toc_lines
         assert len(toc_lines) == len(documents)
-        result_matrix = pd.concat([self.__process_document(document, d_toc_lines) for document, d_toc_lines in zip(documents, toc_lines)],
-                                  ignore_index=True)
+        result_matrix = pd.concat([self.__process_document(document, d_toc_lines) for document, d_toc_lines in zip(documents, toc_lines)], ignore_index=True)
         features = sorted(result_matrix.columns)
         return result_matrix[features].astype(float)
 
@@ -64,7 +63,7 @@ class DiplomaFeatureExtractor(AbstractFeatureExtractor):
         features_df["list_item"] = self._list_features(lines)
 
         one_line_features_dict = defaultdict(list)
-        for line_id, line in enumerate(lines):
+        for line in lines:
             for item in self._one_line_features(line, len(lines), toc_lines):
                 feature_name, feature = item[0], item[1]
                 one_line_features_dict[feature_name].append(feature)

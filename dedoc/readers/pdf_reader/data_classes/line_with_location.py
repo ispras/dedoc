@@ -8,13 +8,7 @@ from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 
 class LineWithLocation(LineWithMeta):
 
-    def __init__(self,
-                 line: str,
-                 metadata: LineMetadata,
-                 annotations: List[Annotation],
-                 location: Location,
-                 uid: str = None,
-                 order: int = -1) -> None:
+    def __init__(self, line: str, metadata: LineMetadata, annotations: List[Annotation], location: Location, uid: str = None, order: int = -1) -> None:
         self.location = location
         self.order = order
         super().__init__(line, metadata, annotations, uid)

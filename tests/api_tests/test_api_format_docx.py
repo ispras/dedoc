@@ -1,7 +1,7 @@
 import os
 
-from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
+from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 from tests.test_utils import get_by_tree_path
 
 
@@ -25,7 +25,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
         file_name = "example.docx"
         result = self._send_request(file_name, data={"insert_table": True})
         self.__check_doc_like(result)
-        self._check_metainfo(result['metadata'], 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', file_name)
+        self._check_metainfo(result["metadata"], "application/vnd.openxmlformats-officedocument.wordprocessingml.document", file_name)
 
     def test_docx_ujson(self) -> None:
         file_name = "example.docx"
@@ -36,40 +36,39 @@ class TestApiDocReader(AbstractTestApiDocReader):
         file_name = "example.doc"
         result = self._send_request(file_name, data={"insert_table": True, "structure_type": "tree"})
         self.__check_doc_like(result)
-        self._check_metainfo(result['metadata'], 'application/msword', file_name)
+        self._check_metainfo(result["metadata"], "application/msword", file_name)
 
     def test_odt(self) -> None:
         file_name = "example.odt"
         result = self._send_request(file_name, data={"insert_table": True})
         self.__check_doc_like(result)
-        self._check_metainfo(result['metadata'], 'application/vnd.oasis.opendocument.text', file_name)
+        self._check_metainfo(result["metadata"], "application/vnd.oasis.opendocument.text", file_name)
 
     def test_doc_insert_table(self) -> None:
         file_name = "example.doc"
         result = self._send_request(file_name, data=dict(structure_type="tree", insert_table=True))
         self.__check_doc_like_insert_table(result)
-        self._check_metainfo(result['metadata'], 'application/msword', file_name)
+        self._check_metainfo(result["metadata"], "application/msword", file_name)
 
     def test_docx_insert_table(self) -> None:
         file_name = "example.docx"
         result = self._send_request(file_name, data=dict(structure_type="tree", insert_table=True))
         self.__check_doc_like_insert_table(result)
 
-        self._check_metainfo(result['metadata'],
-                             'application/vnd.openxmlformats-officedocument.wordprocessingml.document', file_name)
+        self._check_metainfo(result["metadata"], "application/vnd.openxmlformats-officedocument.wordprocessingml.document", file_name)
 
     def test_odt_insert_table(self) -> None:
         file_name = "example.odt"
         result = self._send_request(file_name, data=dict(structure_type="tree", insert_table=True))
         self.__check_doc_like_insert_table(result)
 
-        self._check_metainfo(result['metadata'], 'application/vnd.oasis.opendocument.text', file_name)
+        self._check_metainfo(result["metadata"], "application/vnd.oasis.opendocument.text", file_name)
 
     def test_odt_with_split(self) -> None:
         file_name = "ТЗ_ГИС_3  .odt"
         result = self._send_request(file_name)
         content = result["content"]["structure"]
-        self.assertEqual(content["subparagraphs"][0]["text"].strip(), 'Система должна обеспечивать защиту от несанкционированного доступа (НСД)')
+        self.assertEqual(content["subparagraphs"][0]["text"].strip(), "Система должна обеспечивать защиту от несанкционированного доступа (НСД)")
 
     def test_broken_conversion(self) -> None:
         file_name = "broken.odt"
@@ -114,12 +113,12 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertIn("<p>  <strong></strong>     <sub> id = 0 ; type = root </sub></p><p> &nbsp;&nbsp;&nbsp;&nbsp; <b>Пример документа", result)
         self.assertTrue("<tbody>\n"
                         "<tr>\n"
-                        "<td colspan=\"1\" rowspan=\"1\">N</td>\n"
-                        "<td colspan=\"1\" rowspan=\"1\">Фамилия</td>\n"
-                        "<td colspan=\"1\" rowspan=\"1\">Имя</td>\n"
-                        "<td colspan=\"1\" rowspan=\"1\">Организация</td>\n"
-                        "<td colspan=\"1\" rowspan=\"1\">Телефон</td>\n"
-                        "<td colspan=\"1\" rowspan=\"1\">Примечания</td>\n"
+                        '<td colspan="1" rowspan="1">N</td>\n'
+                        '<td colspan="1" rowspan="1">Фамилия</td>\n'
+                        '<td colspan="1" rowspan="1">Имя</td>\n'
+                        '<td colspan="1" rowspan="1">Организация</td>\n'
+                        '<td colspan="1" rowspan="1">Телефон</td>\n'
+                        '<td colspan="1" rowspan="1">Примечания</td>\n'
                         "</tr>" in result)
 
     def test_newline_tree(self) -> None:
@@ -136,7 +135,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
     def __check_doc_like(self, result: dict) -> None:
         content = result["content"]["structure"]
         self.assertEqual("", get_by_tree_path(content, "0")["text"])
-        self.assertEqual('Пример документа\nГлава 1\nКакие то определения\nСтатья 1\nОпределим опрделения\nСтатья 2\nДадим пояснения',
+        self.assertEqual("Пример документа\nГлава 1\nКакие то определения\nСтатья 1\nОпределим опрделения\nСтатья 2\nДадим пояснения",
                          get_by_tree_path(content, "0.0")["text"].strip())
         self.assertEqual("1.2.1. Поясним за непонятное", get_by_tree_path(content, "0.1.0")["text"].strip())
         self.assertEqual("1.2.2. Поясним за понятное", get_by_tree_path(content, "0.1.1")["text"].strip())
@@ -146,8 +145,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
         table1, table2 = result["content"]["tables"]
 
-        self.assertListEqual(["N", "Фамилия", "Имя", "Организация", "Телефон", "Примечания"],
-                             table1["cells"][0])
+        self.assertListEqual(["N", "Фамилия", "Имя", "Организация", "Телефон", "Примечания"], table1["cells"][0])
         self.assertListEqual(["1", "Иванов", "Иван", "ИСП", "8-800", ""], table1["cells"][1])
 
         self.assertListEqual(["Фамилия", "Имя", "Отчество"], table2["cells"][0])
@@ -165,7 +163,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
     def __check_doc_like_insert_table(self, result: dict) -> None:
         content = result["content"]["structure"]
         self.assertEqual("", get_by_tree_path(content, "0")["text"])
-        self.assertEqual('Пример документа\nГлава 1\nКакие то определения\nСтатья 1\nОпределим опрделения\nСтатья 2\nДадим пояснения',
+        self.assertEqual("Пример документа\nГлава 1\nКакие то определения\nСтатья 1\nОпределим опрделения\nСтатья 2\nДадим пояснения",
                          get_by_tree_path(content, "0.0")["text"].strip())
         self.assertEqual("1.2.1. Поясним за непонятное", get_by_tree_path(content, "0.1.0")["text"].strip())
         self.assertEqual("1.2.2. Поясним за понятное", get_by_tree_path(content, "0.1.1")["text"].strip())

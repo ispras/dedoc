@@ -5,17 +5,18 @@ import os
 import shutil
 import tempfile
 import uuid
-from typing import Optional, List
+from typing import List, Optional
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
+
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils import supported_image_types
-from dedoc.utils.utils import get_encoding, calculate_file_hash
-from dedoc.utils.utils import check_filename_length
 from dedoc.readers.html_reader.html_reader import HtmlReader
+from dedoc.utils import supported_image_types
+from dedoc.utils.utils import calculate_file_hash, get_encoding
+from dedoc.utils.utils import check_filename_length
 
 
 class MhtmlReader(BaseReader):
@@ -71,23 +72,23 @@ class MhtmlReader(BaseReader):
             with gzip.open(path, "rt") as f:
                 message = email.message_from_file(f)
         else:
-            with open(path, 'r') as f:
+            with open(path, "r") as f:
                 message = email.message_from_file(f)
-        self.logger.info('Extracting {}'.format(path))
+        self.logger.info(f"Extracting {path}")
 
         for part in message.walk():
             if part.is_multipart():
                 continue
             content_type = part.get("Content-type", "")
-            content_location = part['Content-Location']
-            content_name = os.path.basename(urlparse(content_location).path) or '{}.html'.format(os.path.basename(os.path.splitext(path)[0]))
+            content_location = part["Content-Location"]
+            content_name = os.path.basename(urlparse(content_location).path) or f"{os.path.basename(os.path.splitext(path)[0])}.html"
             if content_type == "text/html" and not content_name.endswith(".html"):
                 content_name += ".html"
 
             content_name = check_filename_length(content_name)
             with tempfile.TemporaryDirectory() as tmpdir:
                 tmp_path = os.path.join(tmpdir, content_name)
-                with open(tmp_path, 'wb') as fp:
+                with open(tmp_path, "wb") as fp:
                     fp.write(part.get_payload(decode=True))
 
                 file_hash = calculate_file_hash(tmp_path)
@@ -123,7 +124,7 @@ class MhtmlReader(BaseReader):
                 continue
             attachment = AttachedFile(original_name=os.path.basename(file_name),
                                       tmp_file_path=os.path.join(save_dir, file_name),
-                                      uid="attach_{}".format(uuid.uuid1()),
+                                      uid=f"attach_{uuid.uuid1()}",
                                       need_content_analysis=need_content_analysis)
             attachments.append(attachment)
         return attachments

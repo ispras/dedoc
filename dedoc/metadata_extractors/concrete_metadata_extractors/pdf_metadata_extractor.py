@@ -90,7 +90,7 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
         except PdfReadError:
             return {"broken_pdf": True}
         except Exception as e:
-            self.logger.warning("exception while extract pdf metadata: {} {}".format(path, e))
+            self.logger.warning(f"exception while extract pdf metadata: {path} {e}")
             if self.config.get("debug_mode", False):
                 raise e
             return {"broken_pdf": True}

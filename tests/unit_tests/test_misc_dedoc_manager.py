@@ -2,8 +2,8 @@ import os
 from unittest import TestCase
 
 from dedoc.config import get_config
-from dedoc.manager_config import get_manager_config
 from dedoc.dedoc_manager import DedocManager
+from dedoc.manager_config import get_manager_config
 
 
 class TestDedocManager(TestCase):

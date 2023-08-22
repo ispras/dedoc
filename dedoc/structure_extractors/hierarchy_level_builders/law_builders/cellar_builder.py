@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Tuple, List
+from typing import List, Tuple
 
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -15,7 +15,7 @@ class CellarHierarchyLevelBuilder(AbstractHierarchyLevelBuilder):
         # detect begin of body
         hierarchy_level = HierarchyLevel(level_1=init_hl_depth, level_2=0, can_be_multiline=True, line_type="cellar")
 
-        for line, label in lines_with_labels:
+        for line, _ in lines_with_labels:
             # postprocessing of others units
             metadata = deepcopy(line.metadata)
             metadata.hierarchy_level = hierarchy_level
