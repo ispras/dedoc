@@ -2,6 +2,10 @@ import os
 import unittest
 from typing import List
 
+from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
+from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
+from dedoc.data_structures.concrete_annotations.confidence_annotation import ConfidenceAnnotation
+from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
@@ -267,3 +271,13 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         node = self._get_by_tree_path(tree, "0.4.2")
         self.assertEqual("list_item", node["metadata"]["paragraph_type"])
         self.assertEqual("3. В соответствии с полученной", node["text"].strip()[:30])
+
+    def test_pdf_annotations(self) -> None:
+        file_name = "Document635.pdf"
+        result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
+        content = result["content"]["structure"]["subparagraphs"]
+        annotations = content[0]["annotations"]
+        annotation_names = {annotation["name"] for annotation in annotations}
+        self.assertIn(BoldAnnotation.name, annotation_names)
+        self.assertIn(SpacingAnnotation.name, annotation_names)
+        self.assertIn(BBoxAnnotation.name, annotation_names)
