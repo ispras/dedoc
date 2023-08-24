@@ -4,7 +4,6 @@ from typing import List
 
 from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
-from dedoc.data_structures.concrete_annotations.confidence_annotation import ConfidenceAnnotation
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
