@@ -58,7 +58,6 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
         self.assertEqual("Calibri18,", node["text"][word_bboxes[2]["start"]:word_bboxes[2]["end"]])
         self.assertEqual("Tahoma16", node["text"][word_bboxes[3]["start"]:word_bboxes[3]["end"]])
 
-
     def test_pdf_with_text_style_2(self) -> None:
         file_name = "2-column-state.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="true", need_pdf_table_analysis="false"))

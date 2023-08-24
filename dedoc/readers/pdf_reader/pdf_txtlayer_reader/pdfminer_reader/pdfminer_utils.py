@@ -1,13 +1,13 @@
 import json
 import re
-from typing import List, IO, Tuple, Optional, Match
+from typing import IO, List, Match, Optional, Tuple
 
 import cv2
 import numpy as np
 from pdfminer.layout import LTContainer
 from pdfminer.pdfpage import PDFPage
 
-from dedoc.data_structures import BBoxAnnotation, BBox
+from dedoc.data_structures import BBox, BBoxAnnotation
 
 
 def draw_layout_element(image_src: np.ndarray,
@@ -30,7 +30,7 @@ def draw_layout_element(image_src: np.ndarray,
             file.write(lobj.get_text())
 
 
-def draw_annotation(image: np.ndarray, annotations: List[BBoxAnnotation]):
+def draw_annotation(image: np.ndarray, annotations: List[BBoxAnnotation]) -> None:
     for ann in annotations:
         bbox = json.loads(ann.value)
         p1 = (int(bbox["x_top_left"] * bbox["page_width"]), int(bbox["y_top_left"] * bbox["page_height"]))

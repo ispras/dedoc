@@ -10,8 +10,8 @@ import cv2
 import numpy as np
 from PIL import Image
 from pdfminer.converter import PDFPageAggregator
-from pdfminer.layout import LAParams, LTChar, LTAnno, LTTextBoxHorizontal, LTTextLineHorizontal, LTContainer, LTRect, \
-    LTFigure, LTImage, LTCurve, LTTextBox, LTTextContainer
+from pdfminer.layout import LAParams, LTAnno, LTChar, LTContainer, LTCurve, LTFigure, LTImage, LTRect
+from pdfminer.layout import LTTextBox, LTTextBoxHorizontal, LTTextContainer, LTTextLineHorizontal
 from pdfminer.pdfinterp import PDFPageInterpreter
 from pdfminer.pdfinterp import PDFResourceManager
 from pdfminer.pdfpage import PDFPage
@@ -27,10 +27,10 @@ from dedoc.readers.pdf_reader.data_classes.page_with_bboxes import PageWithBBox
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_utils import create_bbox, draw_annotation, cleaning_text_from_hieroglyphics
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_utils import cleaning_text_from_hieroglyphics, create_bbox, draw_annotation
 from dedoc.utils.pdf_utils import get_page_image
 
-logging.getLogger('pdfminer').setLevel(logging.ERROR)
+logging.getLogger("pdfminer").setLevel(logging.ERROR)
 WordObj = namedtuple("Word", ["start", "end", "value"])
 
 
@@ -177,7 +177,7 @@ class PdfminerExtractor(object):
         prev_style = ""
         annotations: List[Annotation]
 
-        for item, lobj_char in enumerate(lobj):
+        for lobj_char in lobj:
             if isinstance(lobj_char, LTChar) or isinstance(lobj_char, LTAnno):
                 # get styles
                 if len(chars_with_style) > 0:
@@ -291,7 +291,7 @@ class PdfminerExtractor(object):
                 lobjs_words.append(lobj)
         # 3. print information
         draw_annotation(image_src, annotations)
-        '''
+        """
         Call for debugging other LT elements:
         self.__draw_layout_element(image_src, lobjs_textline, file_text, k_w, k_h, page, (0, 255, 0))
         self.__draw_layout_element(image_src, lobjs_words, file_text, k_w, k_h, page, (0, 255, 0))
@@ -299,6 +299,6 @@ class PdfminerExtractor(object):
         self.__draw_layout_element(image_src, lobjs_figures, file_text, k_w, k_h, page, (255, 0, 0), text="LTFigure")
         self.__draw_layout_element(image_src, lobjs_images, file_text, k_w, k_h, page, (0, 255, 255), text="LTImage")
         self.__draw_layout_element(image_src, lobjs_curves, file_text, k_w, k_h, page, (0, 255, 255), text="LTCurve")'''
-
+        """
         cv2.imwrite(os.path.join(tmp_dir, f"img_page_{page_num}.png"), image_src)
         file_text.close()
