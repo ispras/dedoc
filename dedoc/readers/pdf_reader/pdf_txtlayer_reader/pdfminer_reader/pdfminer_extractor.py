@@ -17,8 +17,8 @@ from pdfminer.pdfinterp import PDFResourceManager
 from pdfminer.pdfpage import PDFPage
 
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
-from dedoc.data_structures import BBoxAnnotation
 from dedoc.data_structures.annotation import Annotation
+from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
@@ -175,7 +175,6 @@ class PdfminerExtractor(object):
         chars_with_style = []
         rand_weight = self._get_new_weight()
         prev_style = ""
-        annotations: List[Annotation]
 
         for lobj_char in lobj:
             if isinstance(lobj_char, LTChar) or isinstance(lobj_char, LTAnno):
@@ -207,7 +206,7 @@ class PdfminerExtractor(object):
 
         return annotations
 
-    def __extract_words_bbox_annotation(self, lobj: LTTextContainer, k_w: float, k_h: float, height: int, width: int) -> List[BBoxAnnotation]:
+    def __extract_words_bbox_annotation(self, lobj: LTTextContainer, k_w: float, k_h: float, height: int, width: int) -> List[Annotation]:
         words: List[WordObj] = []
         word: WordObj = WordObj(start=0, end=0, value=LTTextContainer())
         if isinstance(lobj, LTTextLineHorizontal):
@@ -240,11 +239,13 @@ class PdfminerExtractor(object):
         font, size, *_ = prev_style.split("_")
         fontname_wo_rand = font.split("+")[-1]
         styles = fontname_wo_rand.split("-")[-1]
+        annotations.append(StyleAnnotation(begin, end, value=fontname_wo_rand))
+
         if "Bold" in styles:
             annotations.append(BoldAnnotation(begin, end, value="True"))
         if "Italic" in styles:
             annotations.append(ItalicAnnotation(begin, end, value="True"))
-        annotations.append(StyleAnnotation(begin, end, value=fontname_wo_rand))
+
         if size.replace(".", "", 1).isnumeric():
             annotations.append(SizeAnnotation(begin, end, value=size))
 

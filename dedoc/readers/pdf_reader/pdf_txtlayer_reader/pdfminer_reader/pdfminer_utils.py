@@ -7,7 +7,8 @@ import numpy as np
 from pdfminer.layout import LTContainer
 from pdfminer.pdfpage import PDFPage
 
-from dedoc.data_structures import BBox, BBoxAnnotation
+from dedoc.data_structures.bbox import BBox
+from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
 
 
 def draw_layout_element(image_src: np.ndarray,
@@ -39,18 +40,17 @@ def draw_annotation(image: np.ndarray, annotations: List[BBoxAnnotation]) -> Non
 
 
 def convert_coordinates_pdf_to_image(lobj: LTContainer, k_w: float, k_h: float, height_page: int) -> BBox:
-    x0_new = int(lobj.x0 * k_w)
-    x1_new = int(lobj.x1 * k_w)
-    y0_new = int((height_page - lobj.y1) * k_h)
-    y1_new = int((height_page - lobj.y0) * k_h)
+    x0 = int(lobj.x0 * k_w)
+    x1 = int(lobj.x1 * k_w)
+    y0 = int((height_page - lobj.y1) * k_h)
+    y1 = int((height_page - lobj.y0) * k_h)
 
-    return BBox(x0_new, y0_new, x1_new - x0_new, y1_new - y0_new)
+    return BBox(x0, y0, x1 - x0, y1 - y0)
 
 
 def create_bbox(height: int, k_h: float, k_w: float, lobj: LTContainer) -> BBox:
     curr_box_line = convert_coordinates_pdf_to_image(lobj, k_w, k_h, height)
-    bbox = BBox.from_two_points((curr_box_line.x_top_left, curr_box_line.y_top_left),
-                                (curr_box_line.x_bottom_right, curr_box_line.y_bottom_right))
+    bbox = BBox.from_two_points((curr_box_line.x_top_left, curr_box_line.y_top_left), (curr_box_line.x_bottom_right, curr_box_line.y_bottom_right))
     return bbox
 
 
@@ -60,10 +60,10 @@ def cleaning_text_from_hieroglyphics(text_str: str) -> str:
     :param text_str: text
     :return: text wo cids-chars
     """
-    return re.sub(r"\(cid:(\d)*\)", cid_recognized, text_str)
+    return re.sub(r"\(cid:(\d)*\)", cid_to_ascii_text, text_str)
 
 
-def cid_recognized(m: Match) -> str:
+def cid_to_ascii_text(m: Match) -> str:
     v = m.group(0)
     v = v.strip("(").strip(")")
     ascii_num = v.split(":")[-1]
