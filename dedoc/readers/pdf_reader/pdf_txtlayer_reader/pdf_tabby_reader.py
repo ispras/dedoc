@@ -10,6 +10,7 @@ import numpy as np
 from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
 from dedoc.common.exceptions.tabby_pdf_error import TabbyPdfError
 from dedoc.data_structures.bbox import BBox
+from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
@@ -148,16 +149,18 @@ class PdfTabbyReader(PdfBaseReader):
     def __get_lines_with_location(self, page: dict, file_hash: str) -> List[LineWithLocation]:
         lines = []
         page_number = page["number"]
+        page_width = int(page["width"])
+        page_height = int(page["height"])
         prev_line = None
 
         for block in page["blocks"]:
             annotations = []
             order = block["order"]
             block_text = block["text"]
-            bx_top_left = block["x_top_left"]
-            by_top_left = block["y_top_left"]
-            bx_bottom_right = bx_top_left + block["width"]
-            by_bottom_right = by_top_left + block["height"]
+            bx_top_left = int(block["x_top_left"])
+            by_top_left = int(block["y_top_left"])
+            bx_bottom_right = bx_top_left + int(block["width"])
+            by_bottom_right = by_top_left + int(block["height"])
             indent = block["indent"]
             spacing = block["spacing"]
             len_block = len(block_text)
@@ -173,7 +176,12 @@ class PdfTabbyReader(PdfBaseReader):
                 url = annotation["url"]
                 start = annotation["start"]
                 end = annotation["end"]
-
+                x_top_left = int(annotation["x_top_left"])
+                y_top_left = int(annotation["y_top_left"])
+                x_bottom_right = bx_top_left + int(annotation["width"])
+                y_bottom_right = by_top_left + int(annotation["height"])
+                box = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))
+                annotations.append(BBoxAnnotation(start, end, box, page_width=page_width, page_height=page_height))
                 annotations.append(SizeAnnotation(start, end, str(font_size)))
                 annotations.append(StyleAnnotation(start, end, font_name))
 
@@ -189,6 +197,7 @@ class PdfTabbyReader(PdfBaseReader):
             meta = block["metadata"].lower()
             uid = f"txt_{file_hash}_{order}"
             bbox = BBox.from_two_points((bx_top_left, by_top_left), (bx_bottom_right, by_bottom_right))
+            annotations.append(BBoxAnnotation(0, len_block, bbox, page_width=page_width, page_height=page_height))
 
             metadata = LineMetadata(page_id=page_number, line_id=order)
             line_with_location = LineWithLocation(line=block_text,
