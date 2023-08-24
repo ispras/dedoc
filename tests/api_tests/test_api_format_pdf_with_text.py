@@ -1,5 +1,4 @@
 import os
-import unittest
 from typing import List
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
@@ -13,24 +12,30 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
     def __filter_by_name(self, annotations: List[dict], name: str) -> List[dict]:
         return [annotation for annotation in annotations if annotation["name"] == name]
 
-    @unittest.skip("TODO")
+    def __get_annotation_names(self, annotations: List[dict]) -> List[str]:
+        return [annotation["name"] for annotation in annotations]
+
     def test_pdf_with_text_style(self) -> None:
         file_name = "diff_styles.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="true", document_type="", need_pdf_table_analysis="false"))
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
 
-        node = self._get_by_tree_path(tree, "0.0")
+        node = self._get_by_tree_path(tree, "0.0.0")
         self.assertEqual("1.1TimesNewRomanItalicBold20\n", node["text"])
         self.assertIn({"start": 0, "end": 28, "name": "size", "value": "20.0"}, node["annotations"])
+        annotation_names = self.__get_annotation_names(node["annotations"])
+        self.assertListEqual(["bounding box", "style", "size", "color_annotation", "spacing"], annotation_names)
 
-        node = self._get_by_tree_path(tree, "0.1")
+        node = self._get_by_tree_path(tree, "0.0.0.0")
         annotations_size = self.__filter_by_name(name="size", annotations=node["annotations"])
         self.assertIn({"start": 0, "end": 26, "name": "size", "value": "16.0"}, annotations_size)
-        self.assertEqual(len(node["annotations"]), 5)
+        self.assertEqual(len(node["annotations"]), 6)
+        annotation_names = self.__get_annotation_names(node["annotations"])
         self.assertEqual("Different styles(Arial16):\n", node["text"])
+        self.assertListEqual(["bounding box", "bounding box", "style", "size", "color_annotation", "spacing"], annotation_names)
 
-        node = self._get_by_tree_path(tree, "0.2.2")
+        node = self._get_by_tree_path(tree, "0.1.2")
         self.assertEqual("3. TimesNewRomanItalic14, Calibri18, Tahoma16\n", node["text"])
         self.assertEqual("3. ", node["text"][0:3])
         self.assertIn({"start": 0, "end": 36, "name": "style", "value": "TimesNewRomanPSMT"}, node["annotations"])
@@ -44,7 +49,14 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
         self.assertEqual("Tahoma16\n", node["text"][37:46])
         self.assertIn({"start": 37, "end": 45, "value": "Tahoma", "name": "style"}, node["annotations"])
         self.assertIn({"start": 37, "end": 45, "name": "size", "value": "16.0"}, node["annotations"])
-        self.assertEqual(9, len(node["annotations"]))
+        self.assertEqual(12, len(node["annotations"]))
+
+        word_bboxes = self.__filter_by_name(node["annotations"], "bounding box")
+        self.assertEqual(len(word_bboxes), 4)
+        self.assertEqual("3.", node["text"][word_bboxes[0]["start"]:word_bboxes[0]["end"]])
+        self.assertEqual("TimesNewRomanItalic14,", node["text"][word_bboxes[1]["start"]:word_bboxes[1]["end"]])
+        self.assertEqual("Calibri18,", node["text"][word_bboxes[2]["start"]:word_bboxes[2]["end"]])
+        self.assertEqual("Tahoma16", node["text"][word_bboxes[3]["start"]:word_bboxes[3]["end"]])
 
     def test_pdf_with_text_style_2(self) -> None:
         file_name = "2-column-state.pdf"
@@ -65,7 +77,6 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
 
         self.assertIn("Pere Manils, Abdelberi Chaabane, Stevens Le Blond,", self._get_by_tree_path(tree, "0.1")["text"])
 
-    @unittest.skip("TODO")
     def test_pdf_with_2_columns_text(self) -> None:
         file_name = "2-column-state.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="true", document_type="", need_pdf_table_analysis="false"))
@@ -75,17 +86,17 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
         self.assertIn("Privacy of users in P2P networks goes far beyond their\n"
                       "current usage and is a fundamental requirement to the adop-\n"
                       "tion of P2P protocols for legal usage. In a climate of cold",
-                      self._get_by_tree_path(tree, "0.5")["text"])
+                      self._get_by_tree_path(tree, "0.4.1.2")["text"])
 
-        self.assertIn("Keywords", self._get_by_tree_path(tree, "0.6")["text"])
-        self.assertIn("Anonymizing Networks, Privacy, Tor, BitTorrent", self._get_by_tree_path(tree, "0.7")["text"])
+        self.assertIn("Keywords", self._get_by_tree_path(tree, "0.4.1.3")["text"])
+        self.assertIn("Anonymizing Networks, Privacy, Tor, BitTorrent", self._get_by_tree_path(tree, "0.4.1.4")["text"])
 
-        self.assertIn("INTRODUCTION\n", self._get_by_tree_path(tree, "0.8.0.0")["text"])
+        self.assertIn("INTRODUCTION\n", self._get_by_tree_path(tree, "0.5.0.0")["text"])
         self.assertIn("The Tor network was designed to provide freedom\n"
                       "of speech by guaranteeing anonymous communications.\n"
                       "Whereas the cryptographic foundations of Tor, based on\n"
                       "onion-routing [3, 9, 22, 24], are known to be robust, identity",
-                      self._get_by_tree_path(tree, "0.8.0.1")["text"])
+                      self._get_by_tree_path(tree, "0.5.0.1")["text"])
 
     def test_pdf_with_2_columns_text_2(self) -> None:
         file_name = "liters_state.pdf"
