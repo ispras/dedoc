@@ -10,7 +10,7 @@ from starlette.responses import FileResponse, HTMLResponse, JSONResponse, PlainT
 
 import dedoc
 from dedoc.api.api_args import QueryParameters
-from dedoc.api.api_utils import json2collapsed_tree, json2html, json2tree
+from dedoc.api.api_utils import json2collapsed_tree, json2html, json2tree, json2txt
 from dedoc.common.exceptions.dedoc_error import DedocError
 from dedoc.common.exceptions.missing_file_error import MissingFileError
 from dedoc.config import get_config
@@ -76,6 +76,9 @@ async def upload(file: UploadFile = File(...), query_params: QueryParameters = D
     if return_format == "html":
         html_content = json2html(text="", paragraph=document_tree.content.structure, tables=document_tree.content.tables, tabs=0)
         return HTMLResponse(content=html_content, status_code=200)
+    elif return_format == "plain_text":
+        txt_content = json2txt(paragraph=document_tree.content.structure)
+        return PlainTextResponse(content=txt_content, status_code=200)
     elif return_format == "tree":
         html_content = json2tree(paragraph=document_tree.content.structure)
         return HTMLResponse(content=html_content, status_code=200)

@@ -95,7 +95,7 @@ Api parameters description
         This type is used for choosing a specific structure constructor after document structure extraction.
 
     * - return_format
-      - json, pretty_json, html, tree
+      - json, pretty_json, html, plain_text, tree
       - json
       - The output format of the result data.
         The document structure from a structure constructor (see :class:`~dedoc.data_structures.ParsedDocument`)
@@ -106,6 +106,8 @@ Api parameters description
         * **pretty_json** -- prettified by adding indentation to the aforesaid json structure;
 
         * **html** -- :class:`~dedoc.data_structures.ParsedDocument` is transformed into html file with styles and headers according to the extracted annotations and structure;
+
+        * **plain_text** -- simple textual lines of the document;
 
         * **tree** -- simple document tree representation in html format (useful for structure visualization).
 
