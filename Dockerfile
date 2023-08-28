@@ -5,7 +5,7 @@ ENV PYTHONPATH "${PYTHONPATH}:/dedoc_root"
 ENV RESOURCES_PATH "/dedoc_root/resources"
 
 ADD requirements.txt .
-RUN pip3 install -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 RUN mkdir /dedoc_root
 ADD dedoc /dedoc_root/dedoc
