@@ -149,6 +149,7 @@ if __name__ == "__main__":
 
                     except Exception as ex:
                         print(ex)
+                        print("If you have problems with libutf8proc.so.2, try the command: `apt install -y libutf8proc-dev`")
 
     table_aacuracy_per_image = Texttable()
     table_aacuracy_per_image.add_rows(accs)
