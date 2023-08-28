@@ -99,7 +99,7 @@ class PdfTabbyReader(PdfBaseReader):
         tables = []
         for scan_table, table_cells_property in zip(scan_tables, tables_cell_properties):
             cell_properties = [[cellp for cellp in row] for row in table_cells_property]
-            metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name, cell_properties=cell_properties)
+            metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name)
             cells = [[cell for cell in row] for row in scan_table.matrix_cells]
             table = Table(metadata=metadata, cells=cells, cells_properties=cell_properties)
             tables.append(table)
@@ -148,9 +148,10 @@ class PdfTabbyReader(PdfBaseReader):
             rows = table["rows"]
             cell_properties_json = table["cell_properties"]
             cell_property_list = []
-            cell_property_row_list = []
 
             for cell_properties_row in cell_properties_json:
+                cell_property_row_list = []
+
                 for cell_property in cell_properties_row:
                     cell_property_info = CellPropertyInfo(cell_property["col_span"],
                                                           cell_property["row_span"],
