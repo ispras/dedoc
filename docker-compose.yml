@@ -5,7 +5,7 @@ services:
     mem_limit: 16G
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
     restart: always
     tty: true
     ports:
@@ -19,7 +19,7 @@ services:
       - dedoc
     build:
           context: .
-          dockerfile: docker/Dockerfile
+          dockerfile: Dockerfile
     tty: true
     environment:
       DOC_READER_HOST: "dedoc"
