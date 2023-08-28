@@ -4,7 +4,7 @@ import math
 import os
 import subprocess
 from collections import namedtuple
-from typing import Any, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -25,7 +25,6 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.readers.docx_reader.data_structures.table import CellPropertyInfo
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
@@ -37,6 +36,7 @@ from dedoc.utils.parameter_utils import get_param_page_slice
 from dedoc.utils.utils import calculate_file_hash
 
 CellPropertyInfo = namedtuple("NamedTuple", "colspan, rowspan, invisible")
+
 
 class PdfTabbyReader(PdfBaseReader):
     """
@@ -98,9 +98,10 @@ class PdfTabbyReader(PdfBaseReader):
         lines = self.linker.link_objects(lines=lines, tables=scan_tables, images=[])
         tables = []
         for scan_table, table_cells_property in zip(scan_tables, tables_cell_properties):
-            metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name)
+            cell_properties = [[cellp for cellp in row] for row in table_cells_property]
+            metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name, cell_properties=cell_properties)
             cells = [[cell for cell in row] for row in scan_table.matrix_cells]
-            table = Table(metadata=metadata, cells=cells)
+            table = Table(metadata=metadata, cells=cells, cells_properties=cell_properties)
             tables.append(table)
 
         attachments = []
@@ -150,10 +151,13 @@ class PdfTabbyReader(PdfBaseReader):
             cell_property_row_list = []
 
             for cell_properties_row in cell_properties_json:
-                cell_property_row_list.append(CellPropertyInfo(cell_property["col_span"],
-                                                               cell_property["row_span"],
-                                                               cell_property["invisible"])
-                                              for cell_property in cell_properties_row)
+                for cell_property in cell_properties_row:
+                    cell_property_info = CellPropertyInfo(cell_property["col_span"],
+                                                          cell_property["row_span"],
+                                                          bool(cell_property["invisible"]))
+
+                    cell_property_row_list.append(cell_property_info)
+
                 cell_property_list.append(cell_property_row_list)
 
             cells = [row for row in rows]
