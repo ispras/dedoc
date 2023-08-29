@@ -131,7 +131,7 @@ class PdfTabbyReader(PdfBaseReader):
                 all_tables.extend(tables)
                 all_cell_properties.extend(cell_properties)
 
-        return all_lines, all_tables, cell_properties
+        return all_lines, all_tables, all_cell_properties
 
     def __get_tables(self, page: dict, file_hash: str) -> List[ScanTable]:
         tables = []

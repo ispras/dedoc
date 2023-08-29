@@ -280,3 +280,20 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         self.assertIn(BoldAnnotation.name, annotation_names)
         self.assertIn(SpacingAnnotation.name, annotation_names)
         self.assertIn(BBoxAnnotation.name, annotation_names)
+
+    def test_tables_with_merged_cells(self) -> None:
+        file_name = "big_table_with_merged_cells.pdf"
+        result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
+        table = result["content"]["tables"][0]
+        cell_properties = table["metadata"]["cell_properties"]
+
+        hidden_cells_big_table_with_colspan = [[(1, 0), 10], [(5, 5), 5]]
+
+        for (i, j), k in hidden_cells_big_table_with_colspan:
+            self.assertFalse(cell_properties[i][j]["invisible"])
+            self.assertEqual(cell_properties[i][j]["rowspan"], 1)
+            self.assertEqual(cell_properties[i][j]["colspan"], k)
+
+        self.assertFalse(cell_properties[3][0]["invisible"])
+        self.assertEqual(cell_properties[3][0]["rowspan"], 3)
+        self.assertEqual(cell_properties[3][0]["colspan"], 4)
