@@ -97,6 +97,7 @@ class PdfTabbyReader(PdfBaseReader):
 
         lines = self.linker.link_objects(lines=lines, tables=scan_tables, images=[])
         tables = []
+        assert len(scan_tables) == len(tables_cell_properties)
         for scan_table, table_cells_property in zip(scan_tables, tables_cell_properties):
             cell_properties = [[cellp for cellp in row] for row in table_cells_property]
             metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name)
