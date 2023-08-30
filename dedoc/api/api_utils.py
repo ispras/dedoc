@@ -219,3 +219,9 @@ def __table2html(table: Table, table2id: Dict[str, int]) -> str:
         text += "</tr>\n"
     text += "</tbody>\n</table>"
     return text
+
+
+def json2txt(paragraph: TreeNode) -> str:
+    subparagraphs_text = "\n".join([json2txt(subparagraph) for subparagraph in paragraph.subparagraphs])
+    text = f"{paragraph.text}\n{subparagraphs_text}"
+    return text

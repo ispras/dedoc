@@ -8,7 +8,7 @@ from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLoc
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.extractor_pdf_textlayer import ExtractorPdfTextLayer
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_extractor import PdfminerExtractor
 from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
 
 
@@ -25,7 +25,7 @@ class PdfTxtlayerReader(PdfBaseReader):
         :param config: configuration of the reader, e.g. logger for logging
         """
         super().__init__(config=config)
-        self.extractor_layer = ExtractorPdfTextLayer(config=config)
+        self.extractor_layer = PdfminerExtractor(config=config)
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """

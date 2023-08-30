@@ -73,7 +73,7 @@ If you don't need converters, you can skip this step.
 
 
 2. Install `Tesseract OCR 5` framework.
-You can try any tutorial for this purpose or look `here <https://github.com/ispras/dedoc/blob/master/docker/DockerfileBaseimg>`_
+You can try any tutorial for this purpose or look `here <https://github.com/ispras/dedockerfiles/blob/master/dedoc_p3.9_base.Dockerfile>`_
 to get the example of Tesseract installing for dedoc container.
 
 

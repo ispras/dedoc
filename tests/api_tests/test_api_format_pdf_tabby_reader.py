@@ -2,6 +2,9 @@ import os
 import unittest
 from typing import List
 
+from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
+from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
+from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
@@ -267,3 +270,30 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         node = self._get_by_tree_path(tree, "0.4.2")
         self.assertEqual("list_item", node["metadata"]["paragraph_type"])
         self.assertEqual("3. В соответствии с полученной", node["text"].strip()[:30])
+
+    def test_pdf_annotations(self) -> None:
+        file_name = "Document635.pdf"
+        result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
+        content = result["content"]["structure"]["subparagraphs"]
+        annotations = content[0]["annotations"]
+        annotation_names = {annotation["name"] for annotation in annotations}
+        self.assertIn(BoldAnnotation.name, annotation_names)
+        self.assertIn(SpacingAnnotation.name, annotation_names)
+        self.assertIn(BBoxAnnotation.name, annotation_names)
+
+    def test_tables_with_merged_cells(self) -> None:
+        file_name = "big_table_with_merged_cells.pdf"
+        result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
+        table = result["content"]["tables"][0]
+        cell_properties = table["metadata"]["cell_properties"]
+
+        hidden_cells_big_table_with_colspan = [[(1, 0), 10], [(5, 5), 5]]
+
+        for (i, j), k in hidden_cells_big_table_with_colspan:
+            self.assertFalse(cell_properties[i][j]["invisible"])
+            self.assertEqual(cell_properties[i][j]["rowspan"], 1)
+            self.assertEqual(cell_properties[i][j]["colspan"], k)
+
+        self.assertFalse(cell_properties[3][0]["invisible"])
+        self.assertEqual(cell_properties[3][0]["rowspan"], 3)
+        self.assertEqual(cell_properties[3][0]["colspan"], 4)

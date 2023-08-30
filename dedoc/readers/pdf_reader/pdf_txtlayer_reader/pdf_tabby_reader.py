@@ -3,6 +3,7 @@ import logging
 import math
 import os
 import subprocess
+from collections import namedtuple
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -10,6 +11,7 @@ import numpy as np
 from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
 from dedoc.common.exceptions.tabby_pdf_error import TabbyPdfError
 from dedoc.data_structures.bbox import BBox
+from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
@@ -32,6 +34,8 @@ from dedoc.structure_extractors.concrete_structure_extractors.default_structure_
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
 from dedoc.utils.parameter_utils import get_param_page_slice
 from dedoc.utils.utils import calculate_file_hash
+
+CellPropertyInfo = namedtuple("NamedTuple", "colspan, rowspan, invisible")
 
 
 class PdfTabbyReader(PdfBaseReader):
@@ -76,7 +80,7 @@ class PdfTabbyReader(PdfBaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        lines, scan_tables = self.__extract(path=path)
+        lines, scan_tables, tables_cell_properties = self.__extract(path=path)
         warnings = []
         document_metadata = None
 
@@ -93,10 +97,12 @@ class PdfTabbyReader(PdfBaseReader):
 
         lines = self.linker.link_objects(lines=lines, tables=scan_tables, images=[])
         tables = []
-        for scan_table in scan_tables:
+        assert len(scan_tables) == len(tables_cell_properties)
+        for scan_table, table_cells_property in zip(scan_tables, tables_cell_properties):
+            cell_properties = [[cellp for cellp in row] for row in table_cells_property]
             metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name)
             cells = [[cell for cell in row] for row in scan_table.matrix_cells]
-            table = Table(metadata=metadata, cells=cells)
+            table = Table(metadata=metadata, cells=cells, cells_properties=cell_properties)
             tables.append(table)
 
         attachments = []
@@ -111,23 +117,26 @@ class PdfTabbyReader(PdfBaseReader):
 
         return self._postprocess(result)
 
-    def __extract(self, path: str, start_page: int = None, end_page: int = None) -> Tuple[List[LineWithMeta], List[ScanTable]]:
+    def __extract(self, path: str, start_page: int = None, end_page: int = None) -> Tuple[List[LineWithMeta], List[ScanTable], List[List[CellPropertyInfo]]]:
         file_hash = calculate_file_hash(path=path)
         document = self.__process_pdf(path=path, start_page=start_page, end_page=end_page)
         all_lines = []
         all_tables = []
+        all_cell_properties = []
         for page in document.get("pages", []):
             lines = self.__get_lines_with_location(page, file_hash)
             if lines:
                 all_lines.extend(lines)
-            tables = self.__get_tables(page, file_hash)
+            tables, cell_properties = self.__get_tables(page, file_hash)
             if tables:
                 all_tables.extend(tables)
+                all_cell_properties.extend(cell_properties)
 
-        return all_lines, all_tables
+        return all_lines, all_tables, all_cell_properties
 
     def __get_tables(self, page: dict, file_hash: str) -> List[ScanTable]:
         tables = []
+        cell_properties = []
         page_number = page["number"]
         i = 0
         for table in page["tables"]:
@@ -138,26 +147,44 @@ class PdfTabbyReader(PdfBaseReader):
             y_bottom_right = y_top_left + table["height"]
             order = table["order"]
             rows = table["rows"]
+            cell_properties_json = table["cell_properties"]
+            cell_property_list = []
+
+            for cell_properties_row in cell_properties_json:
+                cell_property_row_list = []
+
+                for cell_property in cell_properties_row:
+                    cell_property_info = CellPropertyInfo(cell_property["col_span"],
+                                                          cell_property["row_span"],
+                                                          bool(cell_property["invisible"]))
+
+                    cell_property_row_list.append(cell_property_info)
+
+                cell_property_list.append(cell_property_row_list)
+
             cells = [row for row in rows]
             bbox = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))
 
             tables.append(ScanTable(matrix_cells=cells, page_number=page_number, bbox=bbox, name=file_hash + str(page_number) + str(i), order=order))
+            cell_properties.append(cell_property_list)
 
-        return tables
+        return tables, cell_properties
 
     def __get_lines_with_location(self, page: dict, file_hash: str) -> List[LineWithLocation]:
         lines = []
         page_number = page["number"]
+        page_width = int(page["width"])
+        page_height = int(page["height"])
         prev_line = None
 
         for block in page["blocks"]:
             annotations = []
             order = block["order"]
             block_text = block["text"]
-            bx_top_left = block["x_top_left"]
-            by_top_left = block["y_top_left"]
-            bx_bottom_right = bx_top_left + block["width"]
-            by_bottom_right = by_top_left + block["height"]
+            bx_top_left = int(block["x_top_left"])
+            by_top_left = int(block["y_top_left"])
+            bx_bottom_right = bx_top_left + int(block["width"])
+            by_bottom_right = by_top_left + int(block["height"])
             indent = block["indent"]
             spacing = block["spacing"]
             len_block = len(block_text)
@@ -173,7 +200,12 @@ class PdfTabbyReader(PdfBaseReader):
                 url = annotation["url"]
                 start = annotation["start"]
                 end = annotation["end"]
-
+                x_top_left = int(annotation["x_top_left"])
+                y_top_left = int(annotation["y_top_left"])
+                x_bottom_right = bx_top_left + int(annotation["width"])
+                y_bottom_right = by_top_left + int(annotation["height"])
+                box = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))
+                annotations.append(BBoxAnnotation(start, end, box, page_width=page_width, page_height=page_height))
                 annotations.append(SizeAnnotation(start, end, str(font_size)))
                 annotations.append(StyleAnnotation(start, end, font_name))
 
@@ -189,6 +221,7 @@ class PdfTabbyReader(PdfBaseReader):
             meta = block["metadata"].lower()
             uid = f"txt_{file_hash}_{order}"
             bbox = BBox.from_two_points((bx_top_left, by_top_left), (bx_bottom_right, by_bottom_right))
+            annotations.append(BBoxAnnotation(0, len_block, bbox, page_width=page_width, page_height=page_height))
 
             metadata = LineMetadata(page_id=page_number, line_id=order)
             line_with_location = LineWithLocation(line=block_text,

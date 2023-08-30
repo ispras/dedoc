@@ -5,7 +5,7 @@ from collections import OrderedDict, namedtuple
 
 import requests
 import wget
-from config import get_config
+from dedoc.config import get_config
 from tqdm import tqdm
 
 from dedoc.utils.utils import send_file
