@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v0.11.1 (2023-08-30)
+-------------------
+Release note: `v0.11.1 <https://github.com/ispras/dedoc/releases/tag/v0.11.1>`_
+
+* Add bbox annotations in `PdfTabbyReader`.
+* Add bbox annotations for words in `PdfTxtlayerReader`.
+* Add an option `plain_text` to the `return_format` parameter.
+* Reduce size of the dedoc base image, move dockerfiles to the `separate repository <https://github.com/ispras/dedockerfiles>`_.
+* Refactor script for tesseract benchmarking.
+* Make fixed dedoc dependencies as ranges.
+* Add table cell properties in `PdfTabbyReader`.
+
 v0.11.0 (2023-08-22)
 --------------------
 Release note: `v0.11.0 <https://github.com/ispras/dedoc/releases/tag/v0.11.0>`_
