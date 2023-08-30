@@ -2,7 +2,7 @@ Changelog
 =========
 
 v0.11.1 (2023-08-30)
--------------------
+--------------------
 Release note: `v0.11.1 <https://github.com/ispras/dedoc/releases/tag/v0.11.1>`_
 
 * Add bbox annotations in `PdfTabbyReader`.
