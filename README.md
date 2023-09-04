@@ -9,8 +9,6 @@ It extracts a document’s logical structure and content, its tables, text forma
 The document’s content is represented as a tree storing headings and lists of any level. 
 Dedoc can be integrated in a document contents and structure analysis system as a separate module.
 
-Relevant documentation of the dedoc is available [here](https://dedoc.readthedocs.io).
-
 ## Features and advantages
 Dedoc is implemented in Python and works with semi-structured data formats (DOC/DOCX, ODT, XLS/XLSX, CSV, TXT, JSON) and none-structured data formats like images (PNG, JPG etc.), archives (ZIP, RAR etc.), PDF and HTML formats. 
 Document structure extraction is fully automatic regardless of input data type. 
@@ -32,17 +30,22 @@ In 2022, the system won a grant to support the development of promising AI proje
   * Using Tesseract, an actively developed OCR engine from Google, together with image preprocessing methods. 
   * Utilizing modern machine learning approaches for detecting a document orientation, detecting single/multicolumn document page, detecting bold text and extracting hierarchical structure based on the classification of features extracted from document images.
 
-
+## Impact
 This project may be useful as a first step of automatic document analysis pipeline (e.g. before the NLP part).
+Dedoc is in demand for information analytic systems, information leak monitoring systems, as well as for natural language processing systems.
+The library is intended for application use by developers of systems for automatic analysis and structuring of electronic documents, including for further search in electronic documents. 
 
+# Online-Documentation
+Relevant documentation of the dedoc is available [here]((https://dedoc.readthedocs.io/en/latest/))
+
+# Installation instructions
 This project has REST Api and you can run it in Docker container.
 Also, dedoc can be installed as a library via `pip`.
-To read full Dedoc documentation go [here](https://dedoc.readthedocs.io).
  
 
-## Run the project
+# Install and run
 
-### Install and run dedoc using docker
+## Install and run dedoc using docker
 
 Clone the project 
 ```bash
@@ -62,11 +65,32 @@ test="true" docker-compose up --build
  ```
 
 Now you can go to the `localhost:1231` and look at the docs and examples.
-You can change the port and host in the config file `dedoc/config.py`.
+### Option: You can change the port of service:
+you need to change environment DOCREADER_PORT
+1. For local service launching on your_port (1166 example): 
+```bash
+export DOCREADER_PORT=1166 
+python dedoc/main.py -c ./dedoc/config.py
+```
+2. For service launching in docker-container you need to change port value in DOCREADER_PORT env and field 'ports' in docker-compose.yml file:
+```yaml
+    ...
+    dedoc:
+    ...
+    ports:
+      - your_port_number:your_port_number
+    environment:
+      DOCREADER_PORT: your_port_number
+    ... 
+    test:
+    ...
+    environment: 
+      DOCREADER_PORT: your_port_number
+``` 
 
-### Install dedoc using pip
+## Install dedoc using pip
 
-One may install the dedoc library via `pip`. 
+One can install the dedoc library via `pip`. 
 To fulfil all the library requirements, you should have `torch~=1.11.0` and `torchvision~=0.12.0` installed. 
 You can install suitable for you versions of these libraries and install dedoc using `pip` command:
 
