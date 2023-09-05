@@ -74,8 +74,27 @@ If you don't need converters, you can skip this step.
 
 2. Install `Tesseract OCR 5` framework.
 You can try any tutorial for this purpose or look `here <https://github.com/ispras/dedockerfiles/blob/master/dedoc_p3.9_base.Dockerfile>`_
-to get the example of Tesseract installing for dedoc container.
+to get the example of Tesseract installing for dedoc container or use next commands for building Tesseract OCR 5 from sources:
 
+2.1. Install compilers and libraries required by the Tesseract OCR:
+
+  .. code-block:: bash
+
+    sudo apt-get update
+    sudo apt-get install -y automake binutils-dev build-essential ca-certificates clang g++ g++-multilib gcc-multilib libcairo2 libffi-dev \
+    libgdk-pixbuf2.0-0 libglib2.0-dev libjpeg-dev libleptonica-dev libpango-1.0-0 libpango1.0-dev libpangocairo-1.0-0 libpng-dev libsm6 \
+    libtesseract-dev libtool libxext6 make pkg-config poppler-utils pstotext shared-mime-info software-properties-common swig zlib1g-dev
+
+2.2. Build Tesseract from sources:
+
+    .. code-block:: bash
+
+    sudo add-apt-repository -y ppa:alex-p/tesseract-ocr-devel
+    sudo apt-get update --allow-releaseinfo-change
+    sudo apt-get install -y tesseract-ocr tesseract-ocr-rus
+    git clone --depth 1 --branch 5.0.0-beta-20210916 https://github.com/tesseract-ocr/tesseract/
+    cd tesseract && ./autogen.sh && sudo ./configure && sudo make && sudo make install && sudo ldconfig && cd ..
+    export TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata/
 
 3. Install the dedoc library via pip.
 To fulfil all the library requirements, you should have `torch~=1.11.0` and `torchvision~=0.12.0` installed.
