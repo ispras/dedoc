@@ -157,3 +157,21 @@ Below are the instructions for installing the package `virtualenvwrapper`:
     pip install -r requirements.txt
     pip install torch=1.11.0 torchvision==0.12.0 -f https://download.pytorch.org/whl/torch_stable.html
     python dedoc/main.py -c ./dedoc/config.py
+
+
+Install trusted torch (verified version)
+----------------------------------------------
+
+You can install a trusted library `torch` (as a verified version of the library, verified by tools developed by the Ivannikov Institute for System Programming of the Russian Academy of Sciences).
+
+For `python3.9`:
+  .. code-block:: bash
+
+    pip install https://github.com/ispras/dedockerfiles/raw/master/wheels/torch-1.11.0a0+git137096a-cp39-cp39-linux_x86_64.whl
+    pip install https://github.com/ispras/dedockerfiles/raw/master/wheels/torchvision-0.12.0a0%2B9b5a3fe-cp39-cp39-linux_x86_64.whl
+
+For `python3.8`:
+  .. code-block:: bash
+
+     pip install https://github.com/ispras/dedockerfiles/raw/master/wheels/torch-1.11.0a0+git137096a-cp38-cp38-linux_x86_64.whl
+     pip install https://github.com/ispras/dedockerfiles/raw/master/wheels/torchvision-0.12.0a0%2B9b5a3fe-cp38-cp38-linux_x86_64.whl
