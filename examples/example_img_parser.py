@@ -1,14 +1,15 @@
 # noqa
 from dedoc.config import get_config
-from dedoc.readers.docx_reader.docx_reader import DocxReader
+from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
 
-# create docx reader
-docx_reader = DocxReader(config=get_config())
+# create img reader
+# pdf reader can parse image-like formats
+img_reader = PdfImageReader(config=get_config())
 # and read file example.docx
-file_name = "example.docx"
+file_name = "example.jpg"
 
 # we get unstructured file with lines and tables
-unstructured_document = docx_reader.read(path=file_name, document_type="example")
+unstructured_document = img_reader.read(path=file_name, document_type="example")
 
 # let's look at content of unstructured_file, it consists of tables and lines
 print(unstructured_document.tables, unstructured_document.lines)
