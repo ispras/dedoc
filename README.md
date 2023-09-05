@@ -55,12 +55,12 @@ If you don't need to change the application configuration, you may use the built
 
 ### 1. Pull the image
 ```bash
-    docker pull dedocproject/dedoc
+docker pull dedocproject/dedoc
 ```
 
 ### 2. Run the container
 ```bash
-    docker run -p 1231:1231 --rm dedocproject/dedoc python3 /dedoc_root/dedoc/main.py
+docker run -p 1231:1231 --rm dedocproject/dedoc python3 /dedoc_root/dedoc/main.py
 ```
 
 Go to [dockerhub](https://hub.docker.com/r/dedocproject/dedoc) to get more information about available dedoc images.
@@ -70,22 +70,22 @@ You can build and run image:
 
 ### 1. Clone the repository
 ```bash
-    git clone https://github.com/ispras/dedoc
+git clone https://github.com/ispras/dedoc
 ```
 
 ### 2. Go to the `dedoc` directory
 ```bash
-    cd dedoc
+cd dedoc
 ```
 
 ### 3. Build the image and run the application
 ```bash
-    docker-compose up --build
+docker-compose up --build
 ```
 
 ### 4. Run container with tests
 ```bash
-    test="true" docker-compose up --build
+test="true" docker-compose up --build
 ```
 
 If you need to change some application settings, you may update `config.py` according to your needs and re-build the image.
@@ -100,7 +100,7 @@ You should have `python` (`python3.8`, `python3.9` are recommended) and `pip` in
 
 ### 1. Install necessary packages:
 ```bash
-    sudo apt-get install -y libreoffice djvulibre-bin unzip unrar
+sudo apt-get install -y libreoffice djvulibre-bin unzip unrar
 ```
 
 `libreoffice` and `djvulibre-bin` packages are used by converters (doc, odt to docx; xls, ods to xlsx; ppt, odp to pptx; djvu to pdf).
@@ -113,19 +113,19 @@ to get the example of Tesseract installing for dedoc container or use next comma
 
 #### 2.1. Install compilers and libraries required by the Tesseract OCR:
 ```bash
-    sudo apt-get update
-    sudo apt-get install -y automake binutils-dev build-essential ca-certificates clang g++ g++-multilib gcc-multilib libcairo2 libffi-dev \
-    libgdk-pixbuf2.0-0 libglib2.0-dev libjpeg-dev libleptonica-dev libpango-1.0-0 libpango1.0-dev libpangocairo-1.0-0 libpng-dev libsm6 \
-    libtesseract-dev libtool libxext6 make pkg-config poppler-utils pstotext shared-mime-info software-properties-common swig zlib1g-dev
+sudo apt-get update
+sudo apt-get install -y automake binutils-dev build-essential ca-certificates clang g++ g++-multilib gcc-multilib libcairo2 libffi-dev \
+libgdk-pixbuf2.0-0 libglib2.0-dev libjpeg-dev libleptonica-dev libpango-1.0-0 libpango1.0-dev libpangocairo-1.0-0 libpng-dev libsm6 \
+libtesseract-dev libtool libxext6 make pkg-config poppler-utils pstotext shared-mime-info software-properties-common swig zlib1g-dev
 ```
 #### 2.2. Build Tesseract from sources:
 ```bash
-       sudo add-apt-repository -y ppa:alex-p/tesseract-ocr-devel
-       sudo apt-get update --allow-releaseinfo-change
-       sudo apt-get install -y tesseract-ocr tesseract-ocr-rus
-       git clone --depth 1 --branch 5.0.0-beta-20210916 https://github.com/tesseract-ocr/tesseract/
-       cd tesseract && ./autogen.sh && sudo ./configure && sudo make && sudo make install && sudo ldconfig && cd ..
-       export TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata/
+sudo add-apt-repository -y ppa:alex-p/tesseract-ocr-devel
+sudo apt-get update --allow-releaseinfo-change
+sudo apt-get install -y tesseract-ocr tesseract-ocr-rus
+git clone --depth 1 --branch 5.0.0-beta-20210916 https://github.com/tesseract-ocr/tesseract/
+cd tesseract && ./autogen.sh && sudo ./configure && sudo make && sudo make install && sudo ldconfig && cd ..
+export TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata/
 ```
 
 ## Install the dedoc library via pip.
@@ -134,13 +134,13 @@ To fulfil all the library requirements, you should have `torch~=1.11.0` and `tor
 You can install suitable for you versions of these libraries and install dedoc using pip command:
 
 ```bash
-    pip install dedoc
+pip install dedoc
 ```
 
 Or you can install dedoc with torch and torchvision included:
 
 ```bash
-    pip install "dedoc[torch]"
+pip install "dedoc[torch]"
 ```
 
 ## Install and run dedoc from sources
@@ -159,27 +159,27 @@ You should have `python` (python3.8, python3.9 are recommended) and `pip` instal
 Below are the instructions for installing the package `virtualenvwrapper`:
 
 ```bash
-    sudo pip3 install virtualenv virtualenvwrapper
-    mkdir ~/.virtualenvs
-    export WORKON_HOME=~/.virtualenvs
-    echo "export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3.8" >> ~/.bashrc
-    echo ". /usr/local/bin/virtualenvwrapper.sh" >> ~/.bashrc
-    source ~/.bashrc
-    mkvirtualenv dedoc_env
+sudo pip3 install virtualenv virtualenvwrapper
+mkdir ~/.virtualenvs
+export WORKON_HOME=~/.virtualenvs
+echo "export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3.8" >> ~/.bashrc
+echo ". /usr/local/bin/virtualenvwrapper.sh" >> ~/.bashrc
+source ~/.bashrc
+mkvirtualenv dedoc_env
 ```
 
 ### 4. Install python's requirements and launch dedoc service on default port `1231`:
 
 ```bash
-    # clone dedoc project
-    git clone https://github.com/ispras/dedoc.git
-    cd dedoc
-    # check on your's python environment
-    workon dedoc_env
-    export PYTHONPATH=$PYTHONPATH:$(pwd)
-    pip install -r requirements.txt
-    pip install torch=1.11.0 torchvision==0.12.0 -f https://download.pytorch.org/whl/torch_stable.html
-    python dedoc/main.py -c ./dedoc/config.py
+# clone dedoc project
+git clone https://github.com/ispras/dedoc.git
+cd dedoc
+# check on your's python environment
+workon dedoc_env
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+pip install -r requirements.txt
+pip install torch=1.11.0 torchvision==0.12.0 -f https://download.pytorch.org/whl/torch_stable.html
+python dedoc/main.py -c ./dedoc/config.py
 ```
 Now you can go to the `localhost:1231` and look at the docs and examples.
 
