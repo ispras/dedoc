@@ -59,7 +59,7 @@ Start `dedoc` on the port `1231`:
 docker-compose up --build
 ```
 
-Start Dedoc with tests:
+Start Dedoc with tests ([Install instruction using docker](https://dedoc.readthedocs.io/en/latest/getting_started/installation.html#install-and-run-dedoc-using-docker)):
  ```bash
 test="true" docker-compose up --build
  ```
@@ -67,11 +67,12 @@ test="true" docker-compose up --build
 Now you can go to the `localhost:1231` and look at the docs and examples.
 ### Option: You can change the port of service:
 you need to change environment DOCREADER_PORT
-1. For local service launching on your_port (1166 example): 
+
+1. For local service launching on your_port (1166 example). [Install instruction from sources](https://dedoc.readthedocs.io/en/latest/getting_started/installation.html#install-and-run-dedoc-from-sources) and launch with environment: 
 ```bash
-export DOCREADER_PORT=1166 
-python dedoc/main.py -c ./dedoc/config.py
+DOCREADER_PORT=1166 python dedoc/main.py -c ./dedoc/config.py
 ```
+
 2. For service launching in docker-container you need to change port value in DOCREADER_PORT env and field 'ports' in docker-compose.yml file:
 ```yaml
     ...
@@ -90,7 +91,7 @@ python dedoc/main.py -c ./dedoc/config.py
 
 ## Install dedoc using pip
 
-One can install the dedoc library via `pip`. 
+One can install the dedoc library via `pip` ([Install dedoc using pip](https://dedoc.readthedocs.io/en/latest/getting_started/installation.html#install-dedoc-using-pip))
 To fulfil all the library requirements, you should have `torch~=1.11.0` and `torchvision~=0.12.0` installed. 
 You can install suitable for you versions of these libraries and install dedoc using `pip` command:
 
