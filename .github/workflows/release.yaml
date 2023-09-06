@@ -41,7 +41,7 @@ jobs:
       - name: Push to dockerhub
         if: ${{ success() }}
         run: |
-          docker build -f docker/Dockerfile -t dedocproject/dedoc:$GITHUB_REF_NAME .
+          docker build -f Dockerfile -t dedocproject/dedoc:$GITHUB_REF_NAME .
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
           docker tag dedocproject/dedoc:$GITHUB_REF_NAME dedocproject/dedoc:latest
           docker push dedocproject/dedoc:$GITHUB_REF_NAME

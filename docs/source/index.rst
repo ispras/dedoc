@@ -50,6 +50,8 @@ Reading documents using dedoc
 
 Dedoc allows to get the common intermediate representation for the documents of various formats.
 The resulting output of any reader is a class :class:`~dedoc.data_structures.UnstructuredDocument`.
+See :ref:`readers' annotations <readers_annotations>` and :ref:`readers' line types <readers_line_types>`
+to get more details about information that can be extracted by each available reader.
 
 .. _table_formats:
 
@@ -219,6 +221,13 @@ For a document of unknown or unsupported domain there is an option to use defaul
    dedoc_api_usage/api
    dedoc_api_usage/return_format
 
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Readers output
+
+   readers_output/annotations
+   readers_output/line_types
 
 .. toctree::
    :maxdepth: 1
