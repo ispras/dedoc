@@ -130,8 +130,7 @@ export TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata/
 
 ## Install the dedoc library via pip.
 
-To fulfil all the library requirements, you should have `torch~=1.11.0` and `torchvision~=0.12.0` installed.
-You can install suitable for you versions of these libraries and install dedoc using pip command:
+You need torch~=1.11.0 and torchvision~=0.12.0 installed. If you already have torch and torchvision in your environment:
 
 ```bash
 pip install dedoc
