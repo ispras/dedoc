@@ -36,7 +36,7 @@ Dedoc is in demand for information analytic systems, information leak monitoring
 The library is intended for application use by developers of systems for automatic analysis and structuring of electronic documents, including for further search in electronic documents. 
 
 # Online-Documentation
-Relevant documentation of the dedoc is available [here]((https://dedoc.readthedocs.io/en/latest/))
+Relevant documentation of the dedoc is available [here](https://dedoc.readthedocs.io/en/latest/)
 
 # Installation instructions
 ****************************************
