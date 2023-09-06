@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.11.2 (2023-09-06)
+--------------------
+Release note: `v0.11.2 <https://github.com/ispras/dedoc/releases/tag/v0.11.2>`_
+
+* Remove plexus-utils-1.1.jar.
+* Update installation documentation.
+* Add documentation for Tesseract OCR installation.
+* Add documentation for annotations.
+* Add documentation for secure torch.
+* Fix examples.
+
 v0.11.1 (2023-08-30)
 --------------------
 Release note: `v0.11.1 <https://github.com/ispras/dedoc/releases/tag/v0.11.1>`_
