@@ -105,8 +105,8 @@ to get the example of Tesseract installing for dedoc container or use next comma
 
 3. Install the dedoc library via pip.
 *************************************
-To fulfil all the library requirements, you should have `torch~=1.11.0` and `torchvision~=0.12.0` installed.
-You can install suitable for you versions of these libraries and install dedoc using pip command:
+You need `torch~=1.11.0` and `torchvision~=0.12.0` installed.
+If you already have torch and torchvision in your environment:
 
   .. code-block:: bash
 
@@ -155,7 +155,7 @@ Below are the instructions for installing the package `virtualenvwrapper`:
     workon dedoc_env
     export PYTHONPATH=$PYTHONPATH:$(pwd)
     pip install -r requirements.txt
-    pip install torch=1.11.0 torchvision==0.12.0 -f https://download.pytorch.org/whl/torch_stable.html
+    pip install torch==1.11.0 torchvision==0.12.0 -f https://download.pytorch.org/whl/torch_stable.html
     python dedoc/main.py -c ./dedoc/config.py
 
 
@@ -164,14 +164,22 @@ Install trusted torch (verified version)
 
 You can install a trusted library `torch` (as a verified version of the library, verified by tools developed by the Ivannikov Institute for System Programming of the Russian Academy of Sciences).
 
-For `python3.9`:
-  .. code-block:: bash
+First you need to install two required packages.:
 
-    pip install https://github.com/ispras/dedockerfiles/raw/master/wheels/torch-1.11.0a0+git137096a-cp39-cp39-linux_x86_64.whl
-    pip install https://github.com/ispras/dedockerfiles/raw/master/wheels/torchvision-0.12.0a0%2B9b5a3fe-cp39-cp39-linux_x86_64.whl
+    .. code-block:: bash
+
+       sudo apt-get install -y mpich intel-mkl
+
+Second you need to install torch and torchvision from built wheels:
 
 For `python3.8`:
   .. code-block:: bash
 
      pip install https://github.com/ispras/dedockerfiles/raw/master/wheels/torch-1.11.0a0+git137096a-cp38-cp38-linux_x86_64.whl
      pip install https://github.com/ispras/dedockerfiles/raw/master/wheels/torchvision-0.12.0a0%2B9b5a3fe-cp38-cp38-linux_x86_64.whl
+
+For `python3.9`:
+  .. code-block:: bash
+
+    pip install https://github.com/ispras/dedockerfiles/raw/master/wheels/torch-1.11.0a0+git137096a-cp39-cp39-linux_x86_64.whl
+    pip install https://github.com/ispras/dedockerfiles/raw/master/wheels/torchvision-0.12.0a0%2B9b5a3fe-cp39-cp39-linux_x86_64.whl

@@ -1,12 +1,13 @@
+# noqa
 #  in this example we create UnstructuredDocument, lets construct document corresponding to example.docx
-from dedoc.data_structures import LineWithMeta
-from dedoc.data_structures import ParagraphMetadata
-from dedoc.data_structures import Table
+from dedoc.data_structures import LineMetadata, Table, UnstructuredDocument
 from dedoc.data_structures import TableMetadata
-
+from dedoc.data_structures import LineWithMeta
 
 #  First of all lets create some table, table consist of cells (list of rows, and row is a list of strings
-from dedoc import HierarchyLevel
+from dedoc.data_structures import HierarchyLevel
+from dedoc.metadata_extractors import BaseMetadataExtractor
+
 
 table_cells = [
     ["N", "Second name", "Name", "Organization", "Phone", "Notes"],
@@ -15,7 +16,7 @@ table_cells = [
 # table also has some metadata, lets assume that our table is on first page
 table_metadata = TableMetadata(page_id=0)
 
-# finally lets build table
+# let's build table
 table = Table(cells=table_cells, metadata=table_metadata)
 
 # Documents also contain some text.
@@ -23,13 +24,7 @@ table = Table(cells=table_cells, metadata=table_metadata)
 # but unstructured document consist of flat list of lines with text and metadata
 # hierarchy structure hidden in HierarchyLevel attribute of LineWithMeta
 # lets build firs line, it is document tree root:
-text = "DOCUMENT TITLE"
-metadata = ParagraphMetadata(
-    paragraph_type="title",
-    predicted_classes=None,
-    page_id=0,
-    line_id=0
-)
+
 # hierarchy level define position of this line in document tree.
 
 hierarchy_level = HierarchyLevel(
@@ -42,8 +37,14 @@ hierarchy_level = HierarchyLevel(
     # if can_be_multiline is true than several lines in a row with same level_1, level_2 and paragraph_type
     # will be merged in one tree node
     can_be_multiline=True,
-    paragraph_type="title"
+    line_type="header"
 )
+text = "DOCUMENT TITLE"
+metadata = LineMetadata(page_id=0,
+                        line_id=1,
+                        tag_hierarchy_level=None,
+                        hierarchy_level=hierarchy_level,
+                        other_fields=None)
 
 # Annotations: one may specify some information about some part of the text, for example that some word
 # written in italic font.
@@ -51,10 +52,13 @@ annotations = []
 
 line1 = LineWithMeta(
     line=text,
-    hierarchy_level=hierarchy_level,
     metadata=metadata,
     annotations=annotations
 )
+
+unstructured_document = UnstructuredDocument(tables=[table],
+                                             lines=[line1],
+                                             attachments=[])
 
 # I hope you understand some concepts of the LineWithMeta, but you may ask why it need level_1 and level_2
 # parameters. Why is only level_1 not enough. Imagine that we have lists like these:
@@ -63,3 +67,8 @@ line1 = LineWithMeta(
 # HierarchyLevel(1, 1) for 1.
 # HierarchyLevel(1, 2) for 1.1.
 # HierarchyLevel(1, 4) for 1.2.1.1. and so on
+unstructured_document = BaseMetadataExtractor().add_metadata(document=unstructured_document,
+                                                             directory="./",
+                                                             filename="example.docx",
+                                                             converted_filename="example.doc",
+                                                             original_filename="example.docx")
