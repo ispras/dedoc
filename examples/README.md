@@ -23,3 +23,9 @@ If you want to call a specific parser, you can look at some examples in this dir
 `example_img_parser.py`. 
 
 Also you can look at the example of using a post-request to parse documents while Dedoc container is working. This example is written in `example_post.py`.
+
+You can check an example like this:
+```bash
+cd examples
+python create_structured_document.py
+```
