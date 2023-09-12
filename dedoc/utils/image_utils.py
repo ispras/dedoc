@@ -58,7 +58,7 @@ def rotate_image(image: np.ndarray, angle: float, color_bound: Tuple[int, int, i
     return rotated_mat
 
 
-def crop_image_text(image: np.ndarray) -> np.ndarray:
+def crop_image_text(image: np.ndarray) -> BBox:
     """
     crop image to take text area only (crop empty space)
     @param image: original image
@@ -69,16 +69,13 @@ def crop_image_text(image: np.ndarray) -> np.ndarray:
     x_sum = np.arange(edges.shape[0])[edges.max(axis=1) > 0]
     y_sum = np.arange(edges.shape[1])[edges.max(axis=0) > 0]
     if x_sum.shape[0] > 0 and y_sum.shape[0] > 0:
-        x_lower = max(0, x_sum.min() - 10)
-        x_upper = min(image.shape[0], x_sum.max() + 10)
-        y_lower = max(0, y_sum.min() - 10)
-        y_upper = min(image.shape[1], y_sum.max() + 10)
-        image_crop = image[x_lower: x_upper, y_lower: y_upper]
-        assert y_lower <= y_upper
-        assert x_lower <= x_upper
+        x_top = max(0, x_sum.min() - 10)
+        x_bottom = min(image.shape[0], x_sum.max() + 10)
+        y_top = max(0, y_sum.min() - 10)
+        y_bottom = min(image.shape[1], y_sum.max() + 10)
+        return BBox(x_top, y_top, x_bottom - x_top, y_bottom - y_top)
     else:
-        image_crop = image
-    return image_crop
+        return BBox(0, 0, image.shape[1], image.shape[0])
 
 
 def draw_rectangle(image: PIL.Image, x_top_left: int, y_top_left: int, width: int, height: int, color: Tuple[int, int, int] = (0, 0, 0)) -> np.ndarray:

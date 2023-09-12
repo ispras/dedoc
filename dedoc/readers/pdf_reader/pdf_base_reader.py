@@ -92,7 +92,8 @@ class PdfBaseReader(BaseReader):
             metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name)
             cells = [[cell for cell in row] for row in scan_table.matrix_cells]
             text_cells = [[cell.text for cell in row] for row in scan_table.matrix_cells]
-            table = Table(metadata=metadata, cells=text_cells, cells_properties=cells)
+            metadata.cell_properties = cells
+            table = Table(metadata=metadata, cells=text_cells)
             tables.append(table)
 
         if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):

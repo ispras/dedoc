@@ -1,6 +1,8 @@
 from collections import OrderedDict
 from typing import Dict, Tuple
 
+import numpy as np
+
 from dedoc.data_structures.serializable import Serializable
 
 
@@ -44,6 +46,10 @@ class BBox(Serializable):
     @property
     def y_bottom_right(self) -> int:
         return self.y_top_left + self.height
+
+    @staticmethod
+    def crop_image_by_box(image: np.ndarray, bbox: "BBox") -> np.ndarray:
+        return image[bbox.y_top_left:bbox.y_bottom_right, bbox.x_top_left:bbox.x_bottom_right]
 
     def __str__(self) -> str:
         return f"BBox(x = {self.x_top_left} y = {self.y_top_left}, w = {self.width}, h = {self.height})"

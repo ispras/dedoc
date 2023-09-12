@@ -31,7 +31,7 @@ class ScanTable:
     def get_cells_text(attr_cells: List[List[Cell]]) -> List[List[str]]:
         attrs = []
         for i in range(0, len(attr_cells)):
-            attrs.append([a.text for a in attr_cells[i]])
+            attrs.append([a.get_text() for a in attr_cells[i]])
 
         return attrs
 
