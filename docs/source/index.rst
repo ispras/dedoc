@@ -216,6 +216,13 @@ For a document of unknown or unsupported domain there is an option to use defaul
 
 .. toctree::
    :maxdepth: 1
+   :caption: Tutorials:
+
+   tutorials/add_new_doc_type
+
+
+.. toctree::
+   :maxdepth: 1
    :caption: Dedoc API usage
 
    dedoc_api_usage/api
@@ -228,6 +235,7 @@ For a document of unknown or unsupported domain there is an option to use defaul
 
    readers_output/annotations
    readers_output/line_types
+
 
 .. toctree::
    :maxdepth: 1
