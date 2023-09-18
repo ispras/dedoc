@@ -30,3 +30,5 @@ jobs:
         python -m sphinx -T -E -W -b html -d docs/_build/doctrees -D language=en docs/source docs/_build
         cd docs/source/_static/code_examples
         python dedoc_usage_tutorial.py
+        python dedoc_add_new_doc_type_tutorial.py
+        

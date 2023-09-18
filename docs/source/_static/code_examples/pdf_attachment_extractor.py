@@ -4,6 +4,7 @@ from typing import List, Union, Optional
 import PyPDF2
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
+from dedoc.data_structures import AttachedFile
 from dedoc.extensions import recognized_extensions, recognized_mimes
 
 
@@ -15,7 +16,7 @@ class PdfAttachmentsExtractor(AbstractAttachmentsExtractor):
     def get_attachments(self,
                         tmpdir: str,
                         filename: str,
-                        parameters: dict) -> List[List[Union[str, bytes]]]:
+                        parameters: dict) -> list[AttachedFile]:
         handler = open(os.path.join(tmpdir, filename), 'rb')
         reader = PyPDF2.PdfFileReader(handler)
         catalog = reader.trailer["/Root"]
@@ -30,5 +31,5 @@ class PdfAttachmentsExtractor(AbstractAttachmentsExtractor):
                 f_dict = filenames[data_index].getObject()
                 f_data = f_dict['/EF']['/F'].getData()
                 attachments.append((name, f_data))
-        attachments = self._content2attach_file(content=attachments, tmpdir=tmpdir)
+        attachments = self._content2attach_file(content=attachments, tmpdir=tmpdir, need_content_analysis=False)
         return attachments
