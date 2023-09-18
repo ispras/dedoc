@@ -31,4 +31,3 @@ jobs:
         cd docs/source/_static/code_examples
         python dedoc_usage_tutorial.py
         python dedoc_add_new_doc_type_tutorial.py
-        
