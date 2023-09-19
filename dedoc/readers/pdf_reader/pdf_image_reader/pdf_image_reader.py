@@ -114,7 +114,7 @@ class PdfImageReader(PdfBaseReader):
 
         if parameters.is_one_column_document is None or parameters.document_orientation is None:
             columns, angle = self.column_orientation_classifier.predict(image)
-            self.logger.debug(f"Predicted orientation angle = {angle}, columns = {columns}")
+            self.logger.info(f"Predicted orientation angle = {angle}, columns = {columns}")
 
         is_one_column_document = columns == 1 if parameters.is_one_column_document is None else parameters.is_one_column_document
         angle = angle if parameters.document_orientation is None else 0
