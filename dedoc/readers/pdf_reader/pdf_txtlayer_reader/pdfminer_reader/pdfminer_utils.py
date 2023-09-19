@@ -40,10 +40,10 @@ def draw_annotation(image: np.ndarray, annotations: List[BBoxAnnotation]) -> Non
 
 
 def convert_coordinates_pdf_to_image(lobj: LTContainer, k_w: float, k_h: float, height_page: int) -> BBox:
-    x0 = int(lobj.x0)
-    x1 = int(lobj.x1)
-    y0 = int((height_page - lobj.y1))
-    y1 = int((height_page - lobj.y0))
+    x0 = int(lobj.x0 * k_w)
+    x1 = int(lobj.x1 * k_w)
+    y0 = int((height_page - lobj.y1) * k_h)
+    y1 = int((height_page - lobj.y0) * k_h)
 
     return BBox(x0, y0, x1 - x0, y1 - y0)
 

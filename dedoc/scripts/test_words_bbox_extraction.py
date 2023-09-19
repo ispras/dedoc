@@ -85,14 +85,14 @@ class TestWordExtraction(AbstractTestApiDocReader):
     def __draw_word_annotations(self, image: np.ndarray, word_annotations: List[BboxWithConfsType]) -> np.ndarray:
 
         font_scale, thickness = self.__normalize_font_thickness(image)
-        page_height, page_width, *_ = image.shape
+
         for ann in word_annotations:
             bbox = json.loads(ann.bbox)
-            p1 = (int(bbox["x_top_left"] * page_width), int(bbox["y_top_left"] * page_height))
-            p2 = (int((bbox["x_top_left"] + bbox["width"]) * page_width), int((bbox["y_top_left"] + bbox["height"]) * page_height))
+            p1 = (int(bbox["x_top_left"] * bbox["page_width"]), int(bbox["y_top_left"] * bbox["page_height"]))
+            p2 = (int((bbox["x_top_left"] + bbox["width"]) * bbox["page_width"]), int((bbox["y_top_left"] + bbox["height"]) * bbox["page_height"]))
             cv2.rectangle(image, p1, p2, (0, 255, 0) if ann.text_type == "typewritten" else (255, 0, 0))
             text = ",".join(ann.confs) if ann.confs != [] else "None"
-            cv2.putText(image, text, (int(bbox["x_top_left"] * page_width), int(bbox["y_top_left"] * page_height)),
+            cv2.putText(image, text, (int(bbox["x_top_left"] * bbox["page_width"]), int(bbox["y_top_left"] * bbox["page_height"])),
                         cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), thickness)
         return image
 
@@ -113,8 +113,12 @@ class TestWordExtraction(AbstractTestApiDocReader):
         file_name = "pdf_with_text_layer/english_doc.pdf"
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
         structure = result["content"]["structure"]
-        word_annotations = self.__get_words_annotation(structure)
         image = np.asarray(get_page_image(self._get_abs_path(file_name), 0))
+        word_annotations = self.__get_words_annotation(structure)
+        ann = word_annotations[0]
+        if ann is not None:
+            bbox = json.loads(ann.bbox)
+            image = cv2.resize(image, dsize=(bbox["page_width"], bbox["page_height"]), interpolation=cv2.INTER_CUBIC)
 
         image = self.__draw_word_annotations(image, word_annotations)
         cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}.png"), image)
