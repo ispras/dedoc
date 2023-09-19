@@ -28,11 +28,5 @@ pdf_reader.read(file_path, parameters={"with_attachments": "true"})  # <dedoc.da
 
 document = pdf_reader.read(file_path, parameters={"with_attachments": "true"})
 print(list(vars(document)))  # ['tables', 'lines', 'attachments', 'warnings', 'metadata']
-
-
-manager = DedocManager()
-result = manager.parse(file_path=file_path, parameters={})
-
-print(result)  # <dedoc.data_structures.ParsedDocument>
-print(result.to_dict())  # OrderedDict([('version', ''), ('warnings', []), ('content', OrderedDict([('structure', OrderedDict([('node_id', '0'), ('text', ''), ('annotations', []), ('metadata', OrderedDict([('page_id', 0), ('line_id', 0), ('paragraph_type', 'root'), ('other_fields', {})])), ...
-
+print(len(document.attachments))
+print(len(document.lines))

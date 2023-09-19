@@ -36,15 +36,9 @@ You should call the constructor of the base class in the constructor of the curr
        def __init__(self, config):
            super().__init__(config=config)
 
-       def can_convert(self,
-                       extension: str,
-                       mime: str,
-                       parameters: Optional[dict] = None) -> bool:
+       def can_convert(self, extension: str, mime: str, parameters: Optional[dict] = None) -> bool:
            pass  # some code here
-       def do_convert(self,
-                      tmp_dir: str,
-                      filename: str,
-                      extension: str) -> str:
+       def do_convert(self, tmp_dir: str, filename: str, extension: str) -> str:
             pass  # some code here
 
 * :meth:`can_convert()` method checks if the new converter can process the file, for example, you can return True for the list of some specific file extensions.
@@ -74,18 +68,10 @@ General scheme of adding Reader
 
     class NewtypeReader(BaseReader):
 
-        def can_read(self,
-                     path: str,
-                     mime: str,
-                     extension: str,
-                     document_type: Optional[str],
-                     parameters: Optional[dict] = None) -> bool:
+        def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str], parameters: Optional[dict] = None) -> bool:
             pass  # some code here
 
-        def read(self,
-                 path: str,
-                 document_type: Optional[str] = None,
-                 parameters: Optional[dict] = None) -> UnstructuredDocument:
+        def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
             pass  # some code here
 
 
@@ -118,18 +104,10 @@ General scheme of adding AttachmentExtractor
     from dedoc.data_structures.attached_file import AttachedFile
 
     class NewtypeAttachmentsExtractor(AbstractAttachmentsExtractor):
-        def can_extract(self,
-                        extension: str,
-                        mime: str,
-                        parameters: Optional[dict] = None) -> bool:
+        def can_extract(self, extension: str, mime: str, parameters: Optional[dict] = None) -> bool:
              pass # some code here
 
-
-
-        def get_attachments(self,
-                            tmpdir: str,
-                            filename: str,
-                            parameters: dict) -> List[AttachedFile]:
+        def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[AttachedFile]:
             pass  # some code here
 
 * :meth:`can_extract()` method checks if the new extractor can process the file, for example, you can return True for the list of some specific file extensions.
