@@ -45,8 +45,7 @@ class PdfTxtlayerReader(PdfBaseReader):
                           page_number: int,
                           path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
         if parameters.need_pdf_table_analysis:
-            rotated_image, _ = self._detect_column_count_and_orientation(image, parameters)
-            gray_image = self._convert_to_gray(rotated_image)
+            gray_image = self._convert_to_gray(image)
             cleaned_image, tables = self.table_recognizer.recognize_tables_from_image(
                 image=gray_image,
                 page_number=page_number,
