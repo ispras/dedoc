@@ -44,8 +44,9 @@ class PdfTxtlayerReader(PdfBaseReader):
                           parameters: ParametersForParseDoc,
                           page_number: int,
                           path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
-        gray_image = self._convert_to_gray(image)
         if parameters.need_pdf_table_analysis:
+            rotated_image, _ = self._detect_column_count_and_orientation(image, parameters)
+            gray_image = self._convert_to_gray(rotated_image)
             cleaned_image, tables = self.table_recognizer.recognize_tables_from_image(
                 image=gray_image,
                 page_number=page_number,
@@ -57,9 +58,7 @@ class PdfTxtlayerReader(PdfBaseReader):
         else:
             tables = []
 
-        is_one_column_document_list = None if parameters.is_one_column_document_list is None else parameters.is_one_column_document_list[page_number]
-
-        page = self.extractor_layer.extract_text_layer(path=path, page_number=page_number, is_one_column_document=is_one_column_document_list)
+        page = self.extractor_layer.extract_text_layer(path=path, page_number=page_number)
         if page is None:
             return [], [], []
         unreadable_blocks = [location.bbox for table in tables for location in table.locations]

@@ -3,6 +3,7 @@ import math
 import os
 from abc import abstractmethod
 from collections import namedtuple
+from datetime import datetime
 from typing import Iterator, List, Optional, Tuple
 
 import cv2
@@ -14,6 +15,7 @@ from pdf2image.exceptions import PDFPageCountError, PDFSyntaxError
 import dedoc.utils.parameter_utils as param_utils
 from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
+from dedoc.config import get_config
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
@@ -23,8 +25,10 @@ from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
+from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.scan_rotator import ScanRotator
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import TableRecognizer
 from dedoc.readers.pdf_reader.utils.header_footers_analysis import footer_header_analysis
 from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
@@ -44,8 +48,7 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", ["orient_analysis_ce
                                                              "first_page",
                                                              "last_page",
                                                              "need_binarization",
-                                                             "table_type",
-                                                             "is_one_column_document_list"])
+                                                             "table_type"])
 
 
 class PdfBaseReader(BaseReader):
@@ -56,6 +59,11 @@ class PdfBaseReader(BaseReader):
         """
         :param config: configuration of the reader, e.g. logger for logging
         """
+        self.scan_rotator = ScanRotator(config=config)
+        self.column_orientation_classifier = ColumnsOrientationClassifier(on_gpu=False,
+                                                                          checkpoint_path=get_config()["resources_path"],
+                                                                          config=config,
+                                                                          delete_lines=False)
         self.table_recognizer = TableRecognizer(config=config)
         self.metadata_extractor = LineMetadataExtractor(config=config)
         self.config = config
@@ -84,8 +92,7 @@ class PdfBaseReader(BaseReader):
             first_page=first_page,
             last_page=last_page,
             need_binarization=param_utils.get_param_need_binarization(parameters),
-            table_type=param_utils.get_param_table_type(parameters),
-            is_one_column_document_list=param_utils.get_is_one_column_document_list(parameters)
+            table_type=param_utils.get_param_table_type(parameters)
         )
 
         lines, scan_tables, attachments, warnings, other_fields = self._parse_document(path, params_for_parse)
@@ -217,3 +224,37 @@ class PdfBaseReader(BaseReader):
         result_batch = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.table_recognizer.recognize_tables_from_image)(
             image, page_number_begin + i, language, orient_analysis_cells, orient_cell_angle, table_type) for i, image in enumerate(batch))
         return result_batch
+
+    def _detect_column_count_and_orientation(self, image: np.ndarray, parameters: ParametersForParseDoc) -> Tuple[np.ndarray, bool]:
+        """
+        Function :
+            - detects the number of page columns
+            - detects page orientation angle
+            - rotates the page on detected angle
+        Return: rotated_image and indicator if the page is one-column
+        """
+        angle = 0  # parameters.document_orientation is False
+        columns = None
+        if parameters.is_one_column_document is None or parameters.document_orientation is None:
+            self.logger.info("Call orientation and columns classifier")
+            columns, angle = self.column_orientation_classifier.predict(image)
+
+            self.logger.debug(f"Predict {angle}")
+            if columns is not None:
+                self.logger.info(f"Final number of columns: {columns}")
+            else:
+                self.logger.info("Final number of columns: not detected")
+
+        if parameters.is_one_column_document is not None:
+            is_one_column_document = parameters.is_one_column_document
+        else:
+            is_one_column_document = True if columns == 1 else False
+
+        self.logger.info(f"Final orientation angle: {angle}")
+
+        rotated_image, _ = self.scan_rotator.auto_rotate(image, angle)
+        if self.config.get("debug_mode"):
+            self.logger.info(self.config["path_debug"])
+            cv2.imwrite(os.path.join(self.config["path_debug"], f"{datetime.now().strftime('%H-%M-%S')}_result_orientation.jpg"), rotated_image)
+
+        return rotated_image, is_one_column_document

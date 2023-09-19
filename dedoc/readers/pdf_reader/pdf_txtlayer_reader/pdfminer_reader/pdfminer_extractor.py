@@ -44,10 +44,11 @@ class PdfminerExtractor(object):
         self.config = config
         self.logger = self.config.get("logger", logging.getLogger())
 
-    def extract_text_layer(self, path: str, page_number: int, is_one_column_document: bool) -> Optional[PageWithBBox]:
+    def extract_text_layer(self, path: str, page_number: int) -> Optional[PageWithBBox]:
         """
         Extract text information with metadata from pdf with help pdfminer.six
         :param path: path to pdf
+        :param page_number: number of the page to read
         :return: pages_with_bbox - page with extracted text
         """
         with open(path, "rb") as fp:
@@ -55,11 +56,11 @@ class PdfminerExtractor(object):
             for page_num, page in enumerate(pages):
                 if page_num != page_number:
                     continue
-                return self.__handle_page(page=page, page_number=page_number, path=path, is_one_column_document=is_one_column_document)
+                return self.__handle_page(page=page, page_number=page_number, path=path)
 
-    def __handle_page(self, page: PDFPage, page_number: int, path: str, is_one_column_document: bool) -> PageWithBBox:
+    def __handle_page(self, page: PDFPage, page_number: int, path: str) -> PageWithBBox:
         directory = os.path.dirname(path)
-        device, interpreter = self.__get_interpreter(is_one_column_document=is_one_column_document)
+        device, interpreter = self.__get_interpreter()
         try:
             interpreter.process_page(page)
         except Exception as e:
@@ -139,12 +140,9 @@ class PdfminerExtractor(object):
             image_page = cv2.cvtColor(image_page, cv2.COLOR_GRAY2BGR)
         return image_page
 
-    def __get_interpreter(self, is_one_column_document: bool) -> Tuple[PDFPageAggregator, PDFPageInterpreter]:
+    def __get_interpreter(self) -> Tuple[PDFPageAggregator, PDFPageInterpreter]:
         rsrcmgr = PDFResourceManager()
-        if is_one_column_document is not None and is_one_column_document:
-            laparams = LAParams(line_margin=3.0, line_overlap=0.1, boxes_flow=0.5, word_margin=1.5, char_margin=100.0, detect_vertical=False)
-        else:
-            laparams = LAParams(line_margin=1.5, line_overlap=0.5, boxes_flow=0.5, word_margin=0.1, detect_vertical=False)
+        laparams = LAParams(line_margin=1.5, line_overlap=0.5, boxes_flow=0.5, word_margin=0.1, detect_vertical=False)  # TODO find the best parameters
         device = PDFPageAggregator(rsrcmgr, laparams=laparams)
         interpreter = PDFPageInterpreter(rsrcmgr, device)
         return device, interpreter

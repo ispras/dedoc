@@ -103,10 +103,6 @@ def get_param_table_type(parameters: Optional[dict]) -> str:
     return str(parameters.get("table_type", ""))
 
 
-def get_is_one_column_document_list(parameters: Optional[dict]) -> Optional[bool]:
-    return None if parameters is None else parameters.get("is_one_column_document_list")
-
-
 def get_param_page_slice(parameters: Dict[str, Any]) -> Tuple[Optional[int], Optional[int]]:
     """
     Parse parameter pages = ["page_number:page_number" | "" | "page_number:" | ":page_number" : ":"]

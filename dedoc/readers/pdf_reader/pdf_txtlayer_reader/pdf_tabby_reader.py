@@ -117,7 +117,8 @@ class PdfTabbyReader(PdfBaseReader):
 
         return self._postprocess(result)
 
-    def __extract(self, path: str, start_page: int = None, end_page: int = None) -> Tuple[List[LineWithMeta], List[ScanTable], List[List[CellPropertyInfo]]]:
+    def __extract(self, path: str, start_page: int = None, end_page: int = None) \
+            -> Tuple[List[LineWithMeta], List[ScanTable], List[List[List[CellPropertyInfo]]]]:
         file_hash = calculate_file_hash(path=path)
         document = self.__process_pdf(path=path, start_page=start_page, end_page=end_page)
         all_lines = []
@@ -134,7 +135,7 @@ class PdfTabbyReader(PdfBaseReader):
 
         return all_lines, all_tables, all_cell_properties
 
-    def __get_tables(self, page: dict, file_hash: str) -> List[ScanTable]:
+    def __get_tables(self, page: dict, file_hash: str) -> Tuple[List[ScanTable], List[List[List[CellPropertyInfo]]]]:
         tables = []
         cell_properties = []
         page_number = page["number"]
@@ -154,10 +155,7 @@ class PdfTabbyReader(PdfBaseReader):
                 cell_property_row_list = []
 
                 for cell_property in cell_properties_row:
-                    cell_property_info = CellPropertyInfo(cell_property["col_span"],
-                                                          cell_property["row_span"],
-                                                          bool(cell_property["invisible"]))
-
+                    cell_property_info = CellPropertyInfo(cell_property["col_span"], cell_property["row_span"], bool(cell_property["invisible"]))
                     cell_property_row_list.append(cell_property_info)
 
                 cell_property_list.append(cell_property_row_list)
