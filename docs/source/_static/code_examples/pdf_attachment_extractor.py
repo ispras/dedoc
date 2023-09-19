@@ -1,5 +1,5 @@
 import os
-from typing import List, Union, Optional
+from typing import Optional
 
 import PyPDF2
 
