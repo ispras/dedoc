@@ -12,7 +12,7 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from docs.source._static.code_examples.pdf_attachment_extractor import PdfAttachmentsExtractor
+from pdf_attachment_extractor import PdfAttachmentsExtractor
 
 
 class PdfReader(BaseReader):

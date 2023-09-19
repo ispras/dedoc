@@ -246,7 +246,7 @@ The imports of the classes described above should be added to the beginning of t
 
 Then you need to add classes to the dictionary in function :meth:`get_manager_config` as follows:
 
-.. literalinclude:: ../_static/code_examples/get_manager_config_example_new_doctype.py
+.. literalinclude:: ../_static/code_examples/manager_config_example_new_doctype.py
     :language: python
     :lines: 9-29
 
