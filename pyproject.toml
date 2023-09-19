@@ -43,7 +43,8 @@ docs = [
     "Sphinx==6.2.1",
     "sphinx_rtd_theme==1.2.0",  # for using sphinx_rtd_theme
     "linuxdoc==20230506",  # for using flat-table
-    "tabula-py==2.8.1"  # for adding new doc type tutorial
+    "tabula-py==2.8.1",  # for adding new doc type tutorial
+    "python-djvulibre==0.8.8"
 ]
 lint = [
     "flake8==5.0.4",
