@@ -154,7 +154,7 @@ You should implement the following methods:
     :language: python
 
 Implementing of PdfAttachmentsExtractor
----------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In ``dedoc/attachments_extractors`` create file :file:`pdf_attachment_extractor.py` for :class:`PdfAttachmentsExtractor` implementing.
 
@@ -179,7 +179,7 @@ the name of the attached file and binary content of the file.
     :language: python
 
 Implementing of PdfReader
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Add new package ``pdf_reader`` to ``dedoc/readers``.
 In ``dedoc/readers/pdf_reader`` create file :file:`pdf_reader.py` for :class:`PdfReader` implementing.
@@ -207,7 +207,7 @@ It must be added to the reader's constructor and used in :meth:`read` method.
     :language: python
 
 Adding the implemented handlers to the manager config
------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Let part of the contents of the file :file:`dedoc / manager_config.py` looks like this:
 
