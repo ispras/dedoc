@@ -44,8 +44,7 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", ["orient_analysis_ce
                                                              "first_page",
                                                              "last_page",
                                                              "need_binarization",
-                                                             "table_type",
-                                                             "is_one_column_document_list"])
+                                                             "table_type"])
 
 
 class PdfBaseReader(BaseReader):
@@ -84,8 +83,7 @@ class PdfBaseReader(BaseReader):
             first_page=first_page,
             last_page=last_page,
             need_binarization=param_utils.get_param_need_binarization(parameters),
-            table_type=param_utils.get_param_table_type(parameters),
-            is_one_column_document_list=param_utils.get_is_one_column_document_list(parameters)
+            table_type=param_utils.get_param_table_type(parameters)
         )
 
         lines, scan_tables, attachments, warnings, other_fields = self._parse_document(path, params_for_parse)

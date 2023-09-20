@@ -72,7 +72,7 @@ class PdfImageReader(PdfBaseReader):
                           page_number: int,
                           path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
         #  --- Step 1: correct orientation and detect column count ---
-        rotated_image, is_one_column_document = self._detect_columncount_and_orientation(image, parameters)
+        rotated_image, is_one_column_document = self._detect_column_count_and_orientation(image, parameters)
 
         #  --- Step 2: do binarization ---
         if parameters.need_binarization:
@@ -102,37 +102,28 @@ class PdfImageReader(PdfBaseReader):
 
         return lines, tables, page.attachments
 
-    def _detect_columncount_and_orientation(self, image: np.ndarray, parameters: ParametersForParseDoc) -> Tuple[np.ndarray, bool]:
+    def _detect_column_count_and_orientation(self, image: np.ndarray, parameters: ParametersForParseDoc) -> Tuple[np.ndarray, bool]:
         """
         Function :
-            - detects the count of the column
-            - detects document orientation angle
-            - rotates document on detected angle
-            - updates a parameters.is_one_column_document
-        Return: rotated_image
+            - detects the number of page columns
+            - detects page orientation angle
+            - rotates the page on detected angle
+        Return: rotated_image and indicator if the page is one-column
         """
-        angle = 0  # parameters.document_orientation is False
-        columns = None
+        columns, angle = None, None
+
         if parameters.is_one_column_document is None or parameters.document_orientation is None:
-            self.logger.info("Call orientation and columns classifier")
             columns, angle = self.column_orientation_classifier.predict(image)
+            self.logger.info(f"Predicted orientation angle = {angle}, columns = {columns}")
 
-            self.logger.debug(f"Predict {angle}")
-            if columns is not None:
-                self.logger.info(f"Final number of columns: {columns}")
-            else:
-                self.logger.info("Final number of columns: not detected")
-
-        if parameters.is_one_column_document is not None:
-            is_one_column_document = parameters.is_one_column_document
-        else:
-            is_one_column_document = True if columns == 1 else False
-
-        self.logger.info(f"Final orientation angle: {angle}")
+        is_one_column_document = columns == 1 if parameters.is_one_column_document is None else parameters.is_one_column_document
+        angle = angle if parameters.document_orientation is None else 0
+        self.logger.info(f"Final orientation angle = {angle}, is_one_column_document = {is_one_column_document}")
 
         rotated_image, _ = self.scan_rotator.auto_rotate(image, angle)
         if self.config.get("debug_mode"):
-            self.logger.info(self.config["path_debug"])
-            cv2.imwrite(os.path.join(self.config["path_debug"], f"{datetime.now().strftime('%H-%M-%S')}_result_orientation.jpg"), rotated_image)
+            img_path = os.path.join(self.config["path_debug"], f"{datetime.now().strftime('%H-%M-%S')}_result_orientation.jpg")
+            self.logger.info(f"Save image to {img_path}")
+            cv2.imwrite(img_path, rotated_image)
 
         return rotated_image, is_one_column_document
