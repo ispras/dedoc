@@ -7,11 +7,10 @@ import numpy as np
 
 from dedoc.data_structures import BBoxAnnotation, ConfidenceAnnotation, LineMetadata, LineWithMeta
 from dedoc.data_structures.bbox import BBox
-from dedoc.readers.pdf_reader.data_classes.tables.table_tree import TableTree
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_page.ocr_page import OcrPage
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_utils import get_text_with_bbox_from_cells
-from dedoc.utils.image_utils import crop_image_text
+from dedoc.utils.image_utils import get_highest_pixel_frequency
 
 
 class OCRCellExtractor:
@@ -21,38 +20,36 @@ class OCRCellExtractor:
         self.line_extractor = OCRLineExtractor(config=config)
         self.logger = config.get("logger", logging.getLogger())
 
-    def get_cells_text_2(self, page_image: np.ndarray, tree_nodes: List[TableTree], language: str) -> List[List[LineWithMeta]]:
+    def get_cells_text(self, page_image: np.ndarray, tree_nodes: List["TableTree"], language: str) -> List[List[LineWithMeta]]:  # noqa
         # try:
         # if len(img_cells) == 0:
         #    return []
         for node in tree_nodes:
-            cell_image = BBox.crop_image_by_box(page_image, node.cell_box)
-            node.crop_text_box = crop_image_text(cell_image)
+            node.set_crop_text_box(page_image)
         # img_cells_cropped = map(crop_image_text, img_cells)
         # ids, images = zip(*sorted(enumerate(img_cells_cropped), key=lambda t: -t[1].shape[1]))
         tree_nodes.sort(key=lambda t: -t.crop_text_box.width)  # TODO check
         originalbox_to_fastocrbox = {}
-        for num_batch, batch in enumerate(self.__images2batch_2(tree_nodes)):
+        batches = list(self.__nodes2batch(tree_nodes))
+        for num_batch, nodes_batch in enumerate(batches):
 
             if self.config.get("debug_mode", False):
-                tmp_dir = "/tmp/docreader/debug_tables/batches/"
+                tmp_dir = os.path.join(self.config.get("path_debug"), "debug_tables/batches/")
                 os.makedirs(tmp_dir, exist_ok=True)
-                tmp_dir = os.path.join(tmp_dir, f"{len(os.listdir(tmp_dir))}")
-                os.makedirs(tmp_dir, exist_ok=True)
-                for i, image in enumerate(batch):
-                    image.save(os.path.join(tmp_dir, f"image_{i}.png"))
+                for i, table_tree_node in enumerate(nodes_batch):
+                    cv2.imwrite(os.path.join(tmp_dir, f"image_{num_batch}_{i}.png"), BBox.crop_image_by_box(page_image, table_tree_node.cell_box))
 
-            ocr_result, chunk_boxes = self.__handle_one_batch_2(src_image=page_image, tree_table_nodes=batch, num_batch=num_batch,
-                                                                language=language)
+            ocr_result, chunk_boxes = self.__handle_one_batch(src_image=page_image, tree_table_nodes=nodes_batch, num_batch=num_batch,
+                                                              language=language)
 
-            for chunk_index in enumerate(chunk_boxes):
-                originalbox_to_fastocrbox[batch[chunk_index].cell_bbox] = []
+            for chunk_index, _ in enumerate(chunk_boxes):
+                originalbox_to_fastocrbox[nodes_batch[chunk_index].cell_box] = []
 
             # we find mapping
             for line in list(ocr_result.lines):
                 chunk_index = 0
                 line_center_y = line.bbox.y_top_left + int(line.bbox.height / 2)
-                while chunk_index < len(chunk_boxes) and line_center_y > batch[chunk_index][2]:
+                while chunk_index < len(chunk_boxes) and line_center_y > chunk_boxes[chunk_index].y_top_left:
                     chunk_index += 1
                 chunk_index -= 1
 
@@ -62,45 +59,43 @@ class OCRCellExtractor:
                     word.bbox.y_top_left -= chunk_boxes[chunk_index].y_top_left
                     word.bbox.x_top_left -= chunk_boxes[chunk_index].x_top_left
                     # do absolute coordinate on src_image (inside src_image)
-                    word.bbox.y_top_left += batch[chunk_index].cell_bbox.y_top_left
-                    word.bbox.x_top_left += batch[chunk_index].cell_bbox.x_top_left
+                    word.bbox.y_top_left += nodes_batch[chunk_index].cell_box.y_top_left
+                    word.bbox.x_top_left += nodes_batch[chunk_index].cell_box.x_top_left
 
-                originalbox_to_fastocrbox[batch[chunk_index].cell_bbox].append(line.words)
+                originalbox_to_fastocrbox[nodes_batch[chunk_index].cell_box].append(line.words)
 
         return self.__create_lines_with_meta(tree_nodes, originalbox_to_fastocrbox, page_image)
 
-    """   except Exception as e:
-            if self.config.get("debug_mode", False):
-                raise e
-            else:
-                self.logger.warning(str(e))
-            return [get_cell_text_by_ocr(np.array(image), language) for image in map(self.upscale, img_cells)]"""
-
-    def __handle_one_batch_2(self, src_image: np.ndarray, tree_table_nodes: List[TableTree], num_batch: int, language: str = "rus") -> (
+    def __handle_one_batch(self, src_image: np.ndarray, tree_table_nodes: List["TableTree"], num_batch: int, language: str = "rus") -> (  # noqa
             Tuple)[OcrPage, List[BBox]]:
-        concatenated, chunk_boxes = self.__concat_images_2(src_image=src_image, tree_table_nodes=tree_table_nodes)
-        cv2.imwrite(self.config.get("path_debug") + f"stacked_batch_image_{num_batch}.png", concatenated)
+        concatenated, chunk_boxes = self.__concat_images(src_image=src_image, tree_table_nodes=tree_table_nodes)
+        if self.config.get("debug_mode", False):
+            image_path = os.path.join(self.config.get("path_debug"), "debug_tables", "batches", f"stacked_batch_image_{num_batch}.png")
+            cv2.imwrite(image_path, concatenated)
         ocr_result = get_text_with_bbox_from_cells(concatenated, language, ocr_conf_threshold=0.0)
 
         return ocr_result, chunk_boxes
 
-    def __concat_images_2(self, src_image: np.ndarray, tree_table_nodes: List[TableTree]) -> Tuple[np.ndarray, List[BBox]]:
+    def __concat_images(self, src_image: np.ndarray, tree_table_nodes: List["TableTree"]) -> Tuple[np.ndarray, List[BBox]]:  # noqa
         space = 10
         width = max((tree_node.crop_text_box.width + space for tree_node in tree_table_nodes))
         height = sum((tree_node.crop_text_box.height + space for tree_node in tree_table_nodes))
         # new_im = Image.fromarray(np.zeros((height, width), dtype=np.uint8) + 255)
         stacked_image = np.full((height, width), fill_value=255, dtype=np.uint8)
 
-        y_coord = 0
         y_prev = 0
         chunk_boxes = []
         for tree_node in tree_table_nodes:
             x_coord = space
             cell_image = BBox.crop_image_by_box(src_image, tree_node.crop_text_box)
-            stacked_image[y_coord:y_coord + cell_image.shape[0], x_coord + cell_image.shape[1]] = cell_image
+            image_path = os.path.join(self.config.get("path_debug"), "debug_tables", "batches", "cell_croped.png")
+            cv2.imwrite(image_path, cell_image)
+            cell_height, cell_width = cell_image.shape[0], cell_image.shape[1]
+
+            stacked_image[y_prev:y_prev + cell_height, x_coord:x_coord + cell_width] = cell_image
             # new_im.paste(image, (x_coord, y_coord))
             # y_coord += cell_image.shape[1] + space
-            inserted_image_height = cell_image.shape[1] + space
+            inserted_image_height = cell_height + space
             chunk_boxes.append(BBox(x_top_left=x_coord, y_top_left=y_prev, width=width - x_coord, height=inserted_image_height))
             # borders.append((y_prev, y_coord))
             y_prev += inserted_image_height
@@ -108,7 +103,7 @@ class OCRCellExtractor:
         assert len(chunk_boxes) == len(tree_table_nodes)
         return stacked_image, chunk_boxes
 
-    def __images2batch_2(self, tree_nodes: List[TableTree]) -> Iterator[List[TableTree]]:
+    def __nodes2batch(self, tree_nodes: List["TableTree"]) -> Iterator[List["TableTree"]]:  # noqa
         batch = []
         width = 0
         height = 0
@@ -121,11 +116,11 @@ class OCRCellExtractor:
                 batch = []
                 width = 0
                 height = 0
-            batch.append(tree_nodes)
+            batch.append(node)
         if len(batch) > 0:
             yield batch
 
-    def __create_lines_with_meta(self, tree_nodes: List[TableTree], original_box_to_fast_ocr_box: dict, original_image: np.ndarray) -> List[List[LineWithMeta]]:
+    def __create_lines_with_meta(self, tree_nodes: List["TableTree"], original_box_to_fast_ocr_box: dict, original_image: np.ndarray) -> List[List[LineWithMeta]]:  # noqa
         nodes_lines = []
 
         for node in tree_nodes:
@@ -133,14 +128,15 @@ class OCRCellExtractor:
             cell_lines = []
 
             for line in original_box_to_fast_ocr_box[node.cell_box]:  # step inside results of fast-ocr
-                text_line = self.get_line_with_meta("")
+                text_line = OCRCellExtractor.get_line_with_meta("")
                 for word in line:
                     # add space between words
                     if len(text_line) != 0:
-                        text_line += self.get_line_with_meta(" ", bbox=word.bbox, image=original_image)
+                        text_line += OCRCellExtractor.get_line_with_meta(" ", bbox=word.bbox, image=original_image)
                     # add confidence value
-                    text_line += self.get_line_with_meta(text=word.text, bbox=word.bbox, image=original_image,
-                                                         confidences=[ConfidenceAnnotation(start=0, end=len(word.text), value=word.confidence / 100.)])
+                    text_line += OCRCellExtractor.get_line_with_meta(text=word.text, bbox=word.bbox, image=original_image,
+                                                                     confidences=[ConfidenceAnnotation(start=0, end=len(word.text),
+                                                                                                       value=word.confidence / 100.)])
                 if len(text_line) > 0:  # add new line
                     cell_lines.append(text_line)
 
@@ -148,7 +144,8 @@ class OCRCellExtractor:
 
         return nodes_lines
 
-    def get_line_with_meta(self, text: str,
+    @staticmethod
+    def get_line_with_meta(text: str,
                            bbox: Optional[BBox] = None,
                            image: Optional[np.ndarray] = None,
                            confidences: Optional[List[ConfidenceAnnotation]] = None) -> LineWithMeta:
@@ -161,35 +158,9 @@ class OCRCellExtractor:
 
         confidences = [] if confidences is None else confidences
         for confidence in confidences:
-            annotations.append(ConfidenceAnnotation(confidence.start, confidence.end, str(confidence.confidence)))
+            annotations.append(ConfidenceAnnotation(confidence.start, confidence.end, str(confidence.value)))
 
         return LineWithMeta(line=text, metadata=LineMetadata(page_id=0, line_id=None), annotations=annotations)
-    """
-    def get_cells_text(self, img_cells: List[np.ndarray], language: str) -> List[str]:
-        try:
-            if len(img_cells) == 0:
-                return []
-            img_cells_cropped = map(crop_image_text, img_cells)
-            ids, images = zip(*sorted(enumerate(img_cells_cropped), key=lambda t: -t[1].shape[1]))
-            res = []
-            for batch in self.__images2batch(images):
-                if self.config.get("debug_mode", False):
-                    tmp_dir = "/tmp/docreader/debug_tables/batches/"
-                    os.makedirs(tmp_dir, exist_ok=True)
-                    tmp_dir = os.path.join(tmp_dir, f"{len(os.listdir(tmp_dir))}")
-                    os.makedirs(tmp_dir, exist_ok=True)
-                    for i, image in enumerate(batch):
-                        image.save(os.path.join(tmp_dir, f"image_{i}.png"))
-
-                res.extend(self.__handle_one_batch(batch, language))
-            assert len(res) == len(img_cells)
-            return [text for _, text in sorted(zip(ids, res))]
-        except Exception as e:
-            if self.config.get("debug_mode", False):
-                raise e
-            else:
-                self.logger.warning(str(e))
-            return [get_cell_text_by_ocr(np.array(image), language) for image in map(self.upscale, img_cells)]
 
     @staticmethod
     def upscale(image: Optional[np.ndarray], padding_px: int = 40) -> Optional[np.ndarray]:
@@ -205,63 +176,3 @@ class OCRCellExtractor:
             bigger_cell = np.full((image.shape[0] + padding_px, image.shape[1] + padding_px, 3), color_backgr)
             bigger_cell[padding_px // 2:-padding_px // 2, padding_px // 2:-padding_px // 2, :] = image
         return bigger_cell
-
-    def __bbox_intersection(self, cell_low: int, cell_high: int, bbox: BBox) -> float:
-        assert cell_low <= cell_high
-        low = max(cell_low, bbox.y_top_left)
-        high = min(cell_high, bbox.y_bottom_right)
-        if low >= high:
-            return 0
-        return (high - low) / bbox.height
-
-    def __best_cell(self, borders: List[Tuple[int, int]], bbox: TextWithBBox) -> int:
-        res = []
-        for i, (low, high) in enumerate(borders):
-            res.append((self.__bbox_intersection(low, high, bbox.bbox), i))
-        return max(res)[1]
-
-    def __handle_one_batch(self, cells: List[Image.Image], language: str) -> List[str]:
-        concatenated, borders = self.__concat_images(images=cells)
-
-        bboxes = self.line_extractor.split_image2lines(image=concatenated, page_num=0, language=language, cells=True)
-        cells_text = [[] for _ in cells]
-        for bbox in sorted(bboxes.bboxes, key=lambda b: b.bbox.y_top_left):
-            cell_id = self.__best_cell(borders, bbox)
-            cells_text[cell_id].append(bbox.text)
-        return ["".join(cell).strip() for cell in cells_text]
-
-    def __concat_images(self, images: List[Image.Image]) -> Tuple[np.ndarray, List[Tuple[int, int]]]:
-        space = 10
-        width = max((image.size[0] + space for image in images))
-        height = sum((image.size[1] + space for image in images))
-        new_im = Image.fromarray(np.zeros((height, width), dtype=np.uint8) + 255)
-
-        y_coord = 0
-        y_prev = 0
-        borders = []
-        for image in images:
-            x_coord = space
-            new_im.paste(image, (x_coord, y_coord))
-            y_coord += image.size[1] + space
-            borders.append((y_prev, y_coord))
-            y_prev = y_coord
-        assert len(borders) == len(images)
-        return np.array(new_im), borders
-
-    def __images2batch(self, images: List[np.ndarray]) -> Iterator[List[Image.Image]]:
-        batch = []
-        width = 0
-        height = 0
-        for image in images:
-            image_height, image_width = image.shape
-            width = max(width, image_width)
-            height += image_height
-            if (width * height > 10 ** 7 or width > 1.5 * image_width) and len(batch) > 0:
-                yield batch
-                batch = []
-                width = 0
-                height = 0
-            batch.append(Image.fromarray(image))
-        if len(batch) > 0:
-            yield batch
-            """

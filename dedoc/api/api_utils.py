@@ -204,18 +204,14 @@ def __table2html(table: Table, table2id: Dict[str, int]) -> str:
     uid = table.metadata.uid
     text = f"<h4> table {table2id[uid]}:</h4>"
     text += f'<table border="1" id={uid} style="border-collapse: collapse; width: 100%;">\n<tbody>\n'
-    cell_properties = table.metadata.cell_properties
-    for row_id, row in enumerate(table.cells):
+    for row in table.cells:
         text += "<tr>\n"
-        for col_id, cell in enumerate(row):
+        for cell in row:
             text += "<td"
-            if cell_properties:
-                prop = cell_properties[row_id][col_id]
-                if prop.invisible:
-                    text += ' style="display: none" '
-                text += f' colspan="{prop.colspan}" rowspan="{prop.rowspan}">{cell}</td>\n'
-            else:
-                text += f">{cell}</td>\n"
+            if cell.invisible:
+                text += ' style="display: none" '
+            text += f' colspan="{cell.colspan}" rowspan="{cell.rowspan}">{cell.get_text()}</td>\n'
+
         text += "</tr>\n"
     text += "</tbody>\n</table>"
     return text

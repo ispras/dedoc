@@ -2,8 +2,9 @@ import uuid
 from collections import OrderedDict
 from typing import List, Optional
 
-from dedoc.data_structures import Annotation, LineWithMeta
+from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.bbox import BBox
+from dedoc.data_structures.line_with_meta import LineWithMeta
 
 
 class Cell:

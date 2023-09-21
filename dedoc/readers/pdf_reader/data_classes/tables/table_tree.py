@@ -7,6 +7,7 @@ import numpy as np
 
 from dedoc.data_structures import BBox, LineWithMeta
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
+from dedoc.utils.image_utils import crop_image_text
 
 logger = logging.getLogger("TableRecognizer.TableTree")
 
@@ -36,7 +37,7 @@ class TableTree(object):
         # get List of TableTree
         cur_depth = 0
         begin_depth = 2
-        end_depth = 2,
+        end_depth = 2
         stack = [(tree, cur_depth, begin_depth, end_depth)]
         trees = []
         while len(stack) > 0:
@@ -45,16 +46,23 @@ class TableTree(object):
                 # img_cell = [pair.image for i, pair in enumerate(cell_images) if pair.id_con == tree.id_contours][0]
                 trees.append(node_tree)
                 if tree.config.get("debug_mode", False):
-                    config.get("logger", logging.getLogger()).debug(f"{tree.id_contours} : text : {tree.get_text}")
+                    config.get("logger", logging.getLogger()).debug(f"{tree.id_contours} : text : {tree.get_text()}")
             for ch in node_tree.children:
                 stack.append((ch, cur_depth + 1, begin_depth, end_depth))
 
         cell_extractor = OCRCellExtractor(config=config)
-        lines_with_meta = cell_extractor.get_cells_text_2(page_image=src_image, tree_nodes=trees, language=language)
+        lines_with_meta = cell_extractor.get_cells_text(page_image=src_image, tree_nodes=trees, language=language)
         assert len(trees) == len(lines_with_meta)
 
-        for lines, (tree, _) in zip(lines_with_meta, trees):
+        for lines, tree in zip(lines_with_meta, trees):
             tree.lines = lines
+
+    def set_crop_text_box(self, page_image: np.ndarray) -> None:
+        cell_image = BBox.crop_image_by_box(page_image, self.cell_box)
+        self.crop_text_box = crop_image_text(cell_image)
+        # make crop_text_box'coordinates relative page_image
+        self.crop_text_box.x_top_left += self.cell_box.x_top_left
+        self.crop_text_box.y_top_left += self.cell_box.y_top_left
 
     @staticmethod
     def parse_contours_to_tree(contours: List, hierarchy: List, *, config: dict) -> "TableTree":
@@ -99,6 +107,9 @@ class TableTree(object):
                 cur.__add_child(tnode)
         cur.children = sorted(cur.children, key=lambda ch: (ch.cell_box.x_top_left, ch.cell_box.y_top_left), reverse=False)
         return cur
+
+    def get_text(self) -> str:
+        return "\n".join([line.line for line in self.lines])
 
     def __add_child(self, child_tree: "TableTree") -> None:
         self.children.append(child_tree)

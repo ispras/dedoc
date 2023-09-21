@@ -20,18 +20,18 @@ class Table(Serializable):
         :param metadata: some table metadata, as location, size and so on.
         :param cells_properties: a list of lists of cells properties - each should contain attributes rowspan, colspan, invisible (for repeated cells)
         """
-        self.cells = [[cell.get_text() for cell in row] for row in cells]
         self.metadata = metadata
+        self.cells = cells
 
     def to_dict(self) -> dict:
         res = OrderedDict()
-        res["cells"] = [[cell_text for cell_text in row] for row in self.cells]
+        res["cells"] = [[cell.to_dict() for cell in row] for row in self.cells]
         res["metadata"] = self.metadata.to_dict()
         return res
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
         return api.model("Table", {
-            "cells": fields.List(fields.List(fields.String(description="Cell contains text")), description="matrix of cells"),
+            "cells": fields.List(fields.List(CellWithMeta.get_api_dict(api), description="Cell contains text"), description="matrix of cells"),
             "metadata": fields.Nested(TableMetadata.get_api_dict(api), readonly=True, description="Table meta information")
         })

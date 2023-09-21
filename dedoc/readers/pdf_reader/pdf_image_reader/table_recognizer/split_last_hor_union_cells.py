@@ -3,9 +3,10 @@ from typing import List
 
 import numpy as np
 
+from dedoc.data_structures import ConfidenceAnnotation, LineWithMeta
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.utils import get_cell_text_by_ocr
+from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_utils import get_text_with_bbox_from_cells
 
 
 def split_last_column(matrix_table: List[List[Cell]], language: str, image: np.array) -> List[List[Cell]]:
@@ -132,7 +133,7 @@ def _split_row(cell_splitter: Cell, union_cell: List[Cell], language: str, image
     y_bottom_split = cell_splitter.con_coord.y_top_left + cell_splitter.con_coord.height
     if abs(y_bottom_split - y_top_split) < 10:
         for cell in union_cell:
-            cell.text = ""
+            cell.lines = []
         return union_cell
 
     # update y coordinates and text of union cell
@@ -143,8 +144,28 @@ def _split_row(cell_splitter: Cell, union_cell: List[Cell], language: str, image
         union_cell[col_id].y_bottom_right = y_bottom_split
 
         cell_image = OCRCellExtractor.upscale(image[y_top_split:y_bottom_split, x_left:x_right])
-        result_row[col_id].text = get_cell_text_by_ocr(cell_image, language=language)
+        result_row[col_id].lines = __get_ocr_lines(cell_image, language)
 
         col_id -= 1
 
     return result_row
+
+
+def __get_ocr_lines(cell_image: np.ndarray, language: str, page_image: np.ndarray) -> List[LineWithMeta]:
+
+    ocr_result = get_text_with_bbox_from_cells(cell_image, language)
+    cell_lines = []
+    for line in list(ocr_result.lines):
+        text_line = OCRCellExtractor.get_line_with_meta("")
+        for word in line.words:
+            # add space between words
+            if len(text_line) != 0:
+                text_line += OCRCellExtractor.get_line_with_meta(" ", bbox=word.bbox, image=page_image)
+            # add confidence value
+            text_line += OCRCellExtractor.get_line_with_meta(text=word.text, bbox=word.bbox, image=page_image,
+                                                             confidences=[
+                                                                 ConfidenceAnnotation(start=0, end=len(word.text), value=word.confidence / 100.)])
+        if len(text_line) > 0:  # add new line
+            cell_lines.append(text_line)
+
+    return cell_lines

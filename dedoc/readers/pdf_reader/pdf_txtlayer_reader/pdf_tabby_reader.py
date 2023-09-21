@@ -11,6 +11,7 @@ import numpy as np
 from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
 from dedoc.common.exceptions.tabby_pdf_error import TabbyPdfError
 from dedoc.data_structures.bbox import BBox
+from dedoc.data_structures.cell_with_meta import CellWithMeta
 from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
@@ -80,7 +81,7 @@ class PdfTabbyReader(PdfBaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        lines, scan_tables, tables_cell_properties = self.__extract(path=path)
+        lines, tables, tables_on_images = self.__extract(path=path)
         warnings = []
         document_metadata = None
 
@@ -95,15 +96,7 @@ class PdfTabbyReader(PdfBaseReader):
             if last_page != math.inf:
                 document_metadata["last_page"] = last_page
 
-        lines = self.linker.link_objects(lines=lines, tables=scan_tables, images=[])
-        tables = []
-        assert len(scan_tables) == len(tables_cell_properties)
-        for scan_table, table_cells_property in zip(scan_tables, tables_cell_properties):
-            cell_properties = [[cellp for cellp in row] for row in table_cells_property]
-            metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name)
-            cells = [[cell for cell in row] for row in scan_table.matrix_cells]
-            table = Table(metadata=metadata, cells=cells, cells_properties=cell_properties)
-            tables.append(table)
+        lines = self.linker.link_objects(lines=lines, tables=tables_on_images, images=[])
 
         attachments = []
         if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
@@ -117,27 +110,28 @@ class PdfTabbyReader(PdfBaseReader):
 
         return self._postprocess(result)
 
-    def __extract(self, path: str, start_page: int = None, end_page: int = None) \
-            -> Tuple[List[LineWithMeta], List[ScanTable], List[List[List[CellPropertyInfo]]]]:
+    def __extract(self, path: str, start_page: int = None, end_page: int = None) -> Tuple[List[LineWithMeta], List[Table], List[ScanTable]]:
         file_hash = calculate_file_hash(path=path)
         document = self.__process_pdf(path=path, start_page=start_page, end_page=end_page)
+
         all_lines = []
         all_tables = []
-        all_cell_properties = []
+        all_tables_on_images = []
         for page in document.get("pages", []):
-            lines = self.__get_lines_with_location(page, file_hash)
-            if lines:
-                all_lines.extend(lines)
-            tables, cell_properties = self.__get_tables(page, file_hash)
-            if tables:
-                all_tables.extend(tables)
-                all_cell_properties.extend(cell_properties)
+            page_lines = self.__get_lines_with_location(page, file_hash)
+            if page_lines:
+                all_lines.extend(page_lines)
+            page_tables, table_on_images = self.__get_tables(page, file_hash)
+            assert len(page_tables) == len(table_on_images)
+            if page_tables:
+                all_tables.extend(page_tables)
+                all_tables_on_images.extend(table_on_images)
 
-        return all_lines, all_tables, all_cell_properties
+        return all_lines, all_tables, all_tables_on_images
 
-    def __get_tables(self, page: dict, file_hash: str) -> Tuple[List[ScanTable], List[List[List[CellPropertyInfo]]]]:
+    def __get_tables(self, page: dict, file_hash: str) -> List[ScanTable]:
         tables = []
-        cell_properties = []
+        tables_on_image = []
         page_number = page["number"]
         i = 0
         for table in page["tables"]:
@@ -146,27 +140,31 @@ class PdfTabbyReader(PdfBaseReader):
             y_top_left = table["y_top_left"]
             x_bottom_right = x_top_left + table["width"]
             y_bottom_right = y_top_left + table["height"]
-            order = table["order"]
+            order = table["order"] # noqa TODO add table order into TableMetadata
             rows = table["rows"]
-            cell_properties_json = table["cell_properties"]
-            cell_property_list = []
+            cell_properties = table["cell_properties"]
+            assert len(rows) == len(cell_properties)
 
-            for cell_properties_row in cell_properties_json:
-                cell_property_row_list = []
+            result_cells = []
+            for num_row, row in enumerate(rows):
+                assert len(row) == len(cell_properties[num_row])
+                result_row = []
+                for num_col, cell_text in enumerate(row):
+                    result_row.append(CellWithMeta(lines=[LineWithMeta(line=cell_text,
+                                                                       metadata=LineMetadata(page_id=page_number, line_id=None),
+                                                                       annotations=[])],
+                                                   colspan=cell_properties[num_row][num_col]["col_span"],
+                                                   rowspan=cell_properties[num_row][num_col]["row_span"],
+                                                   invisible=bool(cell_properties[num_row][num_col]["invisible"])))
 
-                for cell_property in cell_properties_row:
-                    cell_property_info = CellPropertyInfo(cell_property["col_span"], cell_property["row_span"], bool(cell_property["invisible"]))
-                    cell_property_row_list.append(cell_property_info)
+                result_cells.append(result_row)
 
-                cell_property_list.append(cell_property_row_list)
+            table_bbox = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))  # noqa TODO add table location into TableMetadata
+            tables.append(Table(cells=result_cells, metadata=TableMetadata(page_id=page_number, is_inserted=False)))
+            tables_on_image.append(ScanTable(page_number=page_number, matrix_cells=None, bbox=table_bbox, name=file_hash + str(page_number) + str(i),
+                                             order=order))
 
-            cells = [row for row in rows]
-            bbox = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))
-
-            tables.append(ScanTable(matrix_cells=cells, page_number=page_number, bbox=bbox, name=file_hash + str(page_number) + str(i), order=order))
-            cell_properties.append(cell_property_list)
-
-        return tables, cell_properties
+        return tables, tables_on_image
 
     def __get_lines_with_location(self, page: dict, file_hash: str) -> List[LineWithLocation]:
         lines = []

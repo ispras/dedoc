@@ -14,6 +14,7 @@ from pdf2image.exceptions import PDFPageCountError, PDFSyntaxError
 import dedoc.utils.parameter_utils as param_utils
 from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
+from dedoc.data_structures.cell_with_meta import CellWithMeta
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
@@ -90,10 +91,10 @@ class PdfBaseReader(BaseReader):
         tables = []
         for scan_table in scan_tables:
             metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name)
-            cells = [[cell for cell in row] for row in scan_table.matrix_cells]
-            text_cells = [[cell.text for cell in row] for row in scan_table.matrix_cells]
-            metadata.cell_properties = cells
-            table = Table(metadata=metadata, cells=text_cells)
+            cells_with_meta = [[CellWithMeta.create_from_cell(cell) for cell in row]
+                               for row in scan_table.matrix_cells]
+
+            table = Table(metadata=metadata, cells=cells_with_meta)
             tables.append(table)
 
         if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):

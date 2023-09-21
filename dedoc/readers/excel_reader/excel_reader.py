@@ -5,6 +5,8 @@ import xlrd
 from xlrd.sheet import Sheet
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.excel_attachments_extractor import ExcelAttachmentsExtractor
+from dedoc.data_structures import LineMetadata, LineWithMeta
+from dedoc.data_structures.cell_with_meta import CellWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
@@ -56,7 +58,9 @@ class ExcelReader(BaseReader):
             row = []
             for col_id in range(n_cols):
                 value = str(sheet.cell_value(rowx=row_id, colx=col_id))
-                row.append(value)
+                row.append(CellWithMeta(lines=[LineWithMeta(line=value,
+                                                            metadata=LineMetadata(page_id=sheet_id, line_id=None),
+                                                            annotations=[])]))
             res.append(row)
         metadata = TableMetadata(page_id=sheet_id)
         return Table(cells=res, metadata=metadata)

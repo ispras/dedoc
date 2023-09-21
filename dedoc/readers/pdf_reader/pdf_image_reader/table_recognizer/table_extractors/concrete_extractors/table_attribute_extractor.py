@@ -26,7 +26,7 @@ class TableAttributeExtractor(object):
             if len(attr1[i]) != len(attr2[i]):
                 return False
             for j in range(len(attr1[i])):
-                if similarity(attr1[i][j].text, attr2[i][j].text) < thr_similarity:
+                if similarity(attr1[i][j].get_text(), attr2[i][j].get_text()) < thr_similarity:
                     return False
 
         return True
@@ -52,8 +52,8 @@ class TableAttributeExtractor(object):
     def __is_indexable_column(self, matrix_table: List[List[Cell]], column_id: int, max_raw_of_search: int) -> bool:
         # № п/п
         for i in range(0, max_raw_of_search + 1):
-            if column_id < len(matrix_table[i]) and "№" in matrix_table[i][column_id].text and len(
-                    matrix_table[i][column_id].text) < len("№ п/п\n"):
+            if column_id < len(matrix_table[i]) and "№" in matrix_table[i][column_id].get_text() and len(
+                    matrix_table[i][column_id].get_text()) < len("№ п/п\n"):
                 return True
         return False
 
@@ -72,7 +72,7 @@ class TableAttributeExtractor(object):
         for i in range(0, len(matrix_table)):
             if len(matrix_table[i]) <= column_id:
                 break
-            if matrix_table[i][column_id].text != "":
+            if matrix_table[i][column_id].get_text() != "":
                 all_empty = False
                 break
         return all_empty
@@ -80,7 +80,7 @@ class TableAttributeExtractor(object):
     def __is_empty_row(self, matrix_table: List[List[Cell]], row_index: int) -> bool:
         all_empty = True
         for j in range(0, len(matrix_table[row_index])):
-            if matrix_table[row_index][j].text != "":
+            if matrix_table[row_index][j].get_text() != "":
                 all_empty = False
                 break
         return all_empty

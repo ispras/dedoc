@@ -6,6 +6,7 @@ from dedoc.data_structures import LineWithMeta
 
 #  First of all lets create some table, table consist of cells (list of rows, and row is a list of strings
 from dedoc.data_structures import HierarchyLevel
+from dedoc.data_structures.cell_with_meta import CellWithMeta
 from dedoc.metadata_extractors import BaseMetadataExtractor
 
 
@@ -13,11 +14,15 @@ table_cells = [
     ["N", "Second name", "Name", "Organization", "Phone", "Notes"],
     ["1", "Ivanov", "Ivan", "ISP RAS", "8-800"],
 ]
+cell_with_meta = [[CellWithMeta(lines=[LineWithMeta(line=cell_text,
+                                                    metadata=LineMetadata(page_id=0,
+                                                                          line_id=None),
+                                                    annotations=[])]) for cell_text in row] for row in table_cells]
 # table also has some metadata, lets assume that our table is on first page
-table_metadata = TableMetadata(page_id=0)
+table_metadata = TableMetadata(page_id=0, uid="table 1")
 
 # let's build table
-table = Table(cells=table_cells, metadata=table_metadata)
+table = Table(cells=cell_with_meta, metadata=table_metadata)
 
 # Documents also contain some text.
 # Logical structure of document may be represented by tree (see  example_tree.png)

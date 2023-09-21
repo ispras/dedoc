@@ -1,12 +1,12 @@
 import hashlib
 import logging
 import string
-import uuid
 from typing import List, Optional, Union
 
 from bs4 import BeautifulSoup
 from bs4 import Comment, Doctype, Tag
 
+from dedoc.data_structures.cell_with_meta import CellWithMeta
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -24,6 +24,7 @@ class HtmlReader(BaseReader):
     """
     This reader allows to handle documents with the following extensions: .html, .shtml
     """
+
     def __init__(self, *, config: dict) -> None:
         """
         :param config: configuration of the reader, e.g. logger for logging
@@ -53,7 +54,7 @@ class HtmlReader(BaseReader):
         handle_invisible_table = str(parameters.get("handle_invisible_table", "false")).lower() == "true"
         path_hash = calculate_file_hash(path=path)
         lines = self.__read_blocks(soup, path_hash=path_hash, handle_invisible_table=handle_invisible_table)
-        tables = [self._read_table(table) for table in soup.find_all("table")
+        tables = [self._read_table(table, path_hash) for table in soup.find_all("table")
                   if self._visible_table(table, handle_invisible_table=handle_invisible_table)]
         document = UnstructuredDocument(tables=tables, lines=lines, attachments=[])
         document_postprocess = self.postprocessor.postprocess(document)
@@ -65,6 +66,8 @@ class HtmlReader(BaseReader):
         if not self.__is_content_tag(tag, handle_invisible_table=handle_invisible_table):
             block_lines = []
         elif tag.name == "table" and not self._visible_table(tag, handle_invisible_table=handle_invisible_table):
+            # if table is invisible and we don't parse invisible tables (handle_invisible_table == False)
+            # then we parse table as raw text
             block_lines = self.__handle_invisible_table(block=tag, path_hash=uid)
         elif isinstance(tag, str):
             block_lines = self._handle_text_line(block=tag, path_hash=uid)
@@ -216,21 +219,34 @@ class HtmlReader(BaseReader):
     def __handle_invisible_table(self, block: Tag, path_hash: str) -> List[LineWithMeta]:
         uid = hashlib.md5(block.name.encode()).hexdigest()
         result = []
-        rows = self._read_table(block).cells
+        rows = self._read_table(block, path_hash).cells
         for row in rows:
-            text = " ".join(row)
+            text = "\t".join([cell.get_text() for cell in row])
             if text.strip() != "":
                 tag_uid = hashlib.md5((uid + text).encode()).hexdigest()
                 line = self.__make_line(line=text, line_type=HierarchyLevel.unknown, uid=tag_uid, path_hash=path_hash)
                 result.append(line)
         return result
 
-    def _read_table(self, table: Tag) -> Table:
-        rows = []
+    def _read_table(self, table: Tag, path_hash: str) -> Table:
+        cells_with_meta = []
 
         for row in table.find_all(HtmlTags.table_rows):
-            rows.append([cell.getText() for cell in row.find_all(HtmlTags.table_cells)])
-        return Table(cells=rows, metadata=TableMetadata(page_id=0, uid=str(uuid.uuid1())))
+            row_lines = []
+            for cell in row.find_all(HtmlTags.table_cells):
+                uid = hashlib.md5(cell.name.encode()).hexdigest()
+                tag_uid = hashlib.md5((uid + cell.getText()).encode()).hexdigest()
+
+                cell_with_meta = CellWithMeta(
+                    lines=[self.__make_line(line=cell.getText(), line_type=HierarchyLevel.unknown, uid=tag_uid, path_hash=path_hash)],
+                    colspan=cell.colspan if cell.colspan else 1,
+                    rowspan=cell.rowspan if cell.rowspan else 1,
+                    invisible=cell.invisible if cell.invisible else True
+                )
+                row_lines.append(cell_with_meta)
+            cells_with_meta.append(row_lines)
+
+        return Table(cells=cells_with_meta, metadata=TableMetadata(page_id=0))
 
     def _visible_table(self, table: Tag, handle_invisible_table: bool) -> bool:
         if handle_invisible_table:

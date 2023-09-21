@@ -1,14 +1,14 @@
 import hashlib
-from collections import namedtuple
 
 from bs4 import Tag
 
+from dedoc.data_structures import LineMetadata, LineWithMeta
+from dedoc.data_structures.cell_property import CellProperty
+from dedoc.data_structures.cell_with_meta import CellWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.readers.docx_reader.data_structures.run import Run
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
-
-CellPropertyInfo = namedtuple("NamedTuple", "colspan, rowspan, invisible")
 
 
 class DocxTable:
@@ -55,19 +55,20 @@ class DocxTable:
                 if cell.vMerge:
                     value = cell.vMerge.get("w:val", "continue")
                     if value == "continue":
-                        cell_property_row_list.append(CellPropertyInfo(1, 1, True))
+                        cell_property_row_list.append(CellProperty(1, 1, True))
                         cell_text += prev_row[cell_ind]
                         last_cell_rowspan = cell_property_list[rowspan_start_info[cell_ind]][cell_ind]
-                        cell_property_list[rowspan_start_info[cell_ind]][cell_ind] = last_cell_rowspan._replace(rowspan=last_cell_rowspan.rowspan + 1)
+                        last_cell_rowspan.rowspan += 1
+                        cell_property_list[rowspan_start_info[cell_ind]][cell_ind] = last_cell_rowspan
                     elif value == "restart":
                         rowspan_start_info[cell_ind] = row_index
-                        cell_property_row_list.append(CellPropertyInfo(grid_span, 1, False))
+                        cell_property_row_list.append(CellProperty(grid_span, 1, False))
                 else:
-                    cell_property_row_list.append(CellPropertyInfo(grid_span, 1, False))
+                    cell_property_row_list.append(CellProperty(grid_span, 1, False))
 
                 # split merged cells
                 for _ in range(grid_span - 1):
-                    cell_property_row_list.append(CellPropertyInfo(1, 1, True))
+                    cell_property_row_list.append(CellProperty(1, 1, True))
                     cell_ind += 1
                     cells_text.append(cell_text)
                 cell_ind += 1
@@ -77,7 +78,19 @@ class DocxTable:
             result_cells.append(cells_text)
             prev_row = cells_text
 
-        return Table(cells=result_cells, metadata=TableMetadata(page_id=None, uid=self.uid), cells_properties=cell_property_list)
+        result_cells_with_meta = []
+
+        for num_row, row in enumerate(result_cells):
+            result_row = []
+            for num_col, cell_text in enumerate(row):
+                cell = CellWithMeta(lines=[LineWithMeta(line=cell_text, metadata=LineMetadata(page_id=0, line_id=None), annotations=[])],
+                                    colspan=cell_property_list[num_row][num_col].colspan,
+                                    rowspan=cell_property_list[num_row][num_col].rowspan,
+                                    invisible=cell_property_list[num_row][num_col].invisible)
+                result_row.append(cell)
+            result_cells_with_meta.append(result_row)
+
+        return Table(cells=result_cells_with_meta, metadata=TableMetadata(page_id=None, uid=self.uid, is_inserted=False))
 
     def __get_cell_text(self, cell: Tag) -> str:
         cell_text = ""
