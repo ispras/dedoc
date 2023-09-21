@@ -18,7 +18,8 @@ DETAILED_DEBUG = False
 class TestWordExtraction(AbstractTestApiDocReader):
     output_path = os.path.join(config["path_debug"], "word_bbox_extraction")
 
-    def __extract_conf_annotation(self, anns_conf: List[dict], ann_bbox: dict, text: str) -> List[float]:
+    @staticmethod
+    def extract_conf_annotation(anns_conf: List[dict], ann_bbox: dict, text: str) -> List[float]:
         confs = []
         debug = []
 
@@ -35,7 +36,8 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
         return confs
 
-    def __extract_texttype_annotation(self, anns_type: List[dict], ann_bbox: dict, text: str) -> str:
+    @staticmethod
+    def extract_texttype_annotation(anns_type: List[dict], ann_bbox: dict, text: str) -> str:
         debug = []
         text_type = "typewritten"
         for ann_type in anns_type:
@@ -50,7 +52,8 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
         return text_type
 
-    def __get_words_annotation(self, structure: dict) -> List[BboxWithConfsType]:
+    @staticmethod
+    def get_words_annotation(structure: dict) -> List[BboxWithConfsType]:
         stack = [structure]
         words_annotation = []
 
@@ -63,8 +66,8 @@ class TestWordExtraction(AbstractTestApiDocReader):
             for ann_bbox in anns_bbox:
                 # searching conf texttype values of word
 
-                confs = self.__extract_conf_annotation(anns_conf, ann_bbox, node["text"])
-                text_type = self.__extract_texttype_annotation(anns_type, ann_bbox, node["text"])
+                confs = TestWordExtraction.extract_conf_annotation(anns_conf, ann_bbox, node["text"])
+                text_type = TestWordExtraction.extract_texttype_annotation(anns_type, ann_bbox, node["text"])
 
                 words_annotation.append(BboxWithConfsType(start=ann_bbox["start"], end=ann_bbox["end"], bbox=ann_bbox["value"], confs=confs,
                                                           text_type=text_type))
@@ -73,7 +76,25 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
         return words_annotation
 
-    def __normalize_font_thickness(self, image: np.ndarray) -> Tuple[float, int]:
+    @staticmethod
+    def get_words_annotation_from_cell(table: dict) -> List[BboxWithConfsType]:
+        words_annotation = []
+
+        cells = []
+        for row in table["cells"]:
+            for cell in row:
+                cells.append(cell)
+                for line in cell["lines"]:
+                    anns_bbox = [annotation for annotation in line["annotations"] if annotation["name"] == "bounding box"]
+                    anns_conf = [annotation for annotation in line["annotations"] if annotation["name"] == "confidence"]
+                    for ann_bbox in anns_bbox:
+                        confs = TestWordExtraction.extract_conf_annotation(anns_conf, ann_bbox, line["text"])
+                        words_annotation.append(BboxWithConfsType(start=ann_bbox["start"], end=ann_bbox["end"], bbox=ann_bbox["value"], confs=confs,
+                                                                  text_type="typewritten"))
+        return words_annotation
+
+    @staticmethod
+    def normalize_font_thickness(image: np.ndarray) -> Tuple[float, int]:
         FONT_SCALE = 6e-4
         THICKNESS_SCALE = 1e-3
         height, width, _ = image.shape
@@ -82,9 +103,10 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
         return font_scale, thickness
 
-    def __draw_word_annotations(self, image: np.ndarray, word_annotations: List[BboxWithConfsType]) -> np.ndarray:
+    @staticmethod
+    def draw_word_annotations(image: np.ndarray, word_annotations: List[BboxWithConfsType]) -> np.ndarray:
 
-        font_scale, thickness = self.__normalize_font_thickness(image)
+        font_scale, thickness = TestWordExtraction.normalize_font_thickness(image)
 
         for ann in word_annotations:
             bbox = json.loads(ann.bbox)
@@ -102,9 +124,9 @@ class TestWordExtraction(AbstractTestApiDocReader):
         file_name = "pdf_with_text_layer/english_doc.pdf"
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="true"))
         structure = result["content"]["structure"]
-        word_annotations = self.__get_words_annotation(structure)
+        word_annotations = TestWordExtraction.get_words_annotation(structure)
         image = np.asarray(get_page_image(self._get_abs_path(file_name), 0))
-        image = self.__draw_word_annotations(image, word_annotations)
+        image = TestWordExtraction.draw_word_annotations(image, word_annotations)
         cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}.png"), image)
 
     def test_tabby_document(self):
@@ -114,11 +136,24 @@ class TestWordExtraction(AbstractTestApiDocReader):
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
         structure = result["content"]["structure"]
         image = np.asarray(get_page_image(self._get_abs_path(file_name), 0))
-        word_annotations = self.__get_words_annotation(structure)
+        word_annotations = TestWordExtraction.get_words_annotation(structure)
         ann = word_annotations[0]
         if ann is not None:
             bbox = json.loads(ann.bbox)
             image = cv2.resize(image, dsize=(bbox["page_width"], bbox["page_height"]), interpolation=cv2.INTER_CUBIC)
 
-        image = self.__draw_word_annotations(image, word_annotations)
+        image = TestWordExtraction.draw_word_annotations(image, word_annotations)
         cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}.png"), image)
+
+    def test_table_word_extraction(self):
+        output_path = os.path.join(self.output_path)
+        os.makedirs(output_path, exist_ok=True)
+        file_names = ["tables/example_with_table3.png", "tables/example_with_table4.jpg", "tables/example_with_table5.png", "tables/example_with_table6.png"]
+        for file_name in file_names:
+            result = self._send_request(file_name, data=dict())
+            table0 = result["content"]["tables"][0]
+            word_annotations = TestWordExtraction.get_words_annotation_from_cell(table0)
+            image = cv2.imread(self._get_abs_path(file_name))
+            image = TestWordExtraction.draw_word_annotations(image, word_annotations)
+            cv2.imwrite(os.path.join(output_path, file_name), image)
+
