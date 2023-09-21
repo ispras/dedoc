@@ -28,8 +28,7 @@ class PdfReader(BaseReader):
         attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path), filename=os.path.basename(path), parameters=parameters)
         return UnstructuredDocument(lines=lines, tables=tables, attachments=attachments)
 
-    @staticmethod
-    def _process_tables(path: str) -> List[Table]:
+    def __process_tables(path: str) -> List[Table]:
         dfs = tabula.read_pdf(path, stream=True, pages="all")
         tables = []
         for df in dfs:
@@ -38,7 +37,7 @@ class PdfReader(BaseReader):
             tables.append(Table(cells=cells, metadata=metadata))
         return tables
 
-    def _process_lines(self, path: str) -> List[LineWithMeta]:
+    def __process_lines(self, path: str) -> List[LineWithMeta]:
         with open(path, "rb") as file:
             lines_with_meta = []
             pdf = PdfFileReader(file)

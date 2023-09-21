@@ -36,7 +36,7 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self.assertEqual([], result["attachments"])
 
     def test_djvu(self) -> None:
-        file_name = "example_with_table.djvu"
+        file_name = "example_with_table7.djvu"
         result = self._send_request(file_name, dict(document_type=""))
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)

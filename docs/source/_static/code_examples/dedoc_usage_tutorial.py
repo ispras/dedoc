@@ -1,5 +1,3 @@
-# noqa
-"""Using converters."""
 import mimetypes
 import os
 
@@ -11,6 +9,7 @@ from dedoc.readers import DocxReader
 from dedoc.structure_constructors import TreeConstructor
 from dedoc.structure_extractors import DefaultStructureExtractor
 
+"""Using converters."""
 converter = DocxConverter(config={})
 
 file_dir, file_name = "test_dir", "example.odt"
@@ -37,15 +36,18 @@ reader.read(file_path, parameters={"with_attachments": "true"})  # <dedoc.data_s
 document = reader.read(file_path, parameters={"with_attachments": "true"})
 # Access and print the values without using 'result' variables or 'print' statements.
 list(vars(document))  # ['tables', 'lines', 'attachments', 'warnings', 'metadata']
+
 document.lines[0].line  # Document example
 document.lines[0].metadata.tag_hierarchy_level.line_type  # header
 document.lines[0].annotations[0]  # Indentation(0:16, 0)
 document.lines[0].annotations[3]  # Style(0:16, Title)
+
 document.lines[3].annotations[4]  # Size(0:14, 16.0)
 document.lines[3].annotations[5]  # Size(19:26, 16.0)
 document.lines[3].annotations[6]  # Bold(0:4, True)
 document.lines[3].annotations[7]  # Italic(6:12, True)
 document.lines[3].annotations[8]  # Size(14:19, 10.0)
+
 document.tables[0].cells[0][0]  # N
 document.tables[0].cells[1][3]  # Cell3
 document.tables[1].cells[3]  # ['Text 3', 'Text 4']
@@ -62,6 +64,7 @@ document.tables[1].cells[0][1]  # Table header
 document.tables[0].metadata.uid  # f2f08354fc2dbcb5ded8885479f498a6
 document.lines[3].line  # Bold, italic, small text.
 document.lines[3].annotations[-1]  # Table(0:26, f2f08354fc2dbcb5ded8885479f498a6)
+
 document.attachments[0].uid  # attach_6de4dc06-0b75-11ee-a68a-acde48001122
 document.attachments[0].original_name  # image1.png
 document.attachments[0].tmp_file_path  # test_dir/1686830947_714.png

@@ -4,7 +4,7 @@ Adding support for a new document type to Dedoc
 Suppose you need to add support for a new type "newtype".
 Several ways of document processing exist:
 
-* **Converter** - you can write a converter from one document format to another;\
+* **Converter** - you can write a converter from one document format to another;
 * **Reader** - you can write special format-specific handler;
 * **AttachmentExtractor** - if a document contains attachments, the attachment extractor can allow you to extract them.
 
@@ -68,7 +68,7 @@ General scheme of adding Reader
 
     class NewtypeReader(BaseReader):
 
-        def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str], parameters: Optional[dict] = None) -> bool:
+        def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
             pass  # some code here
 
         def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
@@ -85,7 +85,7 @@ General scheme of adding Reader
 General scheme of adding AttachmentExtractor
 --------------------------------------------
 
-1. In ``dedoc/attachments_extractors`` create file :file:``newtype_attachment_extractor.py`` and implement the class :class:`NewtypeAttachmentsExtractor`.
+1. In ``dedoc/attachments_extractors`` create file :file:`newtype_attachment_extractor.py` and implement the class :class:`NewtypeAttachmentsExtractor`.
    This class must inherit the abstract class :class:`AbstractAttachmentsExtractor` from :file:`dedoc/attachments_extractors/abstract_attachment_extractor.py`.
 
 .. code-block:: python
@@ -122,9 +122,10 @@ General scheme of adding AttachmentExtractor
 Example of adding pdf/djvu handlers
 -----------------------------------
 
-Suppose we want to add the ability to handle pdf / djvu documents with a text layer.
+Suppose we want to add the ability to handle pdf/djvu documents with a text layer.
 We don't want to deal with two formats, because we can convert djvu to pdf.
 The following steps are proposed:
+
 1. Implementing the converter from djvu to pdf DjvuConverter.
 2. Implementing of PdfAttachmentsExtractor.
 3. Implementing of PdfReader.
@@ -226,6 +227,6 @@ Then you need to add classes to the dictionary in function :meth:`get_manager_co
 
 .. literalinclude:: ../_static/code_examples/manager_config_example_new_doctype.py
     :language: python
-    :lines: 9-29
+    :lines: 11-23
 
 Adding support for a new document type is completed.
