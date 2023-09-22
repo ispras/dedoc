@@ -17,7 +17,11 @@ print(unstructured_document.tables, unstructured_document.lines)
 table = unstructured_document.tables[0]
 # table consists of cells (we assume that table is rectangle)
 # so cells is list of rows and row is list of strings
-print(table.cells)
+for row in table.cells:
+    for cell in row:
+        print(cell.get_text().replace("\n", "\t") + " ", end="")
+    print("\n")
+
 # there is also some metadata in table
 print(table.metadata)
 

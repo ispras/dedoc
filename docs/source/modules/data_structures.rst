@@ -66,11 +66,12 @@ Main classes defining a document
     :exclude-members: to_dict
     :members:
 
-.. autoclass:: dedoc.data_structures.CellProperty
+.. autoclass:: dedoc.data_structures.CellWithMeta
     :show-inheritance:
     :special-members: __init__
     :exclude-members: to_dict
     :members:
+
 
 Helper classes
 --------------
