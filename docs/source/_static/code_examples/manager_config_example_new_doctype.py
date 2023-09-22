@@ -1,11 +1,10 @@
-from djvu_converter import DjvuConverter
-from pdf_reader import PdfReader
-
 from dedoc.attachments_handler import AttachmentsHandler
 from dedoc.converters import DocxConverter, ExcelConverter, FileConverterComposition
 from dedoc.metadata_extractors import BaseMetadataExtractor, DocxMetadataExtractor, MetadataExtractorComposition
 from dedoc.readers import DocxReader, ExcelReader, ReaderComposition
 from dedoc.structure_constructors import LinearConstructor, StructureConstructorComposition, TreeConstructor
+from djvu_converter import DjvuConverter
+from pdf_reader import PdfReader
 
 
 def get_manager_config(config: dict) -> dict:

@@ -23,12 +23,12 @@ class PdfReader(BaseReader):
         return ((extension in recognized_extensions.pdf_like_format or mime in recognized_mimes.pdf_like_format) and not document_type)
 
     def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
-        lines = self._process_lines(path)
-        tables = self._process_tables(path)
+        lines = self.__process_lines(path)
+        tables = self.__process_tables(path)
         attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path), filename=os.path.basename(path), parameters=parameters)
         return UnstructuredDocument(lines=lines, tables=tables, attachments=attachments)
 
-    def __process_tables(path: str) -> List[Table]:
+    def __process_tables(self, path: str) -> List[Table]:
         dfs = tabula.read_pdf(path, stream=True, pages="all")
         tables = []
         for df in dfs:

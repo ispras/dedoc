@@ -1,6 +1,13 @@
 import mimetypes
 import os
 
+from dedoc import DedocManager
+from dedoc.attachments_handler import AttachmentsHandler
+from dedoc.converters import DocxConverter, ExcelConverter, FileConverterComposition
+from dedoc.metadata_extractors import BaseMetadataExtractor, DocxMetadataExtractor, MetadataExtractorComposition
+from dedoc.readers import DocxReader, ExcelReader, ReaderComposition
+from dedoc.structure_constructors import LinearConstructor, StructureConstructorComposition, TreeConstructor
+from dedoc.structure_extractors import DefaultStructureExtractor, StructureExtractorComposition
 from djvu_converter import DjvuConverter
 from pdf_reader import PdfReader
 
@@ -30,3 +37,28 @@ document = pdf_reader.read(file_path, parameters={"with_attachments": "true"})
 list(vars(document))  # ['tables', 'lines', 'attachments', 'warnings', 'metadata']
 len(document.attachments)
 len(document.lines)
+
+"""Adding the implemented handlers to the manager config"""
+config = {"with_attachments": "true"}
+manager_config = dict(
+        converter=FileConverterComposition(converters=[DocxConverter(config=config), ExcelConverter(config=config), DjvuConverter(config=config)]),
+
+        reader=ReaderComposition(readers=[DocxReader(config=config), ExcelReader(), PdfReader()]),
+
+        structure_constructor=StructureConstructorComposition(
+            constructors={"linear": LinearConstructor(), "tree": TreeConstructor()},
+            default_constructor=LinearConstructor()
+        ),
+
+        document_metadata_extractor=MetadataExtractorComposition(extractors=[DocxMetadataExtractor(), BaseMetadataExtractor()]),
+        attachments_extractor=AttachmentsHandler(config=config),
+        structure_extractor=StructureExtractorComposition(extractors={
+            DefaultStructureExtractor.document_type: DefaultStructureExtractor()}, default_key="other"),
+        attachments_handler=AttachmentsHandler(config=config)
+    )
+
+manager = DedocManager(config=config, manager_config=manager_config)
+result = manager.parse(file_path=file_path, parameters={})
+
+result  # <dedoc.data_structures.ParsedDocument>
+result.to_dict()  # OrderedDict([('version', '0.11.2'), ('warnings', []), ('content', OrderedDict([('structure', OrderedDict([('node_id', '0'), ...

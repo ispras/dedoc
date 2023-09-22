@@ -38,6 +38,7 @@ You should call the constructor of the base class in the constructor of the curr
 
        def can_convert(self, extension: str, mime: str, parameters: Optional[dict] = None) -> bool:
            pass  # some code here
+
        def do_convert(self, tmp_dir: str, filename: str, extension: str) -> str:
             pass  # some code here
 
@@ -45,7 +46,7 @@ You should call the constructor of the base class in the constructor of the curr
 
 * :meth:`do_convert()` method performs the required file conversion. Don't worry about the file name containing spaces or other unwanted characters because the file has been renamed by the manager.
 
-3. Add the converter to :file:`dedoc/manager_config.py`.
+3. Add the converter to manager config, see :ref:`adding_handlers_to_manager_config`.
 
    You should add :class:`NewtypeConverter()` in function :meth:`get_manager_config` to ``converter`` field of the dictionary along with other converters.
 
@@ -207,26 +208,35 @@ It must be added to the reader's constructor and used in :meth:`read` method.
 .. literalinclude:: ../_static/code_examples/pdf_reader.py
     :language: python
 
+
+.. _adding_handlers_to_manager_config:
+
 Adding the implemented handlers to the manager config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Let part of the contents of the file :file:`dedoc / manager_config.py` looks like this:
+All implemented document handlers are linked to dedoc in ``dedoc/manager_config.py``:
 
-.. literalinclude:: ../_static/code_examples/manager_config_example.py
+.. literalinclude:: ../_static/code_examples/manager_config.py
     :language: python
+    :lines: 1-105
 
-The imports of the classes described above should be added to the beginning of the file:
+You do not have to edit this file. Create your own ``manager_config`` with dedoc handlers you need and
+your custom handlers directly in your code. Example of manager config with the new handlers:
 
-.. code-block:: python
-
-    from dedoc.converters.concrete_converters.djvu_converter import DjvuConverter
-    from dedoc.readers.pdf_reader.pdf_reader import PdfReader
-
-
-Then you need to add classes to the dictionary in function :meth:`get_manager_config` as follows:
-
-.. literalinclude:: ../_static/code_examples/manager_config_example_new_doctype.py
+.. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
     :language: python
-    :lines: 11-23
+    :lines: 42-58
+
+Then create object of :class:`dedoc.DedocManager` and use :meth:`dedoc.DedocManager.parse` method:
+
+.. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
+    :language: python
+    :lines: 60-61
+
+Result is :class:`dedoc.data_structures.ParsedDocument`:
+
+.. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
+    :language: python
+    :lines: 63-64
 
 Adding support for a new document type is completed.
