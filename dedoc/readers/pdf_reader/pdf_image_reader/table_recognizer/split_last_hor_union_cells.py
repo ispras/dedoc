@@ -164,7 +164,9 @@ def __get_ocr_lines(cell_image: np.ndarray, language: str, page_image: np.ndarra
             # add confidence value
             text_line += OCRCellExtractor.get_line_with_meta(text=word.text, bbox=word.bbox, image=page_image,
                                                              confidences=[
-                                                                 ConfidenceAnnotation(start=0, end=len(word.text), value=word.confidence / 100.)])
+                                                                 ConfidenceAnnotation(start=0,
+                                                                                      end=len(word.text),
+                                                                                      value=0. if word.confidence < 0 else word.confidence / 100.)])
         if len(text_line) > 0:  # add new line
             cell_lines.append(text_line)
 

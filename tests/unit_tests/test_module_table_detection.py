@@ -50,13 +50,13 @@ class TestRecognizedTable(unittest.TestCase):
         image = cv2.imread(path_image, 0)
 
         tables = self.get_table(image, "rus+eng", table_type="split_last_column+wo_external_bounds")
-        self.assertTrue(tables[0].matrix_cells[4][-1], "40703978900000345077")
-        self.assertTrue(tables[0].matrix_cells[5][-1], "049401814")
-        self.assertTrue(tables[0].matrix_cells[6][-1], "30101810200000000814")
-        self.assertTrue(tables[0].matrix_cells[7][-1], "049401814")
-        self.assertTrue(tables[0].matrix_cells[8][-1], "30101810200000000814")
-        self.assertTrue(tables[0].matrix_cells[9][-1], "30110978700000070815")
-        self.assertTrue(tables[0].matrix_cells[10][-1], "30110978700000070815")
+        self.assertTrue(tables[0].matrix_cells[4][-1].get_text(), "40703978900000345077")
+        self.assertTrue(tables[0].matrix_cells[5][-1].get_text(), "049401814")
+        self.assertTrue(tables[0].matrix_cells[6][-1].get_text(), "30101810200000000814")
+        self.assertTrue(tables[0].matrix_cells[7][-1].get_text(), "049401814")
+        self.assertTrue(tables[0].matrix_cells[8][-1].get_text(), "30101810200000000814")
+        self.assertTrue(tables[0].matrix_cells[9][-1].get_text(), "30110978700000070815")
+        self.assertTrue(tables[0].matrix_cells[10][-1].get_text(), "30110978700000070815")
 
     def test_table_extract_one_cell_and_one_cell_tables(self) -> None:
         path_image = get_full_path("data/lising/platezhka.jpg")
