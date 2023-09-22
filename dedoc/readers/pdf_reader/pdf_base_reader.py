@@ -90,7 +90,7 @@ class PdfBaseReader(BaseReader):
         lines, scan_tables, attachments, warnings, other_fields = self._parse_document(path, params_for_parse)
         tables = []
         for scan_table in scan_tables:
-            metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name)
+            metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name, rotated_angle=scan_table.location.rotated_angle)
             cells_with_meta = [[CellWithMeta.create_from_cell(cell) for cell in row]
                                for row in scan_table.matrix_cells]
 
@@ -133,14 +133,14 @@ class PdfBaseReader(BaseReader):
                 metadata["last_page"] = last_page
         else:
             warnings = []
-            metadata = None
+            metadata = {}
 
         if len(result) == 0:
-            all_lines, unref_tables, attachments = [], [], []
+            all_lines, unref_tables, attachments, page_angles = [], [], [], []
         else:
-            all_lines, unref_tables, attachments = map(list, map(flatten, zip(*result)))
+            all_lines, unref_tables, attachments, page_angles = map(list, map(flatten, zip(*result)))
         if parameters.need_header_footers_analysis:
-            lines = [lines for lines, _, _ in result]
+            lines = [lines for lines, _, _, _ in result]
             lines, headers, footers = footer_header_analysis(lines)
             all_lines = list(flatten(lines))
         mp_tables = self.table_recognizer.convert_to_multipages_tables(unref_tables, lines_with_meta=all_lines)
@@ -152,11 +152,13 @@ class PdfBaseReader(BaseReader):
             prev_line = line
 
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
+        if page_angles:
+            metadata["rotated_page_angles"] = page_angles
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
     @abstractmethod
     def _process_one_page(self, image: np.ndarray, parameters: ParametersForParseDoc, page_number: int, path: str) \
-            -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
+            -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[int]]:
         pass
 
     def _get_images(self, path: str, page_from: int, page_to: int) -> Iterator[np.ndarray]:

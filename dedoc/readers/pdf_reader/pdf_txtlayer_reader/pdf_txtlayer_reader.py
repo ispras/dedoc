@@ -43,7 +43,7 @@ class PdfTxtlayerReader(PdfBaseReader):
                           image: np.ndarray,
                           parameters: ParametersForParseDoc,
                           page_number: int,
-                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
+                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[int]]:
         if parameters.need_pdf_table_analysis:
             gray_image = self._convert_to_gray(image)
             cleaned_image, tables = self.table_recognizer.recognize_tables_from_image(
@@ -59,7 +59,7 @@ class PdfTxtlayerReader(PdfBaseReader):
 
         page = self.extractor_layer.extract_text_layer(path=path, page_number=page_number)
         if page is None:
-            return [], [], []
+            return [], [], [], []
         unreadable_blocks = [location.bbox for table in tables for location in table.locations]
         page.bboxes = [bbox for bbox in page.bboxes if not self._inside_any_unreadable_block(bbox.bbox, unreadable_blocks)]
         lines = self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page, call_classifier=False)
@@ -67,7 +67,7 @@ class PdfTxtlayerReader(PdfBaseReader):
         if self.config.get("labeling_mode"):
             save_page_with_bbox(page=page, config=self.config, document_name=os.path.basename(path))
 
-        return lines, tables, page.attachments
+        return lines, tables, page.attachments, []
 
     def _inside_any_unreadable_block(self, obj_bbox: BBox, unreadable_blocks: List[BBox]) -> bool:
         """

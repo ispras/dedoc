@@ -5,6 +5,7 @@ from typing import List
 
 import numpy as np
 
+from dedoc.data_structures import BBox
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.data_classes.tables.table_tree import TableTree
@@ -12,7 +13,8 @@ from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdd
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.cell_splitter import CellSplitter
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.split_last_hor_union_cells import split_last_column
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.base_table_extractor import BaseTableExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableAttributeExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import \
+    TableAttributeExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.img_processing import detect_tables_by_contours
 
 
@@ -33,7 +35,7 @@ class OnePageTableExtractor(BaseTableExtractor):
                                           page_number: int,
                                           language: str,
                                           orient_analysis_cells: bool,
-                                          orient_cell_angle: int,
+                                          orient_cell_angle: int,  # TODO remove
                                           table_type: str) -> List[ScanTable]:
         """
         extracts tables from input image
@@ -59,17 +61,14 @@ class OnePageTableExtractor(BaseTableExtractor):
 
         for matrix in tables:
             for location in matrix.locations:
-                location.rotate_coordinates(angle_rotate=-angle_rotate, image_shape=image.shape)
+                location.bbox = BBox.rotate_coordinates(bbox=location.bbox, angle_rotate=-angle_rotate, image_shape=image.shape)
+                location.rotated_angle = angle_rotate
 
         tables = self.__select_attributes_matrix_tables(tables=tables)
 
-        """
-        TODO: fix in the future
-        if orient_analysis_cells:
-            tables = self.__analyze_header_cell_with_diff_orient(tables, language, orient_cell_angle)"""
         return tables
 
-    """ TODO fix in the future
+    """ TODO fix in the future (REMOVE)
     def __detect_diff_orient(self, cell_text: str) -> bool:
         # 1 - разбиваем на строки длины которых состоят хотя бы из одного символа
         parts = cell_text.split("\n")
@@ -165,7 +164,8 @@ class OnePageTableExtractor(BaseTableExtractor):
                     cur_table.matrix_cells = self.splitter.split(cells=cur_table.matrix_cells)
 
                     # Эвристика 2: таблица должна иметь больше одного столбца
-                    if len(cur_table.matrix_cells[0]) > 1 or (self.table_options.detect_one_cell_table in table_type and cur_table.matrix_cells[0] != []):
+                    if len(cur_table.matrix_cells[0]) > 1 or (
+                            self.table_options.detect_one_cell_table in table_type and cur_table.matrix_cells[0] != []):
                         tables.append(cur_table)
 
                     if self.table_options.split_last_column in table_type:

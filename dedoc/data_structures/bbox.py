@@ -1,3 +1,4 @@
+import math
 from collections import OrderedDict
 from typing import Dict, Tuple
 
@@ -50,6 +51,24 @@ class BBox(Serializable):
     @staticmethod
     def crop_image_by_box(image: np.ndarray, bbox: "BBox") -> np.ndarray:
         return image[bbox.y_top_left:bbox.y_bottom_right, bbox.x_top_left:bbox.x_bottom_right]
+
+    @staticmethod
+    def rotate_coordinates(bbox: "BBox", angle_rotate: float, image_shape: Tuple[int]) -> "BBox":
+        xb, yb = bbox.x_top_left, bbox.y_top_left
+        # TODO check!!! was xe, ye = self.bbox.x_begin + self.bbox.width, self.bbox.x_begin + self.bbox.height
+        xe, ye = bbox.x_bottom_right, bbox.y_bottom_right  # self.bbox.x_top_left + self.bbox.height
+        rad = angle_rotate * math.pi / 180
+
+        xc = image_shape[1] // 2
+        yc = image_shape[0] // 2
+
+        bbox_xb = min((int(float(xb - xc) * math.cos(rad) - float(yb - yc) * math.sin(rad)) + xc), image_shape[1])
+        bbox_yb = min((int(float(yb - yc) * math.cos(rad) + float(xb - xc) * math.sin(rad)) + yc), image_shape[0])
+        bbox_xe = min((int(float(xe - xc) * math.cos(rad) - float(ye - yc) * math.sin(rad)) + xc), image_shape[1])
+        bbox_ye = min((int(float(ye - yc) * math.cos(rad) + float(xe - xc) * math.sin(rad)) + yc), image_shape[0])
+        bbox_new = BBox(bbox_xb, bbox_yb, bbox_xe - bbox_xb, bbox_ye - bbox_yb)
+
+        return bbox_new
 
     def __str__(self) -> str:
         return f"BBox(x = {self.x_top_left} y = {self.y_top_left}, w = {self.width}, h = {self.height})"

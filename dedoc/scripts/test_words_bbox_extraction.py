@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 
 from dedoc.api.dedoc_api import config
+from dedoc.utils.image_utils import rotate_image
 from dedoc.utils.pdf_utils import get_page_image
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
@@ -104,7 +105,15 @@ class TestWordExtraction(AbstractTestApiDocReader):
         return font_scale, thickness
 
     @staticmethod
-    def draw_word_annotations(image: np.ndarray, word_annotations: List[BboxWithConfsType]) -> np.ndarray:
+    def rotate_coordinate(x: int, y: int, xc: float, yc: float, angle: float) -> Tuple[int, int]:
+        rad = angle * math.pi / 180
+        x_rotated = int(float(x - xc) * math.cos(rad) - float(y - yc) * math.sin(rad) + xc)
+        y_rotated = int(float(y - yc) * math.cos(rad) + float(x - xc) * math.sin(rad) + yc)
+
+        return x_rotated, y_rotated
+
+    @staticmethod
+    def draw_word_annotations(image: np.ndarray, word_annotations: List[BboxWithConfsType], angle: float) -> np.ndarray:
 
         font_scale, thickness = TestWordExtraction.normalize_font_thickness(image)
 
@@ -112,6 +121,11 @@ class TestWordExtraction(AbstractTestApiDocReader):
             bbox = json.loads(ann.bbox)
             p1 = (int(bbox["x_top_left"] * bbox["page_width"]), int(bbox["y_top_left"] * bbox["page_height"]))
             p2 = (int((bbox["x_top_left"] + bbox["width"]) * bbox["page_width"]), int((bbox["y_top_left"] + bbox["height"]) * bbox["page_height"]))
+            x_c = image.shape[1] / 2
+            y_c = image.shape[0] / 2
+            p1 = TestWordExtraction.rotate_coordinate(p1[0], p1[1], x_c, y_c, angle)
+            p2 = TestWordExtraction.rotate_coordinate(p2[0], p2[1], x_c, y_c, angle)
+
             cv2.rectangle(image, p1, p2, (0, 255, 0) if ann.text_type == "typewritten" else (255, 0, 0))
             text = ",".join(ann.confs) if ann.confs != [] else "None"
             cv2.putText(image, text, (int(bbox["x_top_left"] * bbox["page_width"]), int(bbox["y_top_left"] * bbox["page_height"])),
@@ -148,12 +162,19 @@ class TestWordExtraction(AbstractTestApiDocReader):
     def test_table_word_extraction(self):
         output_path = os.path.join(self.output_path)
         os.makedirs(output_path, exist_ok=True)
-        file_names = ["tables/example_with_table3.png", "tables/example_with_table4.jpg", "tables/example_with_table5.png", "tables/example_with_table6.png"]
+        file_names = ["tables/example_with_table5.png", "tables/example_with_table3.png", "tables/example_with_table4.jpg",
+                      "tables/example_with_table6.png" "tables/example_with_table_horizontal_union.jpg"]
         for file_name in file_names:
             result = self._send_request(file_name, data=dict())
             table0 = result["content"]["tables"][0]
+            page_angle = result["metadata"]["other_fields"]["rotated_page_angles"][0]
+            table_angle = table0["metadata"]["rotated_angle"]
+
             word_annotations = TestWordExtraction.get_words_annotation_from_cell(table0)
             image = cv2.imread(self._get_abs_path(file_name))
-            image = TestWordExtraction.draw_word_annotations(image, word_annotations)
+            image = rotate_image(image, page_angle)
+            #image = rotate_image(image, table_angle)
+
+            image = TestWordExtraction.draw_word_annotations(image, word_annotations, angle=table_angle)
             cv2.imwrite(os.path.join(output_path, file_name), image)
 

@@ -144,7 +144,7 @@ def _split_row(cell_splitter: Cell, union_cell: List[Cell], language: str, image
         union_cell[col_id].y_bottom_right = y_bottom_split
 
         cell_image = OCRCellExtractor.upscale(image[y_top_split:y_bottom_split, x_left:x_right])
-        result_row[col_id].lines = __get_ocr_lines(cell_image, language)
+        result_row[col_id].lines = __get_ocr_lines(cell_image, language, page_image=image)
 
         col_id -= 1
 

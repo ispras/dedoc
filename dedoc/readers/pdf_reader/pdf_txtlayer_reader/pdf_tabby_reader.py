@@ -129,7 +129,7 @@ class PdfTabbyReader(PdfBaseReader):
 
         return all_lines, all_tables, all_tables_on_images
 
-    def __get_tables(self, page: dict, file_hash: str) -> List[ScanTable]:
+    def __get_tables(self, page: dict, file_hash: str) -> Tuple[List[Table], List[ScanTable]]:
         tables = []
         tables_on_image = []
         page_number = page["number"]
@@ -272,6 +272,6 @@ class PdfTabbyReader(PdfBaseReader):
                           image: np.ndarray,
                           parameters: ParametersForParseDoc,
                           page_number: int,
-                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
+                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[int]]:
 
-        return [], [], []
+        return [], [], [], []
