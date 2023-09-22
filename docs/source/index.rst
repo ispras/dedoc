@@ -216,7 +216,7 @@ For a document of unknown or unsupported domain there is an option to use defaul
 
 .. toctree::
    :maxdepth: 1
-   :caption: Tutorials:
+   :caption: Tutorials
 
    tutorials/add_new_doc_type
 
