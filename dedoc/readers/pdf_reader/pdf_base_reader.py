@@ -91,9 +91,7 @@ class PdfBaseReader(BaseReader):
         tables = []
         for scan_table in scan_tables:
             metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name, rotated_angle=scan_table.location.rotated_angle)
-            cells_with_meta = [[CellWithMeta.create_from_cell(cell) for cell in row]
-                               for row in scan_table.matrix_cells]
-
+            cells_with_meta = [[CellWithMeta.create_from_cell(cell) for cell in row] for row in scan_table.matrix_cells]
             table = Table(metadata=metadata, cells=cells_with_meta)
             tables.append(table)
 

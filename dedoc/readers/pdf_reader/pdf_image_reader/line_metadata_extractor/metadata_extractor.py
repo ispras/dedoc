@@ -127,9 +127,6 @@ class LineMetadataExtractor:
 
         return page
 
-    def __get_line_metadata(self, bbox: TextWithBBox, page_with_lines: PageWithBBox) -> LineMetadata:
-        return LineMetadata(page_id=page_with_lines.page_num, line_id=bbox.line_num)
-
     def __get_font_size(self, bbox: TextWithBBox, image_height: int) -> int:
         """
         determines the font size by the bbox size, return font size in typography point

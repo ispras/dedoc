@@ -113,18 +113,20 @@ class TestWordExtraction(AbstractTestApiDocReader):
         return x_rotated, y_rotated
 
     @staticmethod
-    def draw_word_annotations(image: np.ndarray, word_annotations: List[BboxWithConfsType], angle: float) -> np.ndarray:
+    def draw_word_annotations(image: np.ndarray, word_annotations: List[BboxWithConfsType], angle: float = 0.) -> np.ndarray:
 
         font_scale, thickness = TestWordExtraction.normalize_font_thickness(image)
+        x_c = image.shape[1] / 2
+        y_c = image.shape[0] / 2
 
         for ann in word_annotations:
             bbox = json.loads(ann.bbox)
             p1 = (int(bbox["x_top_left"] * bbox["page_width"]), int(bbox["y_top_left"] * bbox["page_height"]))
             p2 = (int((bbox["x_top_left"] + bbox["width"]) * bbox["page_width"]), int((bbox["y_top_left"] + bbox["height"]) * bbox["page_height"]))
-            x_c = image.shape[1] / 2
-            y_c = image.shape[0] / 2
-            p1 = TestWordExtraction.rotate_coordinate(p1[0], p1[1], x_c, y_c, angle)
-            p2 = TestWordExtraction.rotate_coordinate(p2[0], p2[1], x_c, y_c, angle)
+
+            if angle == 0.0:
+                p1 = TestWordExtraction.rotate_coordinate(p1[0], p1[1], x_c, y_c, angle)
+                p2 = TestWordExtraction.rotate_coordinate(p2[0], p2[1], x_c, y_c, angle)
 
             cv2.rectangle(image, p1, p2, (0, 255, 0) if ann.text_type == "typewritten" else (255, 0, 0))
             text = ",".join(ann.confs) if ann.confs != [] else "None"

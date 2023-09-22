@@ -21,14 +21,10 @@ class OCRCellExtractor:
         self.logger = config.get("logger", logging.getLogger())
 
     def get_cells_text(self, page_image: np.ndarray, tree_nodes: List["TableTree"], language: str) -> List[List[LineWithMeta]]:  # noqa
-        # try:
-        # if len(img_cells) == 0:
-        #    return []
         for node in tree_nodes:
             node.set_crop_text_box(page_image)
-        # img_cells_cropped = map(crop_image_text, img_cells)
-        # ids, images = zip(*sorted(enumerate(img_cells_cropped), key=lambda t: -t[1].shape[1]))
-        tree_nodes.sort(key=lambda t: -t.crop_text_box.width)  # TODO check
+
+        tree_nodes.sort(key=lambda t: -t.crop_text_box.width)
         originalbox_to_fastocrbox = {}
         batches = list(self.__nodes2batch(tree_nodes))
         for num_batch, nodes_batch in enumerate(batches):
@@ -66,8 +62,7 @@ class OCRCellExtractor:
 
         return self.__create_lines_with_meta(tree_nodes, originalbox_to_fastocrbox, page_image)
 
-    def __handle_one_batch(self, src_image: np.ndarray, tree_table_nodes: List["TableTree"], num_batch: int, language: str = "rus") -> (  # noqa
-            Tuple)[OcrPage, List[BBox]]:
+    def __handle_one_batch(self, src_image: np.ndarray, tree_table_nodes: List["TableTree"], num_batch: int, language: str = "rus") -> Tuple[OcrPage, List[BBox]]: # noqa
         concatenated, chunk_boxes = self.__concat_images(src_image=src_image, tree_table_nodes=tree_table_nodes)
         if self.config.get("debug_mode", False):
             image_path = os.path.join(self.config.get("path_debug"), "debug_tables", "batches", f"stacked_batch_image_{num_batch}.png")

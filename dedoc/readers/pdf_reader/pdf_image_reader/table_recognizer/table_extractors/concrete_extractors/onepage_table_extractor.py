@@ -5,7 +5,6 @@ from typing import List
 
 import numpy as np
 
-from dedoc.data_structures import BBox
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.data_classes.tables.table_tree import TableTree
@@ -13,8 +12,7 @@ from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdd
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.cell_splitter import CellSplitter
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.split_last_hor_union_cells import split_last_column
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.base_table_extractor import BaseTableExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import \
-    TableAttributeExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableAttributeExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.img_processing import detect_tables_by_contours
 
 
@@ -61,7 +59,7 @@ class OnePageTableExtractor(BaseTableExtractor):
 
         for matrix in tables:
             for location in matrix.locations:
-                location.bbox = BBox.rotate_coordinates(bbox=location.bbox, angle_rotate=-angle_rotate, image_shape=image.shape)
+                location.bbox.rotate_coordinates(angle_rotate=-angle_rotate, image_shape=image.shape)
                 location.rotated_angle = angle_rotate
 
         tables = self.__select_attributes_matrix_tables(tables=tables)

@@ -3,7 +3,6 @@ import logging
 import math
 import os
 import subprocess
-from collections import namedtuple
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -35,8 +34,6 @@ from dedoc.structure_extractors.concrete_structure_extractors.default_structure_
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
 from dedoc.utils.parameter_utils import get_param_page_slice
 from dedoc.utils.utils import calculate_file_hash
-
-CellPropertyInfo = namedtuple("NamedTuple", "colspan, rowspan, invisible")
 
 
 class PdfTabbyReader(PdfBaseReader):

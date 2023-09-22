@@ -1,12 +1,9 @@
 import logging
-from typing import Iterator, List
 
 import cv2
 import numpy as np
-from joblib import Parallel, delayed
 
 from dedoc.utils.image_utils import rotate_image
-from dedoc.utils.utils import get_batch
 
 
 class ScanRotator:
@@ -48,13 +45,3 @@ class ScanRotator:
         if self.config.get("debug_mode"):
             self.logger.debug(f"Best angle: {best_angle}, orientation angle: {orientation_angle}")
         return rotated, best_angle + orientation_angle
-
-    def rotate(self, images: List[np.ndarray]) -> Iterator[np.ndarray]:
-        """
-        automatic rotation of list of images
-        """
-        n_jobs = self.config["n_jobs"]
-        for batch in get_batch(size=n_jobs, iterable=images):
-            rotated_ = Parallel(n_jobs=n_jobs)(delayed(self.auto_rotate)(img) for img in batch)
-            for res, _ in rotated_:
-                yield res
