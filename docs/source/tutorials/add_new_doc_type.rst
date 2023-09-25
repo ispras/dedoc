@@ -38,7 +38,9 @@ You should call the constructor of the base class in the constructor of the curr
 
 * :meth:`~dedoc.converters.AbstractConverter.do_convert` method performs the required file conversion. Don't worry about the file name containing spaces or other unwanted characters because the file has been renamed by the manager.
 
+
 3 Add the converter to manager config, see :ref:`adding_handlers_to_manager_config`.
+
 
 General scheme of adding Reader
 -------------------------------
@@ -128,6 +130,11 @@ You should implement the following methods:
 * :meth:`~dedoc.converters.AbstractConverter.can_convert`: return True if file extension is `.djvu`. You can see the file ``dedoc/extensions.py`` for more accurate work with extensions.
 * :meth:`~dedoc.converters.AbstractConverter.do_convert`: use `ddjvu` utility and run it using ``os.system``. ``._await_for_conversion()`` method ensures that the converted file was saved.
 
+You can use the converter in your code:
+
+.. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
+    :language: python
+    :lines: 20, 16-17, 22-27
 
 Implementing of PdfAttachmentsExtractor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -168,6 +175,11 @@ We use PyPDF2 to extract the text and tabula to extract tables. They must be add
 We use class ``PdfAttachmentsExtractor`` for attachments extraction (it was mentioned before).
 It must be added to the reader's constructor and used in ``read`` method.
 
+You can use the reader in your code:
+
+.. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
+    :language: python
+    :lines: 21, 29-41
 
 .. _adding_handlers_to_manager_config:
 
