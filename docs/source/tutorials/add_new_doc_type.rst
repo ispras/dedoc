@@ -103,6 +103,11 @@ General scheme of adding AttachmentExtractor
         def __init__(self) -> None:
             self.attachment_extractor = PdfAttachmentsExtractor()
 
+        def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+            # some code
+            attachments = self.attachment_extractor.get_attachments(tmpdir, filename, parameters)
+            # some code
+
 Example of adding pdf/djvu handlers
 -----------------------------------
 
