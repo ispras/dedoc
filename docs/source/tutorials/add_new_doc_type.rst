@@ -38,8 +38,7 @@ You should call the constructor of the base class in the constructor of the curr
 
 * :meth:`~dedoc.converters.AbstractConverter.do_convert` method performs the required file conversion. Don't worry about the file name containing spaces or other unwanted characters because the file has been renamed by the manager.
 
-
-3 Add the converter to manager config, see :ref:`adding_handlers_to_manager_config`.
+3. Add the converter to manager config, see :ref:`adding_handlers_to_manager_config`.
 
 
 General scheme of adding Reader
