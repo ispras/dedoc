@@ -22,7 +22,7 @@ class ScanRotator:
         score = np.sum((histogram[1:] - histogram[:-1]) ** 2, dtype=float)
         return score
 
-    def auto_rotate(self, image: np.ndarray, orientation_angle: int = 0) -> (np.ndarray, int):
+    def auto_rotate(self, image: np.ndarray, orientation_angle: float = 0.) -> (np.ndarray, float):
         if orientation_angle:
             image = rotate_image(image, orientation_angle)
 

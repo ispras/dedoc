@@ -16,7 +16,8 @@ class TableMetadata(Serializable):
         :param page_id: number of the page where table starts
         :param uid: unique identifier of the table
         :param is_inserted: indicator if table was already inserted into paragraphs list
-        :param cell_properties: information about rowspan, colspan and invisibility of each cell
+        :param rotated_angle: the value of the rotation angle by which the table was rotated during recognition. Extracted boxes from a table will need to
+            be rotated by this angle.
         """
         self.page_id = page_id
         self.uid = str(uuid.uuid1()) if not uid else uid
@@ -37,5 +38,5 @@ class TableMetadata(Serializable):
             "page_id": fields.Integer(readonly=False, description="table start page number"),
             "uid": fields.String(description="table unique id"),
             "is_inserted": fields.Boolean(description="was the table inserted into document body"),
-            "rotated_angle": fields.Float(readonly=False, description="At what angle should the table be rotated to use boxes?")
+            "rotated_angle": fields.Float(readonly=False, description="At what angle should the table be rotated to use boxes")
         })

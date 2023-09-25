@@ -156,7 +156,14 @@ class PdfBaseReader(BaseReader):
 
     @abstractmethod
     def _process_one_page(self, image: np.ndarray, parameters: ParametersForParseDoc, page_number: int, path: str) \
-            -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[int]]:
+            -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]]:
+        """
+            function parses image and returns:
+            - recognized textual lines with annotations
+            - recognized tables on an image
+            - attachments (figures on images)
+            - [rotated_angle] - the angle by which the image was rotated for recognition
+        """
         pass
 
     def _get_images(self, path: str, page_from: int, page_to: int) -> Iterator[np.ndarray]:

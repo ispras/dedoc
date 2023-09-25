@@ -1,5 +1,4 @@
 import uuid
-from collections import OrderedDict
 from typing import List, Optional
 
 from dedoc.data_structures.annotation import Annotation
@@ -37,15 +36,13 @@ class Cell:
                  y_top_left: int,
                  y_bottom_right: int,
                  id_con: int = -1,
-                 lines: List[LineWithMeta] = None,
+                 lines: Optional[List[LineWithMeta]] = None,
                  is_attribute: bool = False,
                  is_attribute_required: bool = False,
                  rotated_angle: int = 0,
                  uid: str = None,
                  contour_coord: Optional[BBox] = None) -> None:
 
-        if lines is None:
-            lines = []
         assert x_top_left <= x_bottom_right
         assert y_top_left <= y_bottom_right
         self.x_top_left = x_top_left
@@ -53,7 +50,7 @@ class Cell:
         self.y_top_left = y_top_left
         self.y_bottom_right = y_bottom_right
         self.id_con = id_con
-        self.lines = lines
+        self.lines = [] if lines is None else lines
         self.is_attribute = is_attribute
         self.is_attribute_required = is_attribute_required
         self.rotated_angle = rotated_angle
@@ -70,10 +67,7 @@ class Cell:
         return "\n".join([line.line for line in self.lines])
 
     def get_annotations(self) -> List[Annotation]:
-        annotations = []
-        for line in self.lines:
-            annotations.extend(line.annotations)
-        return annotations
+        return LineWithMeta.join(self.lines, delimiter="\n").annotations
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -85,16 +79,3 @@ class Cell:
     @property
     def height(self) -> int:
         return self.y_bottom_right - self.y_top_left
-
-    def to_dict(self) -> dict:
-        cell_dict = OrderedDict()
-        cell_dict["text"] = self.get_text()
-        cell_dict["is_attribute"] = self.is_attribute
-        cell_dict["colspan"] = self.colspan
-        cell_dict["rowspan"] = self.rowspan
-        cell_dict["invisible"] = self.invisible
-
-        return cell_dict
-
-    def set_rotated_angle(self, rotated_angle: int) -> None:
-        self.rotated_angle = rotated_angle

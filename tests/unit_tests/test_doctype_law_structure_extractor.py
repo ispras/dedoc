@@ -73,8 +73,7 @@ class TestLawStructureExtractor(unittest.TestCase):
             self.assertEqual(number[:res.start()], without_ends[num])
 
     def __get_line_with_meta(self, hierarchy_level: HierarchyLevel, text: str) -> LineWithMeta:
-        metadata = LineMetadata(page_id=0, line_id=0, hierarchy_level=hierarchy_level)
-        return LineWithMeta(line=text, metadata=metadata, annotations=[])
+        return LineWithMeta(line=text, metadata=LineMetadata(page_id=0, line_id=0, hierarchy_level=hierarchy_level))
 
     def __check_postprocess_of_one_string_w_roman_numeral(self, text: str, text_expected: str) -> None:
         hierarchy_level = HierarchyLevel(4, 0, True, "subsection")

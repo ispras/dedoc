@@ -3,10 +3,10 @@ import hashlib
 from bs4 import Tag
 
 from dedoc.data_structures import LineMetadata, LineWithMeta
-from dedoc.data_structures.cell_property import CellProperty
 from dedoc.data_structures.cell_with_meta import CellWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
+from dedoc.readers.docx_reader.data_structures.cell_property import CellProperty
 from dedoc.readers.docx_reader.data_structures.run import Run
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 
@@ -83,7 +83,7 @@ class DocxTable:
         for num_row, row in enumerate(result_cells):
             result_row = []
             for num_col, cell_text in enumerate(row):
-                cell = CellWithMeta(lines=[LineWithMeta(line=cell_text, metadata=LineMetadata(page_id=0, line_id=None), annotations=[])],
+                cell = CellWithMeta(lines=[LineWithMeta(line=cell_text, metadata=LineMetadata(page_id=0, line_id=0))],
                                     colspan=cell_property_list[num_row][num_col].colspan,
                                     rowspan=cell_property_list[num_row][num_col].rowspan,
                                     invisible=cell_property_list[num_row][num_col].invisible)

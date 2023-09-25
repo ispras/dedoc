@@ -9,15 +9,15 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 
 class CellWithMeta:
     """
-        This class holds the information about the cell information: text of the cell, text annotations and cell properties (rowspan, colspan, invisible).
+    This class holds the information about the cell information: text of the cell, text annotations and cell properties (rowspan, colspan, invisible).
     """
     def __init__(self, lines: List[LineWithMeta], colspan: int = 1, rowspan: int = 1, invisible: bool = False) -> None:
         """
-               :param lines: text lines (LineWithMeta) of the cell
-               :param colspan: The value of the rowspan attribute represents the number of columns to span. Like HTML format.
-               :param rowspan: The value of the rowspan attribute represents the number of rows to span. Like HTML format.
-               :param invisible: Display or hide cell values
-               """
+        :param lines: text lines (LineWithMeta) of the cell
+        :param colspan: The value of the rowspan attribute represents the number of columns to span. Like HTML format.
+        :param rowspan: The value of the rowspan attribute represents the number of rows to span. Like HTML format.
+        :param invisible: Display or hide cell values
+        """
         self.lines = lines
         self.colspan = colspan
         self.rowspan = rowspan
@@ -45,6 +45,5 @@ class CellWithMeta:
             "colspan": fields.Integer(description="attribute of union column count"),
             "rowspan": fields.Integer(description="attribute of union row count"),
             "invisible": fields.Boolean(description='flag for cell display (for example: if invisible==true then style="display: none")'),
-            "lines": fields.List(
-                fields.Nested(LineWithMeta.get_api_dict(api), description="Text annotations (font, size, bold, italic and etc)")),
+            "lines": fields.List(fields.Nested(LineWithMeta.get_api_dict(api), description="Text annotations (font, size, bold, italic and etc)")),
         })

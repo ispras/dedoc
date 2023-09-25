@@ -35,8 +35,7 @@ class OCRCellExtractor:
                 for i, table_tree_node in enumerate(nodes_batch):
                     cv2.imwrite(os.path.join(tmp_dir, f"image_{num_batch}_{i}.png"), BBox.crop_image_by_box(page_image, table_tree_node.cell_box))
 
-            ocr_result, chunk_boxes = self.__handle_one_batch(src_image=page_image, tree_table_nodes=nodes_batch, num_batch=num_batch,
-                                                              language=language)
+            ocr_result, chunk_boxes = self.__handle_one_batch(src_image=page_image, tree_table_nodes=nodes_batch, num_batch=num_batch, language=language)
 
             for chunk_index, _ in enumerate(chunk_boxes):
                 originalbox_to_fastocrbox[nodes_batch[chunk_index].cell_box] = []

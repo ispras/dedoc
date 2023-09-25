@@ -44,7 +44,7 @@ class CSVReader(BaseReader):
         for row in data:
             row_lines = []
             for cell in row:
-                row_lines.append(CellWithMeta(lines=[LineWithMeta(line=cell, metadata=LineMetadata(page_id=0, line_id=line_id), annotations=[])]))
+                row_lines.append(CellWithMeta(lines=[LineWithMeta(line=cell, metadata=LineMetadata(page_id=0, line_id=line_id))]))
                 line_id += 1
             cells_with_meta.append(row_lines)
 

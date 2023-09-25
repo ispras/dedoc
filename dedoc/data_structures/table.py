@@ -18,7 +18,6 @@ class Table(Serializable):
         """
         :param cells: a list of lists of cells (cell has text, colspan and rowspan attributes).
         :param metadata: some table metadata, as location, size and so on.
-        :param cells_properties: a list of lists of cells properties - each should contain attributes rowspan, colspan, invisible (for repeated cells)
         """
         self.metadata = metadata
         self.cells = cells

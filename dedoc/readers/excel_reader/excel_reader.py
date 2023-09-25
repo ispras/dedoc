@@ -58,9 +58,7 @@ class ExcelReader(BaseReader):
             row = []
             for col_id in range(n_cols):
                 value = str(sheet.cell_value(rowx=row_id, colx=col_id))
-                row.append(CellWithMeta(lines=[LineWithMeta(line=value,
-                                                            metadata=LineMetadata(page_id=sheet_id, line_id=None),
-                                                            annotations=[])]))
+                row.append(CellWithMeta(lines=[LineWithMeta(line=value, metadata=LineMetadata(page_id=sheet_id, line_id=0))]))
             res.append(row)
         metadata = TableMetadata(page_id=sheet_id)
         return Table(cells=res, metadata=metadata)

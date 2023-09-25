@@ -43,12 +43,12 @@ class PptxReader(BaseReader):
             for paragraph_id, shape in enumerate(slide.shapes, start=1):
 
                 if shape.has_text_frame:
-                    lines.append(LineWithMeta(line=shape.text, metadata=LineMetadata(page_id=page_id, line_id=paragraph_id), annotations=[]))
+                    lines.append(LineWithMeta(line=shape.text, metadata=LineMetadata(page_id=page_id, line_id=paragraph_id)))
 
                 if shape.has_table:
-                    cells = [[CellWithMeta(lines=[LineWithMeta(line=cell.text,
-                                                               metadata=LineMetadata(page_id=page_id, line_id=None),
-                                                               annotations=[])]) for cell in row.cells] for row in shape.table.rows]
+                    cells = [[CellWithMeta(lines=[
+                        LineWithMeta(line=cell.text, metadata=LineMetadata(page_id=page_id, line_id=0))]) for cell in row.cells] for row in shape.table.rows
+                    ]
 
                     tables.append(Table(cells=cells, metadata=TableMetadata(page_id=page_id)))
 

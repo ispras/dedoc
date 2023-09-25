@@ -162,8 +162,7 @@ class OnePageTableExtractor(BaseTableExtractor):
                     cur_table.matrix_cells = self.splitter.split(cells=cur_table.matrix_cells)
 
                     # Эвристика 2: таблица должна иметь больше одного столбца
-                    if len(cur_table.matrix_cells[0]) > 1 or (
-                            self.table_options.detect_one_cell_table in table_type and cur_table.matrix_cells[0] != []):
+                    if len(cur_table.matrix_cells[0]) > 1 or (self.table_options.detect_one_cell_table in table_type and cur_table.matrix_cells[0] != []):
                         tables.append(cur_table)
 
                     if self.table_options.split_last_column in table_type:

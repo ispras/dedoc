@@ -157,7 +157,7 @@ class HtmlReader(BaseReader):
         else:
             header = str(index + 1) + end
         metadata = LineMetadata(tag_hierarchy_level=HierarchyLevel(2, 1, False, line_type=HierarchyLevel.list_item), page_id=0, line_id=0)
-        header_line = LineWithMeta(line=header, metadata=metadata, annotations=[])
+        header_line = LineWithMeta(line=header, metadata=metadata)
         return header_line
 
     def __read_list(self, lst: Tag, uid: str, path_hash: str, handle_invisible_table: bool) -> List[LineWithMeta]:

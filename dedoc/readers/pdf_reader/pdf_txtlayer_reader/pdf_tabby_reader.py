@@ -130,14 +130,12 @@ class PdfTabbyReader(PdfBaseReader):
         tables = []
         tables_on_image = []
         page_number = page["number"]
-        i = 0
-        for table in page["tables"]:
-            i += 1
+        for table_num, table in enumerate(page["tables"]):
             x_top_left = table["x_top_left"]
             y_top_left = table["y_top_left"]
             x_bottom_right = x_top_left + table["width"]
             y_bottom_right = y_top_left + table["height"]
-            order = table["order"] # noqa TODO add table order into TableMetadata
+            order = table["order"]  # TODO add table order into TableMetadata
             rows = table["rows"]
             cell_properties = table["cell_properties"]
             assert len(rows) == len(cell_properties)
@@ -147,19 +145,16 @@ class PdfTabbyReader(PdfBaseReader):
                 assert len(row) == len(cell_properties[num_row])
                 result_row = []
                 for num_col, cell_text in enumerate(row):
-                    result_row.append(CellWithMeta(lines=[LineWithMeta(line=cell_text,
-                                                                       metadata=LineMetadata(page_id=page_number, line_id=None),
-                                                                       annotations=[])],
+                    result_row.append(CellWithMeta(lines=[LineWithMeta(line=cell_text, metadata=LineMetadata(page_id=page_number, line_id=0))],
                                                    colspan=cell_properties[num_row][num_col]["col_span"],
                                                    rowspan=cell_properties[num_row][num_col]["row_span"],
                                                    invisible=bool(cell_properties[num_row][num_col]["invisible"])))
 
                 result_cells.append(result_row)
-
             table_bbox = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))  # noqa TODO add table location into TableMetadata
             tables.append(Table(cells=result_cells, metadata=TableMetadata(page_id=page_number, is_inserted=False)))
-            tables_on_image.append(ScanTable(page_number=page_number, matrix_cells=None, bbox=table_bbox, name=file_hash + str(page_number) + str(i),
-                                             order=order))
+            table_name = file_hash + str(page_number) + str(table_num)
+            tables_on_image.append(ScanTable(page_number=page_number, matrix_cells=None, bbox=table_bbox, name=table_name, order=order))
 
         return tables, tables_on_image
 
@@ -269,6 +264,6 @@ class PdfTabbyReader(PdfBaseReader):
                           image: np.ndarray,
                           parameters: ParametersForParseDoc,
                           page_number: int,
-                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[int]]:
+                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]]:
 
         return [], [], [], []

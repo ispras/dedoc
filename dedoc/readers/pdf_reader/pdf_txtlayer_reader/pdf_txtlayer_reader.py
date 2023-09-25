@@ -43,7 +43,7 @@ class PdfTxtlayerReader(PdfBaseReader):
                           image: np.ndarray,
                           parameters: ParametersForParseDoc,
                           page_number: int,
-                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[int]]:
+                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]]:
         if parameters.need_pdf_table_analysis:
             gray_image = self._convert_to_gray(image)
             cleaned_image, tables = self.table_recognizer.recognize_tables_from_image(

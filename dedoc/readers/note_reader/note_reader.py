@@ -4,7 +4,6 @@ import pickle
 from typing import Optional
 
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
-from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
@@ -40,7 +39,7 @@ class NoteReader(BaseReader):
             text = note_dict["content"]
             if isinstance(text, bytes):
                 text = text.decode()
-            lines = [LineWithMeta(line=text, annotations=[], metadata=LineMetadata(line_id=0, page_id=0))]
+            lines = [LineWithMeta(line=text)]
             unstructured = UnstructuredDocument(tables=[], lines=lines, attachments=[])
 
             return unstructured

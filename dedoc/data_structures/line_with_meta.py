@@ -1,6 +1,6 @@
 import re
 from collections import OrderedDict
-from typing import List, Sized, Union
+from typing import List, Optional, Sized, Union
 from uuid import uuid1
 
 from flask_restx import Api, Model, fields
@@ -17,7 +17,11 @@ class LineWithMeta(Sized):
     (for example, document title and raw text of the document should not be in the same line).
     Still the logical part of the document may be represented by more than one line (for example, document title may consist of many lines).
     """
-    def __init__(self, line: str, metadata: LineMetadata, annotations: List[Annotation], uid: str = None) -> None:
+    def __init__(self,
+                 line: str,
+                 metadata: Optional[LineMetadata] = None,
+                 annotations: Optional[List[Annotation]] = None,
+                 uid: str = None) -> None:
         """
         :param line: raw text of the document line
         :param metadata: metadata (related to the entire line, as line or page number, its hierarchy level)
@@ -26,13 +30,25 @@ class LineWithMeta(Sized):
         """
 
         self._line = line
-        assert isinstance(metadata, LineMetadata)
-        self._metadata = metadata
-        self._annotations = annotations
+        self._metadata = LineMetadata(page_id=0, line_id=None) if metadata is None else metadata
+        self._annotations = [] if annotations is None else annotations
         self._uid = str(uuid1()) if uid is None else uid
 
     def __len__(self) -> int:
-        return len(self.line)
+        return len(self._line)
+
+    @staticmethod
+    def join(lines: List["LineWithMeta"], delimiter: str = "\n") -> "LineWithMeta":
+        if len(lines) == 0:
+            return LineWithMeta("")
+
+        common_line = lines[0]
+
+        for next_line in lines[1:]:
+            common_line += LineWithMeta(delimiter)
+            common_line += next_line
+
+        return common_line
 
     def split(self, sep: str) -> List["LineWithMeta"]:
         """
@@ -141,6 +157,5 @@ class LineWithMeta(Sized):
     def get_api_dict(api: Api) -> Model:
         return api.model("LineWithMeta", {
             "text": fields.String(description="line's text"),
-            "annotations": fields.List(
-                fields.Nested(Annotation.get_api_dict(api), description="Text annotations (font, size, bold, italic and etc)")),
+            "annotations": fields.List(fields.Nested(Annotation.get_api_dict(api), description="Text annotations (font, size, bold, italic and etc)")),
         })

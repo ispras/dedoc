@@ -70,7 +70,7 @@ class PdfImageReader(PdfBaseReader):
                           image: np.ndarray,
                           parameters: ParametersForParseDoc,
                           page_number: int,
-                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[int]]:
+                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]]:
         #  --- Step 1: correct orientation and detect column count ---
         rotated_image, is_one_column_document, angle = self._detect_column_count_and_orientation(image, parameters)
         if self.config.get("debug_mode"):
@@ -104,7 +104,7 @@ class PdfImageReader(PdfBaseReader):
 
         return lines, tables, page.attachments, [angle]
 
-    def _detect_column_count_and_orientation(self, image: np.ndarray, parameters: ParametersForParseDoc) -> Tuple[np.ndarray, bool, int]:
+    def _detect_column_count_and_orientation(self, image: np.ndarray, parameters: ParametersForParseDoc) -> Tuple[np.ndarray, bool, float]:
         """
         Function :
             - detects the number of page columns
