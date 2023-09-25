@@ -16,7 +16,6 @@ exclude =
     resources,
     dedoc/scripts,
     examples,
-    docs,
     venv,
     build,
     dedoc.egg-info
