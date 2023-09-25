@@ -93,7 +93,7 @@ General scheme of adding AttachmentExtractor
 3. Add attachments extractor to the reader's code.
 
    You should add line ``self.attachment_extractor = NewtypeAttachmentsExtractor()`` to the constructor of ``NewtypeReader`` class
-   and add attachments extraction to ``read`` method (see the example below).
+   and add attachments extraction to ``read`` method:
 
 .. code-block:: python
 
@@ -126,7 +126,7 @@ Implement class ``DjvuConverter``.
 You should implement the following methods:
 
 * :meth:`~dedoc.converters.AbstractConverter.can_convert`: return True if file extension is `.djvu`. You can see the file `dedoc/extensions.py` for more accurate work with extensions.
-* :meth:`~dedoc.converters.AbstractConverter.do_convert`: use `ddjvu` utility and run it using ``os.system``. :meth:`~dedoc.converters.AbstractConverter._await_for_conversion()` method ensures that the converted file was saved.
+* :meth:`~dedoc.converters.AbstractConverter.do_convert`: use `ddjvu` utility and run it using ``os.system``. ``._await_for_conversion()`` method ensures that the converted file was saved.
 
 
 Implementing of PdfAttachmentsExtractor
@@ -139,7 +139,7 @@ Implement ``PdfAttachmentsExtractor``.
 
 You should implement the following methods:
 
-* :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.can_extract()`: use file extension or mime to check if we could read the given file. You can learn more about extensions and mime using file :file:`dedoc/extensions.py`
+* :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.can_extract()`: use file extension or mime to check if we could read the given file. You can learn more about extensions and mime using file ``dedoc/extensions.py``
 * :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.get_attachments()` : use information about file path and file name to extract attachments from the given file.
 
 The method returns the list of :class:`~dedoc.data_structures.attached_file.AttachedFile` using
@@ -151,20 +151,20 @@ the name of the attached file and binary content of the file.
 Implementing of PdfReader
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Implement :class:`PdfReader` implementing.
+Implement ``PdfReader`` implementing.
 
 .. literalinclude:: ../_static/code_examples/pdf_reader.py
     :language: python
 
 You should implement the following methods:
 
-* :meth:`~dedoc.readers.BaseReader.can_read()`: use file extension or mime to check if we could read the given file. You can learn more about extensions and mime using file :file:`dedoc/extensions.py`.
+* :meth:`~dedoc.readers.BaseReader.can_read()`: use file extension or mime to check if we could read the given file. You can learn more about extensions and mime using file ``dedoc/extensions.py``.
 * :meth:`~dedoc.readers.BaseReader.read()`: Returns document content :class:`~dedoc.data_structures.unstructured_document.UnstructuredDocument`, consisting of a list of document lines :class:`~dedoc.data_structures.line_with_meta.LineWithMeta`, tables :class:`~dedoc.data_structures.table.Table` and attachments :class:`~dedoc.data_structures.attached_file.AttachedFile`.
 
 For each line, you need to add its text, metadata, hierarchy level (if exists) and annotations (if exist).
 For tables, you need to add a list of rows (each row is a list of table cells) and metadata.
 You can use :ref:`dedoc_data_structures` to learn more about all the described structures.
-We use PyPDF2 to extract the text and tabula to extract tables. They must be added to :file:`requirements.txt` of the project.
+We use PyPDF2 to extract the text and tabula to extract tables. They must be added to ``requirements.txt`` of the project.
 We use class ``PdfAttachmentsExtractor`` for attachments extraction (it was mentioned before).
 It must be added to the reader's constructor and used in ``read`` method.
 
