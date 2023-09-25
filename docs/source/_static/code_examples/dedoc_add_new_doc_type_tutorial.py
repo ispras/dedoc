@@ -51,7 +51,7 @@ manager_config = dict(
         default_constructor=LinearConstructor()
     ),
     document_metadata_extractor=MetadataExtractorComposition(extractors=[DocxMetadataExtractor(), BaseMetadataExtractor()]),
-    attachments_extractor=AttachmentsHandler(config=config),
+    attachments_handler=AttachmentsHandler(config=config),
 )
 
 manager = DedocManager(config=config, manager_config=manager_config)
