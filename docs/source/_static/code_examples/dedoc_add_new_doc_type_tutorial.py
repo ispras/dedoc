@@ -37,23 +37,21 @@ pdf_reader.read(file_path, parameters={"with_attachments": "true"})  # <dedoc.da
 
 document = pdf_reader.read(file_path, parameters={"with_attachments": "true"})
 list(vars(document))  # ['tables', 'lines', 'attachments', 'warnings', 'metadata']
-len(document.attachments)
-len(document.lines)
+len(document.attachments)  # 2
+len(document.lines)  # 15
 
 """Adding the implemented handlers to the manager config"""
 config = {}
 manager_config = dict(
     converter=FileConverterComposition(converters=[DjvuConverter(config=config)]),
     reader=ReaderComposition(readers=[PdfReader()]),
+    structure_extractor=StructureExtractorComposition(extractors={DefaultStructureExtractor.document_type: DefaultStructureExtractor()}, default_key="other"),
     structure_constructor=StructureConstructorComposition(
         constructors={"linear": LinearConstructor(), "tree": TreeConstructor()},
         default_constructor=LinearConstructor()
     ),
     document_metadata_extractor=MetadataExtractorComposition(extractors=[DocxMetadataExtractor(), BaseMetadataExtractor()]),
     attachments_extractor=AttachmentsHandler(config=config),
-    structure_extractor=StructureExtractorComposition(extractors={
-        DefaultStructureExtractor.document_type: DefaultStructureExtractor()}, default_key="other"),
-    attachments_handler=AttachmentsHandler(config=config)
 )
 
 manager = DedocManager(config=config, manager_config=manager_config)

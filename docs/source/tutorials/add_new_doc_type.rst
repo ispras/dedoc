@@ -87,7 +87,7 @@ General scheme of adding AttachmentExtractor
 2. You should implement methods according to the specifics of extracting attachments for this format.
 
 * :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.can_extract()` method checks if the new extractor can process the file, for example, you can return True for the list of some specific file extensions.
-* :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.get_attachments()` method should return a list of attachments that were extracted from the document: for each attachment :class:`dedoc.data_structures.attached_file.AttachedFile` is returned, you can see its code in ``dedoc/data_structures/attached_file.py``.
+* :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.get_attachments()` method should return a list of attachments that were extracted from the document: for each attachment :class:`~dedoc.data_structures.attached_file.AttachedFile` is returned, you can see its code in ``dedoc/data_structures/attached_file.py``.
 
 
 3. Add attachments extractor to the reader's code.
@@ -125,7 +125,7 @@ Implement class ``DjvuConverter``.
 
 You should implement the following methods:
 
-* :meth:`~dedoc.converters.AbstractConverter.can_convert`: return True if file extension is `.djvu`. You can see the file `dedoc/extensions.py` for more accurate work with extensions.
+* :meth:`~dedoc.converters.AbstractConverter.can_convert`: return True if file extension is `.djvu`. You can see the file ``dedoc/extensions.py`` for more accurate work with extensions.
 * :meth:`~dedoc.converters.AbstractConverter.do_convert`: use `ddjvu` utility and run it using ``os.system``. ``._await_for_conversion()`` method ensures that the converted file was saved.
 
 
@@ -143,7 +143,7 @@ You should implement the following methods:
 * :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.get_attachments()` : use information about file path and file name to extract attachments from the given file.
 
 The method returns the list of :class:`~dedoc.data_structures.attached_file.AttachedFile` using
-:meth:`~dedoc.data_structures.attached_file.AttachedFile._content2attach_file` method.
+:meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor._content2attach_file` method.
 This method is inherited from the abstract class, it makes the list of :class:`~dedoc.data_structures.attached_file.AttachedFile` from the list of tuples:
 the name of the attached file and binary content of the file.
 
@@ -151,7 +151,7 @@ the name of the attached file and binary content of the file.
 Implementing of PdfReader
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Implement ``PdfReader`` implementing.
+Implement ``PdfReader``.
 
 .. literalinclude:: ../_static/code_examples/pdf_reader.py
     :language: python
@@ -174,8 +174,7 @@ It must be added to the reader's constructor and used in ``read`` method.
 Adding the implemented handlers to the manager config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-All implemented document handlers are linked to dedoc in ``dedoc/manager_config.py``:
-https://github.com/ispras/dedoc/blob/develop/dedoc/manager_config.py
+All implemented document handlers are linked to dedoc in `dedoc/manager_config.py <https://github.com/ispras/dedoc/blob/develop/dedoc/manager_config.py>`_
 
 
 You do not have to edit this file. Create your own ``manager_config`` with dedoc handlers you need and
@@ -183,17 +182,13 @@ your custom handlers directly in your code. Example of a manager config with the
 
 .. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
     :language: python
-    :lines: 1-15
-
-.. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
-    :language: python
-    :lines: 42-55
+    :lines: 1-15, 44-55
 
 Then create an object of :class:`~dedoc.DedocManager` and use :meth:`~dedoc.DedocManager.parse` method:
 
 .. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
     :language: python
-    :lines: 57-58
+    :lines: 16-17, 57-58
 
 Result is :class:`~dedoc.data_structures.ParsedDocument`:
 
