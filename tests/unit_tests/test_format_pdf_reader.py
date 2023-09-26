@@ -18,7 +18,7 @@ from tests.test_utils import get_test_config
 class TestPDFReader(unittest.TestCase):
     checkpoint_path = get_test_config()["resources_path"]
     config = get_test_config()
-    orientation_classifier = ColumnsOrientationClassifier(on_gpu=False, checkpoint_path=checkpoint_path, delete_lines=False, config=config)
+    orientation_classifier = ColumnsOrientationClassifier(on_gpu=False, checkpoint_path=checkpoint_path, config=config)
 
     def _split_lines_on_pages(self, lines: List[LineWithMeta]) -> List[List[str]]:
         pages = set(map(lambda x: x.metadata.page_id, lines))
