@@ -13,7 +13,7 @@ from dedoc.structure_constructors import LinearConstructor, StructureConstructor
 from dedoc.structure_extractors import DefaultStructureExtractor, StructureExtractorComposition
 
 
-file_dir, file_name = "test_dir", "example_with_table.djvu"
+file_dir, file_name = "test_dir", "The_New_Yorker_Case_Study.djvu"
 file_path = os.path.join(file_dir, file_name)
 
 
@@ -24,9 +24,9 @@ name_wo_extension, file_extension = os.path.splitext(file_name)
 file_mime = mimetypes.guess_type(file_path)[0]
 
 djvu_converter.can_convert(file_extension, file_mime)  # True
-djvu_converter.do_convert(file_dir, name_wo_extension, file_extension)  # 'example_with_table.pdf'
+djvu_converter.do_convert(file_dir, name_wo_extension, file_extension)  # 'The_New_Yorker_Case_Study.pdf'
 
-file_dir, file_name = "test_dir", "example_with_attachments_depth_1.pdf"
+file_dir, file_name = "test_dir", "pdf_with_attachment.pdf"
 file_path = os.path.join(file_dir, file_name)
 
 name_wo_extension, file_extension = os.path.splitext(file_name)
@@ -37,8 +37,8 @@ pdf_reader.read(file_path, parameters={"with_attachments": "true"})  # <dedoc.da
 
 document = pdf_reader.read(file_path, parameters={"with_attachments": "true"})
 list(vars(document))  # ['tables', 'lines', 'attachments', 'warnings', 'metadata']
-len(document.attachments)  # 2
-len(document.lines)  # 15
+len(document.attachments)  # 1
+len(document.lines)  # 11
 
 """Adding the implemented handlers to the manager config"""
 config = {}
@@ -59,3 +59,6 @@ result = manager.parse(file_path=file_path, parameters={"with_attachments": "tru
 
 result  # <dedoc.data_structures.ParsedDocument>
 result.to_dict()  # OrderedDict([('version', '0.11.2'), ('warnings', []), ('content', OrderedDict([('structure', OrderedDict([('node_id', '0'), ...
+
+os.remove("test_dir/The_New_Yorker_Case_Study.pdf")
+[os.remove("test_dir/" + file) for file in os.listdir("test_dir/") if file[-4] == "_"]
