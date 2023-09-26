@@ -18,7 +18,7 @@ from tests.test_utils import get_test_config
 class TestPDFReader(unittest.TestCase):
     checkpoint_path = get_test_config()["resources_path"]
     config = get_test_config()
-    orientation_classifier = ColumnsOrientationClassifier(on_gpu=False, checkpoint_path=checkpoint_path, delete_lines=True, config=config)
+    orientation_classifier = ColumnsOrientationClassifier(on_gpu=False, checkpoint_path=checkpoint_path, delete_lines=False, config=config)
 
     def _split_lines_on_pages(self, lines: List[LineWithMeta]) -> List[List[str]]:
         pages = set(map(lambda x: x.metadata.page_id, lines))
@@ -41,8 +41,8 @@ class TestPDFReader(unittest.TestCase):
 
     def test_scan_orientation(self) -> None:
         scan_rotator = ScanRotator(config=get_test_config())
-        imgs_path = [f"../data/scanned/orient_{i}.png"for i in range(1, 5)]
-        angles = [90.0, 90.0, 270.0, 270.0]
+        imgs_path = [f"../data/scanned/orient_{i}.png"for i in range(1, 9)]
+        angles = [90.0, 90.0, 270.0, 270.0, 180.0, 270.0, 180.0, 270.0]
         max_delta = 10.0
         for i in range(len(imgs_path)):
             path = os.path.join(os.path.dirname(__file__), imgs_path[i])

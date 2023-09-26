@@ -12,7 +12,7 @@ Keys are the names of repositories with models.
 """
 model_hash_dict = dict(
     txtlayer_classifier="94e27e184fa2876883d260e0aa58b042e6ab3e35",
-    scan_orientation_efficient_net_b0="0160965f8a920d12afacf62b8a5a8a3b365b11ef",
+    scan_orientation_efficient_net_b0="9ea283f3d346ae4fdd82463a9f60b5369a3ffb58",
     font_classifier="db4481ad60ab050cbb42079b64f97f9e431feb07",
     paragraph_classifier="00bf989876cec171c1cf9859a6b712af6445e864",
     line_type_classifiers="2e498d1ec82b72c1a96ba0d25344b71402997013"
