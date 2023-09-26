@@ -239,8 +239,7 @@ class PdfTabbyReader(PdfBaseReader):
     def __jar_path(self) -> str:
         return os.environ.get("TABBY_JAR", self.default_config["JAR_PATH"])
 
-    def __run(self, path: str = None, encoding: str = "utf-8",
-              start_page: int = None, end_page: int = None) -> bytes:
+    def __run(self, path: str = None, encoding: str = "utf-8", start_page: int = None, end_page: int = None) -> bytes:
         args = ["java"] + ["-jar", self.__jar_path(), "-i", path]
         if start_page is not None and end_page is not None:
             args += ["-sp", str(start_page), "-ep", str(end_page)]

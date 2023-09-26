@@ -53,8 +53,7 @@ def split_last_column(matrix_table: List[List[Cell]], language: str, image: np.a
             union_cells = [prev_cell]
             continue
 
-        if row_id == len(last_column) - 1 and len(union_cells) > 1 or \
-                cell.id_con != prev_cell.id_con and len(union_cells) > 1:
+        if row_id == len(last_column) - 1 and len(union_cells) > 1 or cell.id_con != prev_cell.id_con and len(union_cells) > 1:
             result_matrix[start_union_cell:start_union_cell + len(union_cells)] = \
                 _split_each_row(union_cells, matrix_table[start_union_cell:start_union_cell + len(union_cells)], language=language, image=image)
             union_cells = [cell]
@@ -162,11 +161,10 @@ def __get_ocr_lines(cell_image: np.ndarray, language: str, page_image: np.ndarra
             if len(text_line) != 0:
                 text_line += OCRCellExtractor.get_line_with_meta(" ", bbox=word.bbox, image=page_image)
             # add confidence value
-            text_line += OCRCellExtractor.get_line_with_meta(text=word.text, bbox=word.bbox, image=page_image,
-                                                             confidences=[
-                                                                 ConfidenceAnnotation(start=0,
-                                                                                      end=len(word.text),
-                                                                                      value=0. if word.confidence < 0 else word.confidence / 100.)])
+            text_line += OCRCellExtractor.get_line_with_meta(
+                text=word.text, bbox=word.bbox, image=page_image,
+                confidences=[ConfidenceAnnotation(start=0, end=len(word.text), value=0. if word.confidence < 0 else word.confidence / 100.)]
+            )
         if len(text_line) > 0:  # add new line
             cell_lines.append(text_line)
 

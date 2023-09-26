@@ -5,8 +5,7 @@ import numpy as np
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.tz_feature_extractor import TzTextFeatures
-from dedoc.structure_extractors.line_type_classifiers.abstract_pickled_classifier import \
-    AbstractPickledLineTypeClassifier
+from dedoc.structure_extractors.line_type_classifiers.abstract_pickled_classifier import AbstractPickledLineTypeClassifier
 
 
 class TzLineTypeClassifier(AbstractPickledLineTypeClassifier):

@@ -62,15 +62,17 @@ class TestTasker(unittest.TestCase):
 
     def test_tasker(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
-            taskers = {"law_classifier": LineLabelTasker(
-                path2bboxes=self.path2bboxes,
-                path2lines=self.path2lines,
-                path2docs=self.path2docs,
-                manifest_path=self.manifest_path,
-                config_path=self.config_path,
-                tmp_dir=tmpdir,
-                config=get_test_config()
-            )}
+            taskers = {
+                "law_classifier": LineLabelTasker(
+                    path2bboxes=self.path2bboxes,
+                    path2lines=self.path2lines,
+                    path2docs=self.path2docs,
+                    manifest_path=self.manifest_path,
+                    config_path=self.config_path,
+                    tmp_dir=tmpdir,
+                    config=get_test_config()
+                )
+            }
             tasker = Tasker(boxes_label_path=self.path2bboxes,
                             line_info_path=self.path2lines,
                             images_path=self.path2docs,

@@ -124,10 +124,7 @@ class TreeNode(Serializable):
     def __shift_annotations(line: LineWithMeta, text_length: int) -> List[Annotation]:
         new_annotations = []
         for annotation in line.annotations:
-            new_annotation = Annotation(start=annotation.start + text_length,
-                                        end=annotation.end + text_length,
-                                        name=annotation.name,
-                                        value=annotation.value)
+            new_annotation = Annotation(start=annotation.start + text_length, end=annotation.end + text_length, name=annotation.name, value=annotation.value)
             new_annotations.append(new_annotation)
         return new_annotations
 

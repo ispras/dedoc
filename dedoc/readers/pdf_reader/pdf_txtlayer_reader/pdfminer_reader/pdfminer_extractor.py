@@ -147,14 +147,7 @@ class PdfminerExtractor(object):
         interpreter = PDFPageInterpreter(rsrcmgr, device)
         return device, interpreter
 
-    def get_info_layout_object(self,
-                               lobj: LTContainer,
-                               page_num: int,
-                               line_num: int,
-                               k_w: float,
-                               k_h: float,
-                               height: int,
-                               width: int) -> TextWithBBox:
+    def get_info_layout_object(self, lobj: LTContainer, page_num: int, line_num: int, k_w: float, k_h: float, height: int, width: int) -> TextWithBBox:
         # 1 - converting coordinate from pdf format into image
         bbox = create_bbox(height, k_h, k_w, lobj)
         # 2 - extract text and text annotations from current object
@@ -220,11 +213,13 @@ class PdfminerExtractor(object):
                         words.append(word)
                     word = WordObj(start=item + 1, end=item + 1, value=LTTextContainer())
 
-        annotations = [BBoxAnnotation(start=word.start,
-                                      end=word.end,
-                                      value=create_bbox(height=height, k_h=k_h, k_w=k_w, lobj=word.value),
-                                      page_width=width,
-                                      page_height=height) for word in words]
+        annotations = [
+            BBoxAnnotation(start=word.start,
+                           end=word.end,
+                           value=create_bbox(height=height, k_h=k_h, k_w=k_w, lobj=word.value),
+                           page_width=width,
+                           page_height=height) for word in words
+        ]
         return annotations
 
     def _get_new_weight(self) -> str:

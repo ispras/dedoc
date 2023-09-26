@@ -187,8 +187,9 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         content = result["content"]["structure"]
         node = content["subparagraphs"][0]
         text = node["text"]
-        expected_text = ('"I can’t bring myself to feel too sorry for Amazon or textbook publishers, given how much '
-                         'they tend to gouge on the prices of those books."')
+        expected_text = (
+            '"I can’t bring myself to feel too sorry for Amazon or textbook publishers, given how much they tend to gouge on the prices of those books."'
+        )
         self.assertEqual(expected_text, text.strip())
         italics = [text[annotation["start"]: annotation["end"]] for annotation in node["annotations"] if annotation["name"] == "italic"]
         self.assertIn("or", italics)

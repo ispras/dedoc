@@ -21,10 +21,12 @@ class LawStructureExtractor(AbstractLawStructureExtractor):
 
     def __init__(self, *, config: dict) -> None:
         super().__init__(config=config)
-        self.hierarchy_level_builders = [HeaderHierarchyLevelBuilder(),
-                                         BodyLawHierarchyLevelBuilder(),
-                                         CellarHierarchyLevelBuilder(),
-                                         ApplicationLawHierarchyLevelBuilder()]
+        self.hierarchy_level_builders = [
+            HeaderHierarchyLevelBuilder(),
+            BodyLawHierarchyLevelBuilder(),
+            CellarHierarchyLevelBuilder(),
+            ApplicationLawHierarchyLevelBuilder()
+        ]
         self.regexps_item = re.compile(r"^\s*(\d*\.)*\d+[\)|\}]")
         self.regexps_part = regexps_number
         self.regexps_subitem = re.compile(r"^\s*[а-яё]\)")

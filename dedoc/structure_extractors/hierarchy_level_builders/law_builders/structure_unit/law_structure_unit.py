@@ -14,10 +14,7 @@ class LawStructureUnitBuilder(AbstractStructureUnit):
     ends_of_number = AbstractFeatureExtractor.ends_of_number
     regexps_subitem = regexps_subitem
 
-    def structure_unit(self,
-                       text: str,
-                       init_hl_depth: int,
-                       previous_hl: Optional[HierarchyLevel]) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:
+    def structure_unit(self, text: str, init_hl_depth: int, previous_hl: Optional[HierarchyLevel]) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:
         if text.lower().startswith("часть"):
             hl = HierarchyLevel(init_hl_depth + 1, 0, True, "part")  # 3
             return hl, hl

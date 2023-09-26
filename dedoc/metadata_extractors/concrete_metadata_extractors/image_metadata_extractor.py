@@ -124,8 +124,7 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
             image = Image.open(path)
             exif_dict = piexif.load(image.info["exif"]).get("Exif", {}) if "exif" in image.info else {}
             exif = {ExifTags.TAGS[k]: v for k, v in exif_dict.items() if k in ExifTags.TAGS}
-            encoded_dict = {key_renamed: encode_function(exif.get(key))
-                            for key, (key_renamed, encode_function) in self.keys.items() if key in exif}
+            encoded_dict = {key_renamed: encode_function(exif.get(key)) for key, (key_renamed, encode_function) in self.keys.items() if key in exif}
             encoded_dict = {k: v for k, v in encoded_dict.items() if k is not None if v is not None}
             image.close()
             return encoded_dict

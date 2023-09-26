@@ -76,9 +76,11 @@ class ErrorsSaver:
             with zipfile.ZipFile(self.dataset_path, "r") as dataset_archive:
                 dataset_archive.extractall(documents_tmp_dir)
             path2docs = os.path.join(documents_tmp_dir, "original_documents")
-            images_creators = [ScannedImagesCreator(path2docs=path2docs),
-                               # DocxImagesCreator(path2docs=path2docs, config=_config),
-                               TxtImagesCreator(path2docs=path2docs, config=self.config)]
+            images_creators = [
+                ScannedImagesCreator(path2docs=path2docs),
+                # DocxImagesCreator(path2docs=path2docs, config=_config),
+                TxtImagesCreator(path2docs=path2docs, config=self.config)
+            ]
             self.__group_data(os.path.join(documents_tmp_dir, "labeled.json"))
 
             dataset = pd.read_csv(csv_dataset_path)
@@ -86,11 +88,9 @@ class ErrorsSaver:
 
             ready_documents, ready_images = self.__prepare_files()
 
-            with zipfile.ZipFile(self.images_archive, "a") as images_archive, \
-                    zipfile.ZipFile(self.errors_images_archive, "w") as errors_images_archive:
+            with zipfile.ZipFile(self.images_archive, "a") as images_archive, zipfile.ZipFile(self.errors_images_archive, "w") as errors_images_archive:
                 for uid in tqdm(errors_uids):
-                    self.__process_uid(errors_images_archive, filtered_dataset, images_archive, images_creators,
-                                       ready_documents, ready_images, uid)
+                    self.__process_uid(errors_images_archive, filtered_dataset, images_archive, images_creators, ready_documents, ready_images, uid)
 
     def __process_uid(self,
                       errors_images_archive: zipfile.ZipFile,

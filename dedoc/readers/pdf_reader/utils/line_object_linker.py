@@ -59,10 +59,7 @@ class LineObjectLinker:
             best_line.annotations.append(annotation)  # noqa
         return lines
 
-    def _add_lines(self,
-                   all_objects: List[Union[LineWithLocation, ScanTable, PdfImageAttachment]],
-                   lines_key: str,
-                   objects_with_line_candidate: dict) -> None:
+    def _add_lines(self, all_objects: List[Union[LineWithLocation, ScanTable, PdfImageAttachment]], lines_key: str, objects_with_line_candidate: dict) -> None:
         lines_deque = deque(maxlen=self.n_lines)
         for page_object in all_objects:
             if isinstance(page_object, LineWithLocation):

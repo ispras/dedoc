@@ -12,11 +12,7 @@ class OCRLineExtractor:
     def __init__(self, *, config: dict) -> None:
         self.config = config
 
-    def split_image2lines(self,
-                          image: np.ndarray,
-                          page_num: int,
-                          language: str = "rus+eng",
-                          is_one_column_document: bool = True) -> PageWithBBox:
+    def split_image2lines(self, image: np.ndarray, page_num: int, language: str = "rus+eng", is_one_column_document: bool = True) -> PageWithBBox:
         bboxes = self.__split_image2bboxes(image=image, page_num=page_num, language=language, is_one_column_document=is_one_column_document)
 
         filtered_bboxes = list(self._filtered_bboxes(bboxes))
@@ -32,8 +28,10 @@ class OCRLineExtractor:
             output_dict = get_text_with_bbox_from_document_page(image, language, ocr_conf_threshold)
 
         height, width = image.shape[:2]
-        line_boxes = [TextWithBBox(text=line.text, page_num=page_num, bbox=line.bbox, line_num=line_num, annotations=line.get_annotations(width, height))
-                      for line_num, line in enumerate(output_dict.lines)]
+        line_boxes = [
+            TextWithBBox(text=line.text, page_num=page_num, bbox=line.bbox, line_num=line_num, annotations=line.get_annotations(width, height))
+            for line_num, line in enumerate(output_dict.lines)
+        ]
 
         return line_boxes
 

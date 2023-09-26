@@ -17,11 +17,7 @@ class LineWithMeta(Sized):
     (for example, document title and raw text of the document should not be in the same line).
     Still the logical part of the document may be represented by more than one line (for example, document title may consist of many lines).
     """
-    def __init__(self,
-                 line: str,
-                 metadata: Optional[LineMetadata] = None,
-                 annotations: Optional[List[Annotation]] = None,
-                 uid: str = None) -> None:
+    def __init__(self, line: str, metadata: Optional[LineMetadata] = None, annotations: Optional[List[Annotation]] = None, uid: str = None) -> None:
         """
         :param line: raw text of the document line
         :param metadata: metadata (related to the entire line, as line or page number, its hierarchy level)

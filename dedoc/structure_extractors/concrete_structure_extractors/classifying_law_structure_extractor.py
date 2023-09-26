@@ -29,18 +29,20 @@ class LawDocType(Enum):
     @staticmethod
     def doc_types() -> List[str]:
         # order is important
-        return [LawDocType.definition,
-                LawDocType.order,
-                LawDocType.bylaw,
-                LawDocType.code,
-                LawDocType.federal_law,
-                LawDocType.edict,
-                LawDocType.law,
-                LawDocType.decree,
-                LawDocType.directive,
-                LawDocType.constitution,
-                LawDocType.state,
-                LawDocType.instruction]
+        return [
+            LawDocType.definition,
+            LawDocType.order,
+            LawDocType.bylaw,
+            LawDocType.code,
+            LawDocType.federal_law,
+            LawDocType.edict,
+            LawDocType.law,
+            LawDocType.decree,
+            LawDocType.directive,
+            LawDocType.constitution,
+            LawDocType.state,
+            LawDocType.instruction
+        ]
 
     @staticmethod
     def foiv_types() -> List["LawDocType"]:

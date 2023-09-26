@@ -55,11 +55,7 @@ class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, ab
 
         return result
 
-    def _line_2level(self,
-                     text: str,
-                     label: str,
-                     init_hl_depth: int,
-                     previous_hl: HierarchyLevel = None) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:
+    def _line_2level(self, text: str, label: str, init_hl_depth: int, previous_hl: HierarchyLevel = None) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:
         text = text.strip()
         if len(text) == 0:
             label = HierarchyLevel.raw_text

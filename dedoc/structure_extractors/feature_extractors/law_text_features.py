@@ -17,8 +17,7 @@ class LawTextFeatures(AbstractFeatureExtractor):
     named_regexp = [
         re.compile(r"^(Статья|(Г|г)лава|ГЛАВА|ЧАСТЬ|Часть|Раздел|РАЗДЕЛ|\$|§)\s*((\d+\.*)+|[IVXХxхviУП]{1,3}\.?)\s*")
     ]
-    roman_regexp = re.compile(r"\s*(I|Г|T|Т|II|П|III|Ш|ТУ|TУ|IV|V|У|VI|УТ|УT|VII|УТТ|VIII|I[XХ]|[XХ]|[XХ]I|[XХ]II)\.\s+"
-                              )
+    roman_regexp = re.compile(r"\s*(I|Г|T|Т|II|П|III|Ш|ТУ|TУ|IV|V|У|VI|УТ|УT|VII|УТТ|VIII|I[XХ]|[XХ]|[XХ]I|[XХ]II)\.\s+")
     regexp_application_begin = re.compile(
         r"^(\'|\")?(((П|п)риложение)|((У|у)твержден)[оаы]?){1}(( )*([№nN]?( )*(\d){1,3})?( )*)"
         r"((к распоряжению)|(к постановлению)|(к приказу))?\s*$"

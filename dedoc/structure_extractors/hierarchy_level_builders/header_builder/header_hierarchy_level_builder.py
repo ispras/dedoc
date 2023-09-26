@@ -10,11 +10,7 @@ class HeaderHierarchyLevelBuilder(AbstractHierarchyLevelBuilder):
     document_types = ["foiv", "law"]
     starting_line_types = ["header"]
 
-    def _line_2level(self,
-                     text: str,
-                     label: str,
-                     init_hl_depth: int,
-                     previous_hl: HierarchyLevel = None) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:
+    def _line_2level(self, text: str, label: str, init_hl_depth: int, previous_hl: HierarchyLevel = None) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:
         hl = HierarchyLevel.create_root()
         return hl, hl
 

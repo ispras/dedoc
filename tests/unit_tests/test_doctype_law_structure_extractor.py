@@ -48,17 +48,21 @@ class TestLawStructureExtractor(unittest.TestCase):
         self.assertEqual("articlePart", hl.line_type)
 
     def test_begin_application(self) -> None:
-        application_starts = ["Утвержден", "УТВЕРЖДЕНО \n", "Приложение №1\n", "Приложение № 45\n", "Утверждено    \n",
-                              "'Приложение N2", "утверждены\n", "Приложение к постановлению\n",
-                              "Приложение № 1 к распоряжению\n"]
+        application_starts = [
+            "Утвержден", "УТВЕРЖДЕНО \n", "Приложение №1\n", "Приложение № 45\n", "Утверждено    \n",
+            "'Приложение N2", "утверждены\n", "Приложение к постановлению\n",
+            "Приложение № 1 к распоряжению\n"
+        ]
         for application_start in application_starts:
             self.assertIsNotNone(self.structure_extractor.classifier.regexp_application_begin.match(application_start.lower()))
 
     def test_string_number_correctness_with_regexp(self) -> None:
-        lines = ["03.06.2009 № 17, от 07.10.2009 № 42, от  10.03.2010 № 6, от 14.04.2010 № 11,  от",
-                 "правонарушениях. (В редакции Закона Москвы от 24.06.2015 г. № 39)",
-                 "2. Нарушение  административного регламента",
-                 "1.2.2)", "1.2.4.6}", "1.23.005 ", "1.4.5 ", "1.4.5\n", "1.5.6.Закон о ...."]
+        lines = [
+            "03.06.2009 № 17, от 07.10.2009 № 42, от  10.03.2010 № 6, от 14.04.2010 № 11,  от",
+            "правонарушениях. (В редакции Закона Москвы от 24.06.2015 г. № 39)",
+            "2. Нарушение  административного регламента",
+            "1.2.2)", "1.2.4.6}", "1.23.005 ", "1.4.5 ", "1.4.5\n", "1.5.6.Закон о ...."
+        ]
         answers = [False, False, True, True, True, False, True, True, True]
 
         for num, line in enumerate(lines):
@@ -107,8 +111,9 @@ class TestLawStructureExtractor(unittest.TestCase):
         self.assertListEqual(labels, self.__fix_labels(labels))
 
         labels = ["structure_unit", "application", "title", "cellar", "title", "application", "structure_unit", "structure_unit", "structure_unit", "title"]
-        labels_expected = ["structure_unit", "application", "raw_text", "raw_text", "raw_text", "application", "structure_unit", "structure_unit",
-                           "structure_unit", "raw_text"]
+        labels_expected = [
+            "structure_unit", "application", "raw_text", "raw_text", "raw_text", "application", "structure_unit", "structure_unit", "structure_unit", "raw_text"
+        ]
         self.assertListEqual(labels_expected, self.__fix_labels(labels))
 
         classes = ["structure_unit", "cellar", "application", "title", "footer"]

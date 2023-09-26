@@ -22,8 +22,7 @@ class FilteredLineLabelTasker(LineLabelTasker):
                  item2label: Callable = None,
                  *,
                  config: dict) -> None:
-        super().__init__(path2bboxes, path2lines, path2docs, manifest_path, config_path, tmp_dir, progress_bar,
-                         item2label, config=config)
+        super().__init__(path2bboxes, path2lines, path2docs, manifest_path, config_path, tmp_dir, progress_bar, item2label, config=config)
         # we can use page numbers only in pdf
         self.images_creators = ImageCreatorComposition(creators=[
             ScannedImagesCreator(path2docs=self.path2docs),
@@ -39,8 +38,7 @@ class FilteredLineLabelTasker(LineLabelTasker):
             doc_lines = [self._make_line_with_meta(line) for line in page]
             doc_toc = self.toc_extractor.get_toc(doc_lines)
             # acual_page_num - 1 = page_id
-            page_numbers = [0, 1] + [int(item["page"]) - 1 for item in doc_toc] + [int(item["page"]) for item in
-                                                                                   doc_toc]
+            page_numbers = [0, 1] + [int(item["page"]) - 1 for item in doc_toc] + [int(item["page"]) for item in doc_toc]
             doc_line_dicts = [line for line in page if int(line["_metadata"]["page_id"]) in page_numbers]
             filtered_pages.append(doc_line_dicts)
         return filtered_pages

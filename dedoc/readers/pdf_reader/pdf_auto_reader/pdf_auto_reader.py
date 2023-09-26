@@ -145,8 +145,9 @@ class PdfAutoReader(BaseReader):
         for line in chain(first.lines, second.lines):
             line.metadata.line_id = line_id
             line_id += 1
-            annotations = [annotation for annotation in line.annotations
-                           if not (isinstance(annotation, TableAnnotation) and annotation.value in dropped_tables)]
+            annotations = [
+                annotation for annotation in line.annotations if not (isinstance(annotation, TableAnnotation) and annotation.value in dropped_tables)
+            ]
             new_line = LineWithMeta(line=line.line, metadata=line.metadata, annotations=annotations, uid=line.uid)
             lines.append(new_line)
         return UnstructuredDocument(tables=tables, lines=lines, attachments=first.attachments + second.attachments, metadata=second.metadata)

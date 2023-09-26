@@ -8,15 +8,17 @@ class TestApiPdfPageLimit(AbstractTestApiDocReader):
     def _get_abs_path(self, file_name: str) -> str:
         return os.path.join(self.data_directory_path, "pdf_with_text_layer", file_name)
 
-    lines = ["Первая страница",
-             "Вторая страница",
-             "Третья страница",
-             "Четвёртая страница",
-             "Пятая страница",
-             "Шестая страница",
-             "Седьмая страница",
-             "Восьмая страница",
-             "Девятая страница"]
+    lines = [
+        "Первая страница",
+        "Вторая страница",
+        "Третья страница",
+        "Четвёртая страница",
+        "Пятая страница",
+        "Шестая страница",
+        "Седьмая страница",
+        "Восьмая страница",
+        "Девятая страница"
+    ]
 
     def test_no_text_layer(self) -> None:
         self.__check_limit("false", check_partially=True)

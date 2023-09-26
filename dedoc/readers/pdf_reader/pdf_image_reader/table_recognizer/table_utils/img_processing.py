@@ -165,8 +165,7 @@ def __apply_houph_lines_and_detect_angle(image: np.ndarray, config: dict) -> [np
     # ----- search height, width table ----- #
     # ----- detect gap for houph -------     #
     contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
-    contours_table = [cv2.boundingRect(c) for ind, c in enumerate(contours)
-                      if hierarchy[0][ind][3] == 0 and hierarchy[0][ind][2] != -1]  # List[[x,y,w,h]]
+    contours_table = [cv2.boundingRect(c) for ind, c in enumerate(contours) if hierarchy[0][ind][3] == 0 and hierarchy[0][ind][2] != -1]  # List[[x,y,w,h]]
     if len(contours_table) > 0:
         gap_avg = min(np.mean([c[3] for c in contours_table]) // 35, 100)
         gap_avg = min(np.mean([c[2] for c in contours_table]) // 45, gap_avg)

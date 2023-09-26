@@ -33,8 +33,7 @@ class TestTzTextFeatures(TestCase):
         self.assertEqual(0, self.__count_start(line5))
 
     def __count_start(self, line: str) -> int:
-        return sum([1 for _, i in self.feature_extractor._start_regexp(line, self.feature_extractor.list_item_regexp)
-                    if i > 0])
+        return sum([1 for _, i in self.feature_extractor._start_regexp(line, self.feature_extractor.list_item_regexp) if i > 0])
 
     def test_end_regexp(self) -> None:
         line1 = "Подраздел 3.2 Требования к качеству оказываемых услуг\t12"
