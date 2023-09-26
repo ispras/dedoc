@@ -182,7 +182,7 @@ class EmailReader(BaseReader):
 
     def __get_field(self, message: Message, key: str, line_metadata: LineMetadata) -> LineWithMeta:
         text = self.__get_decoded(message.get(key.lower(), ""))
-        return LineWithMeta(line=text, metadata=line_metadata, annotations=[])
+        return LineWithMeta(line=text, metadata=line_metadata)
 
     def __get_main_fields(self, message: Message) -> List[LineWithMeta]:
         lines = list()

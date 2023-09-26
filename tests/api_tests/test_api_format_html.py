@@ -99,14 +99,15 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         self.assertEqual("1.2.3.", node["text"].strip()[:30])
 
         table1 = result["content"]["tables"][0]
-        self.assertListEqual(["N", "Фамилия", "Имя", "Организация", "Телефон", "Примечания"], table1["cells"][0])
-        self.assertListEqual(["1", "Иванов", "Иван", "ИСП", "8-800", ""], table1["cells"][1])
+
+        self.assertListEqual(["N", "Фамилия", "Имя", "Организация", "Телефон", "Примечания"], self._get_text_of_row(table1["cells"][0]))
+        self.assertListEqual(["1", "Иванов", "Иван", "ИСП", "8-800", ""], self._get_text_of_row(table1["cells"][1]))
 
         table2 = result["content"]["tables"][1]
-        self.assertListEqual(["Фамилия", "Имя", "Отчество"], table2["cells"][0])
-        self.assertListEqual(["Иванов", "Иван", "Иванович"], table2["cells"][1])
-        self.assertListEqual(["Петров", "Пётр", "Петрович"], table2["cells"][2])
-        self.assertListEqual(["Сидоров", "Сидор", "Сидорович"], table2["cells"][3])
+        self.assertListEqual(["Фамилия", "Имя", "Отчество"], self._get_text_of_row(table2["cells"][0]))
+        self.assertListEqual(["Иванов", "Иван", "Иванович"], self._get_text_of_row(table2["cells"][1]))
+        self.assertListEqual(["Петров", "Пётр", "Петрович"], self._get_text_of_row(table2["cells"][2]))
+        self.assertListEqual(["Сидоров", "Сидор", "Сидорович"], self._get_text_of_row(table2["cells"][3]))
 
         self.__check_metainfo(result["metadata"], "text/html", file_name)
 

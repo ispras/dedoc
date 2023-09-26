@@ -147,76 +147,76 @@ class TestDocxReader(unittest.TestCase):
         path = self._get_path("merged_cells.docx")
         result = docx_reader.read(path)
 
-        self.assertEqual("Merged sells", result.tables[0].cells[0][0])
-        self.assertEqual("Merged sells", result.tables[0].cells[0][1])
-        self.assertEqual("Some text", result.tables[0].cells[0][2])
-        self.assertEqual("Some text", result.tables[0].cells[0][3])
-        self.assertEqual("Cell 1", result.tables[0].cells[1][0])
-        self.assertEqual("Cell 2", result.tables[0].cells[1][1])
-        self.assertEqual("Vertically split cells 1", result.tables[0].cells[1][2])
-        self.assertEqual("Vertically split cells 2", result.tables[0].cells[1][3])
-        self.assertEqual("Cell 3", result.tables[0].cells[2][0])
-        self.assertEqual("Cell 4", result.tables[0].cells[2][1])
-        self.assertEqual("Horizontally split cells 1", result.tables[0].cells[2][2])
-        self.assertEqual("Horizontally split cells 1", result.tables[0].cells[2][3])
-        self.assertEqual("Cell 3", result.tables[0].cells[3][0])
-        self.assertEqual("Cell 4", result.tables[0].cells[3][1])
-        self.assertEqual("Horizontally split cells 2", result.tables[0].cells[3][2])
-        self.assertEqual("Horizontally split cells 2", result.tables[0].cells[3][3])
+        self.assertEqual("Merged sells", result.tables[0].cells[0][0].get_text())
+        self.assertEqual("Merged sells", result.tables[0].cells[0][1].get_text())
+        self.assertEqual("Some text", result.tables[0].cells[0][2].get_text())
+        self.assertEqual("Some text", result.tables[0].cells[0][3].get_text())
+        self.assertEqual("Cell 1", result.tables[0].cells[1][0].get_text())
+        self.assertEqual("Cell 2", result.tables[0].cells[1][1].get_text())
+        self.assertEqual("Vertically split cells 1", result.tables[0].cells[1][2].get_text())
+        self.assertEqual("Vertically split cells 2", result.tables[0].cells[1][3].get_text())
+        self.assertEqual("Cell 3", result.tables[0].cells[2][0].get_text())
+        self.assertEqual("Cell 4", result.tables[0].cells[2][1].get_text())
+        self.assertEqual("Horizontally split cells 1", result.tables[0].cells[2][2].get_text())
+        self.assertEqual("Horizontally split cells 1", result.tables[0].cells[2][3].get_text())
+        self.assertEqual("Cell 3", result.tables[0].cells[3][0].get_text())
+        self.assertEqual("Cell 4", result.tables[0].cells[3][1].get_text())
+        self.assertEqual("Horizontally split cells 2", result.tables[0].cells[3][2].get_text())
+        self.assertEqual("Horizontally split cells 2", result.tables[0].cells[3][3].get_text())
 
-        self.assertEqual("cell1", result.tables[1].cells[0][0])
-        self.assertEqual("cell2", result.tables[1].cells[0][1])
-        self.assertEqual("Horizontally merged", result.tables[1].cells[0][2])
-        self.assertEqual("Horizontally merged", result.tables[1].cells[0][3])
-        self.assertEqual("Horizontally merged", result.tables[1].cells[0][4])
-        self.assertEqual("Horizontally merged", result.tables[1].cells[0][5])
-        self.assertEqual("Vertically and horizontally merged cells", result.tables[1].cells[1][0])
-        self.assertEqual("Vertically and horizontally merged cells", result.tables[1].cells[1][1])
-        self.assertEqual("cell3", result.tables[1].cells[1][2])
-        self.assertEqual("Vertically merged", result.tables[1].cells[1][3])
-        self.assertEqual("cell4", result.tables[1].cells[1][4])
-        self.assertEqual("cell4", result.tables[1].cells[1][5])
-        self.assertEqual("Vertically and horizontally merged cells", result.tables[1].cells[2][0])
-        self.assertEqual("Vertically and horizontally merged cells", result.tables[1].cells[2][1])
-        self.assertEqual("cell5", result.tables[1].cells[2][2])
-        self.assertEqual("Vertically merged", result.tables[1].cells[2][3])
-        self.assertEqual("v1", result.tables[1].cells[2][4])
-        self.assertEqual("v2", result.tables[1].cells[2][5])
+        self.assertEqual("cell1", result.tables[1].cells[0][0].get_text())
+        self.assertEqual("cell2", result.tables[1].cells[0][1].get_text())
+        self.assertEqual("Horizontally merged", result.tables[1].cells[0][2].get_text())
+        self.assertEqual("Horizontally merged", result.tables[1].cells[0][3].get_text())
+        self.assertEqual("Horizontally merged", result.tables[1].cells[0][4].get_text())
+        self.assertEqual("Horizontally merged", result.tables[1].cells[0][5].get_text())
+        self.assertEqual("Vertically and horizontally merged cells", result.tables[1].cells[1][0].get_text())
+        self.assertEqual("Vertically and horizontally merged cells", result.tables[1].cells[1][1].get_text())
+        self.assertEqual("cell3", result.tables[1].cells[1][2].get_text())
+        self.assertEqual("Vertically merged", result.tables[1].cells[1][3].get_text())
+        self.assertEqual("cell4", result.tables[1].cells[1][4].get_text())
+        self.assertEqual("cell4", result.tables[1].cells[1][5].get_text())
+        self.assertEqual("Vertically and horizontally merged cells", result.tables[1].cells[2][0].get_text())
+        self.assertEqual("Vertically and horizontally merged cells", result.tables[1].cells[2][1].get_text())
+        self.assertEqual("cell5", result.tables[1].cells[2][2].get_text())
+        self.assertEqual("Vertically merged", result.tables[1].cells[2][3].get_text())
+        self.assertEqual("v1", result.tables[1].cells[2][4].get_text())
+        self.assertEqual("v2", result.tables[1].cells[2][5].get_text())
 
         hidden_cells_table_1 = [(0, 1), (0, 3), (2, 3), (3, 0), (3, 1), (3, 3)]
         for i, j in hidden_cells_table_1:
-            self.assertTrue(result.tables[0].metadata.cell_properties[i][j].invisible)
-            self.assertEqual(result.tables[0].metadata.cell_properties[i][j].rowspan, 1)
-            self.assertEqual(result.tables[0].metadata.cell_properties[i][j].colspan, 1)
+            self.assertTrue(result.tables[0].cells[i][j].invisible)
+            self.assertEqual(result.tables[0].cells[i][j].rowspan, 1)
+            self.assertEqual(result.tables[0].cells[i][j].colspan, 1)
 
         hidden_cells_table_1_with_colspan = [(0, 0), (0, 2), (2, 2), (3, 2)]
         for i, j in hidden_cells_table_1_with_colspan:
-            self.assertFalse(result.tables[0].metadata.cell_properties[i][j].invisible)
-            self.assertEqual(result.tables[0].metadata.cell_properties[i][j].rowspan, 1)
-            self.assertEqual(result.tables[0].metadata.cell_properties[i][j].colspan, 2)
+            self.assertFalse(result.tables[0].cells[i][j].invisible)
+            self.assertEqual(result.tables[0].cells[i][j].rowspan, 1)
+            self.assertEqual(result.tables[0].cells[i][j].colspan, 2)
 
         hidden_cells_table_1_with_rowspan = [(2, 0), (2, 1)]
         for i, j in hidden_cells_table_1_with_rowspan:
-            self.assertFalse(result.tables[0].metadata.cell_properties[i][j].invisible)
-            self.assertEqual(result.tables[0].metadata.cell_properties[i][j].rowspan, 2)
-            self.assertEqual(result.tables[0].metadata.cell_properties[i][j].colspan, 1)
+            self.assertFalse(result.tables[0].cells[i][j].invisible)
+            self.assertEqual(result.tables[0].cells[i][j].rowspan, 2)
+            self.assertEqual(result.tables[0].cells[i][j].colspan, 1)
 
         hidden_cells_table_2 = [(0, 3), (0, 4), (0, 5), (1, 1), (1, 5), (2, 0), (2, 1), (2, 3)]
         for i, j in hidden_cells_table_2:
-            self.assertTrue(result.tables[1].metadata.cell_properties[i][j].invisible)
-            self.assertEqual(result.tables[1].metadata.cell_properties[i][j].rowspan, 1)
-            self.assertEqual(result.tables[1].metadata.cell_properties[i][j].colspan, 1)
+            self.assertTrue(result.tables[1].cells[i][j].invisible)
+            self.assertEqual(result.tables[1].cells[i][j].rowspan, 1)
+            self.assertEqual(result.tables[1].cells[i][j].colspan, 1)
 
         hidden_cells_table_2_with_colspan = [[(0, 2), 4], [(1, 4), 2]]
         for (i, j), k in hidden_cells_table_2_with_colspan:
-            self.assertFalse(result.tables[1].metadata.cell_properties[i][j].invisible)
-            self.assertEqual(result.tables[1].metadata.cell_properties[i][j].rowspan, 1)
-            self.assertEqual(result.tables[1].metadata.cell_properties[i][j].colspan, k)
+            self.assertFalse(result.tables[1].cells[i][j].invisible)
+            self.assertEqual(result.tables[1].cells[i][j].rowspan, 1)
+            self.assertEqual(result.tables[1].cells[i][j].colspan, k)
 
         # both colspan and rowspan check
-        self.assertFalse(result.tables[1].metadata.cell_properties[1][0].invisible)
-        self.assertEqual(result.tables[1].metadata.cell_properties[1][0].rowspan, 2)
-        self.assertEqual(result.tables[1].metadata.cell_properties[1][0].colspan, 2)
+        self.assertFalse(result.tables[1].cells[1][0].invisible)
+        self.assertEqual(result.tables[1].cells[1][0].rowspan, 2)
+        self.assertEqual(result.tables[1].cells[1][0].colspan, 2)
 
     def test_tables_with_merged_cells(self) -> None:
         docx_reader = DocxReader(config=get_config())
@@ -225,20 +225,20 @@ class TestDocxReader(unittest.TestCase):
         hidden_cells_big_table = [(0, 1), (0, 2), (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (3, 1), (3, 2), (3, 3),
                                   (4, 0), (4, 1), (4, 2), (4, 3), (5, 0), (5, 1), (5, 2), (5, 3), (5, 6), (5, 7), (5, 8), (5, 9)]
         for i, j in hidden_cells_big_table:
-            self.assertTrue(result.tables[0].metadata.cell_properties[i][j].invisible)
-            self.assertEqual(result.tables[0].metadata.cell_properties[i][j].rowspan, 1)
-            self.assertEqual(result.tables[0].metadata.cell_properties[i][j].colspan, 1)
+            self.assertTrue(result.tables[0].cells[i][j].invisible)
+            self.assertEqual(result.tables[0].cells[i][j].rowspan, 1)
+            self.assertEqual(result.tables[0].cells[i][j].colspan, 1)
 
         hidden_cells_big_table_with_colspan = [[(1, 0), 10], [(5, 5), 5]]
         for (i, j), k in hidden_cells_big_table_with_colspan:
-            self.assertFalse(result.tables[0].metadata.cell_properties[i][j].invisible)
-            self.assertEqual(result.tables[0].metadata.cell_properties[i][j].rowspan, 1)
-            self.assertEqual(result.tables[0].metadata.cell_properties[i][j].colspan, k)
+            self.assertFalse(result.tables[0].cells[i][j].invisible)
+            self.assertEqual(result.tables[0].cells[i][j].rowspan, 1)
+            self.assertEqual(result.tables[0].cells[i][j].colspan, k)
 
         # both colspan and rowspan check
-        self.assertFalse(result.tables[0].metadata.cell_properties[3][0].invisible)
-        self.assertEqual(result.tables[0].metadata.cell_properties[3][0].rowspan, 3)
-        self.assertEqual(result.tables[0].metadata.cell_properties[3][0].colspan, 4)
+        self.assertFalse(result.tables[0].cells[3][0].invisible)
+        self.assertEqual(result.tables[0].cells[3][0].rowspan, 3)
+        self.assertEqual(result.tables[0].cells[3][0].colspan, 4)
 
     def test_diagram_annotation(self) -> None:
         docx_reader = DocxReader(config=get_config())

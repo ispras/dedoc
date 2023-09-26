@@ -14,6 +14,7 @@ from dedoc.data_structures.table import Table
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.html_reader.html_reader import HtmlReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
+from dedoc.utils.utils import calculate_file_hash
 
 
 class Html2PdfReader(HtmlReader):
@@ -55,11 +56,11 @@ class Html2PdfReader(HtmlReader):
                 tables_result.append(tables[table_uid])
         return UnstructuredDocument(lines=lines, tables=tables_result, attachments=document.attachments)
 
-    def _handle_tables(self, soup: BeautifulSoup) -> dict:
+    def _handle_tables(self, soup: BeautifulSoup, path_hash: str) -> dict:
         tables = {}
         for table_tag in soup.find_all("table"):
             table_uid = f"table_{uuid1()}"
-            table = self._read_table(table_tag)
+            table = self._read_table(table_tag, path_hash)
             table.metadata.uid = table_uid
             tables[table_uid] = table
             table_tag.replace_with(table_uid)
@@ -91,7 +92,7 @@ class Html2PdfReader(HtmlReader):
         with open(path, encoding="utf-8") as f:
             soup = BeautifulSoup(f.read(), "html.parser")
 
-        tables = self._handle_tables(soup)
+        tables = self._handle_tables(soup, path_hash=calculate_file_hash(path=path))
         self._handle_super_elements(soup)
 
         path_out = os.path.join(tmp_dir, os.path.basename(path))

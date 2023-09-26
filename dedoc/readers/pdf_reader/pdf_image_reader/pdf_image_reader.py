@@ -70,9 +70,11 @@ class PdfImageReader(PdfBaseReader):
                           image: np.ndarray,
                           parameters: ParametersForParseDoc,
                           page_number: int,
-                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
+                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]]:
         #  --- Step 1: correct orientation and detect column count ---
-        rotated_image, is_one_column_document = self._detect_column_count_and_orientation(image, parameters)
+        rotated_image, is_one_column_document, angle = self._detect_column_count_and_orientation(image, parameters)
+        if self.config.get("debug_mode"):
+            self.logger.info(f"Angle page rotation = {angle}")
 
         #  --- Step 2: do binarization ---
         if parameters.need_binarization:
@@ -100,9 +102,9 @@ class PdfImageReader(PdfBaseReader):
         if self.config.get("labeling_mode"):
             save_page_with_bbox(page=page, config=self.config, document_name=os.path.basename(path))
 
-        return lines, tables, page.attachments
+        return lines, tables, page.attachments, [angle]
 
-    def _detect_column_count_and_orientation(self, image: np.ndarray, parameters: ParametersForParseDoc) -> Tuple[np.ndarray, bool]:
+    def _detect_column_count_and_orientation(self, image: np.ndarray, parameters: ParametersForParseDoc) -> Tuple[np.ndarray, bool, float]:
         """
         Function :
             - detects the number of page columns
@@ -120,10 +122,10 @@ class PdfImageReader(PdfBaseReader):
         angle = angle if parameters.document_orientation is None else 0
         self.logger.info(f"Final orientation angle = {angle}, is_one_column_document = {is_one_column_document}")
 
-        rotated_image, _ = self.scan_rotator.auto_rotate(image, angle)
+        rotated_image, result_angle = self.scan_rotator.auto_rotate(image, angle)
         if self.config.get("debug_mode"):
             img_path = os.path.join(self.config["path_debug"], f"{datetime.now().strftime('%H-%M-%S')}_result_orientation.jpg")
             self.logger.info(f"Save image to {img_path}")
             cv2.imwrite(img_path, rotated_image)
 
-        return rotated_image, is_one_column_document
+        return rotated_image, is_one_column_document, result_angle

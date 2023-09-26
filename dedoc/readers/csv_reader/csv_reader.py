@@ -1,6 +1,8 @@
 import csv
 from typing import List, Optional, Tuple
 
+from dedoc.data_structures import LineMetadata, LineWithMeta
+from dedoc.data_structures.cell_with_meta import CellWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
@@ -37,7 +39,16 @@ class CSVReader(BaseReader):
             csv_reader = csv.reader(file, delimiter=delimiter)
             data = list(csv_reader)
         table_metadata = TableMetadata(page_id=0)
-        tables = [Table(cells=data, metadata=table_metadata)]
+        cells_with_meta = []
+        line_id = 0
+        for row in data:
+            row_lines = []
+            for cell in row:
+                row_lines.append(CellWithMeta(lines=[LineWithMeta(line=cell, metadata=LineMetadata(page_id=0, line_id=line_id))]))
+                line_id += 1
+            cells_with_meta.append(row_lines)
+
+        tables = [Table(cells=cells_with_meta, metadata=table_metadata)]
         warnings = [f"delimiter is '{delimiter}'"]
         warnings.extend(encoding_warning)
         return UnstructuredDocument(lines=[], tables=tables, attachments=[], warnings=warnings)

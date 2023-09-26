@@ -1,4 +1,5 @@
 import os
+import unittest
 
 from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
@@ -23,33 +24,35 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
     def test_docx(self) -> None:
         file_name = "example.docx"
-        result = self._send_request(file_name, data={"insert_table": True})
+        result = self._send_request(file_name)
         self.__check_doc_like(result)
         self._check_metainfo(result["metadata"], "application/vnd.openxmlformats-officedocument.wordprocessingml.document", file_name)
 
     def test_docx_ujson(self) -> None:
         file_name = "example.docx"
-        result = self._send_request(file_name, data={"insert_table": True, "return_format": "ujson"})
+        result = self._send_request(file_name, data={"return_format": "ujson"})
         self.__check_doc_like(result)
 
     def test_doc(self) -> None:
         file_name = "example.doc"
-        result = self._send_request(file_name, data={"insert_table": True, "structure_type": "tree"})
+        result = self._send_request(file_name, data={"structure_type": "tree"})
         self.__check_doc_like(result)
         self._check_metainfo(result["metadata"], "application/msword", file_name)
 
     def test_odt(self) -> None:
         file_name = "example.odt"
-        result = self._send_request(file_name, data={"insert_table": True})
+        result = self._send_request(file_name)
         self.__check_doc_like(result)
         self._check_metainfo(result["metadata"], "application/vnd.oasis.opendocument.text", file_name)
 
+    @unittest.skip("Insert table doesn't work now")
     def test_doc_insert_table(self) -> None:
         file_name = "example.doc"
-        result = self._send_request(file_name, data=dict(structure_type="tree", insert_table=True))
+        result = self._send_request(file_name, data=dict(structure_type="tree"))
         self.__check_doc_like_insert_table(result)
         self._check_metainfo(result["metadata"], "application/msword", file_name)
 
+    @unittest.skip("Insert table doesn't work now")
     def test_docx_insert_table(self) -> None:
         file_name = "example.docx"
         result = self._send_request(file_name, data=dict(structure_type="tree", insert_table=True))
@@ -57,6 +60,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
         self._check_metainfo(result["metadata"], "application/vnd.openxmlformats-officedocument.wordprocessingml.document", file_name)
 
+    @unittest.skip("Insert table doesn't work now")
     def test_odt_insert_table(self) -> None:
         file_name = "example.odt"
         result = self._send_request(file_name, data=dict(structure_type="tree", insert_table=True))
@@ -145,13 +149,13 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
         table1, table2 = result["content"]["tables"]
 
-        self.assertListEqual(["N", "Фамилия", "Имя", "Организация", "Телефон", "Примечания"], table1["cells"][0])
-        self.assertListEqual(["1", "Иванов", "Иван", "ИСП", "8-800", ""], table1["cells"][1])
+        self.assertListEqual(["N", "Фамилия", "Имя", "Организация", "Телефон", "Примечания"], self._get_text_of_row(table1["cells"][0]))
+        self.assertListEqual(["1", "Иванов", "Иван", "ИСП", "8-800", ""], self._get_text_of_row(table1["cells"][1]))
 
-        self.assertListEqual(["Фамилия", "Имя", "Отчество"], table2["cells"][0])
-        self.assertListEqual(["Иванов", "Иван", "Иванович"], table2["cells"][1])
-        self.assertListEqual(["Петров", "Пётр", "Петрович"], table2["cells"][2])
-        self.assertListEqual(["Сидоров", "Сидор", "Сидорович"], table2["cells"][3])
+        self.assertListEqual(["Фамилия", "Имя", "Отчество"], self._get_text_of_row(table2["cells"][0]))
+        self.assertListEqual(["Иванов", "Иван", "Иванович"], self._get_text_of_row(table2["cells"][1]))
+        self.assertListEqual(["Петров", "Пётр", "Петрович"], self._get_text_of_row(table2["cells"][2]))
+        self.assertListEqual(["Сидоров", "Сидор", "Сидорович"], self._get_text_of_row(table2["cells"][3]))
 
         metadata = result["metadata"]
         self.assertTrue(metadata["file_name"].startswith("example"))

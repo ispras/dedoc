@@ -30,11 +30,5 @@ class TestApiPPTXReader(AbstractTestApiDocReader):
         self.assertEqual("This is simple table", subparagraphs[3]["text"])
 
         table = content["tables"][0]["cells"]
-        self.assertEqual("", table[0][0])
-        self.assertEqual("Header1", table[0][1])
-        self.assertEqual("Header2", table[0][2])
-        self.assertEqual("Header3", table[0][3])
-        self.assertEqual("Some content", table[1][0])
-        self.assertEqual("A", table[1][1])
-        self.assertEqual("B", table[1][2])
-        self.assertEqual("C", table[1][3])
+        self.assertListEqual(["", "Header1", "Header2", "Header3"], self._get_text_of_row(table[0]))
+        self.assertListEqual(["Some content", "A", "B", "C"], self._get_text_of_row(table[1]))

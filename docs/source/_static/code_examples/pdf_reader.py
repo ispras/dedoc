@@ -5,7 +5,7 @@ import tabula
 from PyPDF2 import PdfFileReader
 from pdf_attachment_extractor import PdfAttachmentsExtractor
 
-from dedoc.data_structures import LineMetadata
+from dedoc.data_structures import CellWithMeta, LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
@@ -20,7 +20,7 @@ class PdfReader(BaseReader):
         self.attachment_extractor = PdfAttachmentsExtractor()
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
-        return ((extension in recognized_extensions.pdf_like_format or mime in recognized_mimes.pdf_like_format) and not document_type)
+        return (extension in recognized_extensions.pdf_like_format or mime in recognized_mimes.pdf_like_format) and not document_type
 
     def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
         lines = self.__process_lines(path)
@@ -33,7 +33,7 @@ class PdfReader(BaseReader):
         tables = []
         for df in dfs:
             metadata = TableMetadata(page_id=None)
-            cells = df.values.tolist()
+            cells = [[CellWithMeta(lines=[LineWithMeta(line=text_cell)]) for text_cell in row]for row in df.values.tolist()]
             tables.append(Table(cells=cells, metadata=metadata))
         return tables
 
