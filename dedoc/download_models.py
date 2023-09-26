@@ -11,7 +11,7 @@ These are versions of the models that are used at the current moment - hashes of
 Keys are the names of repositories with models.
 """
 model_hash_dict = dict(
-    txtlayer_classifier="93b10fea2b661d7eca79381b47e5c4ebe2a22e75",
+    txtlayer_classifier="94e27e184fa2876883d260e0aa58b042e6ab3e35",
     scan_orientation_efficient_net_b0="0160965f8a920d12afacf62b8a5a8a3b365b11ef",
     font_classifier="db4481ad60ab050cbb42079b64f97f9e431feb07",
     paragraph_classifier="00bf989876cec171c1cf9859a6b712af6445e864",
