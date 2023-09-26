@@ -3,7 +3,6 @@ import os
 from time import time
 from typing import List
 
-import numpy as np
 import torch
 from torch import nn
 from torch import optim
@@ -75,11 +74,6 @@ def calc_accuracy_by_classes(testloader: DataLoader,
             images, orientation, columns = data['image'], data['orientation'], data['columns']
             time_begin = time()
 
-            if classifier.no_lines:
-                for i in range(len(images)):
-                    image_w_o_lines = classifier.get_features_no_lines((images[i].numpy().transpose(1, 2, 0) * 255).astype(np.uint8))
-                    images[i] = torch.squeeze(image_w_o_lines, 0)
-
             outputs = classifier.net(images.float().to(classifier.device))
             time_predict += time() - time_begin
             cnt_predict += len(images)
@@ -135,11 +129,6 @@ def train_model(trainloader: DataLoader,
             # get the inputs; data is a list of [inputs, labels]
             inputs, orientation, columns = data['image'], data['orientation'], data['columns']
 
-            if classifier.no_lines:
-                for j in range(len(inputs)):
-                    image_w_o_lines = classifier.get_features_no_lines((inputs[j].numpy().transpose(1, 2, 0) * 255).astype(np.uint8))
-                    inputs[j] = torch.squeeze(image_w_o_lines, 0)
-
             # zero the parameter gradients
             optimizer.zero_grad()
 
@@ -193,7 +182,6 @@ if __name__ == "__main__":
     data_executor = DataLoaderImageOrient()
     net = ColumnsOrientationClassifier(on_gpu=True,
                                        checkpoint_path=checkpoint_path if not args.train else None,
-                                       delete_lines=False,
                                        config=config)
 
     if args.train:

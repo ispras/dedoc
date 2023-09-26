@@ -10,11 +10,8 @@ from PIL import Image
 from torchvision import transforms
 from torchvision.transforms.functional import resize
 
-from dedoc.config import get_config
 from dedoc.download_models import download_from_hub
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.model import ClassificationModelTorch
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.img_processing import \
-    __detect_horizontal_and_vertical_lines as detect_horizontal_and_vertical_lines
 
 
 class ColumnsOrientationClassifier(object):
@@ -25,13 +22,12 @@ class ColumnsOrientationClassifier(object):
 
     _nets = {}
 
-    def __init__(self, on_gpu: bool, checkpoint_path: Optional[str], delete_lines: bool, *, config: dict) -> None:
+    def __init__(self, on_gpu: bool, checkpoint_path: Optional[str], *, config: dict) -> None:
         self.logger = config.get("logger", logging.getLogger())
         self._set_device(on_gpu)
         self._set_transform_image()
         self.checkpoint_path = path.abspath(checkpoint_path)
         self.classes = [1, 2, 0, 90, 180, 270]
-        self.no_lines = delete_lines
 
     @property
     def net(self) -> ClassificationModelTorch:
@@ -93,24 +89,9 @@ class ColumnsOrientationClassifier(object):
                 mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
         ])
 
-    def get_features_no_lines(self, image: np.array) -> torch.Tensor:
-        """
-        Get features for image without horizontal and vertical lines
-        """
-        image = self.transform(Image.fromarray(np.uint8(image)))
-        item_np = (image.numpy().transpose(1, 2, 0) * 255).astype(np.uint8)
-        img = cv2.cvtColor(item_np, cv2.COLOR_BGR2GRAY)
-        (thresh, img_bin) = cv2.threshold(img, 245, 255, cv2.THRESH_BINARY)
-        img_bin = 255 - img_bin
-        img_lines_bin = detect_horizontal_and_vertical_lines(img_bin, get_config(), "orientation")
-        img_final = 255 - img * img_lines_bin
-        backtorgb = cv2.cvtColor(img_final, cv2.COLOR_GRAY2RGB).transpose(2, 0, 1) / 255.
-        image = torch.tensor(backtorgb).unsqueeze(0).float().to(self.device)
-        return image
-
     def get_features(self, image: np.array) -> torch.Tensor:
         """
-        Get features for image with horizontal and vertical lines
+        Get features for the image
         """
         image = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
         pil_image = Image.fromarray(np.uint8(image)).convert("RGB")
@@ -123,11 +104,7 @@ class ColumnsOrientationClassifier(object):
         """
         self.net.eval()
         with torch.no_grad():
-
-            if self.no_lines:
-                tensor_image = self.get_features_no_lines(image)
-            else:
-                tensor_image = self.get_features(image)
+            tensor_image = self.get_features(image)
             outputs = self.net(tensor_image)
             # first 2 classes mean columns number
             # last 4 classes mean orientation

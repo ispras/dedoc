@@ -50,8 +50,7 @@ class PdfImageReader(PdfBaseReader):
         self.scan_rotator = ScanRotator(config=config)
         self.column_orientation_classifier = ColumnsOrientationClassifier(on_gpu=False,
                                                                           checkpoint_path=get_config()["resources_path"],
-                                                                          config=config,
-                                                                          delete_lines=False)
+                                                                          config=config)
         self.binarizer = AdaptiveBinarizer()
         self.ocr = OCRLineExtractor(config=config)
         self.logger = config.get("logger", logging.getLogger())
