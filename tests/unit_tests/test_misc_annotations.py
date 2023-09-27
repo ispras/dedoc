@@ -67,7 +67,10 @@ class TestAnnotationMerger(unittest.TestCase):
         self.assertSetEqual({(0, 15, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_same_value_separating_by_newline(self) -> None:
-        annotations = [Annotation(start=0, end=5, name="size", value="1"), Annotation(start=6, end=15, name="size", value="1")]
+        annotations = [
+            Annotation(start=0, end=5, name="size", value="1"),
+            Annotation(start=6, end=15, name="size", value="1")
+        ]
         text = "hello\nmy friend"
         self.assertSetEqual({(0, 15, "size", "1")}, self.merge(annotations, text))
 
@@ -75,42 +78,64 @@ class TestAnnotationMerger(unittest.TestCase):
         """
         Tests the case where one annotation includes another. Both annotations share the same name and value
         """
-        annotations = [Annotation(start=0, end=15, name="size", value="1"), Annotation(start=3, end=5, name="size", value="1")]
+        annotations = [
+            Annotation(start=0, end=15, name="size", value="1"),
+            Annotation(start=3, end=5, name="size", value="1")
+        ]
         text = "hello my friend"
         self.assertSetEqual({(0, 15, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_three_annotations(self) -> None:
-        annotations = [Annotation(start=0, end=5, name="size", value="1"), Annotation(start=6, end=10, name="size", value="1"),
-                       Annotation(start=10, end=15, name="size", value="1")]
+        annotations = [
+            Annotation(start=0, end=5, name="size", value="1"),
+            Annotation(start=6, end=10, name="size", value="1"),
+            Annotation(start=10, end=15, name="size", value="1")
+        ]
         text = "hello my friend"
         self.assertSetEqual({(0, 15, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_three_nested_annotations(self) -> None:
-        annotations = [Annotation(start=0, end=15, name="size", value="1"), Annotation(start=6, end=10, name="size", value="1"),
-                       Annotation(start=3, end=8, name="size", value="1")]
+        annotations = [
+            Annotation(start=0, end=15, name="size", value="1"),
+            Annotation(start=6, end=10, name="size", value="1"),
+            Annotation(start=3, end=8, name="size", value="1")
+        ]
         text = "hello my friend"
         self.assertSetEqual({(0, 15, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_three_intersected_annotations(self) -> None:
-        annotations = [Annotation(start=0, end=5, name="size", value="1"), Annotation(start=3, end=8, name="size", value="1"),
-                       Annotation(start=6, end=9, name="size", value="1")]
+        annotations = [
+            Annotation(start=0, end=5, name="size", value="1"),
+            Annotation(start=3, end=8, name="size", value="1"),
+            Annotation(start=6, end=9, name="size", value="1")
+        ]
         text = "hello my friend"
         self.assertSetEqual({(0, 9, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_three_one_intersected_annotations(self) -> None:
-        annotations = [Annotation(start=0, end=3, name="size", value="1"), Annotation(start=3, end=6, name="size", value="1"),
-                       Annotation(start=8, end=15, name="size", value="1")]
+        annotations = [
+            Annotation(start=0, end=3, name="size", value="1"),
+            Annotation(start=3, end=6, name="size", value="1"),
+            Annotation(start=8, end=15, name="size", value="1")
+        ]
         text = "hello my friend"
         self.assertSetEqual({(0, 6, "size", "1"), (8, 15, "size", "1")}, self.merge(annotations, text))
 
     def test_annotation_merge_different_value(self) -> None:
-        annotations = [Annotation(start=0, end=5, name="bold", value="True"), Annotation(start=5, end=15, name="italic", value="True")]
+        annotations = [
+            Annotation(start=0, end=5, name="bold", value="True"),
+            Annotation(start=5, end=15, name="italic", value="True")
+        ]
         text = "hello my friend"
         self.assertSetEqual({(0, 5, "bold", "True"), (5, 15, "italic", "True")}, self.merge(annotations, text))
 
     def test_annotation_merge_mixed(self) -> None:
-        annotations = [Annotation(start=0, end=5, name="bold", value="True"), Annotation(start=5, end=15, name="bold", value="True"),
-                       Annotation(start=4, end=6, name="italic", value="True"), Annotation(start=6, end=66, name="italic", value="True")]
+        annotations = [
+            Annotation(start=0, end=5, name="bold", value="True"),
+            Annotation(start=5, end=15, name="bold", value="True"),
+            Annotation(start=4, end=6, name="italic", value="True"),
+            Annotation(start=6, end=66, name="italic", value="True")
+        ]
         text = "hello my friend, hello my friend, hello my friend, hello my friend"
         self.assertSetEqual({(0, 15, "bold", "True"), (4, 66, "italic", "True")}, self.merge(annotations, text))
 

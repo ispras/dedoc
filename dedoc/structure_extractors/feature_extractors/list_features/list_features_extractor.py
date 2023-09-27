@@ -70,9 +70,11 @@ class ListFeaturesExtractor(AbstractFeatureExtractor):
         same_indent /= window_size
         predecessor_num_same_indent /= window_size
         predecessor_num /= window_size
-        return {f"same_indent_{self.window_size}": same_indent,
-                f"predecessor_num_same_indent_{self.window_size}": predecessor_num_same_indent,
-                f"predecessor_num_{self.window_size}": predecessor_num}
+        return {
+            f"same_indent_{self.window_size}": same_indent,
+            f"predecessor_num_same_indent_{self.window_size}": predecessor_num_same_indent,
+            f"predecessor_num_{self.window_size}": predecessor_num
+        }
 
     def _same_indent(self, this_indent: float, other_indent: float, std: float) -> bool:
         eps = 1

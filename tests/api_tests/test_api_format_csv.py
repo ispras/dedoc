@@ -40,8 +40,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
         row0 = self._get_text_of_row(table[0])
         row3 = self._get_text_of_row(table[3])
         self.assertListEqual(["id", "cat", "name", "price", "inStock", "author", "series_t", "sequence_i", "genre_s"], row0)
-        self.assertListEqual(["055357342X", "book", "A Storm of Swords", "7.99", "true", "George R.R. Martin", "A Song of Ice and Fire", "3", "fantasy"],
-                             row3)
+        self.assertListEqual(["055357342X", "book", "A Storm of Swords", "7.99", "true", "George R.R. Martin", "A Song of Ice and Fire", "3", "fantasy"], row3)
 
     def test_csv_books2(self) -> None:
         file_name = "books_2.csv"
@@ -51,10 +50,10 @@ class TestApiCSVReader(AbstractTestApiDocReader):
         table = tables[0]["cells"]
         row1 = self._get_text_of_row(table[1])
         row2 = self._get_text_of_row(table[2])
-        self.assertListEqual(["0553573403", "book", "A Game of Throne, kings and other stuff", "7.99", "True", "George R.R. Martin", "A Song of Ice and Fire",
-                              "1", "fantasy"], row1)
-        self.assertListEqual(["0553579908", "book", 'A Clash of "Kings"', "7.99", "True", "George R.R. Martin", "A Song of Ice and Fire", "2", "fantasy"],
-                             row2)
+        self.assertListEqual([
+            "0553573403", "book", "A Game of Throne, kings and other stuff", "7.99", "True", "George R.R. Martin", "A Song of Ice and Fire", "1", "fantasy"
+        ], row1)
+        self.assertListEqual(["0553579908", "book", 'A Clash of "Kings"', "7.99", "True", "George R.R. Martin", "A Song of Ice and Fire", "2", "fantasy"], row2)
 
     def __check_content(self, tables: List[dict]) -> None:
         self.assertEqual(1, len(tables))

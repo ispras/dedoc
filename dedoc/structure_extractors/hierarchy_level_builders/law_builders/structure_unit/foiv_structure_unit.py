@@ -12,10 +12,7 @@ class FoivStructureUnitBuilder(AbstractStructureUnit):
     regexps_subitem_with_char = regexps_subitem
     regexps_subitem_with_number = regexps_item_with_bracket
 
-    def structure_unit(self,
-                       text: str,
-                       init_hl_depth: int,
-                       previous_hl: Optional[HierarchyLevel]) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:
+    def structure_unit(self, text: str, init_hl_depth: int, previous_hl: Optional[HierarchyLevel]) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:
         if text.lower().startswith("глава") or LawTextFeatures.roman_regexp.match(text):
             hl = HierarchyLevel(init_hl_depth + 4, 0, True, "chapter")
             return hl, hl

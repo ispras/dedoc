@@ -26,20 +26,14 @@ def download_from_hub(out_dir: str, out_name: str, repo_name: str, hub_name: str
 
 
 def download(resources_path: str) -> None:
-    download_from_hub(out_dir=resources_path,
-                      out_name="txtlayer_classifier.pkl.gz",
-                      repo_name="txtlayer_classifier",
-                      hub_name="model.pkl.gz")
+    download_from_hub(out_dir=resources_path, out_name="txtlayer_classifier.pkl.gz", repo_name="txtlayer_classifier", hub_name="model.pkl.gz")
 
     download_from_hub(out_dir=resources_path,
                       out_name="scan_orientation_efficient_net_b0.pth",
                       repo_name="scan_orientation_efficient_net_b0",
                       hub_name="model.pth")
 
-    download_from_hub(out_dir=resources_path,
-                      out_name="paragraph_classifier.pkl.gz",
-                      repo_name="paragraph_classifier",
-                      hub_name="model.pkl.gz")
+    download_from_hub(out_dir=resources_path, out_name="paragraph_classifier.pkl.gz", repo_name="paragraph_classifier", hub_name="model.pkl.gz")
 
     line_clf_resources_path = os.path.join(resources_path, "line_type_classifiers")
     for classifier_type in ("diploma", "law", "law_txt", "tz", "tz_txt"):

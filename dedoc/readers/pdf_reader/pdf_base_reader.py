@@ -34,18 +34,20 @@ from dedoc.utils.pdf_utils import get_pdf_page_count
 from dedoc.utils.utils import flatten
 from dedoc.utils.utils import get_file_mime_type, splitext_
 
-ParametersForParseDoc = namedtuple("ParametersForParseDoc", ["orient_analysis_cells",
-                                                             "orient_cell_angle",
-                                                             "is_one_column_document",
-                                                             "document_orientation",
-                                                             "document_type",
-                                                             "language",
-                                                             "need_header_footers_analysis",
-                                                             "need_pdf_table_analysis",
-                                                             "first_page",
-                                                             "last_page",
-                                                             "need_binarization",
-                                                             "table_type"])
+ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
+    "orient_analysis_cells",
+    "orient_cell_angle",
+    "is_one_column_document",
+    "document_orientation",
+    "document_type",
+    "language",
+    "need_header_footers_analysis",
+    "need_pdf_table_analysis",
+    "first_page",
+    "last_page",
+    "need_binarization",
+    "table_type"
+])
 
 
 class PdfBaseReader(BaseReader):
@@ -110,17 +112,15 @@ class PdfBaseReader(BaseReader):
             can_contain_attachments = True
         return can_contain_attachments
 
-    def _parse_document(self, path: str, parameters: ParametersForParseDoc) -> Tuple[List[LineWithMeta],
-                                                                                     List[ScanTable],
-                                                                                     List[PdfImageAttachment],
-                                                                                     List[str],
-                                                                                     Optional[dict]]:
+    def _parse_document(self, path: str, parameters: ParametersForParseDoc) -> (
+            Tuple)[List[LineWithMeta], List[ScanTable], List[PdfImageAttachment], List[str], Optional[dict]]:
         first_page = 0 if parameters.first_page is None or parameters.first_page < 0 else parameters.first_page
         last_page = math.inf if parameters.last_page is None else parameters.last_page
         images = self._get_images(path, first_page, last_page)
 
-        result = Parallel(n_jobs=self.config["n_jobs"])(delayed(self._process_one_page)(image, parameters, page_number, path)
-                                                        for page_number, image in enumerate(images, start=first_page))
+        result = Parallel(n_jobs=self.config["n_jobs"])(
+            delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, image in enumerate(images, start=first_page)
+        )
 
         page_count = get_pdf_page_count(path)
         page_count = math.inf if page_count is None else page_count

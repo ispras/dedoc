@@ -92,8 +92,8 @@ class LSTM(nn.Module):
         self.with_attention = with_attention
 
     def init_hidden(self, batch_size: int, device: torch.device) -> [torch.Tensor, torch.Tensor]:
-        h, c = (Variable(torch.zeros(self.lstm_layers * self.num_directions, batch_size, self.lstm_units)).to(device),
-                Variable(torch.zeros(self.lstm_layers * self.num_directions, batch_size, self.lstm_units)).to(device))
+        h = Variable(torch.zeros(self.lstm_layers * self.num_directions, batch_size, self.lstm_units)).to(device)
+        c = Variable(torch.zeros(self.lstm_layers * self.num_directions, batch_size, self.lstm_units)).to(device)
         return h, c
 
     def forward(self, input_tensor: List[torch.Tensor], batch_lengths: torch.Tensor, device: torch.device) -> torch.Tensor:
@@ -327,9 +327,7 @@ class LSTMTrainer:
             batch_fatures, batch_lens, labels = self._get_batch_data(curr_batch_size, iterator)
             if len(labels) == 0:
                 continue
-            predictions = model(torch.tensor(batch_fatures, dtype=torch.float32).to(self.device),
-                                torch.tensor(batch_lens).to(self.device),
-                                self.device)
+            predictions = model(torch.tensor(batch_fatures, dtype=torch.float32).to(self.device), torch.tensor(batch_lens).to(self.device), self.device)
             loss = criteria(predictions, torch.tensor(labels).to(self.device))
             accuracy = self.accuracy(predictions, labels)
 
@@ -356,9 +354,7 @@ class LSTMTrainer:
                 curr_batch_size = rest_batch if batch_num == cnt_batch - 1 and rest_batch > 0 else batch_size
                 batch_fatures, batch_lens, labels = self._get_batch_data(curr_batch_size, iterator)
 
-                predictions = model(torch.tensor(batch_fatures, dtype=torch.float32).to(self.device),
-                                    torch.tensor(batch_lens).to(self.device),
-                                    self.device)
+                predictions = model(torch.tensor(batch_fatures, dtype=torch.float32).to(self.device), torch.tensor(batch_lens).to(self.device), self.device)
 
                 loss = criteria(predictions, torch.tensor(labels).to(self.device))
                 accuracy = self.accuracy(predictions, labels)

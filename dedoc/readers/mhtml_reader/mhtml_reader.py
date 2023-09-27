@@ -60,8 +60,9 @@ class MhtmlReader(BaseReader):
             tables.extend(result.tables)
 
         need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
-        attachments_names = [os.path.join(os.path.basename(os.path.dirname(file_name)), os.path.basename(file_name))
-                             for file_name in names_list if file_name not in names_html]
+        attachments_names = [
+            os.path.join(os.path.basename(os.path.dirname(file_name)), os.path.basename(file_name)) for file_name in names_list if file_name not in names_html
+        ]
         attachments = self.__get_attachments(save_dir=save_dir, names_list=attachments_names, need_content_analysis=need_content_analysis)
 
         return UnstructuredDocument(tables=tables, lines=lines, attachments=attachments)

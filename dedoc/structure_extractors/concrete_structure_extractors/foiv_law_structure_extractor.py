@@ -20,10 +20,12 @@ class FoivLawStructureExtractor(AbstractLawStructureExtractor):
 
     def __init__(self, *, config: dict) -> None:
         super().__init__(config=config)
-        self.hierarchy_level_builders = [HeaderHierarchyLevelBuilder(),
-                                         BodyFoivHierarchyLevelBuilder(),
-                                         CellarHierarchyLevelBuilder(),
-                                         ApplicationFoivHierarchyLevelBuilder()]
+        self.hierarchy_level_builders = [
+            HeaderHierarchyLevelBuilder(),
+            BodyFoivHierarchyLevelBuilder(),
+            CellarHierarchyLevelBuilder(),
+            ApplicationFoivHierarchyLevelBuilder()
+        ]
         self.regexps_subitem_with_number = BodyFoivHierarchyLevelBuilder.regexps_subitem_with_number
         self.regexps_subitem_with_char = BodyFoivHierarchyLevelBuilder.regexps_subitem_with_char
         self.regexps_ends_of_number = regexps_ends_of_number

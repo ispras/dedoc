@@ -49,8 +49,10 @@ class TestMultipageTable(AbstractTestApiDocReader):
         self.assertEqual(len(tables), 1)
         table = tables[0]["cells"]
 
-        self.assertListEqual(["Заголовок\nБольшой", "Еще один большой заголовок", "Еще один большой заголовок", "Еще один большой заголовок",
-                              "Еще один большой заголовок"], self._get_text_of_row(table[0]))
+        self.assertListEqual(
+            ["Заголовок\nБольшой", "Еще один большой заголовок", "Еще один большой заголовок", "Еще один большой заголовок", "Еще один большой заголовок"],
+            self._get_text_of_row(table[0])
+        )
         self.assertListEqual(["Заголовок\nБольшой", "Заголовок поменьше 1", "Заголовок поменьше 1", "Заголовок поменьше 2", "Заголовок поменьше 2"],
                              self._get_text_of_row(table[1]))
         self.assertListEqual(["Заголовок\nБольшой", "Заголовочек 1", "Заголовочек 2", "Заголовочек 3", "Заголовочек 4"], self._get_text_of_row(table[2]))

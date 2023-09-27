@@ -129,8 +129,9 @@ class OCRCellExtractor:
                         text_line += OCRCellExtractor.get_line_with_meta(" ", bbox=word.bbox, image=original_image)
                     # add confidence value
                     text_line += OCRCellExtractor.get_line_with_meta(text=word.text, bbox=word.bbox, image=original_image,
-                                                                     confidences=[ConfidenceAnnotation(start=0, end=len(word.text),
-                                                                                                       value=word.confidence / 100.)])
+                                                                     confidences=[
+                                                                         ConfidenceAnnotation(start=0, end=len(word.text), value=word.confidence / 100.)
+                                                                     ])
                 if len(text_line) > 0:  # add new line
                     cell_lines.append(text_line)
 

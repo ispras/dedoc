@@ -64,11 +64,7 @@ class AbstractBodyHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
             result.append(self.get_body_line(init_hl_depth=init_hl_depth))
         return result
 
-    def _line_2level(self,
-                     text: str,
-                     label: str,
-                     init_hl_depth: int,
-                     previous_hl: HierarchyLevel = None) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:
+    def _line_2level(self, text: str, label: str, init_hl_depth: int, previous_hl: HierarchyLevel = None) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:
         text = text.strip()
         if label == "header":
             label = "raw_text"

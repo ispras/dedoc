@@ -54,8 +54,9 @@ class HtmlReader(BaseReader):
         handle_invisible_table = str(parameters.get("handle_invisible_table", "false")).lower() == "true"
         path_hash = calculate_file_hash(path=path)
         lines = self.__read_blocks(soup, path_hash=path_hash, handle_invisible_table=handle_invisible_table)
-        tables = [self._read_table(table, path_hash) for table in soup.find_all("table")
-                  if self._visible_table(table, handle_invisible_table=handle_invisible_table)]
+        tables = [
+            self._read_table(table, path_hash) for table in soup.find_all("table") if self._visible_table(table, handle_invisible_table=handle_invisible_table)
+        ]
         document = UnstructuredDocument(tables=tables, lines=lines, attachments=[])
         document_postprocess = self.postprocessor.postprocess(document)
         return document_postprocess
@@ -102,10 +103,7 @@ class HtmlReader(BaseReader):
         line.metadata.extend_other_fields({"html_tag": tag.name})
         return [line]
 
-    def __read_blocks(self,
-                      block: Tag,
-                      path_hash: str = "",
-                      handle_invisible_table: bool = False) -> List[LineWithMeta]:
+    def __read_blocks(self, block: Tag, path_hash: str = "", handle_invisible_table: bool = False) -> List[LineWithMeta]:
         uid = hashlib.md5((path_hash + str(block.name)).encode()).hexdigest()
         if not self.__is_content_tag(block, handle_invisible_table=handle_invisible_table):
             return []
@@ -125,12 +123,7 @@ class HtmlReader(BaseReader):
         line = self.__make_line(block, HierarchyLevel.unknown, 0, uid=uid, path_hash=path_hash)
         return [line]
 
-    def __make_line(self, line: str,
-                    line_type: str,
-                    header_level: int = 0,
-                    uid: str = None,
-                    path_hash: str = None,
-                    annotations: List = None) -> LineWithMeta:
+    def __make_line(self, line: str, line_type: str, header_level: int = 0, uid: str = None, path_hash: str = None, annotations: List = None) -> LineWithMeta:
         if annotations is None:
             annotations = []
 
@@ -176,12 +169,7 @@ class HtmlReader(BaseReader):
                 lines.extend(item_lines)
         return lines
 
-    def __handle_list_item(self,
-                           item: Tag,
-                           item_index: int,
-                           list_type: str,
-                           path_hash: str,
-                           handle_invisible_table: bool) -> List[LineWithMeta]:
+    def __handle_list_item(self, item: Tag, item_index: int, list_type: str, path_hash: str, handle_invisible_table: bool) -> List[LineWithMeta]:
         lines = []
         header_line = self.__get_li_header(list_type=list_type, index=item_index)
         block_lines = self.__handle_block(item, uid=path_hash, handle_invisible_table=handle_invisible_table)

@@ -9,10 +9,14 @@ class TestCellSplitter(unittest.TestCase):
 
     def test_merge_close_borders(self) -> None:
         cells = [
-            [Cell(x_top_left=0, y_top_left=0, x_bottom_right=50, y_bottom_right=30),
-             Cell(x_top_left=51, y_top_left=2, x_bottom_right=90, y_bottom_right=29)],
-            [Cell(x_top_left=0, y_top_left=31, x_bottom_right=50, y_bottom_right=50),
-             Cell(x_top_left=51, y_top_left=31, x_bottom_right=91, y_bottom_right=50)]
+            [
+                Cell(x_top_left=0, y_top_left=0, x_bottom_right=50, y_bottom_right=30),
+                Cell(x_top_left=51, y_top_left=2, x_bottom_right=90, y_bottom_right=29)
+            ],
+            [
+                Cell(x_top_left=0, y_top_left=31, x_bottom_right=50, y_bottom_right=50),
+                Cell(x_top_left=51, y_top_left=31, x_bottom_right=91, y_bottom_right=50)
+            ]
         ]
         cells_merged = self.splitter._merge_close_borders(cells)
         self.assertEqual(0, cells_merged[0][0].x_top_left)
@@ -135,10 +139,17 @@ class TestCellSplitter(unittest.TestCase):
         self.assertEqual(5, cell_d.y_bottom_right)
 
     def test_no_split(self) -> None:
-        cells = [[Cell(x_top_left=160, y_top_left=321, x_bottom_right=825, y_bottom_right=369),
-                 Cell(x_top_left=825, y_top_left=321, x_bottom_right=1494, y_bottom_right=369)],
-                 [Cell(x_top_left=160, y_top_left=374, x_bottom_right=825, y_bottom_right=423),
-                 Cell(x_top_left=825, y_top_left=374, x_bottom_right=1494, y_bottom_right=423)]]
+        cells = [
+            [
+                Cell(x_top_left=160, y_top_left=321, x_bottom_right=825, y_bottom_right=369),
+                Cell(x_top_left=825, y_top_left=321, x_bottom_right=1494, y_bottom_right=369)
+            ],
+            [
+                Cell(x_top_left=160, y_top_left=374, x_bottom_right=825, y_bottom_right=423),
+                Cell(x_top_left=825, y_top_left=374, x_bottom_right=1494, y_bottom_right=423)
+            ]
+        ]
+
         splitted = self.splitter.split(cells=cells)
         self.assertEqual(2, len(splitted))
         self.assertEqual(2, len(splitted[0]))

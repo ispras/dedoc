@@ -62,10 +62,7 @@ class CellSplitter:
         return result_matrix
 
     @staticmethod
-    def __split_one_cell(cell: Cell,
-                         horizontal_borders: np.ndarray,
-                         vertical_borders: np.ndarray,
-                         result_matrix: List[List[Cell]]) -> None:
+    def __split_one_cell(cell: Cell, horizontal_borders: np.ndarray, vertical_borders: np.ndarray, result_matrix: List[List[Cell]]) -> None:
         left_id, right_id = np.searchsorted(vertical_borders, [cell.x_top_left, cell.x_bottom_right])
         top_id, bottom_id = np.searchsorted(horizontal_borders, [cell.y_top_left, cell.y_bottom_right])
         colspan = right_id - left_id

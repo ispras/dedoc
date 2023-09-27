@@ -46,8 +46,9 @@ class PptxReader(BaseReader):
                     lines.append(LineWithMeta(line=shape.text, metadata=LineMetadata(page_id=page_id, line_id=paragraph_id)))
 
                 if shape.has_table:
-                    cells = [[CellWithMeta(lines=[
-                        LineWithMeta(line=cell.text, metadata=LineMetadata(page_id=page_id, line_id=0))]) for cell in row.cells] for row in shape.table.rows
+                    cells = [
+                        [CellWithMeta(lines=[LineWithMeta(line=cell.text, metadata=LineMetadata(page_id=page_id, line_id=0))]) for cell in row.cells]
+                        for row in shape.table.rows
                     ]
 
                     tables.append(Table(cells=cells, metadata=TableMetadata(page_id=page_id)))

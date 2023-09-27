@@ -55,7 +55,8 @@ class TzTextFeatures(AbstractFeatureExtractor):
         features_df = pd.DataFrame({
             "toc": self._before_special_line(lines, self.__find_toc),
             "tz": self._before_special_line(lines, self.__find_tz),
-            "list_item": self._list_features(lines)})
+            "list_item": self._list_features(lines)
+        })
 
         page_ids = [line.metadata.page_id for line in lines]
         if page_ids:

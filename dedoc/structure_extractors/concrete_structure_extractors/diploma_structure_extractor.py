@@ -53,8 +53,9 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
 
         toc_lines = [(line, "toc") for line in toc_lines]
         header_lines = [(line, "title") for line in lines if line.metadata.tag_hierarchy_level.line_type == "title"]
-        body_lines = [(line, line.metadata.tag_hierarchy_level.line_type) for line in lines if
-                      line.metadata.tag_hierarchy_level.line_type not in ("title", "toc")]
+        body_lines = [
+            (line, line.metadata.tag_hierarchy_level.line_type) for line in lines if line.metadata.tag_hierarchy_level.line_type not in ("title", "toc")
+        ]
 
         header_lines = self.header_builder.get_lines_with_hierarchy(lines_with_labels=header_lines, init_hl_depth=0)
         toc_lines = self.toc_builder.get_lines_with_hierarchy(lines_with_labels=toc_lines, init_hl_depth=1)
