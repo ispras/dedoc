@@ -4,7 +4,7 @@ from dedoc.data_structures import LineMetadata, Table, UnstructuredDocument
 from dedoc.data_structures import TableMetadata
 from dedoc.data_structures import LineWithMeta
 
-#  First of all lets create some table, table consist of cells (list of rows, and row is a list of strings
+#  First of all lets create some table, table consist of cells (list of rows, and row is a list of cells with metadata
 from dedoc.data_structures import HierarchyLevel
 from dedoc.data_structures.cell_with_meta import CellWithMeta
 from dedoc.metadata_extractors import BaseMetadataExtractor
@@ -15,8 +15,7 @@ table_cells = [
     ["1", "Ivanov", "Ivan", "ISP RAS", "8-800"],
 ]
 cell_with_meta = [[CellWithMeta(lines=[LineWithMeta(line=cell_text,
-                                                    metadata=LineMetadata(page_id=0,
-                                                                          line_id=None),
+                                                    metadata=LineMetadata(page_id=0, line_id=None),
                                                     annotations=[])]) for cell_text in row] for row in table_cells]
 # table also has some metadata, lets assume that our table is on first page
 table_metadata = TableMetadata(page_id=0, uid="table 1")
@@ -45,25 +44,15 @@ hierarchy_level = HierarchyLevel(
     line_type="header"
 )
 text = "DOCUMENT TITLE"
-metadata = LineMetadata(page_id=0,
-                        line_id=1,
-                        tag_hierarchy_level=None,
-                        hierarchy_level=hierarchy_level,
-                        other_fields=None)
+metadata = LineMetadata(page_id=0, line_id=1, tag_hierarchy_level=None, hierarchy_level=hierarchy_level, other_fields=None)
 
 # Annotations: one may specify some information about some part of the text, for example that some word
 # written in italic font.
 annotations = []
 
-line1 = LineWithMeta(
-    line=text,
-    metadata=metadata,
-    annotations=annotations
-)
+line1 = LineWithMeta(line=text, metadata=metadata, annotations=annotations)
 
-unstructured_document = UnstructuredDocument(tables=[table],
-                                             lines=[line1],
-                                             attachments=[])
+unstructured_document = UnstructuredDocument(tables=[table], lines=[line1], attachments=[])
 
 # I hope you understand some concepts of the LineWithMeta, but you may ask why it need level_1 and level_2
 # parameters. Why is only level_1 not enough. Imagine that we have lists like these:

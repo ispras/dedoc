@@ -16,8 +16,7 @@ class TableMetadata(Serializable):
         :param page_id: number of the page where table starts
         :param uid: unique identifier of the table
         :param is_inserted: indicator if table was already inserted into paragraphs list
-        :param rotated_angle: the value of the rotation angle by which the table was rotated during recognition. Extracted boxes from a table will need to
-            be rotated by this angle.
+        :param rotated_angle: value of the rotation angle by which the table was rotated during recognition
         """
         self.page_id = page_id
         self.uid = str(uuid.uuid1()) if not uid else uid
