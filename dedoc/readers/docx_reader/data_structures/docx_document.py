@@ -13,9 +13,8 @@ from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
 from dedoc.readers.docx_reader.data_structures.table import DocxTable
-from dedoc.readers.docx_reader.data_structures.utils import Counter
+from dedoc.readers.docx_reader.data_structures.utils import Counter, ParagraphMaker
 from dedoc.readers.docx_reader.footnote_extractor import FootnoteExtractor
 from dedoc.readers.docx_reader.line_with_meta_converter import LineWithMetaConverter
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
@@ -27,27 +26,34 @@ class DocxDocument:
     def __init__(self, path: str, attachments: List[AttachedFile], logger: logging.Logger) -> None:
         self.logger = logger
         self.path = path
-        self.path_hash = calculate_file_hash(path=path)
         self.attachment_name2uid = {attachment.original_name: attachment.uid for attachment in attachments}
 
         self.document_bs_tree = self.__get_bs_tree("word/document.xml")
-        if self.document_bs_tree is None:
-            self.document_bs_tree = self.__get_bs_tree("word/document2.xml")
+        self.document_bs_tree = self.__get_bs_tree("word/document2.xml") if self.document_bs_tree is None else self.document_bs_tree
         self.body = self.document_bs_tree.body if self.document_bs_tree else None
-
-        self.footnote_extractor = FootnoteExtractor(self.__get_bs_tree("word/footnotes.xml"))
-        self.endnote_extractor = FootnoteExtractor(self.__get_bs_tree("word/endnotes.xml"), key="endnote")
-        self.styles_extractor = StylesExtractor(self.__get_bs_tree("word/styles.xml"), logger)
-        num_tree = self.__get_bs_tree("word/numbering.xml")
-        self.numbering_extractor = NumberingExtractor(num_tree, self.styles_extractor) if num_tree else None
-        self.styles_extractor.numbering_extractor = self.numbering_extractor
+        self.paragraph_maker = self.__get_paragraph_maker()
 
         self.table_ref_reg = re.compile(r"^[Тт](аблица|абл?\.) ")
         self.tables = []
         self.paragraph_list = []
-        self.lines = self.__get_lines(logger=logger)
+        self.lines = self.__get_lines()
 
-    def __get_lines(self, logger: logging.Logger) -> List[LineWithMeta]:
+    def __get_paragraph_maker(self) -> ParagraphMaker:
+        styles_extractor = StylesExtractor(self.__get_bs_tree("word/styles.xml"), self.logger)
+        num_tree = self.__get_bs_tree("word/numbering.xml")
+        numbering_extractor = NumberingExtractor(num_tree, styles_extractor) if num_tree else None
+        styles_extractor.numbering_extractor = numbering_extractor
+
+        return ParagraphMaker(
+            counter=Counter(self.body, self.logger),
+            path_hash=calculate_file_hash(path=self.path),
+            styles_extractor=styles_extractor,
+            numbering_extractor=numbering_extractor,
+            footnote_extractor=FootnoteExtractor(self.__get_bs_tree("word/footnotes.xml")),
+            endnote_extractor=FootnoteExtractor(self.__get_bs_tree("word/endnotes.xml"), key="endnote")
+        )
+
+    def __get_lines(self) -> List[LineWithMeta]:
         """
         Get list of LineWithMeta with annotations, references to the images, diagrams and tables.
         Fill tables if they exist in the document.
@@ -58,31 +64,29 @@ class DocxDocument:
         """
         # { paragraph index in paragraph_list : list of uids }
         table_refs, image_refs, diagram_refs = defaultdict(list), defaultdict(list), defaultdict(list)
-        cnt = Counter(self.body, logger)
-        uids_set = set()
 
         for paragraph_xml in self.body:
             if not isinstance(paragraph_xml, Tag):
                 continue
 
             if paragraph_xml.name == "tbl":
-                self.__handle_table_xml(paragraph_xml, table_refs, uids_set, cnt)
+                self.__handle_table_xml(paragraph_xml, table_refs)
                 continue
 
             if paragraph_xml.pict:  # diagrams are saved using docx_attachments_extractor
-                self.__handle_diagram_xml(paragraph_xml, diagram_refs, uids_set, cnt)
+                self.__handle_diagram_xml(paragraph_xml, diagram_refs)
                 continue
 
             if paragraph_xml.name != "p":
                 for subparagraph_xml in paragraph_xml.find_all("w:p"):  # TODO check what to add
-                    paragraph = self.__xml2paragraph(subparagraph_xml, uids_set, cnt)
+                    paragraph = self.paragraph_maker.make_paragraph(subparagraph_xml, self.paragraph_list)
                     self.paragraph_list.append(paragraph)
                 continue
 
-            self.paragraph_list.append(self.__xml2paragraph(paragraph_xml, uids_set, cnt))
+            self.paragraph_list.append(self.paragraph_maker.make_paragraph(paragraph_xml, self.paragraph_list))
             images = paragraph_xml.find_all("pic:pic")
             if images:
-                self.__handle_images_xml(images, image_refs, uids_set, cnt)
+                self.__handle_images_xml(images, image_refs)
 
         return self.__paragraphs2lines(image_refs, table_refs, diagram_refs)
 
@@ -131,43 +135,19 @@ class DocxDocument:
         except zipfile.BadZipFile:
             raise BadFileFormatError(f"Bad docx file:\n file_name = {os.path.basename(self.path)}. Seems docx is broken")
 
-    def __xml2paragraph(self, paragraph_xml: Tag, uids_set: set, cnt: Counter) -> Paragraph:
-        uid = self.__get_paragraph_uid(paragraph_xml=paragraph_xml, uids_set=uids_set)
-        paragraph = Paragraph(xml=paragraph_xml,
-                              styles_extractor=self.styles_extractor,
-                              numbering_extractor=self.numbering_extractor,
-                              footnote_extractor=self.footnote_extractor,
-                              endnote_extractor=self.endnote_extractor,
-                              uid=uid)
-        prev_paragraph = None if len(self.paragraph_list) == 0 else self.paragraph_list[-1]
-        paragraph.spacing = paragraph.spacing_before if prev_paragraph is None else max(prev_paragraph.spacing_after, paragraph.spacing_before)
-        cnt.inc()
-        return paragraph
-
-    def __get_paragraph_uid(self, paragraph_xml: Tag, uids_set: set) -> str:
-        xml_hash = hashlib.md5(paragraph_xml.encode()).hexdigest()
-        raw_uid = f"{self.path_hash}_{xml_hash}"
-        uid = raw_uid
-        n = 0
-        while uid in uids_set:
-            n += 1
-            uid = f"{raw_uid}_{n}"
-        uids_set.add(uid)
-        return uid
-
-    def __handle_table_xml(self, xml: Tag, table_refs: dict, uids_set: set, cnt: Counter) -> None:
-        table = DocxTable(xml, self.styles_extractor)
+    def __handle_table_xml(self, xml: Tag, table_refs: dict) -> None:
+        table = DocxTable(xml, self.paragraph_maker)
         self.tables.append(table.to_table())
         table_uid = table.uid
 
-        self.__prepare_paragraph_list(uids_set, cnt)
+        self.__prepare_paragraph_list()
 
         if len(self.paragraph_list) >= 2 and self.table_ref_reg.match(self.paragraph_list[-2].text):
             table_refs[len(self.paragraph_list) - 2].append(table_uid)
         else:
             table_refs[len(self.paragraph_list) - 1].append(table_uid)
 
-    def __handle_images_xml(self, xmls: List[Tag], image_refs: dict, uids_set: set, cnt: Counter) -> None:
+    def __handle_images_xml(self, xmls: List[Tag], image_refs: dict) -> None:
         rels = self.__get_bs_tree("word/_rels/document.xml.rels")
         if rels is None:
             rels = self.__get_bs_tree("word/_rels/document2.xml.rels")
@@ -177,7 +157,7 @@ class DocxDocument:
             if rel["Target"].startswith("media/"):
                 images_rels[rel["Id"]] = rel["Target"][6:]
 
-        self.__prepare_paragraph_list(uids_set, cnt)
+        self.__prepare_paragraph_list()
 
         for image_xml in xmls:
             blips = image_xml.find_all("a:blip")
@@ -190,17 +170,17 @@ class DocxDocument:
                 continue
             image_refs[len(self.paragraph_list) - 1].append(image_uid)
 
-    def __handle_diagram_xml(self, xml: Tag, diagram_refs: dict, uids_set: set, cnt: Counter) -> None:
+    def __handle_diagram_xml(self, xml: Tag, diagram_refs: dict) -> None:
         diagram_name = f"{hashlib.md5(xml.encode()).hexdigest()}.docx"
         if diagram_name in self.attachment_name2uid:
             diagram_uid = self.attachment_name2uid[diagram_name]
         else:
             self.logger.info(f"Attachment with name {diagram_name} not found")
             return
-        self.__prepare_paragraph_list(uids_set, cnt)
+        self.__prepare_paragraph_list()
         diagram_refs[len(self.paragraph_list) - 1].append(diagram_uid)
 
-    def __prepare_paragraph_list(self, uids_set: set, cnt: Counter) -> None:
+    def __prepare_paragraph_list(self) -> None:
         while len(self.paragraph_list) > 0:
             if self.paragraph_list[-1].text.strip() == "":
                 self.paragraph_list.pop()
@@ -208,5 +188,5 @@ class DocxDocument:
                 break
 
         if not self.paragraph_list:
-            empty_paragraph = self.__xml2paragraph(BeautifulSoup("<w:p></w:p>").body.contents[0], uids_set, cnt)
+            empty_paragraph = self.paragraph_maker.make_paragraph(BeautifulSoup("<w:p></w:p>").body.contents[0], self.paragraph_list)
             self.paragraph_list.append(empty_paragraph)
