@@ -51,7 +51,6 @@ class TestPDFReader(unittest.TestCase):
             _, angle_predict = self.orientation_classifier.predict(image)
             rotated, angle = skew_corrector.preprocess(image, {"orientation_angle": angle_predict})
             angle = angle["rotated_angle"]
-            print(angle, angles[i])
             self.assertTrue(abs(angle - angles[i]) < max_delta)
 
     def test_header_footer_search(self) -> None:
