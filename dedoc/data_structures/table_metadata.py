@@ -9,15 +9,14 @@ from dedoc.data_structures.serializable import Serializable
 
 class TableMetadata(Serializable):
     """
-    This class holds the information about the table location in the document and information about cell properties.
+    This class holds the information about table unique identifier, rotation angle (if table has been rotated - for images) and so on.
     """
     def __init__(self, page_id: Optional[int], uid: Optional[str] = None, is_inserted: bool = False, rotated_angle: float = 0.0) -> None:
         """
         :param page_id: number of the page where table starts
         :param uid: unique identifier of the table
         :param is_inserted: indicator if table was already inserted into paragraphs list
-        :param rotated_angle: the value of the rotation angle by which the table was rotated during recognition. Extracted boxes from a table will need to
-            be rotated by this angle.
+        :param rotated_angle: value of the rotation angle by which the table was rotated during recognition
         """
         self.page_id = page_id
         self.uid = str(uuid.uuid1()) if not uid else uid

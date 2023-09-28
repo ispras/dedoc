@@ -48,13 +48,13 @@ document.lines[3].annotations[6]  # Bold(0:4, True)
 document.lines[3].annotations[7]  # Italic(6:12, True)
 document.lines[3].annotations[8]  # Size(14:19, 10.0)
 
-document.tables[0].cells[0][0].get_text()  # N
-document.tables[0].cells[1][3].get_text()  # Cell3
-document.tables[1].cells[3][0].get_text()  # 'Text 3'
+cell = document.tables[0].cells[0][0]
+cell  # CellWithMeta(N)
+cell.get_text()  # N
+cell.rowspan, cell.colspan, cell.invisible  # (1, 1, False)
 document.tables[0].metadata.uid  # f2f08354fc2dbcb5ded8885479f498a6
-document.tables[0].cells[0][0].colspan  # 1
-document.tables[0].cells[0][0].rowspan  # 1
-document.tables[0].cells[0][0].invisible  # False
+document.tables[0].metadata.page_id  # None
+document.tables[0].metadata.rotated_angle  # 0.0
 document.tables[1].cells[0][0].invisible  # False
 document.tables[1].cells[0][1].invisible  # True
 document.tables[1].cells[0][0].colspan  # 2

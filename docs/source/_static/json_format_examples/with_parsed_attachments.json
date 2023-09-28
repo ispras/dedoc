@@ -1,5 +1,5 @@
 {
-  "version": "2023.05.26",
+  "version": "0.11.2",
   "warnings": [],
   "content": {
     "structure": {
@@ -298,7 +298,7 @@
                           "start": 0,
                           "end": 14,
                           "name": "attachment",
-                          "value": "image1.png"
+                          "value": "attach_fa5c54ac-5d3c-11ee-b518-0242ac120002"
                         }
                       ],
                       "metadata": {
@@ -321,87 +321,119 @@
       {
         "cells": [
           [
-            "Table header",
-            "Table header"
+            {
+              "lines": [
+                {
+                  "text": "Table header",
+                  "annotations": []
+                }
+              ],
+              "colspan": 2,
+              "rowspan": 1,
+              "invisible": false
+            },
+            {
+              "lines": [
+                {
+                  "text": "Table header",
+                  "annotations": []
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 1,
+              "invisible": true
+            }
           ],
           [
-            "Vertically merged cells",
-            "Text 1"
+            {
+              "lines": [
+                {
+                  "text": "Vertically merged cells",
+                  "annotations": []
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 2,
+              "invisible": false
+            },
+            {
+              "lines": [
+                {
+                  "text": "Text 1",
+                  "annotations": []
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 1,
+              "invisible": false
+            }
           ],
           [
-            "Vertically merged cells",
-            "Text 2"
+            {
+              "lines": [
+                {
+                  "text": "Vertically merged cells",
+                  "annotations": []
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 1,
+              "invisible": true
+            },
+            {
+              "lines": [
+                {
+                  "text": "Text 2",
+                  "annotations": []
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 1,
+              "invisible": false
+            }
           ],
           [
-            "Text 3",
-            "Text 4"
+            {
+              "lines": [
+                {
+                  "text": "Text 3",
+                  "annotations": []
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 1,
+              "invisible": false
+            },
+            {
+              "lines": [
+                {
+                  "text": "Text 4",
+                  "annotations": []
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 1,
+              "invisible": false
+            }
           ]
         ],
         "metadata": {
           "uid": "3a327789721e09b3fa6fd9560f3ee263",
           "page_id": null,
           "is_inserted": false,
-          "cell_properties": [
-            [
-              {
-                "colspan": 2,
-                "rowspan": 1,
-                "invisible": false
-              },
-              {
-                "colspan": 1,
-                "rowspan": 1,
-                "invisible": true
-              }
-            ],
-            [
-              {
-                "colspan": 1,
-                "rowspan": 2,
-                "invisible": false
-              },
-              {
-                "colspan": 1,
-                "rowspan": 1,
-                "invisible": false
-              }
-            ],
-            [
-              {
-                "colspan": 1,
-                "rowspan": 1,
-                "invisible": true
-              },
-              {
-                "colspan": 1,
-                "rowspan": 1,
-                "invisible": false
-              }
-            ],
-            [
-              {
-                "colspan": 1,
-                "rowspan": 1,
-                "invisible": false
-              },
-              {
-                "colspan": 1,
-                "rowspan": 1,
-                "invisible": false
-              }
-            ]
-          ]
+          "rotated_angle": 0.0
         }
       }
     ]
   },
   "metadata": {
-    "uid": "doc_uid_auto_5dc67f28-0e90-11ee-8789-4549ad8e7206",
+    "uid": "doc_uid_auto_fa7fdbc0-5d3c-11ee-b518-0242ac120002",
     "file_name": "example_return_format.docx",
+    "temporary_file_name": "1695822697_469.docx",
     "size": 21270,
-    "modified_time": 1687172370,
-    "created_time": 1687172370,
-    "access_time": 1687172370,
+    "modified_time": 1695822697,
+    "created_time": 1695822697,
+    "access_time": 1695822697,
     "file_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "document_subject": "",
     "keywords": "",
@@ -409,8 +441,8 @@
     "comments": "",
     "author": "",
     "last_modified_by": "",
-    "created_date": 1568736411,
-    "modified_date": 1686923436,
+    "created_date": 1568725611,
+    "modified_date": 1686912636,
     "last_printed_date": null,
     "other_fields": {
       "document_subject": "",
@@ -419,14 +451,14 @@
       "comments": "",
       "author": "",
       "last_modified_by": "",
-      "created_date": 1568736411,
-      "modified_date": 1686923436,
+      "created_date": 1568725611,
+      "modified_date": 1686912636,
       "last_printed_date": null
     }
   },
   "attachments": [
     {
-      "version": "2023.05.26",
+      "version": "0.11.2",
       "warnings": [],
       "content": {
         "structure": {
@@ -446,15 +478,57 @@
               "annotations": [
                 {
                   "start": 0,
-                  "end": 27,
+                  "end": 3,
+                  "name": "confidence",
+                  "value": "0.96"
+                },
+                {
+                  "start": 10,
+                  "end": 17,
+                  "name": "confidence",
+                  "value": "0.96"
+                },
+                {
+                  "start": 0,
+                  "end": 3,
                   "name": "bounding box",
-                  "value": "{\"x_top_left\": 37, \"y_top_left\": 29, \"width\": 304, \"height\": 13}"
+                  "value": "{\"x_top_left\": 0.05417276720351391, \"y_top_left\": 0.27358490566037735, \"width\": 0.0527086383601757, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
+                },
+                {
+                  "start": 4,
+                  "end": 9,
+                  "name": "confidence",
+                  "value": "0.95"
+                },
+                {
+                  "start": 4,
+                  "end": 9,
+                  "name": "bounding box",
+                  "value": "{\"x_top_left\": 0.11566617862371889, \"y_top_left\": 0.27358490566037735, \"width\": 0.09077598828696926, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
+                },
+                {
+                  "start": 10,
+                  "end": 17,
+                  "name": "bounding box",
+                  "value": "{\"x_top_left\": 0.212298682284041, \"y_top_left\": 0.27358490566037735, \"width\": 0.11859443631039532, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
+                },
+                {
+                  "start": 18,
+                  "end": 26,
+                  "name": "confidence",
+                  "value": "0.77"
+                },
+                {
+                  "start": 18,
+                  "end": 26,
+                  "name": "bounding box",
+                  "value": "{\"x_top_left\": 0.3396778916544656, \"y_top_left\": 0.27358490566037735, \"width\": 0.1595900439238653, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
                 },
                 {
                   "start": 0,
                   "end": 27,
-                  "name": "bold",
-                  "value": "True"
+                  "name": "bounding box",
+                  "value": "{\"x_top_left\": 0.05417276720351391, \"y_top_left\": 0.27358490566037735, \"width\": 0.445095168374817, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
                 },
                 {
                   "start": 0,
@@ -500,9 +574,93 @@
                   "annotations": [
                     {
                       "start": 0,
+                      "end": 2,
+                      "name": "confidence",
+                      "value": "0.93"
+                    },
+                    {
+                      "start": 0,
+                      "end": 2,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.05710102489019034, \"y_top_left\": 0.4811320754716981, \"width\": 0.020497803806734993, \"height\": 0.16037735849056603, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 3,
+                      "end": 9,
+                      "name": "confidence",
+                      "value": "0.81"
+                    },
+                    {
+                      "start": 3,
+                      "end": 9,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.08345534407027819, \"y_top_left\": 0.4811320754716981, \"width\": 0.0629575402635432, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 10,
+                      "end": 14,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 15,
+                      "end": 19,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 20,
+                      "end": 24,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 25,
+                      "end": 32,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 33,
+                      "end": 37,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 10,
+                      "end": 14,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.15373352855051245, \"y_top_left\": 0.4811320754716981, \"width\": 0.04978038067349927, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 15,
+                      "end": 19,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.2108345534407028, \"y_top_left\": 0.4811320754716981, \"width\": 0.048316251830161056, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 20,
+                      "end": 24,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.2679355783308931, \"y_top_left\": 0.5188679245283019, \"width\": 0.05856515373352855, \"height\": 0.08490566037735849, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 25,
+                      "end": 32,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.33382137628111275, \"y_top_left\": 0.4811320754716981, \"width\": 0.07906295754026355, \"height\": 0.16037735849056603, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 33,
+                      "end": 37,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.4216691068814056, \"y_top_left\": 0.5, \"width\": 0.0424597364568082, \"height\": 0.10377358490566038, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 0,
                       "end": 38,
                       "name": "bounding box",
-                      "value": "{\"x_top_left\": 39, \"y_top_left\": 51, \"width\": 278, \"height\": 17}"
+                      "value": "{\"x_top_left\": 0.05710102489019034, \"y_top_left\": 0.4811320754716981, \"width\": 0.40702781844802344, \"height\": 0.16037735849056603, \"page_width\": 683, \"page_height\": 106}"
                     },
                     {
                       "start": 0,
@@ -537,9 +695,189 @@
                   "annotations": [
                     {
                       "start": 0,
+                      "end": 2,
+                      "name": "confidence",
+                      "value": "0.94"
+                    },
+                    {
+                      "start": 0,
+                      "end": 2,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.05417276720351391, \"y_top_left\": 0.6981132075471698, \"width\": 0.02342606149341142, \"height\": 0.16037735849056603, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 3,
+                      "end": 9,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 10,
+                      "end": 14,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 15,
+                      "end": 19,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 20,
+                      "end": 24,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 25,
+                      "end": 29,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 30,
+                      "end": 34,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 35,
+                      "end": 42,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 43,
+                      "end": 48,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 53,
+                      "end": 55,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 56,
+                      "end": 61,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 62,
+                      "end": 66,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 67,
+                      "end": 69,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 70,
+                      "end": 75,
+                      "name": "confidence",
+                      "value": "0.96"
+                    },
+                    {
+                      "start": 3,
+                      "end": 9,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.0849194729136164, \"y_top_left\": 0.6981132075471698, \"width\": 0.08052708638360176, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 10,
+                      "end": 14,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.17423133235724744, \"y_top_left\": 0.6981132075471698, \"width\": 0.04978038067349927, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 15,
+                      "end": 19,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.23133235724743778, \"y_top_left\": 0.6981132075471698, \"width\": 0.048316251830161056, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 20,
+                      "end": 24,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.2884333821376281, \"y_top_left\": 0.7358490566037735, \"width\": 0.05856515373352855, \"height\": 0.08490566037735849, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 25,
+                      "end": 29,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.35431918008784774, \"y_top_left\": 0.7358490566037735, \"width\": 0.05124450951683748, \"height\": 0.08490566037735849, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 30,
+                      "end": 34,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.4143484626647145, \"y_top_left\": 0.7358490566037735, \"width\": 0.05710102489019034, \"height\": 0.08490566037735849, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 35,
+                      "end": 42,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.4787701317715959, \"y_top_left\": 0.6981132075471698, \"width\": 0.08052708638360176, \"height\": 0.16037735849056603, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 43,
+                      "end": 48,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.5666178623718887, \"y_top_left\": 0.7169811320754716, \"width\": 0.048316251830161056, \"height\": 0.10377358490566038, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 49,
+                      "end": 52,
+                      "name": "confidence",
+                      "value": "0.97"
+                    },
+                    {
+                      "start": 49,
+                      "end": 52,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.623718887262079, \"y_top_left\": 0.6981132075471698, \"width\": 0.036603221083455345, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 53,
+                      "end": 55,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.6676427525622255, \"y_top_left\": 0.7358490566037735, \"width\": 0.03367496339677892, \"height\": 0.08490566037735849, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 56,
+                      "end": 61,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.7086383601756955, \"y_top_left\": 0.6981132075471698, \"width\": 0.06442166910688141, \"height\": 0.16037735849056603, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 62,
+                      "end": 66,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.780380673499268, \"y_top_left\": 0.6886792452830188, \"width\": 0.05417276720351391, \"height\": 0.1320754716981132, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 67,
+                      "end": 69,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.8418740849194729, \"y_top_left\": 0.7358490566037735, \"width\": 0.03513909224011713, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 70,
+                      "end": 75,
+                      "name": "bounding box",
+                      "value": "{\"x_top_left\": 0.8843338213762811, \"y_top_left\": 0.6981132075471698, \"width\": 0.055636896046852125, \"height\": 0.12264150943396226, \"page_width\": 683, \"page_height\": 106}"
+                    },
+                    {
+                      "start": 0,
                       "end": 76,
                       "name": "bounding box",
-                      "value": "{\"x_top_left\": 37, \"y_top_left\": 73, \"width\": 605, \"height\": 18}"
+                      "value": "{\"x_top_left\": 0.05417276720351391, \"y_top_left\": 0.6886792452830188, \"width\": 0.8857979502196194, \"height\": 0.16981132075471697, \"page_width\": 683, \"page_height\": 106}"
                     },
                     {
                       "start": 0,
@@ -575,14 +913,22 @@
         "tables": []
       },
       "metadata": {
-        "uid": "attach_5dc5cb0a-0e90-11ee-8789-4549ad8e7206",
+        "uid": "attach_fa5c54ac-5d3c-11ee-b518-0242ac120002",
         "file_name": "image1.png",
+        "temporary_file_name": "1695822697_301.png",
         "size": 14874,
-        "modified_time": 1687172370,
-        "created_time": 1687172370,
-        "access_time": 1687172370,
+        "modified_time": 1695822697,
+        "created_time": 1695822697,
+        "access_time": 1695822697,
         "file_type": "image/png",
-        "other_fields": {}
+        "rotated_page_angles": [
+          0
+        ],
+        "other_fields": {
+          "rotated_page_angles": [
+            0
+          ]
+        }
       },
       "attachments": []
     }

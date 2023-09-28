@@ -122,20 +122,20 @@ Document tables
 
 The attribute `tables` in the :class:`dedoc.data_structures.UnstructuredDocument` is a list of :class:`dedoc.data_structures.Table`.
 
-Each table is represented as a list of table rows, each row is a list of strings with cells text.
+Each table is represented as a list of table rows, each row is a list of cells with additional metadata :class:`dedoc.data_structures.CellWithMeta`.
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
-    :lines: 51-53
+    :lines: 51-54
 
-It also has metadata, containing table's unique identifier, cells properties (information about rowspan and colspan).
+It also has metadata, containing table's unique identifier, rotation angle (if table has been rotated - for images) and so on.
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
-    :lines: 54-57
+    :lines: 55-57
 
 All tables have rectangular form, so if the cells are merged, in the intermediate representation they aren't and have the same contents.
-Use cells properties for getting information about merged cells.
+Use cells metadata for getting information about merged cells.
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python

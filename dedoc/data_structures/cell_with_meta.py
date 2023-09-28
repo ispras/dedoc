@@ -9,19 +9,22 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 
 class CellWithMeta:
     """
-    This class holds the information about the cell information: text of the cell, text annotations and cell properties (rowspan, colspan, invisible).
+    This class holds the information about the cell: list of lines and cell properties (rowspan, colspan, invisible).
     """
     def __init__(self, lines: List[LineWithMeta], colspan: int = 1, rowspan: int = 1, invisible: bool = False) -> None:
         """
-        :param lines: text lines (LineWithMeta) of the cell
-        :param colspan: The value of the rowspan attribute represents the number of columns to span. Like HTML format.
-        :param rowspan: The value of the rowspan attribute represents the number of rows to span. Like HTML format.
-        :param invisible: Display or hide cell values
+        :param lines: textual lines of the cell
+        :param colspan: number of columns to span like in HTML format
+        :param rowspan: number of rows to span like in HTML format
+        :param invisible: indicator for displaying or hiding cell text
         """
         self.lines = lines
         self.colspan = colspan
         self.rowspan = rowspan
         self.invisible = invisible
+
+    def __repr__(self) -> str:
+        return f"CellWithMeta({self.get_text()[:65]})"
 
     def get_text(self) -> str:
         return "\n".join([line.line for line in self.lines])

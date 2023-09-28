@@ -10,25 +10,25 @@ file_name = "example.docx"
 # we get unstructured file with lines and tables
 unstructured_document = docx_reader.read(path=file_name, document_type="example")
 
-# let's look at content of unstructured_file, it consists of tables and lines
+# let's look at the content of unstructured_file, it consists of tables and lines
 print(unstructured_document.tables, unstructured_document.lines)
 
-# first of all lets look at the table
+# first of all let's look at the table
 table = unstructured_document.tables[0]
 # table consists of cells (we assume that table is rectangle)
-# so cells is list of rows and row is list of strings
+# cell is a list of rows and row is a list of cells with metadata
 for row in table.cells:
     for cell in row:
         print(cell.get_text().replace("\n", "\t") + " ", end="")
     print("\n")
 
-# there is also some metadata in table
+# there is also some metadata in the table
 print(table.metadata)
 
-# and now lets look at lines. lines it is list of object of class LineWithMeta
+# and now let's look at lines. lines is a list of objects of class LineWithMeta
 lines = unstructured_document.lines
-# let's look at first line
+# let's look at the first line
 line = lines[0]
 print(line)
-# line consist of line (text), metadata, hierarchy level
+# line consists of line (text), metadata, hierarchy level
 print(line.line, line.metadata, line.metadata.hierarchy_level)

@@ -2,9 +2,8 @@
 import json
 
 from dedoc import DedocManager
-from dedoc.config import get_config
 
-manager = DedocManager(config=get_config())
+manager = DedocManager()
 
 filename_docx = "example.docx"
 parsed_docx_document = manager.parse(file_path=filename_docx, parameters={})

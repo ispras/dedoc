@@ -16,8 +16,8 @@ class Table(Serializable):
     """
     def __init__(self, cells: List[List[CellWithMeta]], metadata: TableMetadata) -> None:
         """
-        :param cells: a list of lists of cells (cell has text, colspan and rowspan attributes).
-        :param metadata: some table metadata, as location, size and so on.
+        :param cells: a list of lists of cells (cell has text, colspan and rowspan attributes)
+        :param metadata: some table metadata as location, size and so on
         """
         self.metadata = metadata
         self.cells = cells
