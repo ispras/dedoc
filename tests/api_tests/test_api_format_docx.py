@@ -1,5 +1,4 @@
 import os
-import unittest
 
 from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
@@ -43,29 +42,6 @@ class TestApiDocReader(AbstractTestApiDocReader):
         file_name = "example.odt"
         result = self._send_request(file_name)
         self.__check_doc_like(result)
-        self._check_metainfo(result["metadata"], "application/vnd.oasis.opendocument.text", file_name)
-
-    @unittest.skip("Insert table doesn't work now")
-    def test_doc_insert_table(self) -> None:
-        file_name = "example.doc"
-        result = self._send_request(file_name, data=dict(structure_type="tree"))
-        self.__check_doc_like_insert_table(result)
-        self._check_metainfo(result["metadata"], "application/msword", file_name)
-
-    @unittest.skip("Insert table doesn't work now")
-    def test_docx_insert_table(self) -> None:
-        file_name = "example.docx"
-        result = self._send_request(file_name, data=dict(structure_type="tree", insert_table=True))
-        self.__check_doc_like_insert_table(result)
-
-        self._check_metainfo(result["metadata"], "application/vnd.openxmlformats-officedocument.wordprocessingml.document", file_name)
-
-    @unittest.skip("Insert table doesn't work now")
-    def test_odt_insert_table(self) -> None:
-        file_name = "example.odt"
-        result = self._send_request(file_name, data=dict(structure_type="tree", insert_table=True))
-        self.__check_doc_like_insert_table(result)
-
         self._check_metainfo(result["metadata"], "application/vnd.oasis.opendocument.text", file_name)
 
     def test_odt_with_split(self) -> None:
@@ -133,7 +109,7 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
     def test_docx_heading_new(self) -> None:
         file_name = "tz-1ek-20_minimum.docx"
-        data = dict(structure_type="tree", insert_table=True, return_format="html")
+        data = dict(structure_type="tree", return_format="html")
         _ = self._send_request(file_name, data=data)
 
     def __check_doc_like(self, result: dict) -> None:
@@ -163,44 +139,3 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertTrue(metadata["created_time"] is not None)
         self.assertTrue(metadata["access_time"] is not None)
         self.assertIn("modified_date", metadata["other_fields"])
-
-    def __check_doc_like_insert_table(self, result: dict) -> None:
-        content = result["content"]["structure"]
-        self.assertEqual("", get_by_tree_path(content, "0")["text"])
-        self.assertEqual("Пример документа\nГлава 1\nКакие то определения\nСтатья 1\nОпределим опрделения\nСтатья 2\nДадим пояснения",
-                         get_by_tree_path(content, "0.0")["text"].strip())
-        self.assertEqual("1.2.1. Поясним за непонятное", get_by_tree_path(content, "0.1.0")["text"].strip())
-        self.assertEqual("1.2.2. Поясним за понятное", get_by_tree_path(content, "0.1.1")["text"].strip())
-        self.assertEqual("1.2.3.", get_by_tree_path(content, "0.1.2")["text"].strip())
-        self.assertEqual("\tа) это даже ежу понятно", get_by_tree_path(content, "0.1.1.0.0")["text"].rstrip())
-        self.assertEqual("\tб) это ежу не понятно", get_by_tree_path(content, "0.1.1.0.1")["text"].rstrip())
-
-        self.assertEqual("N", get_by_tree_path(content, "0.0.0.0.0")["text"])
-        self.assertEqual("Фамилия", get_by_tree_path(content, "0.0.0.0.1")["text"])
-        self.assertEqual("Имя", get_by_tree_path(content, "0.0.0.0.2")["text"])
-        self.assertEqual("Организация", get_by_tree_path(content, "0.0.0.0.3")["text"])
-        self.assertEqual("Телефон", get_by_tree_path(content, "0.0.0.0.4")["text"])
-        self.assertEqual("Примечания", get_by_tree_path(content, "0.0.0.0.5")["text"])
-        self.assertEqual("1", get_by_tree_path(content, "0.0.0.1.0")["text"])
-        self.assertEqual("Иванов", get_by_tree_path(content, "0.0.0.1.1")["text"])
-        self.assertEqual("Иван", get_by_tree_path(content, "0.0.0.1.2")["text"])
-        self.assertEqual("ИСП", get_by_tree_path(content, "0.0.0.1.3")["text"])
-        self.assertEqual("8-800", get_by_tree_path(content, "0.0.0.1.4")["text"])
-
-        self.assertEqual("", get_by_tree_path(content, "0.1.2.0.0")["text"])
-        self.assertEqual("", get_by_tree_path(content, "0.1.2.0.1")["text"])
-        self.assertEqual("", get_by_tree_path(content, "0.1.2.0.2")["text"])
-        self.assertEqual("", get_by_tree_path(content, "0.1.2.0.3")["text"])
-
-        self.assertEqual("Фамилия", get_by_tree_path(content, "0.1.2.0.0.0")["text"])
-        self.assertEqual("Имя", get_by_tree_path(content, "0.1.2.0.0.1")["text"])
-        self.assertEqual("Отчество", get_by_tree_path(content, "0.1.2.0.0.2")["text"])
-        self.assertEqual("Иванов", get_by_tree_path(content, "0.1.2.0.1.0")["text"])
-        self.assertEqual("Иван", get_by_tree_path(content, "0.1.2.0.1.1")["text"])
-        self.assertEqual("Иванович", get_by_tree_path(content, "0.1.2.0.1.2")["text"])
-        self.assertEqual("Петров", get_by_tree_path(content, "0.1.2.0.2.0")["text"])
-        self.assertEqual("Пётр", get_by_tree_path(content, "0.1.2.0.2.1")["text"])
-        self.assertEqual("Петрович", get_by_tree_path(content, "0.1.2.0.2.2")["text"])
-        self.assertEqual("Сидоров", get_by_tree_path(content, "0.1.2.0.3.0")["text"])
-        self.assertEqual("Сидор", get_by_tree_path(content, "0.1.2.0.3.1")["text"])
-        self.assertEqual("Сидорович", get_by_tree_path(content, "0.1.2.0.3.2")["text"])

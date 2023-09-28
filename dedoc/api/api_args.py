@@ -15,7 +15,6 @@ class QueryParameters(BaseModel):
     return_base64: Optional[str]
     attachments_dir: Optional[str]
 
-    insert_table: Optional[str]
     need_pdf_table_analysis: Optional[str]
     table_type: Optional[str]
     orient_analysis_cells: Optional[str]
@@ -48,7 +47,6 @@ class QueryParameters(BaseModel):
                  attachments_dir: Optional[str] = Body(description="path to the directory where to save files' attachments", default=None),  # noqa
 
                  # tables handling
-                 insert_table: Optional[str] = Body(description="Insert table into the result tree's content or not. Default: 'false'", default=None),  # noqa
                  need_pdf_table_analysis: Optional[str] = Body(description="include a table analysis into pdfs. Default: 'true'", default=None),  # noqa
                  table_type: Optional[str] = Body(description="a pipeline mode for a table recognition. Default: ''", default=None),  # noqa
                  orient_analysis_cells: Optional[str] = Body(description="a table recognition option enables analysis of rotated cells in table headers. Default: 'false'", default=None),  # noqa
@@ -83,7 +81,6 @@ class QueryParameters(BaseModel):
         self.return_base64: str = return_base64 or "false"
         self.attachments_dir: str = attachments_dir
 
-        self.insert_table: str = insert_table or "false"
         self.need_pdf_table_analysis: str = need_pdf_table_analysis or "true"
         self.table_type: str = table_type or ""
         self.orient_analysis_cells: str = orient_analysis_cells or "false"

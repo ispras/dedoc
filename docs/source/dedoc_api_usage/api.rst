@@ -149,14 +149,6 @@ Api parameters description
 
     * - :cspan:`3` **Tables handling**
 
-    * - insert_table
-      - true, false
-      - false
-      - Parameter for inserting tables into the result content.
-        By default tables are returned separately from the main document tree.
-        If parameter `insert_table` is set to `true`, tables will be inserted to the document tree.
-        See :ref:`json_format` for examples of result structure in both cases.
-
     * - need_pdf_table_analysis
       - true, false
       - true

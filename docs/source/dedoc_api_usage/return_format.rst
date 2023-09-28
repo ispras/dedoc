@@ -157,24 +157,3 @@ The beginning of the document's attachments:
 .. literalinclude:: ../_static/json_format_examples/with_parsed_attachments.json
     :language: json
     :lines: 459-484
-
-
-Example with inserted table
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Let's parse the example file with tables inserted in the document content:
-
-.. literalinclude:: ../_static/code_examples/dedoc_return_format.py
-    :language: python
-    :lines: 59-62
-
-The full :download:`output json file<../_static/json_format_examples/with_inserted_table.json>`
-has the same document metadata, tables and empty attachments (as in the first example).
-The difference is in the document content: it contains table's text inside.
-
-The empty nodes with type "table" and "table_row" are added as nested nodes to the document line located before the table.
-Table cells are nested nodes to the "table_row" node:
-
-.. literalinclude:: ../_static/json_format_examples/with_inserted_table.json
-    :language: json
-    :lines: 189-223
