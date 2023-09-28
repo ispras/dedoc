@@ -90,7 +90,7 @@ class DocxTable:
                 result_row.append(cell)
             result_cells_with_meta.append(result_row)
 
-        return Table(cells=result_cells_with_meta, metadata=TableMetadata(page_id=None, uid=self.uid, is_inserted=False))
+        return Table(cells=result_cells_with_meta, metadata=TableMetadata(page_id=None, uid=self.uid))
 
     def __get_cell_text(self, cell: Tag) -> str:
         cell_text = ""
