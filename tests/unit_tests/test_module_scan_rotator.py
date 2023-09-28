@@ -17,5 +17,5 @@ class TestScanRotator(unittest.TestCase):
             file_name = f"short_lines-{i}.png"
             img = cv2.imread(self._get_abs_path(file_name))
             image, angle = self.skew_corrector.preprocess(img)
-            angle = angle['orientation_angle']
+            angle = angle["orientation_angle"]
             self.assertEqual(0, angle)

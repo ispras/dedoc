@@ -2,9 +2,9 @@ import os
 import unittest
 
 import cv2
+from dedocutils.data_structures import BBox
 
 from dedoc.data_structures import BoldAnnotation
-from dedocutils.data_structures import BBox
 from dedoc.readers.pdf_reader.data_classes.page_with_bboxes import PageWithBBox
 from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
 from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.font_type_classifier import FontTypeClassifier
