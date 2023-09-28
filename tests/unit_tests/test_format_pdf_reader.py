@@ -36,7 +36,7 @@ class TestPDFReader(unittest.TestCase):
             image = cv2.imread(path)
             _, orientation = self.orientation_classifier.predict(image)
             angle_predict = self.orientation_classifier.classes[2 + orientation]
-            rotated, angle = skew_corrector.preprocess(image, {"rotated_angle": angle_predict})
+            rotated, angle = skew_corrector.preprocess(image, {"orientation_angle": angle_predict})
             angle = angle["rotated_angle"]
             self.assertAlmostEqual(angle, angles[i], delta=8)
 
@@ -49,8 +49,9 @@ class TestPDFReader(unittest.TestCase):
             path = os.path.join(os.path.dirname(__file__), imgs_path[i])
             image = cv2.imread(path)
             _, angle_predict = self.orientation_classifier.predict(image)
-            rotated, angle = skew_corrector.preprocess(image, {"rotated_angle": angle_predict})
+            rotated, angle = skew_corrector.preprocess(image, {"orientation_angle": angle_predict})
             angle = angle["rotated_angle"]
+            print(angle, angles[i])
             self.assertTrue(abs(angle - angles[i]) < max_delta)
 
     def test_header_footer_search(self) -> None:

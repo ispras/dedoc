@@ -120,7 +120,7 @@ class PdfImageReader(PdfBaseReader):
         angle = angle if parameters.document_orientation is None else 0
         self.logger.info(f"Final orientation angle = {angle}, is_one_column_document = {is_one_column_document}")
 
-        rotated_image, result_angle = self.scew_corrector.preprocess(image, {"rotated_angle": angle})
+        rotated_image, result_angle = self.scew_corrector.preprocess(image, {"orientation_angle": angle})
         result_angle = result_angle["rotated_angle"]
 
         if self.config.get("debug_mode"):
