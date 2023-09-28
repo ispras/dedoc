@@ -152,7 +152,7 @@ class PdfTabbyReader(PdfBaseReader):
 
                 result_cells.append(result_row)
             table_bbox = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))  # noqa TODO add table location into TableMetadata
-            tables.append(Table(cells=result_cells, metadata=TableMetadata(page_id=page_number, is_inserted=False)))
+            tables.append(Table(cells=result_cells, metadata=TableMetadata(page_id=page_number)))
             table_name = file_hash + str(page_number) + str(table_num)
             tables_on_image.append(ScanTable(page_number=page_number, matrix_cells=None, bbox=table_bbox, name=table_name, order=order))
 
