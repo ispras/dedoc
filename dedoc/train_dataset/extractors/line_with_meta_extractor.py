@@ -5,10 +5,10 @@ from typing import List
 
 import numpy as np
 from PIL import Image
+from dedocutils.data_structures import BBox
 from pdf2image import convert_from_path
 from tqdm import tqdm
 
-from dedoc.data_structures.bbox import BBox
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.readers.html_reader.html_reader import HtmlReader

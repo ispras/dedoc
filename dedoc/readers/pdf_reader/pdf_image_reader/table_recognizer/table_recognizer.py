@@ -6,8 +6,8 @@ from typing import List, Optional, Tuple
 import cv2
 import numpy as np
 from PIL import Image
+from dedocutils.data_structures import BBox
 
-from dedoc.data_structures.bbox import BBox
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdditionalOptions

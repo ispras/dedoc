@@ -2,7 +2,7 @@ from collections import OrderedDict
 from functools import total_ordering
 from typing import Any, Dict
 
-from dedoc.data_structures.bbox import BBox
+from dedocutils.data_structures import BBox
 
 
 @total_ordering

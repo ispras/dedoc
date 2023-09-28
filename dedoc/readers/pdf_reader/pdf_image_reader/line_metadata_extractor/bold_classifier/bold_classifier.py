@@ -1,8 +1,8 @@
 from typing import List
 
 import numpy as np
+from dedocutils.data_structures import BBox
 
-from dedoc.data_structures import BBox
 from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.bold_classifier.agglomerative_clusterizer import BoldAgglomerativeClusterizer
 from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.bold_classifier.valley_emphasis_binarizer import ValleyEmphasisBinarizer
 

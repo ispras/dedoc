@@ -1,6 +1,6 @@
 import unittest
 
-from dedoc.data_structures.bbox import BBox
+from dedocutils.data_structures import BBox
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 
 

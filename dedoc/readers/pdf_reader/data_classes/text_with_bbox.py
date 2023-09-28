@@ -2,8 +2,9 @@ from collections import OrderedDict
 from typing import List, Optional
 from uuid import uuid1
 
+from dedocutils.data_structures import BBox
+
 from dedoc.data_structures.annotation import Annotation
-from dedoc.data_structures.bbox import BBox
 from dedoc.data_structures.serializable import Serializable
 
 
