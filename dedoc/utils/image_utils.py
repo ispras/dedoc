@@ -39,7 +39,8 @@ def get_bbox_from_image(image: Image, bbox: BBox, resize: Tuple[int, int] = (300
 
 def rotate_image(image: np.ndarray, angle: float, color_bound: Tuple[int, int, int] = (255, 255, 255)) -> np.ndarray:
     """
-    Rotates an image (angle in degrees) and expands image to avoid cropping
+    Rotates an image (angle in degrees) and expands image to avoid cropping (do bounds of color_bound)
+    Changes width and height of image (image.shape != rotated_image.shape)
     """
     height, width = image.shape[:2]
     image_center = (width / 2, height / 2)
