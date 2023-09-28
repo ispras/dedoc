@@ -9,7 +9,7 @@ from dedoc.data_structures.serializable import Serializable
 
 class TableMetadata(Serializable):
     """
-    This class holds the information about the table location in the document and information about cell properties.
+    This class holds the information about table unique identifier, rotation angle (if table has been rotated - for images) and so on.
     """
     def __init__(self, page_id: Optional[int], uid: Optional[str] = None, is_inserted: bool = False, rotated_angle: float = 0.0) -> None:
         """
