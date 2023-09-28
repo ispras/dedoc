@@ -79,23 +79,6 @@ Helper classes
 .. autoclass:: dedoc.data_structures.Serializable
     :members:
 
-.. autoclass:: dedoc.data_structures.BBox
-    :show-inheritance:
-    :special-members: __init__
-    :exclude-members: to_dict
-    :members:
-
-    .. autoattribute:: x_top_left
-    .. autoattribute:: y_top_left
-    .. autoattribute:: x_bottom_right
-    .. autoattribute:: y_bottom_right
-    .. autoattribute:: width
-    .. autoattribute:: height
-
-.. autoclass:: dedoc.data_structures.AttachedFile
-    :special-members: __init__
-    :members:
-
 
 Annotations of the text lines
 -----------------------------
