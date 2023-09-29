@@ -76,7 +76,7 @@ class PdfImageReader(PdfBaseReader):
 
         #  --- Step 2: do binarization ---
         if parameters.need_binarization:
-            rotated_image = self.binarizer.preprocess(rotated_image)
+            rotated_image, _ = self.binarizer.preprocess(rotated_image)
             if self.config.get("debug_mode"):
                 cv2.imwrite(os.path.join(self.config["path_debug"], f"{datetime.now().strftime('%H-%M-%S')}_result_binarization.jpg"), rotated_image)
 
