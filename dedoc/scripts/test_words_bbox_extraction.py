@@ -118,7 +118,7 @@ class TestWordExtraction(AbstractTestApiDocReader):
             p2 = (int((bbox["x_top_left"] + bbox["width"]) * bbox["page_width"]), int((bbox["y_top_left"] + bbox["height"]) * bbox["page_height"]))
 
             if angle != 0.0:
-                p1 = self.rotate_coordinate(p1[0], p1[1], x_c, y_c, angle)  # TODO x_c, y_c нужен четкий
+                p1 = self.rotate_coordinate(p1[0], p1[1], x_c, y_c, angle)
                 p2 = self.rotate_coordinate(p2[0], p2[1], x_c, y_c, angle)
 
             cv2.rectangle(image, p1, p2, (0, 255, 0) if ann.text_type == "typewritten" else (255, 0, 0))
@@ -155,10 +155,12 @@ class TestWordExtraction(AbstractTestApiDocReader):
         cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}.png"), image)
 
     def test_table_word_extraction(self):
-        output_path = os.path.join(self.output_path)
+        output_path = os.path.join(self.output_path, 'tables')
         os.makedirs(output_path, exist_ok=True)
         file_names = ["tables/example_with_table5.png", "tables/example_with_table3.png", "tables/example_with_table4.jpg",
-                      "tables/example_with_table6.png", "tables/example_with_table_horizontal_union.jpg"]
+                      "tables/example_with_table6.png", "tables/example_with_table_horizontal_union.jpg",
+                      "scanned/orient_1.png"]
+
         for file_name in file_names:
             result = self._send_request(file_name, data=dict())
             table0 = result["content"]["tables"][0]
@@ -170,5 +172,5 @@ class TestWordExtraction(AbstractTestApiDocReader):
             image = rotate_image(image, page_angle)
 
             image = self.draw_word_annotations(image, word_annotations, angle=table_angle)
-            cv2.imwrite(os.path.join(output_path, file_name), image)
+            cv2.imwrite(os.path.join(output_path, file_name.split('/')[-1]), image)
 

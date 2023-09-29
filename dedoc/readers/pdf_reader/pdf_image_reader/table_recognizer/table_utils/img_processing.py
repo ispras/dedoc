@@ -4,12 +4,12 @@ import os
 from typing import Any, List, Tuple
 
 import cv2
+import imutils
 import numpy as np
 
 from dedoc.config import get_config
 from dedoc.readers.pdf_reader.data_classes.tables.table_tree import TableTree
 from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdditionalOptions
-from dedoc.utils.image_utils import rotate_image
 
 logger = get_config().get("logger", logging.getLogger())
 logger = logger if logger else logging.getLogger("TableRecognizer.detect_tables_by_contours")
@@ -17,13 +17,14 @@ table_options = TableTypeAdditionalOptions()
 
 
 def rotate_with_threshold(img: np.ndarray, angle: float, threshold: float = None, *, config: dict) -> np.ndarray:
+    """rotates a table image and saving image.shape during rotation. It is important for word bounding box extraction"""
     if threshold is None:
         threshold = config["rotate_threshold"]
     rotated = img
     if abs(angle) > threshold:
         if config.get("debug_mode", False):
             logger.debug("rotated image")
-        rotated = rotate_image(img, angle)
+        rotated = imutils.rotate(img, angle)
     return rotated
 
 
