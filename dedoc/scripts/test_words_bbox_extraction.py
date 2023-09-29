@@ -159,7 +159,7 @@ class TestWordExtraction(AbstractTestApiDocReader):
         os.makedirs(output_path, exist_ok=True)
         file_names = ["tables/example_with_table5.png", "tables/example_with_table3.png", "tables/example_with_table4.jpg",
                       "tables/example_with_table6.png", "tables/example_with_table_horizontal_union.jpg",
-                      "scanned/orient_1.png"]
+                      "scanned/orient_1.png", "tables/rotated_table.png"]
 
         for file_name in file_names:
             result = self._send_request(file_name, data=dict())
@@ -173,4 +173,3 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
             image = self.draw_word_annotations(image, word_annotations, angle=table_angle)
             cv2.imwrite(os.path.join(output_path, file_name.split('/')[-1]), image)
-
