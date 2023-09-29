@@ -64,13 +64,13 @@ The beginning of the document's metadata:
 
 .. literalinclude:: ../_static/json_format_examples/basic_example.json
     :language: json
-    :lines: 428-436
+    :lines: 676-684
 
 The document's attachments:
 
 .. literalinclude:: ../_static/json_format_examples/basic_example.json
     :language: json
-    :lines: 458
+    :lines: 706
 
 As we see, the `attachments` field is empty because the option
 `with_attachments` is set to `"false"` by default (see :ref:`table_parameters`).
@@ -118,7 +118,7 @@ Unlike the previous examples, in this case we have `attachments` field filled:
 
 .. literalinclude:: ../_static/json_format_examples/with_attachments.json
     :language: json
-    :lines: 458-490
+    :lines: 706-738
 
 Example with base64 attachments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -136,7 +136,7 @@ The only difference is in the attachment's metadata: attachment's content is enc
 
 .. literalinclude:: ../_static/json_format_examples/with_base64_attachments.json
     :language: json
-    :lines: 458-493
+    :lines: 706-741
 
 Example with parsed attachments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -156,4 +156,4 @@ The beginning of the document's attachments:
 
 .. literalinclude:: ../_static/json_format_examples/with_parsed_attachments.json
     :language: json
-    :lines: 458-483
+    :lines: 706-731

@@ -1,5 +1,6 @@
 from typing import Dict, Iterator, List, Optional, Set
 
+from dedoc.data_structures import LineMetadata
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
 from dedoc.data_structures.concrete_annotations.strike_annotation import StrikeAnnotation
@@ -210,7 +211,15 @@ def __table2html(table: Table, table2id: Dict[str, int]) -> str:
             text += "<td"
             if cell.invisible:
                 text += ' style="display: none" '
-            text += f' colspan="{cell.colspan}" rowspan="{cell.rowspan}">{cell.get_text()}</td>\n'
+            cell_node = TreeNode(
+                node_id="0",
+                text=cell.get_text(),
+                annotations=cell.get_annotations(),
+                metadata=LineMetadata(page_id=table.metadata.page_id, line_id=0),
+                subparagraphs=[],
+                parent=None
+            )
+            text += f' colspan="{cell.colspan}" rowspan="{cell.rowspan}">{__annotations2html(cell_node, {})}</td>\n'
 
         text += "</tr>\n"
     text += "</tbody>\n</table>"

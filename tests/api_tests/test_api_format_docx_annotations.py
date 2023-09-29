@@ -132,3 +132,15 @@ class TestApiDocxAnnotations(AbstractTestApiDocReader):
         annotations = subparagraph["annotations"]
         self.assertIn({"start": 5, "end": 6, "name": "superscript", "value": "True"}, annotations)
         self.assertIn({"start": 9, "end": 10, "name": "subscript", "value": "True"}, annotations)
+
+    def test_annotations_inside_tables(self) -> None:
+        result = self._send_request(os.path.join("..", "docx", "merged_cells.docx"))
+        tables = result["content"]["tables"]
+
+        cell_lines = tables[0]["cells"][0][0]["lines"]
+        self.assertIn({"start": 0, "end": 12, "name": "size", "value": "12.0"}, cell_lines[0]["annotations"])
+        self.assertIn({"start": 0, "end": 12, "name": "bold", "value": "True"}, cell_lines[0]["annotations"])
+
+        cell_lines = tables[0]["cells"][1][3]["lines"]
+        self.assertIn({"start": 0, "end": 24, "name": "size", "value": "12.0"}, cell_lines[0]["annotations"])
+        self.assertIn({"start": 0, "end": 24, "name": "bold", "value": "True"}, cell_lines[0]["annotations"])

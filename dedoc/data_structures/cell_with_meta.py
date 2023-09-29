@@ -4,6 +4,7 @@ from typing import List
 import numpy as np
 from flask_restx import Api, Model, fields
 
+from dedoc.data_structures import Annotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 
 
@@ -27,7 +28,16 @@ class CellWithMeta:
         return f"CellWithMeta({self.get_text()[:65]})"
 
     def get_text(self) -> str:
+        """
+        Get merged text of all cell lines
+        """
         return "\n".join([line.line for line in self.lines])
+
+    def get_annotations(self) -> List[Annotation]:
+        """
+        Get merged annotations of all cell lines (start/end of annotations moved according to the merged text)
+        """
+        return LineWithMeta.join(lines=self.lines, delimiter="\n").annotations
 
     @staticmethod
     def create_from_cell(cell: "Cell") -> "CellWithMeta": # noqa

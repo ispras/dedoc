@@ -36,6 +36,7 @@ Main classes defining a document
 .. autoclass:: dedoc.data_structures.LineWithMeta
     :show-inheritance:
     :special-members: __init__
+    :exclude-members: to_dict, get_api_dict
     :members:
     :undoc-members: line, uid, metadata, annotations
 

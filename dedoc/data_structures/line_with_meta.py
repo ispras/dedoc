@@ -35,13 +35,21 @@ class LineWithMeta(Sized):
 
     @staticmethod
     def join(lines: List["LineWithMeta"], delimiter: str = "\n") -> "LineWithMeta":
+        """
+        Join list of lines with the given delimiter, keep annotations consistent.
+        This method is similar to the python built-it join method for strings.
+
+        :param lines: list of lines to join
+        :param delimiter: delimiter to insert between lines
+        :return: merged line
+        """
         if len(lines) == 0:
             return LineWithMeta("")
 
         common_line = lines[0]
 
         for next_line in lines[1:]:
-            common_line += LineWithMeta(delimiter)
+            common_line += delimiter
             common_line += next_line
 
         return common_line
@@ -52,6 +60,7 @@ class LineWithMeta(Sized):
         This method does not remove any text from the line.
 
         :param sep: separator for splitting
+        :return: list of split lines
         """
         if not sep:
             raise ValueError("empty separator")
