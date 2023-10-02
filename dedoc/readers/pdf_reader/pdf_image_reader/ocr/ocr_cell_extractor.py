@@ -54,8 +54,8 @@ class OCRCellExtractor:
                     word.bbox.y_top_left -= chunk_boxes[chunk_index].y_top_left
                     word.bbox.x_top_left -= chunk_boxes[chunk_index].x_top_left
                     # do absolute coordinate on src_image (inside src_image)
-                    word.bbox.y_top_left += nodes_batch[chunk_index].cell_box.y_top_left
-                    word.bbox.x_top_left += nodes_batch[chunk_index].cell_box.x_top_left
+                    word.bbox.y_top_left += nodes_batch[chunk_index].crop_text_box.y_top_left
+                    word.bbox.x_top_left += nodes_batch[chunk_index].crop_text_box.x_top_left
 
                 originalbox_to_fastocrbox[nodes_batch[chunk_index].cell_box].append(line.words)
 

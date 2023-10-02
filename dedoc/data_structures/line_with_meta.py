@@ -7,10 +7,11 @@ from flask_restx import Api, Model, fields
 
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.serializable import Serializable
 from dedoc.utils.annotation_merger import AnnotationMerger
 
 
-class LineWithMeta(Sized):
+class LineWithMeta(Sized, Serializable):
     """
     Structural unit of document - line (or paragraph) of text and its metadata.
     One LineWithMeta should not contain text from different logical parts of the document
