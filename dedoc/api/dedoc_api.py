@@ -19,11 +19,11 @@ from dedoc.utils.utils import save_upload_file
 
 config = get_config()
 PORT = config["api_port"]
-static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/")
+static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web/")
 static_files_dirs = config.get("static_files_dirs")
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory=config.get("static_path", static_path)), name="static")
+app.mount("/web", StaticFiles(directory=config.get("static_path", static_path)), name="web")
 
 module_api_args = importlib.import_module(config["import_path_init_api_args"])
 logger = config["logger"]

@@ -24,13 +24,13 @@ from dedoc.utils.utils import calculate_file_hash
 config = get_config()
 PORT = config["api_port"]
 
-static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "static")
+static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "web")
 static_files_dirs = config.get("static_files_dirs")
 
 logger = config.get("logger", logging.getLogger())
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory=static_path), name="static")
+app.mount("/web", StaticFiles(directory=static_path), name="web")
 templates = Jinja2Templates(directory=os.path.join(static_path, "train_dataset"))
 
 manager = DedocManager(config=config)
