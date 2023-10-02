@@ -5,7 +5,7 @@ import cv2
 from dedocutils.preprocessing import SkewCorrector
 
 
-class TestScanRotator(unittest.TestCase):
+class TestSkewCorrector(unittest.TestCase):
     skew_corrector = SkewCorrector()
 
     def _get_abs_path(self, file_name: str) -> str:

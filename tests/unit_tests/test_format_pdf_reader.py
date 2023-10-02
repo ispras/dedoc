@@ -26,7 +26,7 @@ class TestPDFReader(unittest.TestCase):
 
         return lines_by_page
 
-    def test_scan_rotator(self) -> None:
+    def test_skew_corrector(self) -> None:
         skew_corrector = SkewCorrector()
         imgs_path = [f"../data/skew_corrector/rotated_{i}.jpg" for i in range(1, 5)]
         angles = [0.061732858955328755, -0.017535263190370427, 0.12228411148417097, 0]
