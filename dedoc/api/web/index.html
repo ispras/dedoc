@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dedoc | info page</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="shortcut icon" href="/static_file?fname=favicon.ico" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width">
+    <style>
+        .parameters {padding: 5px; box-shadow: 1px 1px 2px #bbbbbb; cursor: pointer; width: 70%}
+        .body {margin-left: 20%}
+        details > summary {font-style: italic}
+    </style>
+</head>
+
+<body class="body">
+    <h1>Dedoc</h1>
+
+    <p>Dedoc is an open universal system for converting textual documents of different formats to a unified output representation.</p>
+    <p>See <a href="https://dedoc.readthedocs.io" target="_blank" rel="noopener">dedoc documentation</a> to get more information about dedoc and its API parameters.</p>
+
+    <h3>Parameters configuration</h3>
+
+    <form class="box" method="post" enctype=multipart/form-data action="/upload">
+
+        <div class="parameters">
+            <h4>Type of document structure parsing</h4>
+            <details><summary>document_type, structure_type, return_format</summary>
+                <br>
+                <p>
+                    <label>
+                        <select name="document_type">
+                            <option value="" selected>other</option>
+                            <option value="law">law</option>
+                            <option value="tz">tz</option>
+                            <option value="diploma">diploma</option>
+                        </select> document_type
+                    </label>
+                </p>
+
+                <p>
+                    <label>
+                        <select name="structure_type">
+                            <option value="linear">linear</option>
+                            <option value="tree" selected>tree</option>
+                        </select> structure_type
+                    </label>
+                </p>
+
+                <p>
+                    <label>
+                        <select name="return_format">
+                            <option value="html" selected>html</option>
+                            <option value="pretty_json">pretty_json</option>
+                            <option value="plain_text">plain_text</option>
+                            <option value="tree">tree</option>
+                            <option value="json">json</option>
+                            <option value="collapsed_tree">collapsed_tree</option>
+                        </select> return_format
+                    </label>
+                </p>
+            </details>
+        </div>
+
+
+        <div class="parameters">
+            <h4>Attachments handling</h4>
+            <details><summary>with_attachments, need_content_analysis, recursion_deep_attachments, return_base64, attachments_dir</summary>
+                <br>
+                <p>
+                    <label><input name="with_attachments" type="checkbox" value="true"> with_attachments </label>
+                </p>
+
+                <p>
+                    <label><input name="need_content_analysis" type="checkbox" value="true"> need_content_analysis </label>
+                </p>
+
+                <p>
+                    <label>recursion_deep_attachments <input name="recursion_deep_attachments" type="number" size="5" value="10"></label>
+                </p>
+
+                <p>
+                    <label><input name="return_base64" type="checkbox" value="true"> return_base64 </label>
+                </p>
+
+                <p>
+                    <label>attachments_dir <input name="attachments_dir" type="text" size="35" value=""></label>
+                </p>
+            </details>
+        </div>
+
+
+        <div class="parameters">
+            <h4>Tables handling</h4>
+            <details><summary>need_pdf_table_analysis, orient_analysis_cells, orient_cell_angle</summary>
+                <br>
+                <p>
+                    <label><input name="need_pdf_table_analysis" type="checkbox" value="true" checked> need_pdf_table_analysis</label>
+                </p>
+
+                <p>
+                    <label><input name="orient_analysis_cells" type="checkbox" value="true"> orient_analysis_cells</label>
+                </p>
+
+                <p>
+                    <label>orient_cell_angle <input name="orient_cell_angle" type="number" size="5" value="90"></label>
+                </p>
+            </details>
+        </div>
+
+
+        <div class="parameters">
+            <h4>PDF handling</h4>
+            <details><summary>pdf_with_text_layer, language, pages, is_one_column_document, document_orientation, need_header_footer_analysis, need_binarization</summary>
+                <br>
+                <p>
+                    <label>
+                        <select name="pdf_with_text_layer">
+                            <option value="true">true</option>
+                            <option value="false">false</option>
+                            <option value="auto">auto</option>
+                            <option value="auto_tabby" selected>auto_tabby</option>
+                            <option value="tabby">tabby</option>
+                        </select> pdf_with_text_layer
+                    </label>
+                </p>
+
+                <p>
+                    <label>
+                        <select name="language">
+                            <option value="rus">rus</option>
+                            <option value="eng">eng</option>
+                            <option value="rus+eng" selected>rus+eng</option>
+                        </select> language
+                    </label>
+                </p>
+
+                <p>
+                    <label>pages <input name="pages" type="text" size="8" value=":"></label>
+                </p>
+
+                <p>
+                    <label>
+                        <select name="is_one_column_document">
+                            <option value="true">true</option>
+                            <option value="false">false</option>
+                            <option value="auto" selected>auto</option>
+                        </select> is_one_column_document
+                    </label>
+                </p>
+
+                <p>
+                    <label>
+                        <select name="document_orientation">
+                            <option value="no_change">no_change</option>
+                            <option value="auto" selected>auto</option>
+                        </select> document_orientation
+                    </label>
+                </p>
+
+                <p>
+                    <label><input name="need_header_footer_analysis" type="checkbox" value="true"> need_header_footer_analysis</label>
+                </p>
+
+                <p>
+                    <label><input name="need_binarization" type="checkbox" value="true"> need_binarization</label>
+                </p>
+            </details>
+        </div>
+
+        <div class="parameters">
+            <h4>Other formats handling</h4>
+            <details><summary>delimiter, encoding, handle_invisible_table</summary>
+                <br>
+                <p>
+                    <label>delimiter <input name="delimiter" type="text" size="10" value=""></label>
+                </p>
+
+                <p>
+                    <label>encoding <input name="encoding" type="text" size="10" value=""></label>
+                </p>
+
+                <p>
+                    <label><input name="handle_invisible_table" type="checkbox" value="true"> handle_invisible_table</label>
+                </p>
+            </details>
+        </div>
+
+        <br>
+        <div class="row">
+            <div class="col-md-3"><input type=file name=file class="btn btn-default" data-buttonText="Choose file"></div>
+            <div class="col-md-2"><input type=submit value=Upload class="btn btn-default"></div>
+        </div>
+
+    </form>
+
+
+    <h3>Useful links</h3>
+
+    <ul>
+        <li><a href="/static_file?fname=supported_formats.html" target="_blank" rel="noopener">Examples of files parsing</a></li>
+        <li><a href="/docs" target="_blank" rel="noopener">Interactive API documentation and swagger UI</a></li>
+    </ul>
+
+</body>
+</html>

@@ -13,8 +13,8 @@ class TestDedocManager(TestCase):
     dedoc_manager = DedocManager(manager_config=manager_config, config=config)
 
     def test_parse_file(self) -> None:
-        filename = "csv_tab.tsv"
-        result = self.dedoc_manager.parse(os.path.join(self.path, "csv_tab.tsv"))
+        filename = "example.tsv"
+        result = self.dedoc_manager.parse(os.path.join(self.path, "example.tsv"))
         cells = result.content.tables[0].cells
         self.assertEqual(filename, result.metadata.file_name)
         self.assertEqual(filename, result.metadata.file_name)

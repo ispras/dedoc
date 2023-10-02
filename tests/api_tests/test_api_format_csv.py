@@ -9,7 +9,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
     data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "csvs")
 
     def test_csv(self) -> None:
-        file_name = "csv_coma.csv"
+        file_name = "example.csv"
         result = self._send_request(file_name)
         self.assertIn("delimiter is ','", result["warnings"])
         tables = result["content"]["tables"]
