@@ -1,9 +1,9 @@
 import json
 
+from dedocutils.data_structures import BBox
 from flask_restx import Api, Model, fields
 
 from dedoc.data_structures.annotation import Annotation
-from dedoc.data_structures.bbox import BBox
 
 
 class BBoxAnnotation(Annotation):

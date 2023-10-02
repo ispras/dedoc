@@ -1,4 +1,4 @@
-from dedoc.data_structures.bbox import BBox
+from dedocutils.data_structures import BBox
 
 
 class OcrWord:

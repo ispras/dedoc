@@ -4,8 +4,9 @@ from typing import List, Optional
 
 import cv2
 import numpy as np
+from dedocutils.data_structures import BBox
 
-from dedoc.data_structures import BBox, LineWithMeta
+from dedoc.data_structures import LineWithMeta
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
 from dedoc.utils.image_utils import crop_image_text
 

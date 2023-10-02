@@ -5,9 +5,8 @@ import PIL
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw
+from dedocutils.data_structures import BBox
 from scipy.ndimage import maximum_filter
-
-from dedoc.data_structures.bbox import BBox
 
 
 def get_highest_pixel_frequency(image: np.ndarray) -> int:

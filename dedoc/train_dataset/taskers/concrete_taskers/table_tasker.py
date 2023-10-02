@@ -5,8 +5,8 @@ from typing import Iterable, List, Optional
 from zipfile import ZipFile
 
 from PIL import Image
+from dedocutils.data_structures import BBox
 
-from dedoc.data_structures.bbox import BBox
 from dedoc.train_dataset.data_path_config import table_path
 from dedoc.train_dataset.data_structures.task_item import TaskItem
 from dedoc.train_dataset.taskers.concrete_taskers.abstract_tasker import AbstractTasker

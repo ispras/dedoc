@@ -1,7 +1,8 @@
 from collections import defaultdict
 from typing import List
 
-from dedoc.data_structures.bbox import BBox
+from dedocutils.data_structures import BBox
+
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_page.ocr_line import OcrLine
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_page.ocr_tuple import OcrElement
 

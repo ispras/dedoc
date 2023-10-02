@@ -1,8 +1,9 @@
 import uuid
 from typing import List, Optional
 
+from dedocutils.data_structures import BBox
+
 from dedoc.data_structures.annotation import Annotation
-from dedoc.data_structures.bbox import BBox
 from dedoc.data_structures.line_with_meta import LineWithMeta
 
 

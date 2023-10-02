@@ -4,10 +4,10 @@ from typing import IO, List, Match, Optional, Tuple
 
 import cv2
 import numpy as np
+from dedocutils.data_structures import BBox
 from pdfminer.layout import LTContainer
 from pdfminer.pdfpage import PDFPage
 
-from dedoc.data_structures.bbox import BBox
 from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
 
 

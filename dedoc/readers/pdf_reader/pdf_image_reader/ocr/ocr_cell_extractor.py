@@ -4,9 +4,9 @@ from typing import Iterator, List, Optional, Tuple
 
 import cv2
 import numpy as np
+from dedocutils.data_structures import BBox
 
 from dedoc.data_structures import BBoxAnnotation, ConfidenceAnnotation, LineMetadata, LineWithMeta
-from dedoc.data_structures.bbox import BBox
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_page.ocr_page import OcrPage
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_utils import get_text_with_bbox_from_cells

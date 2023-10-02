@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
+from dedocutils.preprocessing import AdaptiveBinarizer, SkewCorrector
 
 from dedoc.config import get_config
 from dedoc.extensions import recognized_extensions, recognized_mimes
@@ -12,10 +13,8 @@ from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLoc
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
-from dedoc.readers.pdf_reader.pdf_image_reader.adaptive_binarizer import AdaptiveBinarizer
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.scan_rotator import ScanRotator
 from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
 from dedoc.utils import supported_image_types
 
@@ -47,7 +46,7 @@ class PdfImageReader(PdfBaseReader):
         :param config: configuration of the reader, e.g. logger for logging
         """
         super().__init__(config=config)
-        self.scan_rotator = ScanRotator(config=config)
+        self.scew_corrector = SkewCorrector()
         self.column_orientation_classifier = ColumnsOrientationClassifier(on_gpu=False,
                                                                           checkpoint_path=get_config()["resources_path"],
                                                                           config=config)
@@ -77,7 +76,7 @@ class PdfImageReader(PdfBaseReader):
 
         #  --- Step 2: do binarization ---
         if parameters.need_binarization:
-            rotated_image = self.binarizer.binarize(rotated_image)
+            rotated_image, _ = self.binarizer.preprocess(rotated_image)
             if self.config.get("debug_mode"):
                 cv2.imwrite(os.path.join(self.config["path_debug"], f"{datetime.now().strftime('%H-%M-%S')}_result_binarization.jpg"), rotated_image)
 
@@ -121,7 +120,9 @@ class PdfImageReader(PdfBaseReader):
         angle = angle if parameters.document_orientation is None else 0
         self.logger.info(f"Final orientation angle = {angle}, is_one_column_document = {is_one_column_document}")
 
-        rotated_image, result_angle = self.scan_rotator.auto_rotate(image, angle)
+        rotated_image, result_angle = self.scew_corrector.preprocess(image, {"orientation_angle": angle})
+        result_angle = result_angle["rotated_angle"]
+
         if self.config.get("debug_mode"):
             img_path = os.path.join(self.config["path_debug"], f"{datetime.now().strftime('%H-%M-%S')}_result_orientation.jpg")
             self.logger.info(f"Save image to {img_path}")

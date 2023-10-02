@@ -3,8 +3,8 @@ from collections import OrderedDict
 from typing import Any, List
 
 import numpy as np
+from dedocutils.data_structures import BBox
 
-from dedoc.data_structures.bbox import BBox
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 

@@ -2,7 +2,8 @@ import logging
 from collections import defaultdict, deque
 from typing import Dict, List, Union
 
-from dedoc.data_structures.bbox import BBox
+from dedocutils.data_structures import BBox
+
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
