@@ -1,3 +1,4 @@
+import dataclasses
 import importlib
 import json
 import os
@@ -61,13 +62,10 @@ def _get_static_file_path(request: Request) -> str:
 
 @app.post("/upload")
 async def upload(file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:  # noqa
-    parameters = query_params.dict(by_alias=True)
-
+    parameters = dataclasses.asdict(query_params)
     if not file or file.filename == "":
         raise MissingFileError("Error: Missing content in request_post file parameter", version=dedoc.__version__)
-    # check if the post request_post has the file part
 
-    logger.info(f"Get file {file.filename} with parameters {parameters}")
     with tempfile.TemporaryDirectory() as tmpdir:
         file_path = save_upload_file(file, tmpdir)
         document_tree = manager.parse(file_path, parameters=dict(parameters))
