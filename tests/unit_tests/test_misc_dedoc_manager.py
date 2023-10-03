@@ -13,10 +13,9 @@ class TestDedocManager(TestCase):
     dedoc_manager = DedocManager(manager_config=manager_config, config=config)
 
     def test_parse_file(self) -> None:
-        filename = "example.tsv"
-        result = self.dedoc_manager.parse(os.path.join(self.path, "example.tsv"))
+        filename = "csv_tab.tsv"
+        result = self.dedoc_manager.parse(os.path.join(self.path, filename))
         cells = result.content.tables[0].cells
-        self.assertEqual(filename, result.metadata.file_name)
         self.assertEqual(filename, result.metadata.file_name)
         self.assertLessEqual(["1", "2", "3"], [cell.get_text() for cell in cells[0]])
         self.assertLessEqual(["2", "1", "5"], [cell.get_text() for cell in cells[1]])

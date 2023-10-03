@@ -2,6 +2,7 @@ import logging
 import os.path
 import shutil
 import tempfile
+from copy import deepcopy
 from typing import Dict, Optional
 
 from dedoc.api.api_args import QueryParameters
@@ -133,6 +134,13 @@ class DedocManager:
 
     def __init_parameters(self, parameters: Optional[dict]) -> dict:
         parameters = {} if parameters is None else parameters
+        parameter_name_list = deepcopy(list(parameters.keys()))
+
+        for parameter_name in parameter_name_list:
+            if parameter_name not in QueryParameters.__dataclass_fields__.keys():
+                self.logger.info(f"Unknown parameter {parameter_name}")
+                parameters.pop(parameter_name)
+
         parameters = QueryParameters(**parameters).to_dict()
         return parameters
 
