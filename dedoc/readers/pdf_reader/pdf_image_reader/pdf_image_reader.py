@@ -47,9 +47,7 @@ class PdfImageReader(PdfBaseReader):
         """
         super().__init__(config=config)
         self.scew_corrector = SkewCorrector()
-        self.column_orientation_classifier = ColumnsOrientationClassifier(on_gpu=False,
-                                                                          checkpoint_path=get_config()["resources_path"],
-                                                                          config=config)
+        self.column_orientation_classifier = ColumnsOrientationClassifier(on_gpu=False, checkpoint_path=get_config()["resources_path"], config=config)
         self.binarizer = AdaptiveBinarizer()
         self.ocr = OCRLineExtractor(config=config)
         self.logger = config.get("logger", logging.getLogger())
