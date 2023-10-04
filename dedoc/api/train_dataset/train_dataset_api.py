@@ -1,15 +1,18 @@
+import dataclasses
 import logging
 import os
 import shutil
+from dataclasses import dataclass
+from typing import Optional
 
 import uvicorn
-from fastapi import Depends, FastAPI, File, Request, Response, UploadFile
+from fastapi import Depends, FastAPI, File, Form, Request, Response, UploadFile
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, HTMLResponse
 from starlette.templating import Jinja2Templates
 
+from dedoc.api.api_args import QueryParameters
 from dedoc.api.dedoc_api import _get_static_file_path
-from dedoc.api.train_dataset.api_args import TrainDatasetParameters
 from dedoc.api.train_dataset.async_archive_handler import AsyncHandler
 from dedoc.config import get_config
 from dedoc.dedoc_manager import DedocManager
@@ -20,6 +23,18 @@ from dedoc.train_dataset.taskers.concrete_taskers.table_tasker import TableTaske
 from dedoc.train_dataset.taskers.tasker import Tasker
 from dedoc.train_dataset.train_dataset_utils import get_path_original_documents
 from dedoc.utils.utils import calculate_file_hash
+
+
+@dataclass
+class TrainDatasetParameters(QueryParameters):
+    type_of_task: Optional[str] = Form("law_classifier",
+                                       enum=[
+                                           "law_classifier", "tz_classifier", "diploma_classifier", "header_classifier", "paragraph_classifier",
+                                           "tables_classifier"
+                                       ],
+                                       description="Type of the task to create")
+    task_size: Optional[str] = Form("250", description="Maximum number of images in one task")
+
 
 config = get_config()
 PORT = config["api_port"]
@@ -161,7 +176,7 @@ def upload_archive(file: UploadFile = File(...), query_params: TrainDatasetParam
     Run the whole pipeline of task making.
     """
     clear()
-    parameters = query_params.dict(by_alias=True)
+    parameters = dataclasses.asdict(query_params)
     uid = handler.handle(file=file, parameters=parameters)
     return HTMLResponse(f'Successfully handle file. UID=<p><a href="/get_result_archive/?uid={uid}">get_result_archive/?uid={uid}</a></p>', status_code=201)
 
@@ -184,11 +199,6 @@ def get_result_archive(request: Request, uid: str) -> Response:
         for line in handler.get_progress(uid).split("\n"):
             response += f"<p> {line} </p>"
         return HTMLResponse(response, status_code=202)
-
-
-@app.get("/info_classifiers")
-def get_classifiers_info() -> Response:
-    return FileResponse(os.path.join(static_path, "train_dataset/refit_classifier.html"))
 
 
 @app.get("/static_file")

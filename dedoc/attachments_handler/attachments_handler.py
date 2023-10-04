@@ -61,6 +61,7 @@ class AttachmentsHandler:
                 continue
 
             parameters_copy = copy.deepcopy(parameters)
+            parameters_copy["is_attached"] = True
             parameters_copy["recursion_deep_attachments"] = str(recursion_deep_attachments)
 
             try:

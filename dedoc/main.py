@@ -20,7 +20,7 @@ if __name__ == "__main__":
     config = get_config()
 
     if config.get("labeling_mode", False):
-        from api.train_dataset.api_collect_train_dataset import run_special_api  # noqa
+        from api.train_dataset.train_dataset_api import run_special_api  # noqa
         run_special_api()
     else:
         main()

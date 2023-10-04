@@ -56,6 +56,8 @@ class DedocManager:
         self.attachments_handler = manager_config.get("attachments_handler", None)
         assert self.attachments_handler is not None, "Attachments handler shouldn't be None"
 
+        self.default_parameters = QueryParameters().to_dict()
+
     def parse(self, file_path: str, parameters: Optional[Dict[str, str]] = None) -> ParsedDocument:
         """
         Run the whole pipeline of the document processing.
@@ -134,15 +136,12 @@ class DedocManager:
 
     def __init_parameters(self, parameters: Optional[dict]) -> dict:
         parameters = {} if parameters is None else parameters
-        parameter_name_list = deepcopy(list(parameters.keys()))
+        result_parameters = deepcopy(parameters)
 
-        for parameter_name in parameter_name_list:
-            if parameter_name not in QueryParameters.__dataclass_fields__.keys():
-                self.logger.info(f"Unknown parameter {parameter_name}")
-                parameters.pop(parameter_name)
+        for parameter_name, parameter_value in self.default_parameters.items():
+            result_parameters[parameter_name] = result_parameters.get(parameter_name, parameter_value)
 
-        parameters = QueryParameters(**parameters).to_dict()
-        return parameters
+        return result_parameters
 
     def __save(self, file_path: str, classified_document: UnstructuredDocument) -> None:
         save_line_with_meta(lines=classified_document.lines, config=self.config, original_document=os.path.basename(file_path))
