@@ -2,7 +2,6 @@ import logging
 import os.path
 import shutil
 import tempfile
-from copy import deepcopy
 from typing import Dict, Optional
 
 from dedoc.api.api_args import QueryParameters
@@ -136,10 +135,10 @@ class DedocManager:
 
     def __init_parameters(self, parameters: Optional[dict]) -> dict:
         parameters = {} if parameters is None else parameters
-        result_parameters = deepcopy(parameters)
+        result_parameters = {}
 
         for parameter_name, parameter_value in self.default_parameters.items():
-            result_parameters[parameter_name] = result_parameters.get(parameter_name, parameter_value)
+            result_parameters[parameter_name] = parameters.get(parameter_name, parameter_value)
 
         return result_parameters
 

@@ -49,6 +49,6 @@ class QueryParameters:
         parameters = {}
 
         for parameter_name, parameter_value in asdict(self).items():
-            parameters[parameter_name] = parameter_value.default if hasattr(parameter_value, "default") else parameter_value
+            parameters[parameter_name] = getattr(parameter_value, "default", parameter_value)
 
         return parameters
