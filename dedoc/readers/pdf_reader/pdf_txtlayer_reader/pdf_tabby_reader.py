@@ -3,6 +3,7 @@ import logging
 import math
 import os
 import subprocess
+import uuid
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -118,7 +119,7 @@ class PdfTabbyReader(PdfBaseReader):
             page_lines = self.__get_lines_with_location(page, file_hash)
             if page_lines:
                 all_lines.extend(page_lines)
-            page_tables, table_on_images = self.__get_tables(page, file_hash)
+            page_tables, table_on_images = self.__get_tables(page)
             assert len(page_tables) == len(table_on_images)
             if page_tables:
                 all_tables.extend(page_tables)
@@ -126,11 +127,11 @@ class PdfTabbyReader(PdfBaseReader):
 
         return all_lines, all_tables, all_tables_on_images
 
-    def __get_tables(self, page: dict, file_hash: str) -> Tuple[List[Table], List[ScanTable]]:
+    def __get_tables(self, page: dict) -> Tuple[List[Table], List[ScanTable]]:
         tables = []
         tables_on_image = []
         page_number = page["number"]
-        for table_num, table in enumerate(page["tables"]):
+        for table in page["tables"]:
             x_top_left = table["x_top_left"]
             y_top_left = table["y_top_left"]
             x_bottom_right = x_top_left + table["width"]
@@ -152,8 +153,8 @@ class PdfTabbyReader(PdfBaseReader):
 
                 result_cells.append(result_row)
             table_bbox = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))  # noqa TODO add table location into TableMetadata
-            tables.append(Table(cells=result_cells, metadata=TableMetadata(page_id=page_number)))
-            table_name = file_hash + str(page_number) + str(table_num)
+            table_name = str(uuid.uuid4())
+            tables.append(Table(cells=result_cells, metadata=TableMetadata(page_id=page_number, uid=table_name)))
             tables_on_image.append(ScanTable(page_number=page_number, matrix_cells=None, bbox=table_bbox, name=table_name, order=order))
 
         return tables, tables_on_image

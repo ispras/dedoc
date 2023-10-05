@@ -55,7 +55,7 @@ class AbstractAttachmentsExtractor(ABC):
             tmp_file_path = os.path.join(tmpdir, tmp_file_name)
             file = AttachedFile(original_name=original_name,
                                 tmp_file_path=tmp_file_path,
-                                uid=f"attach_{uuid.uuid1()}",
+                                uid=f"attach_{uuid.uuid4()}",
                                 need_content_analysis=need_content_analysis)
             attachments.append(file)
         return attachments

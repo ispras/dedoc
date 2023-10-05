@@ -15,6 +15,15 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
     def __get_annotation_names(self, annotations: List[dict]) -> List[str]:
         return [annotation["name"] for annotation in annotations]
 
+    def test_pdf_tables_uuid(self) -> None:
+        file_name = "example.pdf"
+        parameters = [dict(pdf_with_text_layer="true"), dict(pdf_with_text_layer="tabby"), dict(pdf_with_text_layer="false")]
+        for param in parameters:
+            result = self._send_request(file_name, param)
+            tables_uids = [table["metadata"]["uid"] for table in result["content"]["tables"]]
+            self.assertEqual(len(tables_uids), 2)
+            self.assertTrue(tables_uids[0] != tables_uids[1])
+
     def test_pdf_with_text_style(self) -> None:
         file_name = "diff_styles.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="true", document_type="", need_pdf_table_analysis="false"))

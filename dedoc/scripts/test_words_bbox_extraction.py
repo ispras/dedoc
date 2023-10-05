@@ -19,7 +19,7 @@ DETAILED_DEBUG = False
 class TestWordExtraction(AbstractTestApiDocReader):
     output_path = os.path.join(config["path_debug"], "word_bbox_extraction")
 
-    def extract_conf_annotation(self, anns_conf: List[dict], ann_bbox: dict, text: str) -> List[float]:
+    def __extract_conf_annotation(self, anns_conf: List[dict], ann_bbox: dict, text: str) -> List[float]:
         confs = []
         debug = []
 
@@ -36,7 +36,7 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
         return confs
 
-    def extract_texttype_annotation(self, anns_type: List[dict], ann_bbox: dict, text: str) -> str:
+    def __extract_texttype_annotation(self, anns_type: List[dict], ann_bbox: dict, text: str) -> str:
         debug = []
         text_type = "typewritten"
         for ann_type in anns_type:
@@ -51,7 +51,7 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
         return text_type
 
-    def get_words_annotation(self, structure: dict) -> List[BboxWithConfsType]:
+    def __get_words_annotation(self, structure: dict) -> List[BboxWithConfsType]:
         stack = [structure]
         words_annotation = []
 
@@ -64,8 +64,8 @@ class TestWordExtraction(AbstractTestApiDocReader):
             for ann_bbox in anns_bbox:
                 # searching conf texttype values of word
 
-                confs = self.extract_conf_annotation(anns_conf, ann_bbox, node["text"])
-                text_type = self.extract_texttype_annotation(anns_type, ann_bbox, node["text"])
+                confs = self.__extract_conf_annotation(anns_conf, ann_bbox, node["text"])
+                text_type = self.__extract_texttype_annotation(anns_type, ann_bbox, node["text"])
 
                 words_annotation.append(BboxWithConfsType(start=ann_bbox["start"], end=ann_bbox["end"], bbox=ann_bbox["value"], confs=confs,
                                                           text_type=text_type))
@@ -74,7 +74,7 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
         return words_annotation
 
-    def get_words_annotation_from_cell(self, table: dict) -> List[BboxWithConfsType]:
+    def __get_words_annotation_from_cell(self, table: dict) -> List[BboxWithConfsType]:
         words_annotation = []
 
         cells = []
@@ -85,12 +85,12 @@ class TestWordExtraction(AbstractTestApiDocReader):
                     anns_bbox = [annotation for annotation in line["annotations"] if annotation["name"] == "bounding box"]
                     anns_conf = [annotation for annotation in line["annotations"] if annotation["name"] == "confidence"]
                     for ann_bbox in anns_bbox:
-                        confs = self.extract_conf_annotation(anns_conf, ann_bbox, line["text"])
+                        confs = self.__extract_conf_annotation(anns_conf, ann_bbox, line["text"])
                         words_annotation.append(BboxWithConfsType(start=ann_bbox["start"], end=ann_bbox["end"], bbox=ann_bbox["value"], confs=confs,
                                                                   text_type="typewritten"))
         return words_annotation
 
-    def normalize_font_thickness(self, image: np.ndarray) -> Tuple[float, int]:
+    def __normalize_font_thickness(self, image: np.ndarray) -> Tuple[float, int]:
         FONT_SCALE = 6e-4
         THICKNESS_SCALE = 1e-3
         height, width, _ = image.shape
@@ -99,16 +99,16 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
         return font_scale, thickness
 
-    def rotate_coordinate(self, x: int, y: int, xc: float, yc: float, angle: float) -> Tuple[int, int]:
+    def __rotate_coordinate(self, x: int, y: int, xc: float, yc: float, angle: float) -> Tuple[int, int]:
         rad = angle * math.pi / 180
         x_rotated = int(float(x - xc) * math.cos(rad) - float(y - yc) * math.sin(rad) + xc)
         y_rotated = int(float(y - yc) * math.cos(rad) + float(x - xc) * math.sin(rad) + yc)
 
         return x_rotated, y_rotated
 
-    def draw_word_annotations(self, image: np.ndarray, word_annotations: List[BboxWithConfsType], angle: float = 0.) -> np.ndarray:
+    def __draw_word_annotations(self, image: np.ndarray, word_annotations: List[BboxWithConfsType], angle: float = 0.) -> np.ndarray:
 
-        font_scale, thickness = self.normalize_font_thickness(image)
+        font_scale, thickness = self.__normalize_font_thickness(image)
         x_c = image.shape[1] / 2
         y_c = image.shape[0] / 2
 
@@ -118,8 +118,8 @@ class TestWordExtraction(AbstractTestApiDocReader):
             p2 = (int((bbox["x_top_left"] + bbox["width"]) * bbox["page_width"]), int((bbox["y_top_left"] + bbox["height"]) * bbox["page_height"]))
 
             if angle != 0.0:
-                p1 = self.rotate_coordinate(p1[0], p1[1], x_c, y_c, angle)
-                p2 = self.rotate_coordinate(p2[0], p2[1], x_c, y_c, angle)
+                p1 = self.__rotate_coordinate(p1[0], p1[1], x_c, y_c, angle)
+                p2 = self.__rotate_coordinate(p2[0], p2[1], x_c, y_c, angle)
 
             cv2.rectangle(image, p1, p2, (0, 255, 0) if ann.text_type == "typewritten" else (255, 0, 0))
             text = ",".join(ann.confs) if ann.confs != [] else "None"
@@ -133,9 +133,9 @@ class TestWordExtraction(AbstractTestApiDocReader):
         file_name = "pdf_with_text_layer/english_doc.pdf"
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="true"))
         structure = result["content"]["structure"]
-        word_annotations = self.get_words_annotation(structure)
+        word_annotations = self.__get_words_annotation(structure)
         image = np.asarray(get_page_image(self._get_abs_path(file_name), 0))
-        image = self.draw_word_annotations(image, word_annotations)
+        image = self.__draw_word_annotations(image, word_annotations)
         cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}.png"), image)
 
     def test_tabby_document(self):
@@ -145,13 +145,13 @@ class TestWordExtraction(AbstractTestApiDocReader):
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
         structure = result["content"]["structure"]
         image = np.asarray(get_page_image(self._get_abs_path(file_name), 0))
-        word_annotations = self.get_words_annotation(structure)
+        word_annotations = self.__get_words_annotation(structure)
         ann = word_annotations[0]
         if ann is not None:
             bbox = json.loads(ann.bbox)
             image = cv2.resize(image, dsize=(bbox["page_width"], bbox["page_height"]), interpolation=cv2.INTER_CUBIC)
 
-        image = self.draw_word_annotations(image, word_annotations)
+        image = self.__draw_word_annotations(image, word_annotations)
         cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}.png"), image)
 
     def test_table_word_extraction(self):
@@ -167,9 +167,27 @@ class TestWordExtraction(AbstractTestApiDocReader):
             page_angle = result["metadata"]["other_fields"]["rotated_page_angles"][0]
             table_angle = table0["metadata"]["rotated_angle"]
 
-            word_annotations = self.get_words_annotation_from_cell(table0)
+            word_annotations = self.__get_words_annotation_from_cell(table0)
             image = cv2.imread(self._get_abs_path(file_name))
             image = rotate_image(image, page_angle)
 
-            image = self.draw_word_annotations(image, word_annotations, angle=table_angle)
+            image = self.__draw_word_annotations(image, word_annotations, angle=table_angle)
             cv2.imwrite(os.path.join(output_path, file_name.split('/')[-1]), image)
+
+    def test_document_pipeline_reader(self) -> None:
+        filename_to_parameters = {
+            "scanned/scan_orient_1.jpg": {}
+        }
+        output_path = os.path.join(self.output_path, "document_pipeline_readers")
+        os.makedirs(output_path, exist_ok=True)
+        for filename, parameters in filename_to_parameters.items():
+            result = self._send_request(file_name=filename, data=parameters, expected_code=200)
+            structure = result["content"]["structure"]
+            word_annotations = self.__get_words_annotation(structure)
+            image = cv2.imread(self._get_abs_path(filename))
+            image = rotate_image(image, result["metadata"]["other_fields"].get("rotated_page_angles", [0.])[0])
+            image = self.__draw_word_annotations(image, word_annotations)
+            cv2.imwrite(os.path.join(output_path, filename.split("/")[-1]), image)
+
+
+

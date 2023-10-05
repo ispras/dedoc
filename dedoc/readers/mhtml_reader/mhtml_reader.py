@@ -125,7 +125,7 @@ class MhtmlReader(BaseReader):
                 continue
             attachment = AttachedFile(original_name=os.path.basename(file_name),
                                       tmp_file_path=os.path.join(save_dir, file_name),
-                                      uid=f"attach_{uuid.uuid1()}",
+                                      uid=f"attach_{uuid.uuid4()}",
                                       need_content_analysis=need_content_analysis)
             attachments.append(attachment)
         return attachments
