@@ -174,9 +174,10 @@ class TestWordExtraction(AbstractTestApiDocReader):
             image = self.__draw_word_annotations(image, word_annotations, angle=table_angle)
             cv2.imwrite(os.path.join(output_path, file_name.split('/')[-1]), image)
 
-    def test_document_pipeline_reader(self) -> None:
+    def test_document_image_reader(self) -> None:
         filename_to_parameters = {
-            "scanned/scan_orient_1.jpg": {}
+            "scanned/scan_orient_1.jpg": {},
+            "skew_corrector/rotated_2.jpg": {}
         }
         output_path = os.path.join(self.output_path, "document_pipeline_readers")
         os.makedirs(output_path, exist_ok=True)
@@ -188,6 +189,3 @@ class TestWordExtraction(AbstractTestApiDocReader):
             image = rotate_image(image, result["metadata"]["other_fields"].get("rotated_page_angles", [0.])[0])
             image = self.__draw_word_annotations(image, word_annotations)
             cv2.imwrite(os.path.join(output_path, filename.split("/")[-1]), image)
-
-
-
