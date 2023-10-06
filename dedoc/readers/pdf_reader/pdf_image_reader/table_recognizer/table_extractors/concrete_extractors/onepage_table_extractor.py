@@ -145,7 +145,7 @@ class OnePageTableExtractor(BaseTableExtractor):
         for i in range(0, len(matrix)):
             matrix[i] = sorted(matrix[i], key=lambda cell: cell.x_top_left, reverse=False)
 
-        matrix_table = ScanTable(matrix_cells=matrix, bbox=table_tree.cell_box, page_number=self.page_number, name=str(uuid.uuid1()))
+        matrix_table = ScanTable(matrix_cells=matrix, bbox=table_tree.cell_box, page_number=self.page_number, name=str(uuid.uuid4()))
 
         return matrix_table
 

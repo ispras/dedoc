@@ -18,7 +18,7 @@ class TableMetadata(Serializable):
         :param rotated_angle: value of the rotation angle by which the table was rotated during recognition
         """
         self.page_id = page_id
-        self.uid = str(uuid.uuid1()) if not uid else uid
+        self.uid = str(uuid.uuid4()) if not uid else uid
         self.rotated_angle = rotated_angle
 
     def to_dict(self) -> dict:

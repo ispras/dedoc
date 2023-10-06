@@ -104,7 +104,7 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
                     dict_object = file_names[data_index].getObject()
                     if "/EF" in dict_object and "/F" in dict_object["/EF"]:
                         data = dict_object["/EF"]["/F"].getData()
-                        name = dict_object.get("/UF", f"pdf_attach_{uuid.uuid1()}")
+                        name = dict_object.get("/UF", f"pdf_attach_{uuid.uuid4()}")
                         attachments.append((name, data))
 
         return attachments
