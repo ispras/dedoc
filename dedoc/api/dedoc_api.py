@@ -1,6 +1,9 @@
+import dataclasses
 import importlib
+import json
 import os
 import tempfile
+from typing import Optional
 
 import uvicorn
 from fastapi import Depends, FastAPI, File, Request, Response, UploadFile
@@ -19,11 +22,11 @@ from dedoc.utils.utils import save_upload_file
 
 config = get_config()
 PORT = config["api_port"]
-static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/")
+static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 static_files_dirs = config.get("static_files_dirs")
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory=config.get("static_path", static_path)), name="static")
+app.mount("/web", StaticFiles(directory=config.get("static_path", static_path)), name="web")
 
 module_api_args = importlib.import_module(config["import_path_init_api_args"])
 logger = config["logger"]
@@ -36,14 +39,12 @@ def get_info() -> Response:
     Root URL "/" is need start with simple Flask before rest-plus. API otherwise you will get 404 Error.
     It is bug of rest-plus lib.
     """
-    return FileResponse(os.path.join(static_path, "html_eng/info.html"))
+    return FileResponse(os.path.join(static_path, "index.html"))
 
 
 @app.get("/static_file")
 def get_static_file(request: Request) -> Response:
     path = _get_static_file_path(request)
-    # TODO check as_attachment
-    as_attachment = request.query_params.get("as_attachment") == "true"  # noqa
     return FileResponse(path)
 
 
@@ -61,13 +62,10 @@ def _get_static_file_path(request: Request) -> str:
 
 @app.post("/upload")
 async def upload(file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:  # noqa
-    parameters = query_params.dict(by_alias=True)
-
+    parameters = dataclasses.asdict(query_params)
     if not file or file.filename == "":
         raise MissingFileError("Error: Missing content in request_post file parameter", version=dedoc.__version__)
-    # check if the post request_post has the file part
 
-    logger.info(f"Get file {file.filename} with parameters {parameters}")
     with tempfile.TemporaryDirectory() as tmpdir:
         file_path = save_upload_file(file, tmpdir)
         document_tree = manager.parse(file_path, parameters=dict(parameters))
@@ -75,21 +73,34 @@ async def upload(file: UploadFile = File(...), query_params: QueryParameters = D
     return_format = str(parameters.get("return_format", "json")).lower()
     if return_format == "html":
         html_content = json2html(text="", paragraph=document_tree.content.structure, tables=document_tree.content.tables, tabs=0)
-        return HTMLResponse(content=html_content, status_code=200)
+        return HTMLResponse(content=html_content)
     elif return_format == "plain_text":
         txt_content = json2txt(paragraph=document_tree.content.structure)
-        return PlainTextResponse(content=txt_content, status_code=200)
+        return PlainTextResponse(content=txt_content)
     elif return_format == "tree":
         html_content = json2tree(paragraph=document_tree.content.structure)
-        return HTMLResponse(content=html_content, status_code=200)
+        return HTMLResponse(content=html_content)
     elif return_format == "ujson":
-        return UJSONResponse(content=document_tree.to_dict(), status_code=200)
-    elif str(parameters.get("return_format", "json")).lower() == "collapsed_tree":
+        return UJSONResponse(content=document_tree.to_dict())
+    elif return_format == "collapsed_tree":
         html_content = json2collapsed_tree(paragraph=document_tree.content.structure)
-        return HTMLResponse(content=html_content, status_code=200)
+        return HTMLResponse(content=html_content)
+    elif return_format == "pretty_json":
+        return PlainTextResponse(content=json.dumps(document_tree.to_dict(), ensure_ascii=False, indent=2))
     else:
         logger.info(f"Send result. File {file.filename} with parameters {parameters}")
-        return ORJSONResponse(content=document_tree.to_dict(), status_code=200)
+        return ORJSONResponse(content=document_tree.to_dict())
+
+
+@app.get("/upload_example")
+async def upload_example(file_name: str, return_format: Optional[str] = None) -> Response:
+    file_path = os.path.join(static_path, "examples", file_name)
+    parameters = {} if return_format is None else {"return_format": return_format}
+    document_tree = manager.parse(file_path, parameters=parameters)
+
+    if return_format == "html":
+        return HTMLResponse(content=json2html(text="", paragraph=document_tree.content.structure, tables=document_tree.content.tables, tabs=0))
+    return ORJSONResponse(content=document_tree.to_dict(), status_code=200)
 
 
 @app.exception_handler(DedocError)

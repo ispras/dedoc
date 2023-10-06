@@ -1,0 +1,150 @@
+<style type="text/css">
+    #current_issue_box {
+        position: relative;
+    }
+
+    #current_issue_box small {
+        display: block;
+        font-size: 12px;
+    }
+
+    #current_issue_box .cover {
+        display: block;
+    }
+
+    #current_issue_box h3 {
+        margin: 0 0 10px;
+    }
+
+    #current_issue_box ul {
+        padding: 0;
+        margin: 10px 0 0;
+    }
+
+    #current_issue_box li {
+        list-style: none !important;
+        line-height: 130% !important
+    }
+
+    @media all and (min-width: 1360px) {
+        #current_issue_box {
+            position: absolute;
+            top: 30px;
+            left: -220px;
+            width: 220px;
+            text-align: center;
+        }
+
+        #current_issue_box small {
+            position: absolute;
+            top: -25px;
+            left: 0;
+            right: 0;
+        }
+
+        #current_issue_box h3 {
+            margin-top: 15px;
+        }
+    }
+
+    @media all and (max-width: 1359px) {
+        #current_issue_box {
+            max-width: 600px;
+            min-height: 163px;
+            border: solid 1px #ddd;
+            border-radius: 4px;
+            padding: 15px 15px 15px 130px;
+            margin: -30px auto 30px;
+        }
+
+        #current_issue_box .cover {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            width: 100px;
+        }
+    }
+
+    @media all and (max-width: 767px) {
+        #current_issue_box {
+            display: none;
+        }
+    }
+</style>
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+<h1>Пример документа</h1>
+
+<!-- TEST COMMENT -->
+<h2>Глава 1</h2>
+<p><strong>Какие</strong> то <a href="/">определения</a></p>
+
+<h3>Статья 1</h3>
+<span> <strong> Определим определения </strong> </span>
+
+<p><strong>Текст</strong> <em>бывает</em> <i>раз</i><u>ных</u> <b>стилей</b></p>
+<bogusBlock> BOGUS TEXT </bogusBlock>
+<script> SCRIPT TEXT </script>
+<div>
+    <h3>Статья 2</h3>
+    <p>Дадим <a href="#part1">пояснения</a></p>
+
+    <ul>
+        <li>1.2.1. <strong> Поясним </strong> <em>за</em> <strong> непонятное </strong></li>
+        <li><strong>1.2.2.</strong> Поясним за понятное
+            <ol type='a'>
+                <li><a href="#part1">это</a> даже ежу понятно</li>
+                <li>это ежу не понятно</li>
+            </ol>
+        </li>
+        <li>1.2.3.</li>
+    </ul>
+</div>
+
+<table border="1">
+    <tr>
+        <td>N</td>
+        <td>Фамилия</td>
+        <td>Имя</td>
+        <td>Организация</td>
+        <td>Телефон</td>
+        <td>Примечания</td>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>Иванов</td>
+        <td>Иван</td>
+        <td>ИСП</td>
+        <td>8-800</td>
+        <td></td>
+    </tr>
+</table>
+
+<table border="1">
+    <tr>
+        <td><strong>Фамилия</strong></td>
+        <td>Имя</td>
+        <td>Отчество</td>
+    </tr>
+    <tr>
+        <td>Иванов</td>
+        <td>Иван</td>
+        <td>Иванович</td>
+    </tr>
+    <tr>
+        <td>Петров</td>
+        <td>Пётр</td>
+        <td>Петрович</td>
+    </tr>
+    <tr>
+        <td>Сидоров</td>
+        <td>Сидор</td>
+        <td>Сидорович</td>
+    </tr>
+</table>
+</body>
+</html>
