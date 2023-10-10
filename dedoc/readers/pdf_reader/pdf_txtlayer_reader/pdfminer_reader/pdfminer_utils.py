@@ -1,4 +1,3 @@
-import json
 import re
 from typing import IO, List, Match, Optional, Tuple
 
@@ -33,9 +32,13 @@ def draw_layout_element(image_src: np.ndarray,
 
 def draw_annotation(image: np.ndarray, annotations: List[BBoxAnnotation]) -> None:
     for ann in annotations:
-        bbox = json.loads(ann.value)
-        p1 = (int(bbox["x_top_left"] * bbox["page_width"]), int(bbox["y_top_left"] * bbox["page_height"]))
-        p2 = (int((bbox["x_top_left"] + bbox["width"]) * bbox["page_width"]), int((bbox["y_top_left"] + bbox["height"]) * bbox["page_height"]))
+        bbox, page_width, page_height = BBoxAnnotation.get_bbox_from_value(ann.value)
+
+        if page_height != image.shape[0] or page_width != image.shape[1]:
+            image = cv2.resize(image, dsize=(page_width, page_height), interpolation=cv2.INTER_CUBIC)
+
+        p1 = (bbox.x_top_left, bbox.y_top_left)
+        p2 = (bbox.x_bottom_right, bbox.y_bottom_right)
         cv2.rectangle(image, p1, p2, (0, 255, 0))
 
 

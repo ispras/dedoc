@@ -63,11 +63,23 @@ class PdfTxtlayerReader(PdfBaseReader):
         unreadable_blocks = [location.bbox for table in tables for location in table.locations]
         page.bboxes = [bbox for bbox in page.bboxes if not self._inside_any_unreadable_block(bbox.bbox, unreadable_blocks)]
         lines = self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page, call_classifier=False)
+        self.__change_table_boxes_page_width_heigth(pdf_width=page.pdf_page_width, pdf_height=page.pdf_page_height, tables=tables)
 
         if self.config.get("labeling_mode"):
             save_page_with_bbox(page=page, config=self.config, document_name=os.path.basename(path))
 
         return lines, tables, page.attachments, []
+
+    def __change_table_boxes_page_width_heigth(self, pdf_width: int, pdf_height: int, tables: List[ScanTable]) -> None:
+        """
+        Change table boxes's width height into pdf space like textual lines
+        """
+
+        for table in tables:
+            for row in table.matrix_cells:
+
+                for cell in row:
+                    cell.change_lines_boxes_page_width_height(new_page_width=pdf_width, new_page_height=pdf_height)
 
     def _inside_any_unreadable_block(self, obj_bbox: BBox, unreadable_blocks: List[BBox]) -> bool:
         """
