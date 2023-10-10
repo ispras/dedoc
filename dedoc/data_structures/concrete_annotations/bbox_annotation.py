@@ -1,4 +1,5 @@
 import json
+from typing import Tuple
 
 from dedocutils.data_structures import BBox
 from flask_restx import Api, Model, fields
@@ -24,6 +25,18 @@ class BBoxAnnotation(Annotation):
             raise ValueError("the value of bounding box annotation should be instance of BBox")
 
         super().__init__(start=start, end=end, name=BBoxAnnotation.name, value=json.dumps(value.to_relative_dict(page_width, page_height)))
+
+    @staticmethod
+    def get_bbox_from_value(value: str) -> Tuple[BBox, int, int]:
+        """
+        Returns: BBox object, page_width, page_height
+        """
+        bbox_dict = json.loads(value)
+        bbox = BBox(x_top_left=int(bbox_dict["x_top_left"] * bbox_dict["page_width"]),
+                    y_top_left=int(bbox_dict["y_top_left"] * bbox_dict["page_height"]),
+                    width=int(bbox_dict["width"] * bbox_dict["page_width"]),
+                    height=int(bbox_dict["height"] * bbox_dict["page_height"]))
+        return bbox, bbox_dict["page_width"], bbox_dict["page_height"]
 
     @staticmethod
     def get_api_dict(api: Api) -> Model:
