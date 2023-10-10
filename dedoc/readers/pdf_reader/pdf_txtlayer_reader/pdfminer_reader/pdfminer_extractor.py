@@ -186,7 +186,7 @@ class PdfminerExtractor(object):
                     # duplicated previous style
                     chars_with_style.append(chars_with_style[-1])
 
-        annotations = self.__extract_words_bbox_annotation(lobj, k_w, k_h, height, width)
+        annotations = self.__extract_words_bbox_annotation(lobj, height, width)
         # 3 - extract range from chars_with_style array
         char_pointer = 0
 
@@ -197,7 +197,7 @@ class PdfminerExtractor(object):
 
         return annotations
 
-    def __extract_words_bbox_annotation(self, lobj: LTTextContainer, k_w: float, k_h: float, height: int, width: int) -> List[Annotation]:
+    def __extract_words_bbox_annotation(self, lobj: LTTextContainer, height: int, width: int) -> List[Annotation]:
         words: List[WordObj] = []
         word: WordObj = WordObj(start=0, end=0, value=LTTextContainer())
         if isinstance(lobj, LTTextLineHorizontal):
@@ -216,7 +216,7 @@ class PdfminerExtractor(object):
         annotations = [
             BBoxAnnotation(start=word.start,
                            end=word.end,
-                           value=create_bbox(height=height, k_h=k_h, k_w=k_w, lobj=word.value),
+                           value=create_bbox(height=height, k_h=1.0, k_w=1.0, lobj=word.value),
                            page_width=width,
                            page_height=height) for word in words
         ]

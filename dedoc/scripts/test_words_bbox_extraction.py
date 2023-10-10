@@ -127,32 +127,36 @@ class TestWordExtraction(AbstractTestApiDocReader):
                         cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), thickness)
         return image
 
-    def test_pdfminer_document(self):
-        output_path = os.path.join(self.output_path, "pdfminer_reader")
-        os.makedirs(output_path, exist_ok=True)
-        file_name = "pdf_with_text_layer/english_doc.pdf"
-        result = self._send_request(file_name, data=dict(pdf_with_text_layer="true"))
-        structure = result["content"]["structure"]
-        word_annotations = self.__get_words_annotation(structure)
-        image = np.asarray(get_page_image(self._get_abs_path(file_name), 0))
-        image = self.__draw_word_annotations(image, word_annotations)
-        cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}.png"), image)
+    def __draw_tables_words(self, tables: List[dict], image: np.ndarray) -> np.ndarray:
+        for table in tables:
+            table_angle = table["metadata"]["rotated_angle"]
 
-    def test_tabby_document(self):
-        output_path = os.path.join(self.output_path, "tabby_reader")
-        os.makedirs(output_path, exist_ok=True)
-        file_name = "pdf_with_text_layer/english_doc.pdf"
-        result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
-        structure = result["content"]["structure"]
-        image = np.asarray(get_page_image(self._get_abs_path(file_name), 0))
-        word_annotations = self.__get_words_annotation(structure)
-        ann = word_annotations[0]
-        if ann is not None:
-            bbox = json.loads(ann.bbox)
-            image = cv2.resize(image, dsize=(bbox["page_width"], bbox["page_height"]), interpolation=cv2.INTER_CUBIC)
+            word_annotations = self.__get_words_annotation_from_cell(table)
+            image = self.__draw_word_annotations(image, word_annotations, angle=table_angle)
+        return image
 
-        image = self.__draw_word_annotations(image, word_annotations)
-        cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}.png"), image)
+    def test_pdf_documents(self):
+        filename_parameters_outputdir = [
+            ["pdf_with_text_layer/english_doc.pdf", dict(pdf_with_text_layer="true"),  "pdfminer_reader"],
+            ["pdf_with_text_layer/english_doc.pdf", dict(pdf_with_text_layer="tabby"), "tabby_reader"]
+        ]
+
+        for file_name, parameters, outputdir in filename_parameters_outputdir:
+            output_path = os.path.join(self.output_path, outputdir)
+            os.makedirs(output_path, exist_ok=True)
+            result = self._send_request(file_name, data=parameters)
+            structure = result["content"]["structure"]
+            word_annotations = self.__get_words_annotation(structure)
+            image = np.asarray(get_page_image(self._get_abs_path(file_name), 0))
+            ann = word_annotations[0]
+            if ann is not None:
+                bbox = json.loads(ann.bbox)
+                image = cv2.resize(image, dsize=(bbox["page_width"], bbox["page_height"]), interpolation=cv2.INTER_CUBIC)
+            image = self.__draw_word_annotations(image, word_annotations)
+            tables = result["content"]["tables"]
+            if len(tables) > 0:
+                image = self.__draw_tables_words(tables, image)
+            cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}.png"), image)
 
     def test_table_word_extraction(self):
         output_path = os.path.join(self.output_path, 'tables')
@@ -165,13 +169,13 @@ class TestWordExtraction(AbstractTestApiDocReader):
             result = self._send_request(file_name, data=dict())
             table0 = result["content"]["tables"][0]
             page_angle = result["metadata"]["other_fields"]["rotated_page_angles"][0]
-            table_angle = table0["metadata"]["rotated_angle"]
 
-            word_annotations = self.__get_words_annotation_from_cell(table0)
             image = cv2.imread(self._get_abs_path(file_name))
             image = rotate_image(image, page_angle)
+            tables = result["content"]["tables"]
+            if len(tables) > 0:
+                image = self.__draw_tables_words(tables, image)
 
-            image = self.__draw_word_annotations(image, word_annotations, angle=table_angle)
             cv2.imwrite(os.path.join(output_path, file_name.split('/')[-1]), image)
 
     def test_document_image_reader(self) -> None:
@@ -188,4 +192,7 @@ class TestWordExtraction(AbstractTestApiDocReader):
             image = cv2.imread(self._get_abs_path(filename))
             image = rotate_image(image, result["metadata"]["other_fields"].get("rotated_page_angles", [0.])[0])
             image = self.__draw_word_annotations(image, word_annotations)
+            tables = result["content"]["tables"]
+            if len(tables) > 0:
+                image = self.__draw_tables_words(tables, image)
             cv2.imwrite(os.path.join(output_path, filename.split("/")[-1]), image)
