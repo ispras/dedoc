@@ -107,7 +107,7 @@ class PdfminerExtractor(object):
 
         attachments = images if len(images) < 10 else []
 
-        return PageWithBBox(bboxes=bboxes, image=image_page, page_num=page_number, attachments=attachments)
+        return PageWithBBox(bboxes=bboxes, image=image_page, page_num=page_number, attachments=attachments, pdf_page_height=height, pdf_page_width=width)
 
     def __extract_image(self,
                         directory: str,

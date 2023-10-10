@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from dedocutils.data_structures import BBox
 
+from dedoc.data_structures import BBoxAnnotation
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 
@@ -69,6 +70,24 @@ class Cell:
 
     def get_annotations(self) -> List[Annotation]:
         return LineWithMeta.join(self.lines, delimiter="\n").annotations
+
+    def change_lines_boxes_page_width_height(self, new_page_width: int, new_page_height: int) -> None:
+        for i_line, _ in enumerate(self.lines):
+            for i_ann, annotation in enumerate(self.lines[i_line].annotations):
+                if annotation.name != "bounding box":
+                    continue
+
+                bbox, page_width, page_height = BBoxAnnotation.get_bbox_from_value(annotation.value)
+                k_w = new_page_width / page_width
+                k_h = new_page_height / page_height
+                new_bbox = BBox(x_top_left=int(bbox.x_top_left * k_w), y_top_left=int(bbox.y_top_left * k_h),
+                                width=int(bbox.width * k_w), height=int(bbox.height * k_h))
+
+                self.lines[i_line].annotations[i_ann] = BBoxAnnotation(start=annotation.start,
+                                                                       end=annotation.end,
+                                                                       value=new_bbox,
+                                                                       page_width=new_page_width,
+                                                                       page_height=new_page_height)
 
     def __repr__(self) -> str:
         return self.__str__()
