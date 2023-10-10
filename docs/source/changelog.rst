@@ -1,6 +1,23 @@
 Changelog
 =========
 
+v1.0 (2023-10-10)
+-----------------
+Release note: `v1.0 <https://github.com/ispras/dedoc/releases/tag/v1.0>`_
+
+* Remove `is_one_column_document_list` parameter.
+* Add tutorial about support for a new document type to the documentation.
+* Improve textual layer correctness classifier.
+* Improve orientation and columns classifier.
+* Change table's output structure - added `CellWithMeta` instead of a textual string.
+* Add `BBoxAnnotation` to table cells for `PdfTxtlayerReader` and `PdfImageReader`.
+* Add `ConfidenceAnnotation` to table cells for `PdfImageReader`.
+* Remove `insert_table` parameter.
+* Added information about table and page rotation to the table and document metadata respectively.
+* Use `dedoc-utils <https://pypi.org/project/dedoc-utils>`_ library for document images preprocessing.
+* Change web interface, fix online-examples of document processing.
+* Add comparison operator to `LineWithMeta`.
+
 v0.11.2 (2023-09-06)
 --------------------
 Release note: `v0.11.2 <https://github.com/ispras/dedoc/releases/tag/v0.11.2>`_
