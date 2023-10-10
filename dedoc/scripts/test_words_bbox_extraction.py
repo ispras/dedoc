@@ -135,6 +135,10 @@ class TestWordExtraction(AbstractTestApiDocReader):
         structure = result["content"]["structure"]
         word_annotations = self.__get_words_annotation(structure)
         image = np.asarray(get_page_image(self._get_abs_path(file_name), 0))
+        ann = word_annotations[0]
+        if ann is not None:
+            bbox = json.loads(ann.bbox)
+            image = cv2.resize(image, dsize=(bbox["page_width"], bbox["page_height"]), interpolation=cv2.INTER_CUBIC)
         image = self.__draw_word_annotations(image, word_annotations)
         cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}.png"), image)
 
