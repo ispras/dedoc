@@ -92,9 +92,9 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         self.assertEqual(0, len(table_annotations))
         self.assertEqual("2.", part2["text"].strip())
         self.assertEqual(1, len(tables))
-        table = tables[0]
-        self.assertListEqual(table["cells"][0], ["Столбец", "Строка"])
-        self.assertListEqual(table["cells"][1], ["Первый", "Второй"])
+        table = tables[0]["cells"]
+        self.assertListEqual(self._get_text_of_row(table[0]), ["Столбец", "Строка"])
+        self.assertListEqual(self._get_text_of_row(table[1]), ["Первый", "Второй"])
 
     def test_law_doc(self) -> None:
         file_name = "ukrf.doc"
@@ -494,10 +494,12 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         self.__test_law_tree_sanity(tree)
         self.assertEqual(1, len(tables))
         table = tables[0]["cells"]
-        self.assertListEqual(["№\nп/п", "", "Ф.И.О.", "Должность"], list(map(str.strip, table[0])))
-        self.assertListEqual(["1", "Председатель\nкомиссии", "Городецкий \n\nЯрослав Иванович", "первый заместитель министра"], list(map(str.strip, table[1])))
+        self.assertListEqual(["№\nп/п", "", "Ф.И.О.", "Должность"], list(map(str.strip, self._get_text_of_row(table[0]))))
+        self.assertListEqual(["1", "Председатель\nкомиссии", "Городецкий \n\nЯрослав Иванович", "первый заместитель министра"],
+                             list(map(str.strip, self._get_text_of_row(table[1]))))
 
-        self.assertEqual("начальник управления по гражданской обороне, чрезвычайным ситуациям и пожарной безопасности", table[8][3].strip())
+        self.assertEqual("начальник управления по гражданской обороне, чрезвычайным ситуациям и пожарной безопасности",
+                         self._get_text_of_row(table[8])[3].strip())
 
     def test_law_html_with_part_item_quotes(self) -> None:
         # документ разбирается как ФОИВ, тип вершин меняется. Тест теряет смысл в этом контексте

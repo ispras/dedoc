@@ -4,12 +4,12 @@ import os
 from typing import Any, List, Tuple
 
 import cv2
+import imutils
 import numpy as np
 
 from dedoc.config import get_config
-from dedoc.readers.pdf_reader.data_classes.tables.table_tree import ContourCell, TableTree
+from dedoc.readers.pdf_reader.data_classes.tables.table_tree import TableTree
 from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdditionalOptions
-from dedoc.utils.image_utils import rotate_image
 
 logger = get_config().get("logger", logging.getLogger())
 logger = logger if logger else logging.getLogger("TableRecognizer.detect_tables_by_contours")
@@ -17,13 +17,14 @@ table_options = TableTypeAdditionalOptions()
 
 
 def rotate_with_threshold(img: np.ndarray, angle: float, threshold: float = None, *, config: dict) -> np.ndarray:
+    """rotates a table image and saving image.shape during rotation. It is important for word bounding box extraction"""
     if threshold is None:
         threshold = config["rotate_threshold"]
     rotated = img
     if abs(angle) > threshold:
         if config.get("debug_mode", False):
             logger.debug("rotated image")
-        rotated = rotate_image(img, angle)
+        rotated = imutils.rotate(img, angle)
     return rotated
 
 
@@ -165,8 +166,7 @@ def __apply_houph_lines_and_detect_angle(image: np.ndarray, config: dict) -> [np
     # ----- search height, width table ----- #
     # ----- detect gap for houph -------     #
     contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
-    contours_table = [cv2.boundingRect(c) for ind, c in enumerate(contours)
-                      if hierarchy[0][ind][3] == 0 and hierarchy[0][ind][2] != -1]  # List[[x,y,w,h]]
+    contours_table = [cv2.boundingRect(c) for ind, c in enumerate(contours) if hierarchy[0][ind][3] == 0 and hierarchy[0][ind][2] != -1]  # List[[x,y,w,h]]
     if len(contours_table) > 0:
         gap_avg = min(np.mean([c[3] for c in contours_table]) // 35, 100)
         gap_avg = min(np.mean([c[2] for c in contours_table]) // 45, gap_avg)
@@ -259,7 +259,7 @@ def detect_tables_by_contours(img: np.ndarray,
     :param config: dict from config.py
     :return: TreeTable, contour, rotate angle
     """
-    contours, hierarchy, img, angle_rotate = get_contours_cells(img, table_type, config=config)
+    contours, hierarchy, image, angle_rotate = get_contours_cells(img, table_type, config=config)
     tree_table = TableTree.parse_contours_to_tree(contours=contours, hierarchy=hierarchy, config=config)
 
     if config.get("debug_mode", False):
@@ -268,23 +268,7 @@ def detect_tables_by_contours(img: np.ndarray,
     if config.get("debug_mode", False):
         cv2.imwrite(os.path.join(config["path_detect"], "img_draw_counters.jpg"), img)
 
-    cell_images = []
-    for ind, c in enumerate(contours):
-        # Returns the location and width,height for every contour
-        x, y, w, h = cv2.boundingRect(c)
-        new_img = img[y:y + h, x:x + w]
-        if config.get("debug_mode", False):
-            cv2.imwrite(os.path.join(config["path_cells"], str(ind) + ".png"), new_img)
-        cell_images.append(ContourCell(id_con=ind, image=new_img))
-
-    tree_table.set_text_into_tree(tree_table,
-                                  cell_images,
-                                  cur_depth=0,
-                                  begin_depth=2,
-                                  end_depth=2,
-                                  language=language,
-                                  orient_analysis_cells=orient_analysis_cells,
-                                  config=config)
+    tree_table.set_text_into_tree(tree=tree_table, src_image=image, language=language, config=config)
 
     if config.get("debug_mode", False):
         tree_table.print_tree(depth=0)

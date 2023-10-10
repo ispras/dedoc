@@ -69,6 +69,8 @@ class AnnotationMerger:
         Merge annotations when end of the first annotation and start of the second match and has same value.
         Used with add_text
         """
+        if not annotations:
+            return []
         annotations_group_by_name_value = self._group_annotations(annotations).values()
         spaces = [Space(m.start(), m.end()) for m in self.spaces.finditer(text)]
 

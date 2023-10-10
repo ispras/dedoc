@@ -2,8 +2,6 @@ import difflib
 
 import numpy as np
 
-from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_utils import get_text_from_table_cell
-
 
 def equal_with_eps(x: int, y: int, eps: int = 10) -> bool:
     return y + eps >= x >= y - eps
@@ -18,15 +16,6 @@ def get_highest_pixel_frequency(image: np.ndarray) -> int:
         color = np.uint8(255)
 
     return color
-
-
-def get_cell_text_by_ocr(img_cell: np.ndarray, language: str) -> str:
-    if img_cell.shape[0] == 0 or img_cell.shape[1] == 0:
-        return ""
-
-    text = get_text_from_table_cell(img_cell, language=language)
-
-    return text
 
 
 def similarity(s1: str, s2: str) -> float:

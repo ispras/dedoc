@@ -14,6 +14,7 @@ from pdf2image.exceptions import PDFPageCountError, PDFSyntaxError
 import dedoc.utils.parameter_utils as param_utils
 from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
+from dedoc.data_structures.cell_with_meta import CellWithMeta
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
@@ -33,19 +34,20 @@ from dedoc.utils.pdf_utils import get_pdf_page_count
 from dedoc.utils.utils import flatten
 from dedoc.utils.utils import get_file_mime_type, splitext_
 
-ParametersForParseDoc = namedtuple("ParametersForParseDoc", ["orient_analysis_cells",
-                                                             "orient_cell_angle",
-                                                             "is_one_column_document",
-                                                             "document_orientation",
-                                                             "document_type",
-                                                             "language",
-                                                             "need_header_footers_analysis",
-                                                             "need_pdf_table_analysis",
-                                                             "first_page",
-                                                             "last_page",
-                                                             "need_binarization",
-                                                             "table_type",
-                                                             "is_one_column_document_list"])
+ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
+    "orient_analysis_cells",
+    "orient_cell_angle",
+    "is_one_column_document",
+    "document_orientation",
+    "document_type",
+    "language",
+    "need_header_footers_analysis",
+    "need_pdf_table_analysis",
+    "first_page",
+    "last_page",
+    "need_binarization",
+    "table_type"
+])
 
 
 class PdfBaseReader(BaseReader):
@@ -84,17 +86,15 @@ class PdfBaseReader(BaseReader):
             first_page=first_page,
             last_page=last_page,
             need_binarization=param_utils.get_param_need_binarization(parameters),
-            table_type=param_utils.get_param_table_type(parameters),
-            is_one_column_document_list=param_utils.get_is_one_column_document_list(parameters)
+            table_type=param_utils.get_param_table_type(parameters)
         )
 
         lines, scan_tables, attachments, warnings, other_fields = self._parse_document(path, params_for_parse)
         tables = []
         for scan_table in scan_tables:
-            metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name)
-            cells = [[cell for cell in row] for row in scan_table.matrix_cells]
-            text_cells = [[cell.text for cell in row] for row in scan_table.matrix_cells]
-            table = Table(metadata=metadata, cells=text_cells, cells_properties=cells)
+            metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name, rotated_angle=scan_table.location.rotated_angle)
+            cells_with_meta = [[CellWithMeta.create_from_cell(cell) for cell in row] for row in scan_table.matrix_cells]
+            table = Table(metadata=metadata, cells=cells_with_meta)
             tables.append(table)
 
         if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
@@ -112,17 +112,15 @@ class PdfBaseReader(BaseReader):
             can_contain_attachments = True
         return can_contain_attachments
 
-    def _parse_document(self, path: str, parameters: ParametersForParseDoc) -> Tuple[List[LineWithMeta],
-                                                                                     List[ScanTable],
-                                                                                     List[PdfImageAttachment],
-                                                                                     List[str],
-                                                                                     Optional[dict]]:
+    def _parse_document(self, path: str, parameters: ParametersForParseDoc) -> (
+            Tuple)[List[LineWithMeta], List[ScanTable], List[PdfImageAttachment], List[str], Optional[dict]]:
         first_page = 0 if parameters.first_page is None or parameters.first_page < 0 else parameters.first_page
         last_page = math.inf if parameters.last_page is None else parameters.last_page
         images = self._get_images(path, first_page, last_page)
 
-        result = Parallel(n_jobs=self.config["n_jobs"])(delayed(self._process_one_page)(image, parameters, page_number, path)
-                                                        for page_number, image in enumerate(images, start=first_page))
+        result = Parallel(n_jobs=self.config["n_jobs"])(
+            delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, image in enumerate(images, start=first_page)
+        )
 
         page_count = get_pdf_page_count(path)
         page_count = math.inf if page_count is None else page_count
@@ -133,14 +131,14 @@ class PdfBaseReader(BaseReader):
                 metadata["last_page"] = last_page
         else:
             warnings = []
-            metadata = None
+            metadata = {}
 
         if len(result) == 0:
-            all_lines, unref_tables, attachments = [], [], []
+            all_lines, unref_tables, attachments, page_angles = [], [], [], []
         else:
-            all_lines, unref_tables, attachments = map(list, map(flatten, zip(*result)))
+            all_lines, unref_tables, attachments, page_angles = map(list, map(flatten, zip(*result)))
         if parameters.need_header_footers_analysis:
-            lines = [lines for lines, _, _ in result]
+            lines = [lines for lines, _, _, _ in result]
             lines, headers, footers = footer_header_analysis(lines)
             all_lines = list(flatten(lines))
         mp_tables = self.table_recognizer.convert_to_multipages_tables(unref_tables, lines_with_meta=all_lines)
@@ -152,11 +150,20 @@ class PdfBaseReader(BaseReader):
             prev_line = line
 
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
+        if page_angles:
+            metadata["rotated_page_angles"] = page_angles
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
     @abstractmethod
     def _process_one_page(self, image: np.ndarray, parameters: ParametersForParseDoc, page_number: int, path: str) \
-            -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
+            -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]]:
+        """
+            function parses image and returns:
+            - recognized textual lines with annotations
+            - recognized tables on an image
+            - attachments (figures on images)
+            - [rotated_angle] - the angle by which the image was rotated for recognition
+        """
         pass
 
     def _get_images(self, path: str, page_from: int, page_to: int) -> Iterator[np.ndarray]:

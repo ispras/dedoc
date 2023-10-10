@@ -42,7 +42,6 @@ class ReaderComposition(object):
             if can_read:
                 unstructured_document = reader.read(path=file_path, document_type=document_type, parameters=parameters)
                 assert len(unstructured_document.lines) == 0 or isinstance(unstructured_document.lines[0], LineWithMeta)
-                assert isinstance(unstructured_document, UnstructuredDocument)  # TODO remove
                 return unstructured_document
 
         raise BadFileFormatError(

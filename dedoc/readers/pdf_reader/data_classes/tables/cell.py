@@ -1,8 +1,11 @@
 import uuid
-from collections import OrderedDict
-from typing import Optional
+from typing import List, Optional
 
-from dedoc.data_structures.bbox import BBox
+from dedocutils.data_structures import BBox
+
+from dedoc.data_structures import BBoxAnnotation
+from dedoc.data_structures.annotation import Annotation
+from dedoc.data_structures.line_with_meta import LineWithMeta
 
 
 class Cell:
@@ -22,7 +25,7 @@ class Cell:
                     y_top_left=y_top_left,
                     y_bottom_right=y_bottom_right,
                     id_con=cell.id_con,
-                    text=cell.text,
+                    lines=cell.lines,
                     is_attribute=cell.is_attribute,
                     is_attribute_required=cell.is_attribute_required,
                     rotated_angle=cell.rotated_angle,
@@ -35,7 +38,7 @@ class Cell:
                  y_top_left: int,
                  y_bottom_right: int,
                  id_con: int = -1,
-                 text: str = "",
+                 lines: Optional[List[LineWithMeta]] = None,
                  is_attribute: bool = False,
                  is_attribute_required: bool = False,
                  rotated_angle: int = 0,
@@ -49,9 +52,7 @@ class Cell:
         self.y_top_left = y_top_left
         self.y_bottom_right = y_bottom_right
         self.id_con = id_con
-        if not isinstance(text, str):
-            raise ValueError(f"get {text.__class__} ({text}) instead of text")
-        self.text = text
+        self.lines = [] if lines is None else lines
         self.is_attribute = is_attribute
         self.is_attribute_required = is_attribute_required
         self.rotated_angle = rotated_angle
@@ -62,7 +63,31 @@ class Cell:
         self.con_coord = contour_coord or BBox(0, 0, 0, 0)
 
     def __str__(self) -> str:
-        return f"Cell((cs={self.colspan}, rs={self.rowspan}, {self.text})"
+        return f"Cell((cs={self.colspan}, rs={self.rowspan}, {self.get_text()})"
+
+    def get_text(self) -> str:
+        return "\n".join([line.line for line in self.lines])
+
+    def get_annotations(self) -> List[Annotation]:
+        return LineWithMeta.join(self.lines, delimiter="\n").annotations
+
+    def change_lines_boxes_page_width_height(self, new_page_width: int, new_page_height: int) -> None:
+        for i_line, _ in enumerate(self.lines):
+            for i_ann, annotation in enumerate(self.lines[i_line].annotations):
+                if annotation.name != "bounding box":
+                    continue
+
+                bbox, page_width, page_height = BBoxAnnotation.get_bbox_from_value(annotation.value)
+                k_w = new_page_width / page_width
+                k_h = new_page_height / page_height
+                new_bbox = BBox(x_top_left=int(bbox.x_top_left * k_w), y_top_left=int(bbox.y_top_left * k_h),
+                                width=int(bbox.width * k_w), height=int(bbox.height * k_h))
+
+                self.lines[i_line].annotations[i_ann] = BBoxAnnotation(start=annotation.start,
+                                                                       end=annotation.end,
+                                                                       value=new_bbox,
+                                                                       page_width=new_page_width,
+                                                                       page_height=new_page_height)
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -74,16 +99,3 @@ class Cell:
     @property
     def height(self) -> int:
         return self.y_bottom_right - self.y_top_left
-
-    def to_dict(self) -> dict:
-        cell_dict = OrderedDict()
-        cell_dict["text"] = self.text
-        cell_dict["is_attribute"] = self.is_attribute
-        cell_dict["colspan"] = self.colspan
-        cell_dict["rowspan"] = self.rowspan
-        cell_dict["invisible"] = self.invisible
-
-        return cell_dict
-
-    def set_rotated_angle(self, rotated_angle: int) -> None:
-        self.rotated_angle = rotated_angle

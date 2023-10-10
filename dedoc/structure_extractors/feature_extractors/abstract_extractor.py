@@ -67,10 +67,14 @@ class AbstractFeatureExtractor(ABC):
         add previous and next features with their names
         """
         feature_names = matrix.columns
-        prev_line_features = [pd.DataFrame(data=self._prev_line_features(matrix.values, i), columns=self._create_features_name(feature_names, "prev", i))
-                              for i in range(1, n_prev + 1)]
-        next_line_features = [pd.DataFrame(data=self._next_line_features(matrix.values, i), columns=self._create_features_name(feature_names, "next", i))
-                              for i in range(1, n_next + 1)]
+        prev_line_features = [
+            pd.DataFrame(data=self._prev_line_features(matrix.values, i), columns=self._create_features_name(feature_names, "prev", i))
+            for i in range(1, n_prev + 1)
+        ]
+        next_line_features = [
+            pd.DataFrame(data=self._next_line_features(matrix.values, i), columns=self._create_features_name(feature_names, "next", i))
+            for i in range(1, n_next + 1)
+        ]
 
         matrices = [matrix] + prev_line_features + next_line_features
         result_matrix = pd.concat(matrices, axis=1)
@@ -107,8 +111,9 @@ class AbstractFeatureExtractor(ABC):
 
     @staticmethod
     def _get_bold_percent(line: LineWithMeta) -> float:
-        bold_character_number = sum([annotation.end - annotation.start for annotation in line.annotations
-                                     if annotation.name == BoldAnnotation.name and annotation.value == "True"])
+        bold_character_number = sum([
+            annotation.end - annotation.start for annotation in line.annotations if annotation.name == BoldAnnotation.name and annotation.value == "True"
+        ])
         if len(line.line) == 0:
             return 0
         return bold_character_number / len(line.line)

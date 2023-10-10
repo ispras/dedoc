@@ -4,7 +4,6 @@ from dedoc.common.exceptions.structure_extractor_error import StructureExtractor
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_constructors.abstract_structure_constructor import AbstractStructureConstructor
-from dedoc.structure_constructors.table_patcher import TablePatcher
 
 
 class StructureConstructorComposition(AbstractStructureConstructor):
@@ -20,7 +19,6 @@ class StructureConstructorComposition(AbstractStructureConstructor):
         """
         self.constructors = constructors
         self.default_constructor = default_constructor
-        self.table_patcher = TablePatcher()
 
     def structure_document(self, document: UnstructuredDocument, structure_type: Optional[str] = None, parameters: Optional[dict] = None) -> ParsedDocument:
         """
@@ -28,11 +26,6 @@ class StructureConstructorComposition(AbstractStructureConstructor):
         If `structure_type` is empty string or None the default constructor will be used.
         To get the information about the parameters look at the documentation of :class:`~dedoc.structure_constructors.AbstractStructureConstructor`.
         """
-        parameters = {} if parameters is None else parameters
-
-        if parameters.get("insert_table", "False").lower() == "true":
-            document = self.table_patcher.insert_table(document=document)
-
         if structure_type in self.constructors:
             return self.constructors[structure_type].structure_document(document)
 

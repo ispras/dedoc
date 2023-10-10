@@ -11,13 +11,15 @@ from dedoc.data_structures.tree_node import TreeNode
 class TestTreeNode(TestCase):
 
     def test_root_node_annotations(self) -> None:
-        lines = [LineWithMeta(line="bold text\n",
-                              metadata=LineMetadata(hierarchy_level=HierarchyLevel.create_root(), page_id=0, line_id=0),
-                              annotations=[BoldAnnotation(start=0, end=10, value="True")]),
-                 LineWithMeta(line="italic text\n",
-                              metadata=LineMetadata(hierarchy_level=HierarchyLevel.create_root(), page_id=0, line_id=1),
-                              annotations=[ItalicAnnotation(start=0, end=12, value="True")]),
-                 ]
+        lines = [
+            LineWithMeta(line="bold text\n",
+                         metadata=LineMetadata(hierarchy_level=HierarchyLevel.create_root(), page_id=0, line_id=0),
+                         annotations=[BoldAnnotation(start=0, end=10, value="True")]),
+            LineWithMeta(line="italic text\n",
+                         metadata=LineMetadata(hierarchy_level=HierarchyLevel.create_root(), page_id=0, line_id=1),
+                         annotations=[ItalicAnnotation(start=0, end=12, value="True")]),
+        ]
+
         node = TreeNode.create(lines=lines)
         node_annotations = node.get_root().annotations
         node_annotations.sort(key=lambda a: a.start)

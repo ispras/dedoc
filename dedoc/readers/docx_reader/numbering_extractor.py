@@ -329,12 +329,7 @@ class AbstractNum:
 
 
 class Num(AbstractNum):
-
-    def __init__(self,
-                 num_id: str,
-                 abstract_num_dict: Dict[str, Tag],
-                 num_dict: Dict[str, Tag],
-                 styles_extractor: StylesExtractor) -> None:
+    def __init__(self, num_id: str, abstract_num_dict: Dict[str, Tag], num_dict: Dict[str, Tag], styles_extractor: StylesExtractor) -> None:
         """
         :param num_id: numId for num element
         :param abstract_num_dict: dictionary with abstractNum BeautifulSoup trees

@@ -4,9 +4,7 @@ import os
 import sys
 from typing import Any, Optional
 
-logging.basicConfig(stream=sys.stdout,
-                    level=logging.INFO,
-                    format="%(asctime)s - %(pathname)s - %(levelname)s - %(message)s")
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(asctime)s - %(pathname)s - %(levelname)s - %(message)s")
 
 DEBUG_MODE = False
 RESOURCES_PATH = os.environ.get("RESOURCES_PATH", os.path.join(os.path.expanduser("~"), ".cache", "dedoc", "resources"))

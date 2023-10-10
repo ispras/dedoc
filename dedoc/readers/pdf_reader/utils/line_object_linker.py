@@ -2,7 +2,8 @@ import logging
 from collections import defaultdict, deque
 from typing import Dict, List, Union
 
-from dedoc.data_structures.bbox import BBox
+from dedocutils.data_structures import BBox
+
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
@@ -59,10 +60,7 @@ class LineObjectLinker:
             best_line.annotations.append(annotation)  # noqa
         return lines
 
-    def _add_lines(self,
-                   all_objects: List[Union[LineWithLocation, ScanTable, PdfImageAttachment]],
-                   lines_key: str,
-                   objects_with_line_candidate: dict) -> None:
+    def _add_lines(self, all_objects: List[Union[LineWithLocation, ScanTable, PdfImageAttachment]], lines_key: str, objects_with_line_candidate: dict) -> None:
         lines_deque = deque(maxlen=self.n_lines)
         for page_object in all_objects:
             if isinstance(page_object, LineWithLocation):

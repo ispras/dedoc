@@ -86,8 +86,9 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         file_name = "json/with_html.json"
         parameters = dict()
         parameters["with_attachments"] = True
-        parameters["html_fields"] = json.dumps([["title"], ["example"], ["another_field"], ["test"], ["lists"], ["log"], ["text"],
-                                                ["deep_key1", "deep_key2", "deep_key3"]])
+        parameters["html_fields"] = json.dumps([
+            ["title"], ["example"], ["another_field"], ["test"], ["lists"], ["log"], ["text"], ["deep_key1", "deep_key2", "deep_key3"]
+        ])
 
         result = self._send_request(file_name, parameters)
         attachments = result["attachments"]

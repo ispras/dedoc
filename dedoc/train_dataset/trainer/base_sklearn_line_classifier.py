@@ -179,8 +179,7 @@ class BaseSklearnLineClassifierTrainer:
         scores_dict["mean"] = mean(scores)
         scores_dict["scores"] = scores
         csv_path = self.__save(data=data.tolist(), path=self.dataset_dir, csv_only=True)
-        self.errors_saver.save_errors(error_cnt=error_cnt, errors_uids=list(set(errors_uids)),
-                                      save_errors_images=save_errors_images, csv_path=csv_path)
+        self.errors_saver.save_errors(error_cnt=error_cnt, errors_uids=list(set(errors_uids)), save_errors_images=save_errors_images, csv_path=csv_path)
         return scores_dict
 
     def __get_labels(self, data: List[List[LineWithLabel]]) -> List[str]:

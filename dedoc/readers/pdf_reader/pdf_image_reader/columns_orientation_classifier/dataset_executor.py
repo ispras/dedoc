@@ -33,8 +33,7 @@ class DatasetImageOrient(object):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        img_name = os.path.join(self.root_dir,
-                                self.label_loader.iloc[idx, 0])
+        img_name = os.path.join(self.root_dir, self.label_loader.iloc[idx, 0])
         image = io.imread(img_name)
         label = self.label_loader.iloc[idx, 1:]
         orientation = label["orientation"]

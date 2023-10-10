@@ -11,6 +11,12 @@ class ContentChecker(unittest.TestCase):
             tree = tree["subparagraphs"][child_id]
         return tree
 
+    def _get_text_of_row(self, row: dict) -> List[str]:
+        result = []
+        for cell in row:
+            result.append("\n".join([line["text"] for line in cell["lines"]]))
+        return result
+
     def _check_tree_sanity(self, tree: dict) -> None:
         """
         sanity check for document tree (for example that there is all required keys, annotations not duplicated etc)
@@ -85,6 +91,6 @@ class ContentChecker(unittest.TestCase):
         list_elements = structure["subparagraphs"][1]["subparagraphs"]
         self.assertEqual("1) Fisrst item with some english text", list_elements[0]["text"].strip())
         self.assertEqual("2) Second item with some even more inglish text. Let me speek from my heart", list_elements[1]["text"].strip())
-        table = content["tables"][0]
-        self.assertListEqual(["London", "The capital of Great Britain"], table["cells"][0])
-        self.assertListEqual(["Speek", "From my heart"], table["cells"][1])
+        table = content["tables"][0]["cells"]
+        self.assertListEqual(["London", "The capital of Great Britain"], self._get_text_of_row(table[0]))
+        self.assertListEqual(["Speek", "From my heart"], self._get_text_of_row(table[1]))

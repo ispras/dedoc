@@ -11,8 +11,8 @@ These are versions of the models that are used at the current moment - hashes of
 Keys are the names of repositories with models.
 """
 model_hash_dict = dict(
-    txtlayer_classifier="93b10fea2b661d7eca79381b47e5c4ebe2a22e75",
-    scan_orientation_efficient_net_b0="0160965f8a920d12afacf62b8a5a8a3b365b11ef",
+    txtlayer_classifier="94e27e184fa2876883d260e0aa58b042e6ab3e35",
+    scan_orientation_efficient_net_b0="9ea283f3d346ae4fdd82463a9f60b5369a3ffb58",
     font_classifier="db4481ad60ab050cbb42079b64f97f9e431feb07",
     paragraph_classifier="00bf989876cec171c1cf9859a6b712af6445e864",
     line_type_classifiers="2e498d1ec82b72c1a96ba0d25344b71402997013"
@@ -26,20 +26,14 @@ def download_from_hub(out_dir: str, out_name: str, repo_name: str, hub_name: str
 
 
 def download(resources_path: str) -> None:
-    download_from_hub(out_dir=resources_path,
-                      out_name="txtlayer_classifier.pkl.gz",
-                      repo_name="txtlayer_classifier",
-                      hub_name="model.pkl.gz")
+    download_from_hub(out_dir=resources_path, out_name="txtlayer_classifier.pkl.gz", repo_name="txtlayer_classifier", hub_name="model.pkl.gz")
 
     download_from_hub(out_dir=resources_path,
                       out_name="scan_orientation_efficient_net_b0.pth",
                       repo_name="scan_orientation_efficient_net_b0",
                       hub_name="model.pth")
 
-    download_from_hub(out_dir=resources_path,
-                      out_name="paragraph_classifier.pkl.gz",
-                      repo_name="paragraph_classifier",
-                      hub_name="model.pkl.gz")
+    download_from_hub(out_dir=resources_path, out_name="paragraph_classifier.pkl.gz", repo_name="paragraph_classifier", hub_name="model.pkl.gz")
 
     line_clf_resources_path = os.path.join(resources_path, "line_type_classifiers")
     for classifier_type in ("diploma", "law", "law_txt", "tz", "tz_txt"):

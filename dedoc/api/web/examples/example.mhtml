@@ -1,0 +1,129 @@
+MIME-Version: 1.0
+Content-Type: Multipart/related; boundary="boundary";type=Text/HTML
+
+--boundary
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Content-ID: <1>
+Content-Location: file:///c:/temp/3e3c73a2-ec23-476e-bc5f-15640dc10796/input/example.html
+
+<html><head><style type=3D"text/css">#current_issue_box { position: relativ=
+e; }#current_issue_box small { display: block; font-size: 12px; }#current_i=
+ssue_box .cover { display: block; }#current_issue_box h3 { margin-top: 0; m=
+argin-right: 0; margin-bottom: 10px; margin-left: 0; }#current_issue_box ul=
+ { padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; ma=
+rgin-top: 10px; margin-right: 0; margin-bottom: 0; margin-left: 0; }#curren=
+t_issue_box li { list-style-type: none !important; list-style-image: none !=
+important; line-height: 130% !important; }@media all AND (min-width: 1360px=
+) { #current_issue_box { position: absolute; top: 30px; left: -220px; width=
+: 220px; text-align: center; }#current_issue_box small { position: absolute=
+; top: -25px; left: 0; right: 0; }#current_issue_box h3 { margin-top: 15px;=
+ } }@media all AND (max-width: 1359px) { #current_issue_box { max-width: 60=
+0px; min-height: 163px; border-top-color: rgb(221, 221, 221); border-top-st=
+yle: solid; border-top-width: 1px; border-right-color: rgb(221, 221, 221); =
+border-right-style: solid; border-right-width: 1px; border-bottom-color: rg=
+b(221, 221, 221); border-bottom-style: solid; border-bottom-width: 1px; bor=
+der-left-color: rgb(221, 221, 221); border-left-style: solid; border-left-w=
+idth: 1px; border-top-left-radius: 4px; border-top-right-radius: 4px; borde=
+r-bottom-right-radius: 4px; border-bottom-left-radius: 4px; padding-top: 15=
+px; padding-right: 15px; padding-bottom: 15px; padding-left: 130px; margin-=
+top: -30px; margin-right: auto; margin-bottom: 30px; margin-left: auto; }#c=
+urrent_issue_box .cover { position: absolute; left: 15px; top: 15px; width:=
+ 100px; } }@media all AND (max-width: 767px) { #current_issue_box { display=
+: none; } }</style>
+
+
+
+    <title></title>
+</head>
+<body>
+<h1>=D0=9F=D1=80=D0=B8=D0=BC=D0=B5=D1=80 =D0=B4=D0=BE=D0=BA=D1=83=D0=BC=D0=
+=B5=D0=BD=D1=82=D0=B0</h1>
+
+<!-- TEST COMMENT -->
+<h2>=D0=93=D0=BB=D0=B0=D0=B2=D0=B0 1</h2>
+<p><strong>=D0=9A=D0=B0=D0=BA=D0=B8=D0=B5</strong> =D1=82=D0=BE <a href=3D"=
+file:///c:/">=D0=BE=D0=BF=D1=80=D0=B5=D0=B4=D0=B5=D0=BB=D0=B5=D0=BD=D0=B8=
+=D1=8F</a></p>
+
+<h3>=D0=A1=D1=82=D0=B0=D1=82=D1=8C=D1=8F 1</h3>
+<span> <strong> =D0=9E=D0=BF=D1=80=D0=B5=D0=B4=D0=B5=D0=BB=D0=B8=D0=BC =D0=
+=BE=D0=BF=D1=80=D0=B5=D0=B4=D0=B5=D0=BB=D0=B5=D0=BD=D0=B8=D1=8F </strong> <=
+/span>
+
+<p><strong>=D0=A2=D0=B5=D0=BA=D1=81=D1=82</strong> <em>=D0=B1=D1=8B=D0=B2=
+=D0=B0=D0=B5=D1=82</em> <i>=D1=80=D0=B0=D0=B7</i><u>=D0=BD=D1=8B=D1=85</u> =
+<b>=D1=81=D1=82=D0=B8=D0=BB=D0=B5=D0=B9</b></p>
+<bogusblock> BOGUS TEXT </bogusblock>
+<script> SCRIPT TEXT </script>
+<div>
+    <h3>=D0=A1=D1=82=D0=B0=D1=82=D1=8C=D1=8F 2</h3>
+    <p>=D0=94=D0=B0=D0=B4=D0=B8=D0=BC <a href=3D"cid:1#part1">=D0=BF=D0=BE=
+=D1=8F=D1=81=D0=BD=D0=B5=D0=BD=D0=B8=D1=8F</a></p>
+
+    <ul>
+        <li>1.2.1. <strong> =D0=9F=D0=BE=D1=8F=D1=81=D0=BD=D0=B8=D0=BC </st=
+rong> <em>=D0=B7=D0=B0</em> <strong> =D0=BD=D0=B5=D0=BF=D0=BE=D0=BD=D1=8F=
+=D1=82=D0=BD=D0=BE=D0=B5 </strong></li>
+        <li><strong>1.2.2.</strong> =D0=9F=D0=BE=D1=8F=D1=81=D0=BD=D0=B8=D0=
+=BC =D0=B7=D0=B0 =D0=BF=D0=BE=D0=BD=D1=8F=D1=82=D0=BD=D0=BE=D0=B5
+            <ol type=3D"a">
+                <li><a href=3D"cid:1#part1">=D1=8D=D1=82=D0=BE</a> =D0=B4=
+=D0=B0=D0=B6=D0=B5 =D0=B5=D0=B6=D1=83 =D0=BF=D0=BE=D0=BD=D1=8F=D1=82=D0=BD=
+=D0=BE</li>
+                <li>=D1=8D=D1=82=D0=BE =D0=B5=D0=B6=D1=83 =D0=BD=D0=B5 =D0=
+=BF=D0=BE=D0=BD=D1=8F=D1=82=D0=BD=D0=BE</li>
+            </ol>
+        </li>
+        <li>1.2.3.</li>
+    </ul>
+</div>
+
+<table border=3D"1">
+    <tbody><tr>
+        <td>N</td>
+        <td>=D0=A4=D0=B0=D0=BC=D0=B8=D0=BB=D0=B8=D1=8F</td>
+        <td>=D0=98=D0=BC=D1=8F</td>
+        <td>=D0=9E=D1=80=D0=B3=D0=B0=D0=BD=D0=B8=D0=B7=D0=B0=D1=86=D0=B8=D1=
+=8F</td>
+        <td>=D0=A2=D0=B5=D0=BB=D0=B5=D1=84=D0=BE=D0=BD</td>
+        <td>=D0=9F=D1=80=D0=B8=D0=BC=D0=B5=D1=87=D0=B0=D0=BD=D0=B8=D1=8F</t=
+d>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>=D0=98=D0=B2=D0=B0=D0=BD=D0=BE=D0=B2</td>
+        <td>=D0=98=D0=B2=D0=B0=D0=BD</td>
+        <td>=D0=98=D0=A1=D0=9F</td>
+        <td>8-800</td>
+        <td></td>
+    </tr>
+</tbody></table>
+
+<table border=3D"1">
+    <tbody><tr>
+        <td><strong>=D0=A4=D0=B0=D0=BC=D0=B8=D0=BB=D0=B8=D1=8F</strong></td=
+>
+        <td>=D0=98=D0=BC=D1=8F</td>
+        <td>=D0=9E=D1=82=D1=87=D0=B5=D1=81=D1=82=D0=B2=D0=BE</td>
+    </tr>
+    <tr>
+        <td>=D0=98=D0=B2=D0=B0=D0=BD=D0=BE=D0=B2</td>
+        <td>=D0=98=D0=B2=D0=B0=D0=BD</td>
+        <td>=D0=98=D0=B2=D0=B0=D0=BD=D0=BE=D0=B2=D0=B8=D1=87</td>
+    </tr>
+    <tr>
+        <td>=D0=9F=D0=B5=D1=82=D1=80=D0=BE=D0=B2</td>
+        <td>=D0=9F=D1=91=D1=82=D1=80</td>
+        <td>=D0=9F=D0=B5=D1=82=D1=80=D0=BE=D0=B2=D0=B8=D1=87</td>
+    </tr>
+    <tr>
+        <td>=D0=A1=D0=B8=D0=B4=D0=BE=D1=80=D0=BE=D0=B2</td>
+        <td>=D0=A1=D0=B8=D0=B4=D0=BE=D1=80</td>
+        <td>=D0=A1=D0=B8=D0=B4=D0=BE=D1=80=D0=BE=D0=B2=D0=B8=D1=87</td>
+    </tr>
+</tbody></table>
+
+</body></html>
+
+--boundary--

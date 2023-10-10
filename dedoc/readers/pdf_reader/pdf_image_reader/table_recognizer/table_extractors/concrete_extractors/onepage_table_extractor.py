@@ -5,7 +5,6 @@ from typing import List
 
 import numpy as np
 
-from dedoc.data_structures.bbox import BBox
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.data_classes.tables.table_tree import TableTree
@@ -15,8 +14,6 @@ from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.split_last_hor_u
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.base_table_extractor import BaseTableExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableAttributeExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.img_processing import detect_tables_by_contours
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.utils import get_cell_text_by_ocr
-from dedoc.utils.image_utils import rotate_image
 
 
 class OnePageTableExtractor(BaseTableExtractor):
@@ -36,7 +33,7 @@ class OnePageTableExtractor(BaseTableExtractor):
                                           page_number: int,
                                           language: str,
                                           orient_analysis_cells: bool,
-                                          orient_cell_angle: int,
+                                          orient_cell_angle: int,  # TODO remove
                                           table_type: str) -> List[ScanTable]:
         """
         extracts tables from input image
@@ -62,20 +59,15 @@ class OnePageTableExtractor(BaseTableExtractor):
 
         for matrix in tables:
             for location in matrix.locations:
-                location.rotate_coordinates(angle_rotate=-angle_rotate, image_shape=image.shape)
+                location.bbox.rotate_coordinates(angle_rotate=-angle_rotate, image_shape=image.shape)
+                location.rotated_angle = angle_rotate
 
         tables = self.__select_attributes_matrix_tables(tables=tables)
 
-        if orient_analysis_cells:
-            tables = self.__analyze_header_cell_with_diff_orient(tables, language, orient_cell_angle)
         return tables
 
+    """ TODO fix in the future (REMOVE)
     def __detect_diff_orient(self, cell_text: str) -> bool:
-        """
-        detects orientation of input cell by analysing of cell text
-        :param cell_text:
-        :return: True if cell is vertical and False otherwise
-        """
         # 1 - разбиваем на строки длины которых состоят хотя бы из одного символа
         parts = cell_text.split("\n")
         parts = [p for p in parts if len(p) > 0]
@@ -94,15 +86,18 @@ class OnePageTableExtractor(BaseTableExtractor):
         img_cell = self.image[cell.y_top_left: cell.y_bottom_right, cell.x_top_left: cell.x_bottom_right]
         rotated_image_cell = rotate_image(img_cell, -rotated_angle)
 
-        cell.text = get_cell_text_by_ocr(rotated_image_cell, language=language)
+        output_dict = get_text_with_bbox_from_cells(img_cell, language=language)
+        line_boxes = [
+            TextWithBBox(text=line.text, page_num=page_num, bbox=line.bbox, line_num=line_num, annotations=line.get_annotations(width, height))
+            for line_num, line in enumerate(output_dict.lines)]
+        # get_cell_text_by_ocr(rotated_image_cell, language=language)
         cell.set_rotated_angle(rotated_angle=-rotated_angle)
         return cell, rotated_image_cell
 
+
     def __analyze_header_cell_with_diff_orient(self, tables: List[ScanTable], language: str,
                                                rotated_angle: int) -> List[ScanTable]:
-        """
-        is a decorate function - detects orientation of header cells then rotate and calls OCR-method.
-        """
+
         for table in tables:
             attrs = TableAttributeExtractor.get_header_table(table.matrix_cells)
             for i, row in enumerate(attrs):
@@ -112,6 +107,7 @@ class OnePageTableExtractor(BaseTableExtractor):
                         table.matrix_cells[i][j] = rotated_cell
 
         return tables
+    """
 
     def __select_attributes_matrix_tables(self, tables: List[ScanTable]) -> List[ScanTable]:
         for matrix in tables:
@@ -130,18 +126,18 @@ class OnePageTableExtractor(BaseTableExtractor):
         matrix = []
         line = []
         for cell in table_tree.children:
-            if len(line) != 0 and abs(cell.data_bb[1] - line[-1].y_top_left) > 15:  # add eps
+            if len(line) != 0 and abs(cell.cell_box.y_top_left - line[-1].y_top_left) > 15:  # add eps
                 cpy_line = copy.deepcopy(line)
                 matrix.append(cpy_line)
                 line.clear()
-            x_top_left, y_top_left, width, height = cell.data_bb
-            cell_ = Cell(x_top_left=x_top_left,
-                         x_bottom_right=x_top_left + width,
-                         y_top_left=y_top_left,
-                         y_bottom_right=y_top_left + height,
+
+            cell_ = Cell(x_top_left=cell.cell_box.x_top_left,
+                         x_bottom_right=cell.cell_box.x_bottom_right,
+                         y_top_left=cell.cell_box.y_top_left,
+                         y_bottom_right=cell.cell_box.y_bottom_right,
                          id_con=cell.id_contours,
-                         text=cell.text,
-                         contour_coord=BBox(cell.data_bb[0], cell.data_bb[1], cell.data_bb[2], cell.data_bb[3]))
+                         lines=cell.lines,
+                         contour_coord=cell.cell_box)
             line.append(cell_)
         matrix.append(line)
 
@@ -149,9 +145,7 @@ class OnePageTableExtractor(BaseTableExtractor):
         for i in range(0, len(matrix)):
             matrix[i] = sorted(matrix[i], key=lambda cell: cell.x_top_left, reverse=False)
 
-        bbox = BBox(table_tree.data_bb[0], table_tree.data_bb[1], table_tree.data_bb[2], table_tree.data_bb[3])
-
-        matrix_table = ScanTable(matrix_cells=matrix, bbox=bbox, page_number=self.page_number, name=str(uuid.uuid1()))
+        matrix_table = ScanTable(matrix_cells=matrix, bbox=table_tree.cell_box, page_number=self.page_number, name=str(uuid.uuid4()))
 
         return matrix_table
 

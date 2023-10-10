@@ -36,6 +36,7 @@ Main classes defining a document
 .. autoclass:: dedoc.data_structures.LineWithMeta
     :show-inheritance:
     :special-members: __init__
+    :exclude-members: to_dict, get_api_dict
     :members:
     :undoc-members: line, uid, metadata, annotations
 
@@ -66,11 +67,12 @@ Main classes defining a document
     :exclude-members: to_dict
     :members:
 
-.. autoclass:: dedoc.data_structures.CellProperty
+.. autoclass:: dedoc.data_structures.CellWithMeta
     :show-inheritance:
     :special-members: __init__
     :exclude-members: to_dict
     :members:
+
 
 Helper classes
 --------------
@@ -78,23 +80,21 @@ Helper classes
 .. autoclass:: dedoc.data_structures.Serializable
     :members:
 
-.. autoclass:: dedoc.data_structures.BBox
-    :show-inheritance:
-    :special-members: __init__
-    :exclude-members: to_dict
-    :members:
+.. autoclass:: dedocutils.data_structures.BBox
+     :special-members: __init__
+     :exclude-members: to_dict
+     :members:
 
-    .. autoattribute:: x_top_left
-    .. autoattribute:: y_top_left
-    .. autoattribute:: x_bottom_right
-    .. autoattribute:: y_bottom_right
-    .. autoattribute:: width
-    .. autoattribute:: height
+     .. autoattribute:: x_top_left
+     .. autoattribute:: y_top_left
+     .. autoattribute:: x_bottom_right
+     .. autoattribute:: y_bottom_right
+     .. autoattribute:: width
+     .. autoattribute:: height
 
 .. autoclass:: dedoc.data_structures.AttachedFile
     :special-members: __init__
     :members:
-
 
 Annotations of the text lines
 -----------------------------

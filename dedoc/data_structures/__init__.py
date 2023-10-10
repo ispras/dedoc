@@ -2,8 +2,7 @@
 import dedoc.data_structures.concrete_annotations as annotations
 from .annotation import Annotation
 from .attached_file import AttachedFile
-from .bbox import BBox
-from .cell_property import CellProperty
+from .cell_with_meta import CellWithMeta
 from .concrete_annotations import *
 from .document_content import DocumentContent
 from .document_metadata import DocumentMetadata
@@ -17,5 +16,5 @@ from .table_metadata import TableMetadata
 from .tree_node import TreeNode
 from .unstructured_document import UnstructuredDocument
 
-__all__ = ['Annotation', 'AttachedFile', 'BBox', 'CellProperty', 'DocumentContent', 'DocumentMetadata', 'HierarchyLevel', 'LineMetadata',
-           'LineWithMeta', 'ParsedDocument', 'Serializable', 'Table', 'TableMetadata', 'TreeNode', 'UnstructuredDocument'] + annotations.__all__
+__all__ = ['Annotation', 'AttachedFile', 'DocumentContent', 'DocumentMetadata', 'HierarchyLevel', 'LineMetadata',
+           'LineWithMeta', 'ParsedDocument', 'Serializable', 'Table', 'TableMetadata', 'CellWithMeta', 'TreeNode', 'UnstructuredDocument', *annotations.__all__]

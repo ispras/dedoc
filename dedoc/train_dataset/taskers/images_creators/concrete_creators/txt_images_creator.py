@@ -31,8 +31,7 @@ class TxtImagesCreator(AbstractImagesCreator):
         self.background_color = (255, 255, 255)
         self.border_color = (0, 0, 0)
 
-        font_path = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "..", "resources", "Arial_Narrow.ttf"))
+        font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "..", "resources", "Arial_Narrow.ttf"))
         self.font = ImageFont.truetype(font_path, self.font_size)
 
         self.txt_reader = RawTextReader(config=config)

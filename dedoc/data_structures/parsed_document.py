@@ -58,4 +58,5 @@ class ParsedDocument(Serializable):
             if depth == 10  # TODO delete this
             else fields.List(fields.Nested(ParsedDocument.get_api_dict(api, depth=depth + 1, name="refParsedDocument" + str(depth)),
                                            description="Attachment structure",
-                                           required=False))})
+                                           required=False))
+        })

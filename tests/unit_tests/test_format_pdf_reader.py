@@ -6,11 +6,11 @@ from tempfile import TemporaryDirectory
 from typing import List
 
 import cv2
+from dedocutils.preprocessing import SkewCorrector
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
-from dedoc.readers.pdf_reader.pdf_image_reader.scan_rotator import ScanRotator
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 from tests.test_utils import get_test_config
 
@@ -18,7 +18,7 @@ from tests.test_utils import get_test_config
 class TestPDFReader(unittest.TestCase):
     checkpoint_path = get_test_config()["resources_path"]
     config = get_test_config()
-    orientation_classifier = ColumnsOrientationClassifier(on_gpu=False, checkpoint_path=checkpoint_path, delete_lines=True, config=config)
+    orientation_classifier = ColumnsOrientationClassifier(on_gpu=False, checkpoint_path=checkpoint_path, config=config)
 
     def _split_lines_on_pages(self, lines: List[LineWithMeta]) -> List[List[str]]:
         pages = set(map(lambda x: x.metadata.page_id, lines))
@@ -26,9 +26,9 @@ class TestPDFReader(unittest.TestCase):
 
         return lines_by_page
 
-    def test_scan_rotator(self) -> None:
-        scan_rotator = ScanRotator(config=get_test_config())
-        imgs_path = [f"../data/scan_rotator/rotated_{i}.jpg" for i in range(1, 5)]
+    def test_skew_corrector(self) -> None:
+        skew_corrector = SkewCorrector()
+        imgs_path = [f"../data/skew_corrector/rotated_{i}.jpg" for i in range(1, 5)]
         angles = [0.061732858955328755, -0.017535263190370427, 0.12228411148417097, 0]
 
         for i in range(len(imgs_path)):
@@ -36,19 +36,21 @@ class TestPDFReader(unittest.TestCase):
             image = cv2.imread(path)
             _, orientation = self.orientation_classifier.predict(image)
             angle_predict = self.orientation_classifier.classes[2 + orientation]
-            rotated, angle = scan_rotator.auto_rotate(image, angle_predict)
+            rotated, angle = skew_corrector.preprocess(image, {"orientation_angle": angle_predict})
+            angle = angle["rotated_angle"]
             self.assertAlmostEqual(angle, angles[i], delta=8)
 
     def test_scan_orientation(self) -> None:
-        scan_rotator = ScanRotator(config=get_test_config())
-        imgs_path = [f"../data/scanned/orient_{i}.png"for i in range(1, 5)]
-        angles = [90.0, 90.0, 270.0, 270.0]
+        skew_corrector = SkewCorrector()
+        imgs_path = [f"../data/scanned/orient_{i}.png"for i in range(1, 9)]
+        angles = [90.0, 90.0, 270.0, 270.0, 180.0, 270.0, 180.0, 270.0]
         max_delta = 10.0
         for i in range(len(imgs_path)):
             path = os.path.join(os.path.dirname(__file__), imgs_path[i])
             image = cv2.imread(path)
             _, angle_predict = self.orientation_classifier.predict(image)
-            rotated, angle = scan_rotator.auto_rotate(image, angle_predict)
+            rotated, angle = skew_corrector.preprocess(image, {"orientation_angle": angle_predict})
+            angle = angle["rotated_angle"]
             self.assertTrue(abs(angle - angles[i]) < max_delta)
 
     def test_header_footer_search(self) -> None:

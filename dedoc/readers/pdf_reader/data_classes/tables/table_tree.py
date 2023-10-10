@@ -1,10 +1,14 @@
 import logging
 from collections import namedtuple
-from typing import List
+from typing import List, Optional
 
 import cv2
+import numpy as np
+from dedocutils.data_structures import BBox
 
+from dedoc.data_structures import LineWithMeta
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
+from dedoc.utils.image_utils import crop_image_text
 
 logger = logging.getLogger("TableRecognizer.TableTree")
 
@@ -21,46 +25,45 @@ class TableTree(object):
     def __init__(self, *, config: dict) -> None:
         self.left = None
         self.right = None
-        self.data_bb = None  # [x_begin, y_begin, width, height]
+        self.cell_box: Optional[BBox] = None  # [x_begin, y_begin, width, height]
+        self.crop_text_box: Optional[BBox] = None
         self.id_contours = None
         self.parent = None
-        self.children = []  # table cells
-        self.text = ""
+        self.children: List[TableTree] = []  # table cells
+        self.lines: List[LineWithMeta] = []
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
 
-    @staticmethod
-    def set_text_into_tree(tree: "TableTree",
-                           cell_images: List[ContourCell],
-                           cur_depth: int,
-                           begin_depth: int,
-                           end_depth: int,
-                           language: str = "rus",
-                           orient_analysis_cells: bool = False,
-                           *,
-                           config: dict) -> None:
-
+    def set_text_into_tree(self, tree: "TableTree", src_image: np.ndarray, language: str = "rus", *, config: dict) -> None:
+        # get List of TableTree
+        cur_depth = 0
+        begin_depth = 2
+        end_depth = 2
         stack = [(tree, cur_depth, begin_depth, end_depth)]
         trees = []
         while len(stack) > 0:
-            tree, cur_depth, begin_depth, end_depth = stack.pop()
+            node_tree, cur_depth, begin_depth, end_depth = stack.pop()
             if begin_depth <= cur_depth <= end_depth:
-                img_cell = [pair.image for i, pair in enumerate(cell_images) if pair.id_con == tree.id_contours][0]
-                trees.append((tree, img_cell))
+                # img_cell = [pair.image for i, pair in enumerate(cell_images) if pair.id_con == tree.id_contours][0]
+                trees.append(node_tree)
                 if tree.config.get("debug_mode", False):
-                    config.get("logger", logging.getLogger()).debug(f"{tree.id_contours} : text : {tree.text}")
-            for ch in tree.children:
+                    config.get("logger", logging.getLogger()).debug(f"{tree.id_contours} : text : {tree.get_text()}")
+            for ch in node_tree.children:
                 stack.append((ch, cur_depth + 1, begin_depth, end_depth))
-        # texts = [get_cell_text_by_ocr(image, language=language) for _, image in trees]
-        images = [image for _, image in trees]
+
         cell_extractor = OCRCellExtractor(config=config)
-        if orient_analysis_cells:
-            texts = cell_extractor.get_cells_rotated(img_cells=images, language=language)
-        else:
-            texts = cell_extractor.get_cells_text(img_cells=images, language=language)
-        assert len(trees) == len(texts)
-        for text, (tree, _) in zip(texts, trees):
-            tree.text = text
+        lines_with_meta = cell_extractor.get_cells_text(page_image=src_image, tree_nodes=trees, language=language)
+        assert len(trees) == len(lines_with_meta)
+
+        for lines, tree in zip(lines_with_meta, trees):
+            tree.lines = lines
+
+    def set_crop_text_box(self, page_image: np.ndarray) -> None:
+        cell_image = BBox.crop_image_by_box(page_image, self.cell_box)
+        self.crop_text_box = crop_image_text(cell_image)
+        # make crop_text_box'coordinates relative page_image
+        self.crop_text_box.x_top_left += self.cell_box.x_top_left
+        self.crop_text_box.y_top_left += self.cell_box.y_top_left
 
     @staticmethod
     def parse_contours_to_tree(contours: List, hierarchy: List, *, config: dict) -> "TableTree":
@@ -69,19 +72,19 @@ class TableTree(object):
         if len(contours) == 0:
             return table_tree
 
-        bounding_box = [cv2.boundingRect(c) for c in contours[0]]
-        table_tree.data_bb = bounding_box[0]
+        bbox = [cv2.boundingRect(c) for c in contours[0]][0]   # [x_begin, y_begin, width, height]
+        table_tree.cell_box = BBox(x_top_left=bbox[0], y_top_left=bbox[1], width=bbox[2], height=bbox[3])
 
         table_tree = table_tree.__build_childs(table_tree, hierarchy, contours)
         return table_tree
 
     def print_tree(self, depth: int) -> None:
-        if not self.data_bb or not self.id_contours:
+        if not self.cell_box or not self.id_contours:
             return
 
         indent = "".join(["\t" for _ in range(depth)])
-        self.logger.debug(f"{indent}{self.id_contours} : coord: {self.data_bb[0]}, {self.data_bb[1]}, {self.data_bb[0] + self.data_bb[2]}, "
-                          f"{self.data_bb[1] + self.data_bb[3]}")
+        self.logger.debug(f"{indent}{self.id_contours} : coord: {self.cell_box.x_top_left}, {self.cell_box.y_top_left}, "
+                          f"{self.cell_box.width}, {self.cell_box.height}")
         for ch in self.children:
             ch.print_tree(depth + 1)
 
@@ -89,22 +92,25 @@ class TableTree(object):
         list_childs = []
         for i, h in enumerate(hierarchy[0]):
             if h[3] == cur.id_contours:
-                bounding_box = cv2.boundingRect(contours[i])  # [x_begin, y_begin, width, height]
+                bbox = cv2.boundingRect(contours[i])  # [x_begin, y_begin, width, height]
                 # Эвристика №1 на ячейку
-                if bounding_box[2] < self.config["min_w_cell"] or bounding_box[3] < self.config["min_h_cell"]:
+                if bbox[2] < self.config["min_w_cell"] or bbox[3] < self.config["min_h_cell"]:
                     if self.config.get("debug_mode", False):
                         self.logger.debug(f"Contour {i} isn't correct")
                     continue
-                t = TableTree(config=self.config)
-                t.id_contours = i
-                t.data_bb = bounding_box
-                t.parent = cur
-                list_childs.append(t)
+                tnode = TableTree(config=self.config)
+                tnode.id_contours = i
+                tnode.cell_box = BBox(x_top_left=bbox[0], y_top_left=bbox[1], width=bbox[2], height=bbox[3])
+                tnode.parent = cur
+                list_childs.append(tnode)
                 if h[2] != -1:
-                    t = TableTree(config=self.config).__build_childs(t, hierarchy, contours)
-                cur.__add_child(t)
-        cur.children = sorted(cur.children, key=lambda ch: (ch.data_bb[1], ch.data_bb[0]), reverse=False)
+                    tnode = TableTree(config=self.config).__build_childs(tnode, hierarchy, contours)
+                cur.__add_child(tnode)
+        cur.children = sorted(cur.children, key=lambda ch: (ch.cell_box.x_top_left, ch.cell_box.y_top_left), reverse=False)
         return cur
+
+    def get_text(self) -> str:
+        return "\n".join([line.line for line in self.lines])
 
     def __add_child(self, child_tree: "TableTree") -> None:
         self.children.append(child_tree)

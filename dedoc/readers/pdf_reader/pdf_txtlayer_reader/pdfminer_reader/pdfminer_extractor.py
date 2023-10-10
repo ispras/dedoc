@@ -44,10 +44,11 @@ class PdfminerExtractor(object):
         self.config = config
         self.logger = self.config.get("logger", logging.getLogger())
 
-    def extract_text_layer(self, path: str, page_number: int, is_one_column_document: bool) -> Optional[PageWithBBox]:
+    def extract_text_layer(self, path: str, page_number: int) -> Optional[PageWithBBox]:
         """
         Extract text information with metadata from pdf with help pdfminer.six
         :param path: path to pdf
+        :param page_number: number of the page to read
         :return: pages_with_bbox - page with extracted text
         """
         with open(path, "rb") as fp:
@@ -55,11 +56,11 @@ class PdfminerExtractor(object):
             for page_num, page in enumerate(pages):
                 if page_num != page_number:
                     continue
-                return self.__handle_page(page=page, page_number=page_number, path=path, is_one_column_document=is_one_column_document)
+                return self.__handle_page(page=page, page_number=page_number, path=path)
 
-    def __handle_page(self, page: PDFPage, page_number: int, path: str, is_one_column_document: bool) -> PageWithBBox:
+    def __handle_page(self, page: PDFPage, page_number: int, path: str) -> PageWithBBox:
         directory = os.path.dirname(path)
-        device, interpreter = self.__get_interpreter(is_one_column_document=is_one_column_document)
+        device, interpreter = self.__get_interpreter()
         try:
             interpreter.process_page(page)
         except Exception as e:
@@ -106,7 +107,7 @@ class PdfminerExtractor(object):
 
         attachments = images if len(images) < 10 else []
 
-        return PageWithBBox(bboxes=bboxes, image=image_page, page_num=page_number, attachments=attachments)
+        return PageWithBBox(bboxes=bboxes, image=image_page, page_num=page_number, attachments=attachments, pdf_page_height=height, pdf_page_width=width)
 
     def __extract_image(self,
                         directory: str,
@@ -139,24 +140,14 @@ class PdfminerExtractor(object):
             image_page = cv2.cvtColor(image_page, cv2.COLOR_GRAY2BGR)
         return image_page
 
-    def __get_interpreter(self, is_one_column_document: bool) -> Tuple[PDFPageAggregator, PDFPageInterpreter]:
+    def __get_interpreter(self) -> Tuple[PDFPageAggregator, PDFPageInterpreter]:
         rsrcmgr = PDFResourceManager()
-        if is_one_column_document is not None and is_one_column_document:
-            laparams = LAParams(line_margin=3.0, line_overlap=0.1, boxes_flow=0.5, word_margin=1.5, char_margin=100.0, detect_vertical=False)
-        else:
-            laparams = LAParams(line_margin=1.5, line_overlap=0.5, boxes_flow=0.5, word_margin=0.1, detect_vertical=False)
+        laparams = LAParams(line_margin=1.5, line_overlap=0.5, boxes_flow=0.5, word_margin=0.1, detect_vertical=False)  # TODO find the best parameters
         device = PDFPageAggregator(rsrcmgr, laparams=laparams)
         interpreter = PDFPageInterpreter(rsrcmgr, device)
         return device, interpreter
 
-    def get_info_layout_object(self,
-                               lobj: LTContainer,
-                               page_num: int,
-                               line_num: int,
-                               k_w: float,
-                               k_h: float,
-                               height: int,
-                               width: int) -> TextWithBBox:
+    def get_info_layout_object(self, lobj: LTContainer, page_num: int, line_num: int, k_w: float, k_h: float, height: int, width: int) -> TextWithBBox:
         # 1 - converting coordinate from pdf format into image
         bbox = create_bbox(height, k_h, k_w, lobj)
         # 2 - extract text and text annotations from current object
@@ -195,7 +186,7 @@ class PdfminerExtractor(object):
                     # duplicated previous style
                     chars_with_style.append(chars_with_style[-1])
 
-        annotations = self.__extract_words_bbox_annotation(lobj, k_w, k_h, height, width)
+        annotations = self.__extract_words_bbox_annotation(lobj, height, width)
         # 3 - extract range from chars_with_style array
         char_pointer = 0
 
@@ -206,7 +197,7 @@ class PdfminerExtractor(object):
 
         return annotations
 
-    def __extract_words_bbox_annotation(self, lobj: LTTextContainer, k_w: float, k_h: float, height: int, width: int) -> List[Annotation]:
+    def __extract_words_bbox_annotation(self, lobj: LTTextContainer, height: int, width: int) -> List[Annotation]:
         words: List[WordObj] = []
         word: WordObj = WordObj(start=0, end=0, value=LTTextContainer())
         if isinstance(lobj, LTTextLineHorizontal):
@@ -222,11 +213,13 @@ class PdfminerExtractor(object):
                         words.append(word)
                     word = WordObj(start=item + 1, end=item + 1, value=LTTextContainer())
 
-        annotations = [BBoxAnnotation(start=word.start,
-                                      end=word.end,
-                                      value=create_bbox(height=height, k_h=k_h, k_w=k_w, lobj=word.value),
-                                      page_width=width,
-                                      page_height=height) for word in words]
+        annotations = [
+            BBoxAnnotation(start=word.start,
+                           end=word.end,
+                           value=create_bbox(height=height, k_h=1.0, k_w=1.0, lobj=word.value),
+                           page_width=width,
+                           page_height=height) for word in words
+        ]
         return annotations
 
     def _get_new_weight(self) -> str:

@@ -10,11 +10,12 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 class TOCFeatureExtractor:
     end_with_num = re.compile(r"(.*[^\s.…])?[….\s]+(\d{1,3})(-\d{1,3})?$")
     window_size = 5
-    titles = ("tableofcontents", "contents", "tableofcontentspage",  # english
-              "содержание", "оглавление",  # russian
-              "tabledesmatières", "tabledesmatieres", "sommaire",  # french
-              "indice", "índice", "contenidos", "tabladecontenido"  # spanish
-              )
+    titles = (
+        "tableofcontents", "contents", "tableofcontentspage",  # english
+        "содержание", "оглавление",  # russian
+        "tabledesmatières", "tabledesmatieres", "sommaire",  # french
+        "indice", "índice", "contenidos", "tabladecontenido"  # spanish
+    )
 
     def get_toc(self, document: List[LineWithMeta]) -> List[dict]:
         """

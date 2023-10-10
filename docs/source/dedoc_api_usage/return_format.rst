@@ -58,19 +58,19 @@ The beginning of the document's tables:
 
 .. literalinclude:: ../_static/json_format_examples/basic_example.json
     :language: json
-    :lines: 320-350
+    :lines: 320-346
 
 The beginning of the document's metadata:
 
 .. literalinclude:: ../_static/json_format_examples/basic_example.json
     :language: json
-    :lines: 398-405
+    :lines: 676-684
 
 The document's attachments:
 
 .. literalinclude:: ../_static/json_format_examples/basic_example.json
     :language: json
-    :lines: 427
+    :lines: 706
 
 As we see, the `attachments` field is empty because the option
 `with_attachments` is set to `"false"` by default (see :ref:`table_parameters`).
@@ -118,7 +118,7 @@ Unlike the previous examples, in this case we have `attachments` field filled:
 
 .. literalinclude:: ../_static/json_format_examples/with_attachments.json
     :language: json
-    :lines: 427-458
+    :lines: 706-738
 
 Example with base64 attachments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -136,7 +136,7 @@ The only difference is in the attachment's metadata: attachment's content is enc
 
 .. literalinclude:: ../_static/json_format_examples/with_base64_attachments.json
     :language: json
-    :lines: 427-461
+    :lines: 706-741
 
 Example with parsed attachments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -156,25 +156,4 @@ The beginning of the document's attachments:
 
 .. literalinclude:: ../_static/json_format_examples/with_parsed_attachments.json
     :language: json
-    :lines: 427-452
-
-
-Example with inserted table
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Let's parse the example file with tables inserted in the document content:
-
-.. literalinclude:: ../_static/code_examples/dedoc_return_format.py
-    :language: python
-    :lines: 59-62
-
-The full :download:`output json file<../_static/json_format_examples/with_inserted_table.json>`
-has the same document metadata, tables and empty attachments (as in the first example).
-The difference is in the document content: it contains table's text inside.
-
-The empty nodes with type "table" and "table_row" are added as nested nodes to the document line located before the table.
-Table cells are nested nodes to the "table_row" node:
-
-.. literalinclude:: ../_static/json_format_examples/with_inserted_table.json
-    :language: json
-    :lines: 189-223
+    :lines: 706-731

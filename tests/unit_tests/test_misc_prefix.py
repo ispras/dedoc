@@ -45,11 +45,14 @@ class TestPrefix(unittest.TestCase):
                 self.assertFalse(prefix_class.is_valid(prefix), message)
 
     def test_is_predecessor_mixed_type(self) -> None:
-        mixed_prefix = [DottedPrefix("1.", 0),
-                        BracketPrefix("1)", 0),
-                        EmptyPrefix("some prefix"),
-                        LetterPrefix("a)", 0),
-                        BulletPrefix("-", 0)]
+        mixed_prefix = [
+            DottedPrefix("1.", 0),
+            BracketPrefix("1)", 0),
+            EmptyPrefix("some prefix"),
+            LetterPrefix("a)", 0),
+            BulletPrefix("-", 0)
+        ]
+
         for first in mixed_prefix:
             for second in mixed_prefix:
                 if first != second:

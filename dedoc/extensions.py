@@ -27,13 +27,18 @@ converted_extensions = Extensions(
 converted_mimes = Extensions(
     excel_like_format=["application/vnd.oasis.opendocument.spreadsheet", "application/vnd.ms-excel"],
     docx_like_format=["application/msword", "application/vnd.oasis.opendocument.text"],
-    pptx_like_format=["application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                      "application/vnd.ms-powerpoint", "application/vnd.oasis.opendocument.presentation"],
+    pptx_like_format=[
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "application/vnd.ms-powerpoint",
+        "application/vnd.oasis.opendocument.presentation"
+    ],
     archive_like_format=[],
-    image_like_format=["image/gif",
-                       "image/x-portable-pixmap", "image/x-portable-anymap", "image/x-portable-graymap",
-                       "image/x-portable-bitmap", "image/x-pcx", "image/x-pict",
-                       "application/postscript", "image/x-cmu-raster"],
+    image_like_format=[
+        "image/gif",
+        "image/x-portable-pixmap", "image/x-portable-anymap", "image/x-portable-graymap",
+        "image/x-portable-bitmap", "image/x-pcx", "image/x-pict",
+        "application/postscript", "image/x-cmu-raster"
+    ],
     pdf_like_format=["image/vnd.djvu"],
     csv_like_format=[],
     txt_like_format=["application/xml", "text/xml"]

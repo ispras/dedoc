@@ -1,5 +1,5 @@
 {
-  "version": "2023.05.26",
+  "version": "0.11.2",
   "warnings": [],
   "content": {
     "structure": {
@@ -298,7 +298,7 @@
                           "start": 0,
                           "end": 14,
                           "name": "attachment",
-                          "value": "image1.png"
+                          "value": "attach_0ba300a6-5e07-11ee-9889-0242ac120002"
                         }
                       ],
                       "metadata": {
@@ -321,87 +321,366 @@
       {
         "cells": [
           [
-            "Table header",
-            "Table header"
+            {
+              "lines": [
+                {
+                  "text": "Table header",
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "alignment",
+                      "value": "center"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
+                }
+              ],
+              "colspan": 2,
+              "rowspan": 1,
+              "invisible": false
+            },
+            {
+              "lines": [
+                {
+                  "text": "Table header",
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "alignment",
+                      "value": "center"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 1,
+              "invisible": true
+            }
           ],
           [
-            "Vertically merged cells",
-            "Text 1"
+            {
+              "lines": [
+                {
+                  "text": "Vertically merged cells",
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "alignment",
+                      "value": "left"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 2,
+              "invisible": false
+            },
+            {
+              "lines": [
+                {
+                  "text": "Text 1",
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "alignment",
+                      "value": "left"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 1,
+              "invisible": false
+            }
           ],
           [
-            "Vertically merged cells",
-            "Text 2"
+            {
+              "lines": [
+                {
+                  "text": "Vertically merged cells",
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "alignment",
+                      "value": "left"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 1,
+              "invisible": true
+            },
+            {
+              "lines": [
+                {
+                  "text": "Text 2",
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "alignment",
+                      "value": "left"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 1,
+              "invisible": false
+            }
           ],
           [
-            "Text 3",
-            "Text 4"
+            {
+              "lines": [
+                {
+                  "text": "Text 3",
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "alignment",
+                      "value": "left"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 1,
+              "invisible": false
+            },
+            {
+              "lines": [
+                {
+                  "text": "Text 4",
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "alignment",
+                      "value": "left"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
+                }
+              ],
+              "colspan": 1,
+              "rowspan": 1,
+              "invisible": false
+            }
           ]
         ],
         "metadata": {
           "uid": "3a327789721e09b3fa6fd9560f3ee263",
           "page_id": null,
-          "is_inserted": false,
-          "cell_properties": [
-            [
-              {
-                "colspan": 2,
-                "rowspan": 1,
-                "invisible": false
-              },
-              {
-                "colspan": 1,
-                "rowspan": 1,
-                "invisible": true
-              }
-            ],
-            [
-              {
-                "colspan": 1,
-                "rowspan": 2,
-                "invisible": false
-              },
-              {
-                "colspan": 1,
-                "rowspan": 1,
-                "invisible": false
-              }
-            ],
-            [
-              {
-                "colspan": 1,
-                "rowspan": 1,
-                "invisible": true
-              },
-              {
-                "colspan": 1,
-                "rowspan": 1,
-                "invisible": false
-              }
-            ],
-            [
-              {
-                "colspan": 1,
-                "rowspan": 1,
-                "invisible": false
-              },
-              {
-                "colspan": 1,
-                "rowspan": 1,
-                "invisible": false
-              }
-            ]
-          ]
+          "rotated_angle": 0.0
         }
       }
     ]
   },
   "metadata": {
-    "uid": "doc_uid_auto_5cbfdc00-0e90-11ee-8789-4549ad8e7206",
+    "uid": "doc_uid_auto_0bb4e406-5e07-11ee-9889-0242ac120002",
     "file_name": "example_return_format.docx",
+    "temporary_file_name": "1695909484_339.docx",
     "size": 21270,
-    "modified_time": 1687172368,
-    "created_time": 1687172368,
-    "access_time": 1687172368,
+    "modified_time": 1695909484,
+    "created_time": 1695909484,
+    "access_time": 1695909484,
     "file_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "document_subject": "",
     "keywords": "",
@@ -409,8 +688,8 @@
     "comments": "",
     "author": "",
     "last_modified_by": "",
-    "created_date": 1568736411,
-    "modified_date": 1686923436,
+    "created_date": 1568725611,
+    "modified_date": 1686912636,
     "last_printed_date": null,
     "other_fields": {
       "document_subject": "",
@@ -419,8 +698,8 @@
       "comments": "",
       "author": "",
       "last_modified_by": "",
-      "created_date": 1568736411,
-      "modified_date": 1686923436,
+      "created_date": 1568725611,
+      "modified_date": 1686912636,
       "last_printed_date": null
     }
   },

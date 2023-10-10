@@ -47,19 +47,19 @@ There are two ways to install and run dedoc as a web application or a library th
 
 ## Install and run dedoc using docker 
 
-You should have [`git`] (https://git-scm.com) and [`docker`](https://www.docker.com) installed for running dedoc by this method.
+You should have [`git`](https://git-scm.com) and [`docker`](https://www.docker.com) installed for running dedoc by this method.
 This method is more flexible because it doesn't depend on the operating system and other user's limitations,
 still, the docker application should be installed and configured properly.
 
 If you don't need to change the application configuration, you may use the built docker image as well.
 
 ### 1. Pull the image
-```bash
+```shell
 docker pull dedocproject/dedoc
 ```
 
 ### 2. Run the container
-```bash
+```shell
 docker run -p 1231:1231 --rm dedocproject/dedoc python3 /dedoc_root/dedoc/main.py
 ```
 
@@ -69,22 +69,22 @@ If you need to change some application settings, you may update `config.py` acco
 You can build and run image:
 
 ### 1. Clone the repository
-```bash
+```shell
 git clone https://github.com/ispras/dedoc
 ```
 
 ### 2. Go to the `dedoc` directory
-```bash
+```shell
 cd dedoc
 ```
 
 ### 3. Build the image and run the application
-```bash
+```shell
 docker-compose up --build
 ```
 
 ### 4. Run container with tests
-```bash
+```shell
 test="true" docker-compose up --build
 ```
 
@@ -99,7 +99,7 @@ there may be not enough machine's resources for its work.
 You should have `python` (`python3.8`, `python3.9` are recommended) and `pip` installed.
 
 ### 1. Install necessary packages:
-```bash
+```shell
 sudo apt-get install -y libreoffice djvulibre-bin unzip unrar
 ```
 
@@ -112,14 +112,14 @@ You can try any tutorial for this purpose or look [`here`](https://github.com/is
 to get the example of Tesseract installing for dedoc container or use next commands for building Tesseract OCR 5 from sources:
 
 #### 2.1. Install compilers and libraries required by the Tesseract OCR:
-```bash
+```shell
 sudo apt-get update
 sudo apt-get install -y automake binutils-dev build-essential ca-certificates clang g++ g++-multilib gcc-multilib libcairo2 libffi-dev \
 libgdk-pixbuf2.0-0 libglib2.0-dev libjpeg-dev libleptonica-dev libpango-1.0-0 libpango1.0-dev libpangocairo-1.0-0 libpng-dev libsm6 \
 libtesseract-dev libtool libxext6 make pkg-config poppler-utils pstotext shared-mime-info software-properties-common swig zlib1g-dev
 ```
 #### 2.2. Build Tesseract from sources:
-```bash
+```shell
 sudo add-apt-repository -y ppa:alex-p/tesseract-ocr-devel
 sudo apt-get update --allow-releaseinfo-change
 sudo apt-get install -y tesseract-ocr tesseract-ocr-rus
@@ -130,24 +130,24 @@ export TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata/
 
 ## Install the dedoc library via pip.
 
-You need torch~=1.11.0 and torchvision~=0.12.0 installed. If you already have torch and torchvision in your environment:
+You need `torch~=1.11.0` and `torchvision~=0.12.0` installed. If you already have torch and torchvision in your environment:
 
-```bash
+```shell
 pip install dedoc
 ```
 
 Or you can install dedoc with torch and torchvision included:
 
-```bash
+```shell
 pip install "dedoc[torch]"
 ```
 
 ## Install and run dedoc from sources
 
-If you want to run dedoc as a service from sources. it's possible to run dedoc locally.
-However, it isn't suitable for any operating system (Ubuntu 20+ is recommended) and
+If you want to run dedoc as a service from sources, it's possible to run dedoc locally.
+However, it is suitable not for all operating systems (`Ubuntu 20+` is recommended) and
 there may be not enough machine's resources for its work.
-You should have `python` (python3.8, python3.9 are recommended) and `pip` installed.
+You should have `python` (`python3.8`, `python3.9` are recommended) and `pip` installed.
 
 ### 1. Install necessary packages: according to instructions [install necessary packages](#1-Install-necessary-packages)
 
@@ -157,7 +157,7 @@ You should have `python` (python3.8, python3.9 are recommended) and `pip` instal
 
 Below are the instructions for installing the package `virtualenvwrapper`:
 
-```bash
+```shell
 sudo pip3 install virtualenv virtualenvwrapper
 mkdir ~/.virtualenvs
 export WORKON_HOME=~/.virtualenvs
@@ -169,7 +169,7 @@ mkvirtualenv dedoc_env
 
 ### 4. Install python's requirements and launch dedoc service on default port `1231`:
 
-```bash
+```shell
 # clone dedoc project
 git clone https://github.com/ispras/dedoc.git
 cd dedoc
@@ -183,14 +183,14 @@ python dedoc/main.py -c ./dedoc/config.py
 Now you can go to the `localhost:1231` and look at the docs and examples.
 
 ## Option: You can change the port of service:
-you need to change environment DOCREADER_PORT
+You need to change environment `DOCREADER_PORT`
 
-1. For local service launching on your_port (1166 example). [Install instruction from sources](#Install-and-run-dedoc-from-sources) and launch with environment: 
-```bash
+1. For local service launching on `your_port` (e.g. `1166`). Install ([installation instruction](#Install-and-run-dedoc-from-sources)) and launch with environment: 
+```shell
 DOCREADER_PORT=1166 python dedoc/main.py -c ./dedoc/config.py
 ```
 
-2. For service launching in docker-container you need to change port value in DOCREADER_PORT env and field 'ports' in docker-compose.yml file:
+2. For service launching in docker-container you need to change port value in `DOCREADER_PORT` env and field `ports` in `docker-compose.yml` file:
 ```yaml
     ...
     dedoc:

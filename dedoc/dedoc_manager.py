@@ -4,6 +4,7 @@ import shutil
 import tempfile
 from typing import Dict, Optional
 
+from dedoc.api.api_args import QueryParameters
 from dedoc.common.exceptions.dedoc_error import DedocError
 from dedoc.config import get_config
 from dedoc.data_structures import ParsedDocument, UnstructuredDocument
@@ -54,6 +55,8 @@ class DedocManager:
         self.attachments_handler = manager_config.get("attachments_handler", None)
         assert self.attachments_handler is not None, "Attachments handler shouldn't be None"
 
+        self.default_parameters = QueryParameters().to_dict()
+
     def parse(self, file_path: str, parameters: Optional[Dict[str, str]] = None) -> ParsedDocument:
         """
         Run the whole pipeline of the document processing.
@@ -63,7 +66,8 @@ class DedocManager:
         :param parameters: any parameters, specify how to parse file (see API parameters documentation for more details)
         :return: parsed document
         """
-        parameters = {} if parameters is None else parameters
+        parameters = self.__init_parameters(parameters)
+        self.logger.info(f"Get file {os.path.basename(file_path)} with parameters {parameters}")
 
         try:
             return self.__parse_no_error_handling(file_path=file_path, parameters=parameters)
@@ -128,6 +132,15 @@ class DedocManager:
 
             self.logger.info(f"Finish handle {file_name}")
         return parsed_document
+
+    def __init_parameters(self, parameters: Optional[dict]) -> dict:
+        parameters = {} if parameters is None else parameters
+        result_parameters = {}
+
+        for parameter_name, parameter_value in self.default_parameters.items():
+            result_parameters[parameter_name] = parameters.get(parameter_name, parameter_value)
+
+        return result_parameters
 
     def __save(self, file_path: str, classified_document: UnstructuredDocument) -> None:
         save_line_with_meta(lines=classified_document.lines, config=self.config, original_document=os.path.basename(file_path))

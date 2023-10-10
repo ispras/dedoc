@@ -15,6 +15,30 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
     def __get_annotation_names(self, annotations: List[dict]) -> List[str]:
         return [annotation["name"] for annotation in annotations]
 
+    def __extract_node_with_annotation(self, tree: dict, node_id: str, ann_name: str) -> List[dict]:
+        node_with_annotation = self._get_by_tree_path(tree["content"]["structure"], node_id)
+        return self.__filter_by_name(node_with_annotation["annotations"], ann_name)
+
+    def test_ref_tables(self) -> None:
+        result = self._send_request("example.pdf", dict(pdf_with_text_layer="true"))
+        tables_uids = [table["metadata"]["uid"] for table in result["content"]["tables"]]
+        self.assertEqual(len(tables_uids), 2)
+        ref0 = self.__extract_node_with_annotation(result, "0.2.2", "table")[0]["value"]
+        ref1 = self.__extract_node_with_annotation(result, "0.2.2.0", "table")[0]["value"]
+        self.assertEqual(ref0, tables_uids[0])
+        self.assertEqual(ref1, tables_uids[1])
+
+        params = [dict(pdf_with_text_layer="tabby"), dict(pdf_with_text_layer="false")]
+        for param in params:
+            result = self._send_request("example.pdf", param)
+            tables_uids = [table["metadata"]["uid"] for table in result["content"]["tables"]]
+            self.assertEqual(len(tables_uids), 2)
+            annotations = self.__extract_node_with_annotation(result, "0.2.2", "table")
+            ref0 = annotations[0]["value"]
+            ref1 = annotations[1]["value"]
+            self.assertEqual(ref0, tables_uids[0])
+            self.assertEqual(ref1, tables_uids[1])
+
     def test_pdf_with_text_style(self) -> None:
         file_name = "diff_styles.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="true", document_type="", need_pdf_table_analysis="false"))

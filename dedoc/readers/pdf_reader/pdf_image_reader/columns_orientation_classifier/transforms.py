@@ -4,8 +4,7 @@ import numpy as np
 from PIL import Image
 from torchvision import transforms
 
-from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import \
-    ColumnsOrientationClassifier
+from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 
 
 class ImageTransform(object):

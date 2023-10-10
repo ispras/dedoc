@@ -119,7 +119,7 @@ class JsonReader(BaseReader):
 
         hierarchy_level = HierarchyLevel(level_1=level1, level_2=level2, can_be_multiline=False, line_type=line_type_meta)
         metadata = LineMetadata(tag_hierarchy_level=hierarchy_level, page_id=0, line_id=None)
-        line = LineWithMeta(line=self.__get_text(value), metadata=metadata, annotations=[])
+        line = LineWithMeta(line=self.__get_text(value), metadata=metadata)
         return line
 
     def __is_flat(self, value: Any) -> bool:  # noqa

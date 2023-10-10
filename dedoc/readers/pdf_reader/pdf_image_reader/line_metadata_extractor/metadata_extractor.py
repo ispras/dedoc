@@ -48,14 +48,15 @@ class LineMetadataExtractor:
 
         lines = []
         for bbox in page_with_lines.bboxes:
-            lines.append(self.get_line_with_meta(bbox=bbox))
+            lines.append(LineMetadataExtractor.get_line_with_meta(bbox=bbox))
             if page_with_lines.image.ndim == 3 and page_with_lines.image.shape[2] == 3:
                 color_annotation = self.__get_color_annotation(bbox, page_with_lines.image)
                 bbox.annotations.append(color_annotation)
         self.__add_spacing_annotations(lines)
         return lines
 
-    def get_line_with_meta(self, bbox: TextWithBBox) -> LineWithLocation:
+    @staticmethod
+    def get_line_with_meta(bbox: TextWithBBox) -> LineWithLocation:
         metadata = LineMetadata(page_id=bbox.page_num, line_id=bbox.line_num)
 
         line = LineWithLocation(line=bbox.text,
@@ -125,9 +126,6 @@ class LineMetadataExtractor:
             text_with_bbox.annotations.append(IndentationAnnotation(start=0, end=len(text_with_bbox.text), value=str(indentation)))
 
         return page
-
-    def __get_line_metadata(self, bbox: TextWithBBox, page_with_lines: PageWithBBox) -> LineMetadata:
-        return LineMetadata(page_id=page_with_lines.page_num, line_id=bbox.line_num)
 
     def __get_font_size(self, bbox: TextWithBBox, image_height: int) -> int:
         """

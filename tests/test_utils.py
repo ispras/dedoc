@@ -3,7 +3,8 @@ import os
 import signal
 from typing import Any, List, Optional, Union
 
-from dedoc.data_structures.bbox import BBox
+from dedocutils.data_structures import BBox
+
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location

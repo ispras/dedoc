@@ -5,9 +5,8 @@ import PIL
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw
+from dedocutils.data_structures import BBox
 from scipy.ndimage import maximum_filter
-
-from dedoc.data_structures.bbox import BBox
 
 
 def get_highest_pixel_frequency(image: np.ndarray) -> int:
@@ -39,7 +38,8 @@ def get_bbox_from_image(image: Image, bbox: BBox, resize: Tuple[int, int] = (300
 
 def rotate_image(image: np.ndarray, angle: float, color_bound: Tuple[int, int, int] = (255, 255, 255)) -> np.ndarray:
     """
-    Rotates an image (angle in degrees) and expands image to avoid cropping
+    Rotates an image (angle in degrees) and expands image to avoid cropping (do bounds of color_bound)
+    Changes width and height of image (image.shape != rotated_image.shape)
     """
     height, width = image.shape[:2]
     image_center = (width / 2, height / 2)
@@ -58,27 +58,25 @@ def rotate_image(image: np.ndarray, angle: float, color_bound: Tuple[int, int, i
     return rotated_mat
 
 
-def crop_image_text(image: np.ndarray) -> np.ndarray:
+def crop_image_text(image: np.ndarray) -> BBox:
     """
     crop image to take text area only (crop empty space)
     @param image: original image
     @return: cropped image
     """
+    im_height, im_width = image.shape[0], image.shape[1]
     edges = cv2.Canny(image, 100, 200)
     edges = maximum_filter(edges, (10, 10))
-    x_sum = np.arange(edges.shape[0])[edges.max(axis=1) > 0]
-    y_sum = np.arange(edges.shape[1])[edges.max(axis=0) > 0]
-    if x_sum.shape[0] > 0 and y_sum.shape[0] > 0:
-        x_lower = max(0, x_sum.min() - 10)
-        x_upper = min(image.shape[0], x_sum.max() + 10)
-        y_lower = max(0, y_sum.min() - 10)
-        y_upper = min(image.shape[1], y_sum.max() + 10)
-        image_crop = image[x_lower: x_upper, y_lower: y_upper]
-        assert y_lower <= y_upper
-        assert x_lower <= x_upper
+    y_sum = np.arange(edges.shape[0])[edges.max(axis=1) > 0]
+    x_sum = np.arange(edges.shape[1])[edges.max(axis=0) > 0]
+    if y_sum.shape[0] > 0 and x_sum.shape[0] > 0:
+        y_top = max(0, y_sum.min() - 10)
+        y_bottom = min(im_height, y_sum.max() + 10)
+        x_top = max(0, x_sum.min() - 10)
+        x_bottom = min(im_width, x_sum.max() + 10)
+        return BBox(x_top, y_top, x_bottom - x_top, y_bottom - y_top)
     else:
-        image_crop = image
-    return image_crop
+        return BBox(x_top_left=0, y_top_left=0, width=im_width, height=im_height)
 
 
 def draw_rectangle(image: PIL.Image, x_top_left: int, y_top_left: int, width: int, height: int, color: Tuple[int, int, int] = (0, 0, 0)) -> np.ndarray:

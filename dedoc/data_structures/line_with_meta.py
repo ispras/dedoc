@@ -1,20 +1,24 @@
 import re
-from typing import List, Sized, Union
+from collections import OrderedDict
+from typing import List, Optional, Sized, Union
 from uuid import uuid1
+
+from flask_restx import Api, Model, fields
 
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.serializable import Serializable
 from dedoc.utils.annotation_merger import AnnotationMerger
 
 
-class LineWithMeta(Sized):
+class LineWithMeta(Sized, Serializable):
     """
     Structural unit of document - line (or paragraph) of text and its metadata.
     One LineWithMeta should not contain text from different logical parts of the document
     (for example, document title and raw text of the document should not be in the same line).
     Still the logical part of the document may be represented by more than one line (for example, document title may consist of many lines).
     """
-    def __init__(self, line: str, metadata: LineMetadata, annotations: List[Annotation], uid: str = None) -> None:
+    def __init__(self, line: str, metadata: Optional[LineMetadata] = None, annotations: Optional[List[Annotation]] = None, uid: str = None) -> None:
         """
         :param line: raw text of the document line
         :param metadata: metadata (related to the entire line, as line or page number, its hierarchy level)
@@ -23,13 +27,36 @@ class LineWithMeta(Sized):
         """
 
         self._line = line
-        assert isinstance(metadata, LineMetadata)
-        self._metadata = metadata
-        self._annotations = annotations
+        self._metadata = LineMetadata(page_id=0, line_id=None) if metadata is None else metadata
+        self._annotations = [] if annotations is None else annotations
         self._uid = str(uuid1()) if uid is None else uid
 
     def __len__(self) -> int:
-        return len(self.line)
+        return len(self._line)
+
+    @staticmethod
+    def join(lines: List["LineWithMeta"], delimiter: str = "\n") -> "LineWithMeta":
+        """
+        Join list of lines with the given delimiter, keep annotations consistent.
+        This method is similar to the python built-it join method for strings.
+
+        :param lines: list of lines to join
+        :param delimiter: delimiter to insert between lines
+        :return: merged line
+        """
+        if len(lines) == 0:
+            return LineWithMeta("")
+
+        common_line = lines[0]
+
+        for next_line in lines[1:]:
+            common_line += delimiter
+            common_line += next_line
+
+        return common_line
+
+    def __lt__(self, other: "LineWithMeta") -> bool:
+        return self.line < other.line
 
     def split(self, sep: str) -> List["LineWithMeta"]:
         """
@@ -37,6 +64,7 @@ class LineWithMeta(Sized):
         This method does not remove any text from the line.
 
         :param sep: separator for splitting
+        :return: list of split lines
         """
         if not sep:
             raise ValueError("empty separator")
@@ -126,3 +154,17 @@ class LineWithMeta(Sized):
             other_annotations.append(new_annotation)
         annotations = AnnotationMerger().merge_annotations(self.annotations + other_annotations, text=line)
         return LineWithMeta(line=line, metadata=self._metadata, annotations=annotations, uid=self.uid)
+
+    def to_dict(self) -> dict:
+        res = OrderedDict()
+        res["text"] = self._line
+        res["annotations"] = [annotation.to_dict() for annotation in self.annotations]
+
+        return res
+
+    @staticmethod
+    def get_api_dict(api: Api) -> Model:
+        return api.model("LineWithMeta", {
+            "text": fields.String(description="line's text"),
+            "annotations": fields.List(fields.Nested(Annotation.get_api_dict(api), description="Text annotations (font, size, bold, italic and etc)")),
+        })

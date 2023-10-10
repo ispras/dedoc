@@ -45,11 +45,7 @@ class _ArchiveHandler(Thread):
                     self.__handle_one_file(archive, file, parameters)
                     self.progress[uid] = f"files done\t= {i + 1} \n files_in_progress\t= {0}\n total\t= {len(archive.namelist())}"
 
-            task, _ = self.tasker.create_tasks(
-                type_of_task=parameters["type_of_task"],
-                task_size=int(parameters["task_size"]),
-                task_uid=uid
-            )
+            task, _ = self.tasker.create_tasks(type_of_task=parameters["type_of_task"], task_size=int(parameters["task_size"]), task_uid=uid)
             return task
         except Exception as e:
             self.progress[uid] = f"Fail with\n{e}"
@@ -79,13 +75,7 @@ class AsyncHandler:
         self.queue = Queue()
         self.__results = {}
         self._progress = tasker.progress_bar
-        self._handler = _ArchiveHandler(
-            queue=self.queue,
-            progress=self._progress,
-            manager=manager,
-            tasker=tasker,
-            config=config,
-            results=self.__results)
+        self._handler = _ArchiveHandler(queue=self.queue, progress=self._progress, manager=manager, tasker=tasker, config=config, results=self.__results)
         self._handler.start()
         self.tmp_dir = TemporaryDirectory()
 
