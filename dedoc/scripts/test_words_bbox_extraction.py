@@ -152,6 +152,9 @@ class TestWordExtraction(AbstractTestApiDocReader):
             image = cv2.resize(image, dsize=(bbox["page_width"], bbox["page_height"]), interpolation=cv2.INTER_CUBIC)
 
         image = self.__draw_word_annotations(image, word_annotations)
+        table0 = result["content"]["tables"][0]
+        word_annotations = self.__get_words_annotation_from_cell(table0)
+        image = self.__draw_word_annotations(image, word_annotations, angle=0)
         cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}.png"), image)
 
     def test_table_word_extraction(self):
