@@ -161,13 +161,15 @@ class PdfTabbyReader(PdfBaseReader):
                         box = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))
                         annotations.append(BBoxAnnotation(start, end, box, page_width=page_width, page_height=page_height))
 
-                    result_row.append(CellWithMeta(lines=[LineWithMeta(line=cell_text,
-                                                                       metadata=LineMetadata(page_id=page_number, line_id=0),
-                                                                       annotations=annotations)],
-                                                   colspan=cell_properties[num_row][num_col]["col_span"],
-                                                   rowspan=cell_properties[num_row][num_col]["row_span"],
-                                                   invisible=bool(cell_properties[num_row][num_col]["invisible"])
-                                                   ))
+                    result_row.append(CellWithMeta(lines=[
+                        LineWithMeta(
+                            line=cell_text,
+                            metadata=LineMetadata(page_id=page_number, line_id=0),
+                            annotations=annotations)],
+                        colspan=cell_properties[num_row][num_col]["col_span"],
+                        rowspan=cell_properties[num_row][num_col]["row_span"],
+                        invisible=bool(cell_properties[num_row][num_col]["invisible"])
+                    ))
 
                 result_cells.append(result_row)
             table_bbox = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))  # noqa TODO add table location into TableMetadata
