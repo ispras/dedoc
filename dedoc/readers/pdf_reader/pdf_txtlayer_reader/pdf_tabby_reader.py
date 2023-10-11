@@ -156,8 +156,10 @@ class PdfTabbyReader(PdfBaseReader):
                         y_top_left = int(c["y_top_left"])
                         x_bottom_right = x_top_left + int(c["width"])
                         y_bottom_right = y_top_left + int(c["height"])
+                        start = c["start"]
+                        end = c["end"]
                         box = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))
-                        annotations.append(BBoxAnnotation(0, 0, box, page_width=page_width, page_height=page_height))
+                        annotations.append(BBoxAnnotation(start, end, box, page_width=page_width, page_height=page_height))
 
                     result_row.append(CellWithMeta(lines=[LineWithMeta(line=cell_text, metadata=LineMetadata(page_id=page_number, line_id=0))],
                                                    colspan=cell_properties[num_row][num_col]["col_span"],
