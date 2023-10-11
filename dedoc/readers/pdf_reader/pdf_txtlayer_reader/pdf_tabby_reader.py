@@ -165,7 +165,8 @@ class PdfTabbyReader(PdfBaseReader):
                         LineWithMeta(
                             line=cell_text,
                             metadata=LineMetadata(page_id=page_number, line_id=0),
-                            annotations=annotations)],
+                            annotations=annotations)
+                    ],
                         colspan=cell_properties[num_row][num_col]["col_span"],
                         rowspan=cell_properties[num_row][num_col]["row_span"],
                         invisible=bool(cell_properties[num_row][num_col]["invisible"])
