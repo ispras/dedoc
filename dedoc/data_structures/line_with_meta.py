@@ -55,9 +55,6 @@ class LineWithMeta(Sized, Serializable):
 
         return common_line
 
-    def __lt__(self, other: "LineWithMeta") -> bool:
-        return self.line < other.line
-
     def split(self, sep: str) -> List["LineWithMeta"]:
         """
         Split this line into a list of lines, keep annotations consistent.
