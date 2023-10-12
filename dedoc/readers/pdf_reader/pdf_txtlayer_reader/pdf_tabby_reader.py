@@ -131,6 +131,8 @@ class PdfTabbyReader(PdfBaseReader):
         tables = []
         tables_on_image = []
         page_number = page["number"]
+        page_width = int(page["width"])
+        page_height = int(page["height"])
         for table in page["tables"]:
             x_top_left = table["x_top_left"]
             y_top_left = table["y_top_left"]
@@ -145,13 +147,32 @@ class PdfTabbyReader(PdfBaseReader):
             for num_row, row in enumerate(rows):
                 assert len(row) == len(cell_properties[num_row])
                 result_row = []
-                for num_col, cell_text in enumerate(row):
-                    result_row.append(CellWithMeta(lines=[LineWithMeta(line=cell_text, metadata=LineMetadata(page_id=page_number, line_id=0))],
-                                                   colspan=cell_properties[num_row][num_col]["col_span"],
-                                                   rowspan=cell_properties[num_row][num_col]["row_span"],
-                                                   invisible=bool(cell_properties[num_row][num_col]["invisible"])))
+                for num_col, cell in enumerate(row):
+                    annotations = []
+                    cell_text = cell["text"]
+                    cell_blocks = cell["cell_blocks"]
+                    for c in cell_blocks:
+                        x_top_left = int(c["x_top_left"])
+                        y_top_left = int(c["y_top_left"])
+                        x_bottom_right = x_top_left + int(c["width"])
+                        y_bottom_right = y_top_left + int(c["height"])
+                        start = c["start"]
+                        end = c["end"]
+                        box = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))
+                        annotations.append(BBoxAnnotation(start, end, box, page_width=page_width, page_height=page_height))
 
+                    result_row.append(CellWithMeta(lines=[
+                        LineWithMeta(
+                            line=cell_text,
+                            metadata=LineMetadata(page_id=page_number, line_id=0),
+                            annotations=annotations)
+                    ],
+                        colspan=cell_properties[num_row][num_col]["col_span"],
+                        rowspan=cell_properties[num_row][num_col]["row_span"],
+                        invisible=bool(cell_properties[num_row][num_col]["invisible"])
+                    ))
                 result_cells.append(result_row)
+
             table_bbox = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))  # noqa TODO add table location into TableMetadata
             table_name = str(uuid.uuid4())
             tables.append(Table(cells=result_cells, metadata=TableMetadata(page_id=page_number, uid=table_name)))
