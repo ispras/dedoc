@@ -131,11 +131,11 @@ class PdfTabbyReader(PdfBaseReader):
         tables = []
         tables_on_image = []
         page_number = page["number"]
+        page_width = int(page["width"])
+        page_height = int(page["height"])
+
         for table in page["tables"]:
-            x_top_left = table["x_top_left"]
-            y_top_left = table["y_top_left"]
-            x_bottom_right = x_top_left + table["width"]
-            y_bottom_right = y_top_left + table["height"]
+            table_bbox = BBox(x_top_left=table["x_top_left"], y_top_left=table["y_top_left"], width=table["width"], height=table["height"])
             order = table["order"]  # TODO add table order into TableMetadata
             rows = table["rows"]
             cell_properties = table["cell_properties"]
@@ -144,15 +144,24 @@ class PdfTabbyReader(PdfBaseReader):
             result_cells = []
             for num_row, row in enumerate(rows):
                 assert len(row) == len(cell_properties[num_row])
-                result_row = []
-                for num_col, cell_text in enumerate(row):
-                    result_row.append(CellWithMeta(lines=[LineWithMeta(line=cell_text, metadata=LineMetadata(page_id=page_number, line_id=0))],
-                                                   colspan=cell_properties[num_row][num_col]["col_span"],
-                                                   rowspan=cell_properties[num_row][num_col]["row_span"],
-                                                   invisible=bool(cell_properties[num_row][num_col]["invisible"])))
 
+                result_row = []
+                for num_col, cell in enumerate(row):
+                    annotations = []
+                    cell_blocks = cell["cell_blocks"]
+
+                    for c in cell_blocks:
+                        cell_bbox = BBox(x_top_left=int(c["x_top_left"]), y_top_left=int(c["y_top_left"]), width=int(c["width"]), height=int(c["height"]))
+                        annotations.append(BBoxAnnotation(c["start"], c["end"], cell_bbox, page_width=page_width, page_height=page_height))
+
+                    result_row.append(CellWithMeta(
+                        lines=[LineWithMeta(line=cell["text"], metadata=LineMetadata(page_id=page_number, line_id=0), annotations=annotations)],
+                        colspan=cell_properties[num_row][num_col]["col_span"],
+                        rowspan=cell_properties[num_row][num_col]["row_span"],
+                        invisible=bool(cell_properties[num_row][num_col]["invisible"])
+                    ))
                 result_cells.append(result_row)
-            table_bbox = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))  # noqa TODO add table location into TableMetadata
+
             table_name = str(uuid.uuid4())
             tables.append(Table(cells=result_cells, metadata=TableMetadata(page_id=page_number, uid=table_name)))
             tables_on_image.append(ScanTable(page_number=page_number, matrix_cells=None, bbox=table_bbox, name=table_name, order=order))
@@ -161,55 +170,38 @@ class PdfTabbyReader(PdfBaseReader):
 
     def __get_lines_with_location(self, page: dict, file_hash: str) -> List[LineWithLocation]:
         lines = []
-        page_number = page["number"]
-        page_width = int(page["width"])
-        page_height = int(page["height"])
+        page_number, page_width, page_height = page["number"], int(page["width"]), int(page["height"])
         prev_line = None
 
         for block in page["blocks"]:
             annotations = []
             order = block["order"]
             block_text = block["text"]
-            bx_top_left = int(block["x_top_left"])
-            by_top_left = int(block["y_top_left"])
-            bx_bottom_right = bx_top_left + int(block["width"])
-            by_bottom_right = by_top_left + int(block["height"])
-            indent = block["indent"]
-            spacing = block["spacing"]
             len_block = len(block_text)
-            annotations.append(IndentationAnnotation(0, len_block, str(indent)))
-            annotations.append(SpacingAnnotation(0, len_block, str(spacing)))
+            annotations.append(IndentationAnnotation(0, len_block, str(block["indent"])))
+            annotations.append(SpacingAnnotation(0, len_block, str(block["spacing"])))
 
             for annotation in block["annotations"]:
-                is_bold = annotation["is_bold"]
-                is_italic = annotation["is_italic"]
-                font_name = annotation["font_name"]
-                font_size = annotation["font_size"]
-                link = annotation["metadata"]
-                url = annotation["url"]
                 start = annotation["start"]
                 end = annotation["end"]
-                x_top_left = int(annotation["x_top_left"])
-                y_top_left = int(annotation["y_top_left"])
-                x_bottom_right = bx_top_left + int(annotation["width"])
-                y_bottom_right = by_top_left + int(annotation["height"])
-                box = BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right))
+                box = BBox(x_top_left=int(annotation["x_top_left"]), y_top_left=int(annotation["y_top_left"]),
+                           width=int(annotation["width"]), height=int(annotation["height"]))
                 annotations.append(BBoxAnnotation(start, end, box, page_width=page_width, page_height=page_height))
-                annotations.append(SizeAnnotation(start, end, str(font_size)))
-                annotations.append(StyleAnnotation(start, end, font_name))
+                annotations.append(SizeAnnotation(start, end, str(annotation["font_size"])))
+                annotations.append(StyleAnnotation(start, end, annotation["font_name"]))
 
-                if is_bold:
+                if annotation["is_bold"]:
                     annotations.append(BoldAnnotation(start, end, "True"))
 
-                if is_italic:
+                if annotation["is_italic"]:
                     annotations.append(ItalicAnnotation(start, end, "True"))
 
-                if link == "LINK":
-                    annotations.append(LinkedTextAnnotation(start, end, url))
+                if annotation["metadata"] == "LINK":
+                    annotations.append(LinkedTextAnnotation(start, end, annotation["url"]))
 
             meta = block["metadata"].lower()
             uid = f"txt_{file_hash}_{order}"
-            bbox = BBox.from_two_points((bx_top_left, by_top_left), (bx_bottom_right, by_bottom_right))
+            bbox = BBox(x_top_left=int(block["x_top_left"]), y_top_left=int(block["y_top_left"]), width=int(block["width"]), height=int(block["height"]))
             annotations.append(BBoxAnnotation(0, len_block, bbox, page_width=page_width, page_height=page_height))
 
             metadata = LineMetadata(page_id=page_number, line_id=order)

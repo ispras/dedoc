@@ -167,7 +167,6 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
         for file_name in file_names:
             result = self._send_request(file_name, data=dict())
-            table0 = result["content"]["tables"][0]
             page_angle = result["metadata"]["other_fields"]["rotated_page_angles"][0]
 
             image = cv2.imread(self._get_abs_path(file_name))
