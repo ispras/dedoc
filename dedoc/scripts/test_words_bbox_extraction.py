@@ -179,8 +179,15 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
     def test_document_image_reader(self) -> None:
         filename_to_parameters = {
-            "scanned/scan_orient_1.jpg": {},
-            "skew_corrector/rotated_2.jpg": {}
+            # "scanned/scan_orient_1.jpg": {},
+            # "skew_corrector/rotated_2.jpg": {},
+            f"plat_por/plat_por_png ({i}).png": {
+                "table_type": "split_last_column+wo_external_bounds",
+                "need_text_localization": "False",
+                "language": "rus",
+                "is_one_column_document": "true",
+                "document_orientation": "no_change"
+            } for i in range(2)
         }
         output_path = os.path.join(self.output_path, "document_pipeline_readers")
         os.makedirs(output_path, exist_ok=True)
