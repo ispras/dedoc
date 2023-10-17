@@ -115,12 +115,12 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
         self.assertIn("Keywords", self._get_by_tree_path(tree, "0.4.1.3")["text"])
         self.assertIn("Anonymizing Networks, Privacy, Tor, BitTorrent", self._get_by_tree_path(tree, "0.4.1.4")["text"])
 
-        self.assertIn("INTRODUCTION\n", self._get_by_tree_path(tree, "0.5.0.0")["text"])
+        self.assertIn("INTRODUCTION\n", self._get_by_tree_path(tree, "0.5.0")["text"])
         self.assertIn("The Tor network was designed to provide freedom\n"
                       "of speech by guaranteeing anonymous communications.\n"
                       "Whereas the cryptographic foundations of Tor, based on\n"
                       "onion-routing [3, 9, 22, 24], are known to be robust, identity",
-                      self._get_by_tree_path(tree, "0.5.0.1")["text"])
+                      self._get_by_tree_path(tree, "0.5.0.0")["text"])
 
     def test_pdf_with_2_columns_text_2(self) -> None:
         file_name = "liters_state.pdf"
