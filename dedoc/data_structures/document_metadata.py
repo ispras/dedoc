@@ -1,9 +1,6 @@
 import uuid
-from collections import OrderedDict
 
-from flask_restx import Api, Model, fields
-
-from dedoc.api.models.custom_fields import wild_any_fields
+from dedoc.api.schema.document_metadata import DocumentMetadata as ApiDocumentMetadata
 from dedoc.data_structures.serializable import Serializable
 
 
@@ -61,32 +58,11 @@ class DocumentMetadata(Serializable):
             setattr(self, key, value)
             self.other_fields[key] = value
 
-    def to_dict(self) -> dict:
-        res = OrderedDict()
-        res["uid"] = self.uid
-        res["file_name"] = self.file_name
-        res["temporary_file_name"] = self.temporary_file_name
-        res["size"] = self.size
-        res["modified_time"] = self.modified_time
-        res["created_time"] = self.created_time
-        res["access_time"] = self.access_time
-        res["file_type"] = self.file_type
+    def to_api_schema(self) -> ApiDocumentMetadata:
+        api_document_metadata = ApiDocumentMetadata(uid=self.uid, file_name=self.file_name, temporary_file_name=self.temporary_file_name, size=self.size,
+                                                    modified_time=self.modified_time, created_time=self.created_time, access_time=self.access_time,
+                                                    file_type=self.file_type, other_fields=self.other_fields)
         if self.other_fields is not None:
             for (key, value) in self.other_fields.items():
-                res[key] = value
-        res["other_fields"] = self.other_fields
-        return res
-
-    @staticmethod
-    def get_api_dict(api: Api) -> Model:
-        return api.model("DocumentMetadata", {
-            "uid": fields.String(description="unique document identifier", example="doc_uid_auto_ba73d76a-326a-11ec-8092-417272234cb0"),
-            "file_name": fields.String(description="file name", example="example.odt"),
-            "temporary_file_name": fields.String(description="file name", example="123.odt"),
-            "size": fields.Integer(description="file size in bytes", example="20060"),
-            "modified_time": fields.Integer(description="modification time of the document in the format UnixTime", example="1590579805"),
-            "created_time": fields.Integer(description="creation time of the document in the format UnixTime", example="1590579805"),
-            "access_time": fields.Integer(description="file access time in format UnixTime", example="1590579805"),
-            "file_type": fields.String(description="mime-type file", example="application/vnd.oasis.opendocument.text"),
-            "[a-z]*": wild_any_fields
-        })
+                setattr(api_document_metadata, key, value)
+        return api_document_metadata

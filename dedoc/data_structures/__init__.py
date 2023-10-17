@@ -1,4 +1,3 @@
-# noqa
 import dedoc.data_structures.concrete_annotations as annotations
 from .annotation import Annotation
 from .attached_file import AttachedFile

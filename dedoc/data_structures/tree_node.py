@@ -1,8 +1,6 @@
-from collections import OrderedDict
 from typing import List, Optional
 
-from flask_restx import Api, Model, fields
-
+from dedoc.api.schema.tree_node import TreeNode as ApiTreeNode
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
@@ -38,32 +36,11 @@ class TreeNode(Serializable):
         self.subparagraphs = subparagraphs
         self.parent = parent
 
-    def to_dict(self) -> dict:
-        res = OrderedDict()
-        res["node_id"] = self.node_id
-        res["text"] = self.text
-        res["annotations"] = [annotation.to_dict() for annotation in self.annotations]
-        res["metadata"] = self.metadata.to_dict()
-        res["subparagraphs"] = [node.to_dict() for node in self.subparagraphs]
-        return res
-
-    @staticmethod
-    def get_api_dict(api: Api, depth: int = 0, name: str = "TreeNode") -> Model:
-        return api.model(name, {
-            "node_id": fields.String(description="Document element identifier. It is unique within one tree (i.e. "
-                                                 "there will be no other such node_id in this tree, but in attachment "
-                                                 "it may occur) The identifier has the form 0.2.1 where each number "
-                                                 "means a serial number at the corresponding level of the hierarchy.",
-                                     required=True,
-                                     example="0.2.1"),
-            "text": fields.String(description="text of node", required=True, example="Закон"),
-            "annotations": fields.List(fields.Nested(Annotation.get_api_dict(api), description="Text annotations (font, size, bold, italic and etc)")),
-            "metadata": fields.Nested(LineMetadata.get_api_dict(api), skip_none=True, allow_null=False, description="Line meta information"),
-            "subparagraphs": fields.List(fields.Nested(api.model("others_TreeNode", {})), description='Node childes (with type "TreeNode") of structure tree')
-            if depth == 30  # TODO delete this
-            else fields.List(fields.Nested(TreeNode.get_api_dict(api, depth=depth + 1, name="refTreeNode" + str(depth))),
-                             description='Node childes (with type "TreeNode") of structure tree')
-        })
+    def to_api_schema(self) -> ApiTreeNode:
+        annotations = [annotation.to_api_schema() for annotation in self.annotations]
+        metadata = self.metadata.to_api_schema()
+        subparagraphs = [node.to_api_schema() for node in self.subparagraphs]
+        return ApiTreeNode(node_id=self.node_id, text=self.text, annotations=annotations, metadata=metadata, subparagraphs=subparagraphs)
 
     @staticmethod
     def create(lines: List[LineWithMeta] = None) -> "TreeNode":

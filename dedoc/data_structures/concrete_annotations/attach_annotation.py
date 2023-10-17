@@ -1,5 +1,3 @@
-from flask_restx import Api, Model, fields
-
 from dedoc.data_structures.annotation import Annotation
 
 
@@ -18,9 +16,3 @@ class AttachAnnotation(Annotation):
         :param end: end of the annotated text (usually end of the line)
         """
         super().__init__(start=start, end=end, name=AttachAnnotation.name, value=attach_uid)
-
-    @staticmethod
-    def get_api_dict(api: Api) -> Model:
-        return api.model("AttachAnnotation", {
-            "value": fields.String(description="ref to attachment", required=True, example="attach fafffa145agh")
-        })

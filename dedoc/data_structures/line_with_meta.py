@@ -1,10 +1,8 @@
 import re
-from collections import OrderedDict
 from typing import List, Optional, Sized, Union
 from uuid import uuid1
 
-from flask_restx import Api, Model, fields
-
+from dedoc.api.schema.line_with_meta import LineWithMeta as ApiLineWithMeta
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.serializable import Serializable
@@ -155,16 +153,6 @@ class LineWithMeta(Sized, Serializable):
         annotations = AnnotationMerger().merge_annotations(self.annotations + other_annotations, text=line)
         return LineWithMeta(line=line, metadata=self._metadata, annotations=annotations, uid=self.uid)
 
-    def to_dict(self) -> dict:
-        res = OrderedDict()
-        res["text"] = self._line
-        res["annotations"] = [annotation.to_dict() for annotation in self.annotations]
-
-        return res
-
-    @staticmethod
-    def get_api_dict(api: Api) -> Model:
-        return api.model("LineWithMeta", {
-            "text": fields.String(description="line's text"),
-            "annotations": fields.List(fields.Nested(Annotation.get_api_dict(api), description="Text annotations (font, size, bold, italic and etc)")),
-        })
+    def to_api_schema(self) -> ApiLineWithMeta:
+        annotations = [annotation.to_api_schema() for annotation in self.annotations]
+        return ApiLineWithMeta(text=self._line, annotations=annotations)

@@ -21,8 +21,8 @@ The instruction about :ref:`dedoc API running <dedoc_api>` may be useful.
 JSON output format
 ------------------
 
-Dedoc allows to get json representation of the class :class:`dedoc.data_structures.ParsedDocument`.
-This format is used as a return format by default or if you use `return_format="json"` in the dictionary with API parameters.
+Dedoc allows to get json representation of the class :class:`~dedoc.api.schema.ParsedDocument`.
+This format is used as a return format by default or if you use ``return_format="json"`` in the dictionary with API parameters.
 The output structure may vary depending on the other API parameters (see :ref:`table_parameters` for more details).
 
 Basic example
@@ -35,7 +35,7 @@ Let's parse the example file using default parameters:
     :lines: 9-12
 
 The full :download:`output json file<../_static/json_format_examples/basic_example.json>` contains
-serialized class :class:`dedoc.data_structures.ParsedDocument` with its content, tables, metadata and attachments.
+serialized class :class:`~dedoc.api.schema.ParsedDocument` with its content, tables, metadata and attachments.
 
 The beginning of the document's content:
 
@@ -72,8 +72,8 @@ The document's attachments:
     :language: json
     :lines: 706
 
-As we see, the `attachments` field is empty because the option
-`with_attachments` is set to `"false"` by default (see :ref:`table_parameters`).
+As we see, the ``attachments`` field is empty because the option
+``with_attachments`` is set to ``"false"`` by default (see :ref:`table_parameters`).
 
 Example of linear structure type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -105,7 +105,7 @@ All remaining document lines have the same level as well.
 Example with attachments
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Let's parse the example file using `with_attachments` parameter:
+Let's parse the example file using ``with_attachments`` parameter:
 
 .. literalinclude:: ../_static/code_examples/dedoc_return_format.py
     :language: python
@@ -114,7 +114,7 @@ Let's parse the example file using `with_attachments` parameter:
 The full :download:`output json file<../_static/json_format_examples/with_attachments.json>`
 has the same document content, tables and metadata.
 
-Unlike the previous examples, in this case we have `attachments` field filled:
+Unlike the previous examples, in this case we have ``attachments`` field filled:
 
 .. literalinclude:: ../_static/json_format_examples/with_attachments.json
     :language: json
@@ -132,7 +132,7 @@ Let's parse the example file with attachments in base64 format:
 The full :download:`output json file<../_static/json_format_examples/with_base64_attachments.json>`
 has the same document content, tables, metadata and filled attachments as the previous example output.
 
-The only difference is in the attachment's metadata: attachment's content is encoded and stored in the `"base64_encode"` field:
+The only difference is in the attachment's metadata: attachment's content is encoded and stored in the ``"base64_encode"`` field:
 
 .. literalinclude:: ../_static/json_format_examples/with_base64_attachments.json
     :language: json
@@ -149,7 +149,7 @@ Let's parse the example file with attachments and their content:
 
 The full :download:`output json file<../_static/json_format_examples/with_parsed_attachments.json>`
 has the same document content, tables and metadata.
-The `attachments` field is filled and attachments are also parsed.
+The ``attachments`` field is filled and attachments are also parsed.
 In the document example the attached image has some text on it, this text has been also parsed and saved in the attachment's content.
 
 The beginning of the document's attachments:

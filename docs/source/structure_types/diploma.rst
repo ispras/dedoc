@@ -100,7 +100,7 @@ The detailed description of each line type:
         **In pdf documents footnotes are separate nodes with footnote type,
         but in the formats without strict page separation (docx, html, etc.)
         footnote's text is stored in the annotation of the line referring to this footnote.**
-        The documentation of the class :class:`dedoc.data_structures.LinkedTextAnnotation` may be helpful.
+        The documentation of the class :class:`~dedoc.data_structures.LinkedTextAnnotation` may be helpful.
 
     * **page_id**: node containing the text with page number.
 
