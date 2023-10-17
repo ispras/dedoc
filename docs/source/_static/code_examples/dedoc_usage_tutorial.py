@@ -113,5 +113,4 @@ manager = DedocManager()
 result = manager.parse(file_path=file_path, parameters={})
 
 result  # <dedoc.data_structures.ParsedDocument>
-result.to_dict()  # OrderedDict([('version', ''), ('warnings', []), ('content', OrderedDict([('structure', OrderedDict([('node_id', '0'), ('text', ''),
-# ('annotations', []), ('metadata', OrderedDict([('page_id', 0), ('line_id', 0), ('paragraph_type', 'root'), ('other_fields', {})])), ...
+result.to_api_schema().model_dump()  # {'content': {'structure': {'node_id': '0', 'text': '', 'annotations': [], 'metadata': {'paragraph_type': 'root', ...

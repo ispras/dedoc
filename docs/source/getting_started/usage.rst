@@ -298,7 +298,7 @@ one may use manager class (see :ref:`dedoc_manager` for more details).
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
-    :lines: 112-117
+    :lines: 112-116
 
 Manager allows to run workflow (see :ref:`dedoc_workflow`) for a file of any format supported by dedoc (see :ref:`table_formats`).
 One can also make a custom ``config`` and ``manager_config`` (parameters of the manager constructor) for more flexible usage of the library.
