@@ -1,6 +1,5 @@
 import re
 from copy import deepcopy
-from collections import OrderedDict
 from typing import List, Optional, Sized, Union
 from uuid import uuid1
 
