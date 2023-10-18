@@ -1,7 +1,4 @@
-from collections import OrderedDict
-
-from flask_restx import Api, Model, fields
-
+from dedoc.api.schema.annotation import Annotation as ApiAnnotation
 from dedoc.data_structures.serializable import Serializable
 
 
@@ -40,26 +37,5 @@ class Annotation(Serializable):
     def __repr__(self) -> str:
         return f"{self.name.capitalize()}(...)"
 
-    def to_dict(self) -> dict:
-        res = OrderedDict()
-        res["start"] = self.start
-        res["end"] = self.end
-        res["name"] = self.name
-        res["value"] = self.value
-        return res
-
-    @staticmethod
-    def get_api_dict(api: Api) -> Model:
-        names = [
-            "style", "bold", "italic", "underlined", "size", "indentation", "alignment", "table",
-            "attachment", "spacing", "strike", "subscript", "superscript"
-        ]
-        return api.model("Annotation", {
-            "start": fields.Integer(description="annotation start index", required=True, example=0),
-            "end": fields.Integer(description="annotation end index", required=True, example=4),
-            "name": fields.String(description="annotation name", required=True, example="bold", enum=names),
-            "value": fields.String(description="annotation value. For example, it may be font size value for size type "
-                                               "or type of alignment for alignment type",
-                                   required=True,
-                                   example="left")
-        })
+    def to_api_schema(self) -> ApiAnnotation:
+        return ApiAnnotation(start=self.start, end=self.end, name=self.name, value=self.value)

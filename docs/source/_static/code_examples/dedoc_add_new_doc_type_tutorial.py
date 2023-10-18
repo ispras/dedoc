@@ -58,7 +58,7 @@ manager = DedocManager(config=config, manager_config=manager_config)
 result = manager.parse(file_path=file_path, parameters={"with_attachments": "true"})
 
 result  # <dedoc.data_structures.ParsedDocument>
-result.to_dict()  # OrderedDict([('version', '0.11.2'), ('warnings', []), ('content', OrderedDict([('structure', OrderedDict([('node_id', '0'), ...
+result.to_api_schema().model_dump()  # {'content': {'structure': {'node_id': '0', 'text': '', 'annotations': [], 'metadata': {'paragraph_type': 'root', ...
 
 os.remove("test_dir/The_New_Yorker_Case_Study.pdf")
 [os.remove("test_dir/" + file) for file in os.listdir("test_dir/") if file[-4] == "_"]

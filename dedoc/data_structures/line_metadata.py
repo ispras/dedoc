@@ -1,9 +1,6 @@
-from collections import OrderedDict
 from typing import Optional
 
-from flask_restx import Api, Model, fields
-
-from dedoc.api.models.custom_fields import wild_any_fields, wild_forbid_fields
+from dedoc.api.schema.line_metadata import LineMetadata as ApiLineMetadata
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.serializable import Serializable
 
@@ -50,24 +47,9 @@ class LineMetadata(Serializable):
             setattr(self, key, value)
             self.__other_fields[key] = value
 
-    def to_dict(self) -> dict:
-        res = OrderedDict()
-        res["page_id"] = self.page_id
-        res["line_id"] = self.line_id
-        res["paragraph_type"] = self.hierarchy_level.line_type if self.hierarchy_level is not None else HierarchyLevel.raw_text
-        res["other_fields"] = self.__other_fields
+    def to_api_schema(self) -> ApiLineMetadata:
+        paragraph_type = self.hierarchy_level.line_type if self.hierarchy_level is not None else HierarchyLevel.raw_text
+        api_line_metadata = ApiLineMetadata(page_id=self.page_id, line_id=self.line_id, paragraph_type=paragraph_type, other_fields=self.__other_fields)
         for key, value in self.__other_fields.items():
-            res[key] = value
-        return res
-
-    @staticmethod
-    def get_api_dict(api: Api) -> Model:
-        return api.model("LineMetadata", {
-            "paragraph_type": fields.String(description="paragraph type (header, list_item, list) and etc.", required=True, example="header"),
-            "page_id": fields.Integer(description="page number of begin paragraph", required=False, example=0),
-            "line_id": fields.Integer(description="line number of begin paragraph", required=True, example=13),
-            "_*": wild_forbid_fields,  # don't get private fields
-            "tag_hierarchy_level": wild_forbid_fields,
-            "hierarchy_level": wild_forbid_fields,
-            "[a-z]*": wild_any_fields
-        })
+            setattr(api_line_metadata, key, value)
+        return api_line_metadata
