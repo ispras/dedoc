@@ -9,6 +9,12 @@ It extracts a document’s logical structure and content, its tables, text forma
 The document’s content is represented as a tree storing headings and lists of any level. 
 Dedoc can be integrated in a document contents and structure analysis system as a separate module.
 
+## Workflow
+
+![Workflow](https://github.com/ispras/dedoc/raw/master/docs/source/_static/workflow.png)
+
+Workflow description is [`here`](https://dedoc.readthedocs.io/en/latest/?badge=latest#workflow)
+
 ## Features and advantages
 Dedoc is implemented in Python and works with semi-structured data formats (DOC/DOCX, ODT, XLS/XLSX, CSV, TXT, JSON) and none-structured data formats like images (PNG, JPG etc.), archives (ZIP, RAR etc.), PDF and HTML formats. 
 Document structure extraction is fully automatic regardless of input data type. 
@@ -52,6 +58,8 @@ This method is more flexible because it doesn't depend on the operating system a
 still, the docker application should be installed and configured properly.
 
 If you don't need to change the application configuration, you may use the built docker image as well.
+
+## Workflow
 
 ### 1. Pull the image
 ```shell
