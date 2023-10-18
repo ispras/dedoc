@@ -177,19 +177,17 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
             cv2.imwrite(os.path.join(output_path, file_name.split('/')[-1]), image)
 
-    def test_document_image_reader(self) -> None:
+    def test_document_table_split_last_column(self) -> None:
         filename_to_parameters = {
-            # "scanned/scan_orient_1.jpg": {},
-            # "skew_corrector/rotated_2.jpg": {},
             f"plat_por/plat_por_png ({i}).png": {
                 "table_type": "split_last_column+wo_external_bounds",
                 "need_text_localization": "False",
                 "language": "rus",
                 "is_one_column_document": "true",
                 "document_orientation": "no_change"
-            } for i in range(2)
+            } for i in range(9)
         }
-        output_path = os.path.join(self.output_path, "document_pipeline_readers")
+        output_path = os.path.join(self.output_path, "tables")
         os.makedirs(output_path, exist_ok=True)
         for filename, parameters in filename_to_parameters.items():
             result = self._send_request(file_name=filename, data=parameters, expected_code=200)
