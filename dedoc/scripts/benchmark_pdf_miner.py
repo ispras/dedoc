@@ -16,27 +16,28 @@ URL = "https://at.ispras.ru/owncloud/index.php/s/uImxYhliBHU8ei7/download"
 URL_GT = "https://at.ispras.ru/owncloud/index.php/s/SXsOTqxGaGO9wL9/download"
 
 if __name__ == "__main__":
-    data_dir = Path(get_config()["intermediate_data_path"]) /  "text_layer_correctness_data"
-    benchmark_data_dir = data_dir / "benchmark_pdf_miner"
+    data_dir = Path(get_config()["intermediate_data_path"]) / "benchmark_pdfminer_data"
 
-    if not os.path.isdir(benchmark_data_dir):
-        benchmark_data_dir.mkdir(parents=True)
-        wget.download(URL, str(benchmark_data_dir / "pdfs.zip"))
-        wget.download(URL_GT, str(benchmark_data_dir / "pdfs_gt.zip"))
+    if not os.path.isdir(data_dir):
+        data_dir.mkdir(parents=True)
+        pdfs_zip_path = str(data_dir / "pdfs.zip")
+        pdfs_zip_gt_path = str(data_dir / "pdfs_gt.zip")
+        wget.download(URL, pdfs_zip_path)
+        wget.download(URL_GT, pdfs_zip_gt_path)
 
-        with zipfile.ZipFile(benchmark_data_dir / "pdfs.zip", 'r') as zip_ref:
-            zip_ref.extractall(benchmark_data_dir)
-        os.remove(benchmark_data_dir / "pdfs.zip")
-        with zipfile.ZipFile(benchmark_data_dir / "pdfs_gt.zip", 'r') as zip_ref:
-            zip_ref.extractall(benchmark_data_dir)
-        os.remove(benchmark_data_dir / "pdfs_gt.zip")
+        with zipfile.ZipFile(pdfs_zip_path, 'r') as zip_ref:
+            zip_ref.extractall(data_dir)
+        os.remove(pdfs_zip_path)
+        with zipfile.ZipFile(pdfs_zip_gt_path, 'r') as zip_ref:
+            zip_ref.extractall(data_dir)
+        os.remove(pdfs_zip_gt_path)
 
-        print(f"Benchmark data downloaded to {benchmark_data_dir}")
+        print(f"Benchmark data downloaded to {data_dir}")
     else:
-        print(f"Use cached benchmark data from {benchmark_data_dir}")
+        print(f"Use cached benchmark data from {data_dir}")
 
-    pdfs_path = benchmark_data_dir / "PdfMiner params "
-    pdfs_gt_path = benchmark_data_dir / "PdfMiner Params GT"
+    pdfs_path = data_dir / "PdfMiner params"
+    pdfs_gt_path = data_dir / "PdfMiner Params GT"
 
     info = dict()
     with TemporaryDirectory() as tmpdir:
@@ -65,7 +66,7 @@ if __name__ == "__main__":
                 info[str(file)] = acc_percent
 
     output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "benchmarks"))
-    with (Path(output_dir) / "test_pdf_miner.json").open("w") as f:
+    with (Path(output_dir) / "benchmark_pdf_miner.json").open("w") as f:
         json.dump(info, f, ensure_ascii=False, indent=2)
 
     print(f"save result in {output_dir}")
