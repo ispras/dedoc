@@ -200,11 +200,11 @@ the metadata extractor can extract metadata from the given file:
     :language: python
     :lines: 78
 
-To extract metadata, one can add them to the document using :meth:`~dedoc.metadata_extractors.DocxMetadataExtractor.add_metadata` method.
+To extract metadata, one can add them to the document using :meth:`~dedoc.metadata_extractors.DocxMetadataExtractor.extract_metadata` method.
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
-    :lines: 79-83
+    :lines: 77-83
 
 As we see, the attribute ``metadata`` has been filled with some metadata fields.
 The list of common fields for any metadata extractor along with the specific fields

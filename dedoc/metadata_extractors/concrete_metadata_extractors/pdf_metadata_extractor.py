@@ -68,7 +68,7 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
                          other_fields: Optional[dict] = None) -> Dict[str]:
         """
         Add the predefined list of metadata for the pdf documents.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` documentation to get the information about parameters.
         """
         result = super().extract_metadata(directory=directory, filename=filename, converted_filename=converted_filename,
                                       original_filename=original_filename, parameters=parameters, other_fields=other_fields)
