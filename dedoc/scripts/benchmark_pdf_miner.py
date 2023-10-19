@@ -36,7 +36,7 @@ if __name__ == "__main__":
     else:
         print(f"Use cached benchmark data from {data_dir}")
 
-    pdfs_path = data_dir / "PdfMiner params"
+    pdfs_path = data_dir / "PdfMiner Params"
     pdfs_gt_path = data_dir / "PdfMiner Params GT"
 
     info = dict()
