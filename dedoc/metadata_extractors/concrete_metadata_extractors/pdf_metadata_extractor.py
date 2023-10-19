@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Optional
+from typing import Optional, Dict
 
 from PyPDF2 import PdfFileReader
 from PyPDF2.utils import PdfReadError
@@ -47,7 +47,6 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
         self.logger = config.get("logger", logging.getLogger())
 
     def can_extract(self,
-                    document: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,
@@ -60,24 +59,23 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
         """
         return filename.lower().endswith(".pdf")
 
-    def add_metadata(self,
-                     document: UnstructuredDocument,
-                     directory: str,
-                     filename: str,
-                     converted_filename: str,
-                     original_filename: str,
-                     parameters: dict = None,
-                     other_fields: Optional[dict] = None) -> UnstructuredDocument:
+    def extract_metadata(self,
+                         directory: str,
+                         filename: str,
+                         converted_filename: str,
+                         original_filename: str,
+                         parameters: dict = None,
+                         other_fields: Optional[dict] = None) -> Dict[str]:
         """
         Add the predefined list of metadata for the pdf documents.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
         """
-        result = super().add_metadata(document=document, directory=directory, filename=filename, converted_filename=converted_filename,
+        result = super().extract_metadata(directory=directory, filename=filename, converted_filename=converted_filename,
                                       original_filename=original_filename, parameters=parameters, other_fields=other_fields)
         path = os.path.join(directory, filename)
         pdf_fields = self._get_pdf_info(path)
         if len(pdf_fields) > 0:
-            result.metadata["other_fields"] = {**result.metadata.get("other_fields", {}), **pdf_fields}
+            result["other_fields"] = {**result.get("other_fields", {}), **pdf_fields}
         return result
 
     def _get_pdf_info(self, path: str) -> dict:

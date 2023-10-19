@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Dict
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 
@@ -10,7 +10,6 @@ class AbstractMetadataExtractor(ABC):
     """
     @abstractmethod
     def can_extract(self,
-                    document: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,
@@ -19,23 +18,21 @@ class AbstractMetadataExtractor(ABC):
                     other_fields: Optional[dict] = None) -> bool:
         """
         Check if this extractor can handle the given file. Return True if the extractor can handle it and False otherwise.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` documentation to get the information about parameters.
         """
         pass
 
     @abstractmethod
-    def add_metadata(self,
-                     document: UnstructuredDocument,
+    def extract_metadata(self,
                      directory: str,
                      filename: str,
                      converted_filename: str,
                      original_filename: str,
                      parameters: Optional[dict] = None,
-                     other_fields: Optional[dict] = None) -> UnstructuredDocument:
+                     other_fields: Optional[dict] = None) -> Dict[str]:
         """
-        Add metadata to the document if possible, i.e. method :meth:`can_extract` returned True.
+        Extract metadata from file if possible, i.e. method :meth:`can_extract` returned True.
 
-        :type document: document content that has been received from some of the readers
         :type directory: path to the directory where the original and converted files are located
         :type filename: name of the file after renaming (for example 23141.doc). \
         The file gets a new name during processing by the dedoc manager (if used)
