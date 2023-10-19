@@ -95,11 +95,10 @@ class AttachmentsHandler:
             attachment.tmp_file_path = new_path
 
     def __get_empty_document(self, document_parser: "DedocManager", attachment: AttachedFile, parameters: dict) -> ParsedDocument:  # noqa
-        unstructured_document = UnstructuredDocument(lines=[], tables=[], attachments=[])
         attachment_dir, attachment_name = os.path.split(attachment.get_filename_in_path())
-        unstructured_document = document_parser.document_metadata_extractor.add_metadata(document=unstructured_document, directory=attachment_dir,
+        metadata = document_parser.document_metadata_extractor.extract_metadata(directory=attachment_dir,
                                                                                          filename=attachment_name, converted_filename=attachment_name,
                                                                                          original_filename=attachment.get_original_filename(),
                                                                                          parameters=parameters)
-        metadata = DocumentMetadata(**unstructured_document.metadata)
+        metadata = DocumentMetadata(**metadata)
         return ParsedDocument(content=get_empty_content(), metadata=metadata)
