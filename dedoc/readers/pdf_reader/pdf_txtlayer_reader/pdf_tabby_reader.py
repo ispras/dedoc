@@ -199,10 +199,12 @@ class PdfTabbyReader(PdfBaseReader):
                 if annotation["metadata"] == "LINK":
                     annotations.append(LinkedTextAnnotation(start, end, annotation["url"]))
 
+            bbox = BBox(x_top_left=int(block["x_top_left"]), y_top_left=int(block["y_top_left"]), width=int(block["width"]), height=int(block["height"]))
+            if self.config.get("labeling_mode", False):
+                annotations.append(BBoxAnnotation(0, len_block, bbox, page_width=page_width, page_height=page_height))
+
             meta = block["metadata"].lower()
             uid = f"txt_{file_hash}_{order}"
-            bbox = BBox(x_top_left=int(block["x_top_left"]), y_top_left=int(block["y_top_left"]), width=int(block["width"]), height=int(block["height"]))
-            annotations.append(BBoxAnnotation(0, len_block, bbox, page_width=page_width, page_height=page_height))
 
             metadata = LineMetadata(page_id=page_number, line_id=order)
             line_with_location = LineWithLocation(line=block_text,
