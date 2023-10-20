@@ -13,7 +13,7 @@ Dedoc can be integrated in a document contents and structure analysis system as 
 
 ![Workflow](https://github.com/ispras/dedoc/raw/master/docs/source/_static/workflow.png)
 
-Workflow description is [`here`](https://dedoc.readthedocs.io/en/latest/?badge=latest#workflow)
+Workflow description is given [`here`](https://dedoc.readthedocs.io/en/latest/?badge=latest#workflow)
 
 ## Features and advantages
 Dedoc is implemented in Python and works with semi-structured data formats (DOC/DOCX, ODT, XLS/XLSX, CSV, TXT, JSON) and none-structured data formats like images (PNG, JPG etc.), archives (ZIP, RAR etc.), PDF and HTML formats. 
@@ -59,7 +59,7 @@ still, the docker application should be installed and configured properly.
 
 If you don't need to change the application configuration, you may use the built docker image as well.
 
-## Workflow
+## Work with dedoc as service
 
 ### 1. Pull the image
 ```shell
