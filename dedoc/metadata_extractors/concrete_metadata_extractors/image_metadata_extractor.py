@@ -72,7 +72,7 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
                      converted_filename: str,
                      original_filename: str,
                      parameters: dict = None,
-                     other_fields: Optional[dict] = None) -> UnstructuredDocument:
+                     other_fields: Optional[dict] = None) -> dict:
         """
         Add the predefined list of metadata for images.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` documentation to get the information about parameters.

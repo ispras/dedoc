@@ -22,7 +22,7 @@ class MetadataExtractorComposition:
                          converted_filename: str,
                          original_filename: str,
                          parameters: Optional[dict] = None,
-                         other_fields: Optional[dict] = None) -> Dict[str]:
+                         other_fields: Optional[dict] = None) -> dict:
         """
         Add metadata to the document using one of the extractors if suitable extractor was found.
         Look to the method :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` of the class

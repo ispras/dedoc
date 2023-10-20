@@ -29,7 +29,7 @@ class AbstractMetadataExtractor(ABC):
                      converted_filename: str,
                      original_filename: str,
                      parameters: Optional[dict] = None,
-                     other_fields: Optional[dict] = None) -> Dict[str]:
+                     other_fields: Optional[dict] = None) -> dict:
         """
         Extract metadata from file if possible, i.e. method :meth:`can_extract` returned True.
 

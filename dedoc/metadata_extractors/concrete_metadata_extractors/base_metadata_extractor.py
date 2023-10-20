@@ -40,7 +40,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
                          converted_filename: str,
                          original_filename: str,
                          parameters: Optional[dict] = None,
-                         other_fields: Optional[dict] = None) -> Dict[str]:
+                         other_fields: Optional[dict] = None) -> dict:
         """
         Gets the basic meta-information about the file.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` documentation to get the information about parameters.
