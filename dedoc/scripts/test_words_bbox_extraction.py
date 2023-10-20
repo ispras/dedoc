@@ -171,6 +171,13 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
             image = cv2.imread(self._get_abs_path(file_name))
             image = rotate_image(image, page_angle)
+
+            # draw boxes of content's words
+            structure = result["content"]["structure"]
+            word_annotations = self.__get_words_annotation(structure)
+            image = self.__draw_word_annotations(image, word_annotations)
+
+            # draw boxes of table's words
             tables = result["content"]["tables"]
             if len(tables) > 0:
                 image = self.__draw_tables_words(tables, image)
