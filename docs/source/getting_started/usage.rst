@@ -204,7 +204,7 @@ To extract metadata, one can add them to the document using :meth:`~dedoc.metada
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
-    :lines: 77-83
+    :lines: 79-83
 
 As we see, the attribute ``metadata`` has been filled with some metadata fields.
 The list of common fields for any metadata extractor along with the specific fields

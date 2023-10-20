@@ -24,7 +24,7 @@ class MetadataExtractorComposition:
                          parameters: Optional[dict] = None,
                          other_fields: Optional[dict] = None) -> dict:
         """
-        Add metadata to the document using one of the extractors if suitable extractor was found.
+        Extract metadata using one of the extractors if suitable extractor was found.
         Look to the method :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` of the class
         :class:`~dedoc.metadata_extractors.AbstractMetadataExtractor` documentation to get the information about method's parameters.
         """

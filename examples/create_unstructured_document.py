@@ -58,8 +58,5 @@ unstructured_document = UnstructuredDocument(tables=[table], lines=[line1], atta
 # HierarchyLevel(1, 1) for 1.
 # HierarchyLevel(1, 2) for 1.1.
 # HierarchyLevel(1, 4) for 1.2.1.1. and so on
-metadata = BaseMetadataExtractor().extract_metadata(directory="./",
-                                                    filename="example.docx",
-                                                    converted_filename="example.doc",
-                                                    original_filename="example.docx")
+metadata = BaseMetadataExtractor().extract_metadata(directory="./", filename="example.docx", converted_filename="example.doc", original_filename="example.docx")
 unstructured_document.metadata = metadata

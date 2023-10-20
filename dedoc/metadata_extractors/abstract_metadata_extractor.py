@@ -31,13 +31,13 @@ class AbstractMetadataExtractor(ABC):
         """
         Extract metadata from file if possible, i.e. method :meth:`can_extract` returned True.
 
-        :type directory: path to the directory where the original and converted files are located
-        :type filename: name of the file after renaming (for example 23141.doc). \
+        :param directory: path to the directory where the original and converted files are located
+        :param filename: name of the file after renaming (for example 23141.doc). \
         The file gets a new name during processing by the dedoc manager (if used)
-        :type converted_filename: name of the file after renaming and conversion (for example 23141.docx)
-        :type original_filename: name of the file before renaming
-        :type parameters: additional parameters for document parsing
-        :type other_fields: other fields that should be added to the document's metadata
-        :return: document content with added metadata attribute (dict with information about the document)
+        :param converted_filename: name of the file after renaming and conversion (for example 23141.docx)
+        :param original_filename: name of the file before renaming
+        :param parameters: additional parameters for document parsing
+        :param other_fields: other fields that should be added to the document's metadata
+        :return: dict with metadata information about the document
         """
         pass
