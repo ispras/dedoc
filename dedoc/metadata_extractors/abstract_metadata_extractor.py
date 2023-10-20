@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Dict
-
-from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from typing import Optional
 
 
 class AbstractMetadataExtractor(ABC):
@@ -24,12 +22,12 @@ class AbstractMetadataExtractor(ABC):
 
     @abstractmethod
     def extract_metadata(self,
-                     directory: str,
-                     filename: str,
-                     converted_filename: str,
-                     original_filename: str,
-                     parameters: Optional[dict] = None,
-                     other_fields: Optional[dict] = None) -> dict:
+                         directory: str,
+                         filename: str,
+                         converted_filename: str,
+                         original_filename: str,
+                         parameters: Optional[dict] = None,
+                         other_fields: Optional[dict] = None) -> dict:
         """
         Extract metadata from file if possible, i.e. method :meth:`can_extract` returned True.
 

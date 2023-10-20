@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 

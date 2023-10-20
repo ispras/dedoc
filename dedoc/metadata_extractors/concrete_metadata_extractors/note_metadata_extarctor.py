@@ -1,9 +1,8 @@
 import os
 import pickle
-from typing import Optional, Dict
+from typing import Optional
 
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
-from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 

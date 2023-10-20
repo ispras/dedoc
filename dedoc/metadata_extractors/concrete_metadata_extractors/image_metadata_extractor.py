@@ -7,7 +7,6 @@ import piexif
 from PIL import ExifTags, Image
 from dateutil import parser
 
-from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
@@ -67,12 +66,12 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
         return filename.lower().endswith((".png", ".jpg", ".jpeg"))
 
     def extract_metadata(self,
-                     directory: str,
-                     filename: str,
-                     converted_filename: str,
-                     original_filename: str,
-                     parameters: dict = None,
-                     other_fields: Optional[dict] = None) -> dict:
+                         directory: str,
+                         filename: str,
+                         converted_filename: str,
+                         original_filename: str,
+                         parameters: dict = None,
+                         other_fields: Optional[dict] = None) -> dict:
         """
         Add the predefined list of metadata for images.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` documentation to get the information about parameters.

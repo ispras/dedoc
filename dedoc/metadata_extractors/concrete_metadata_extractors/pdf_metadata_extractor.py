@@ -1,11 +1,10 @@
 import logging
 import os
-from typing import Optional, Dict
+from typing import Optional
 
 from PyPDF2 import PdfFileReader
 from PyPDF2.utils import PdfReadError
 
-from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.utils.utils import convert_datetime
 
@@ -71,7 +70,7 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` documentation to get the information about parameters.
         """
         result = super().extract_metadata(directory=directory, filename=filename, converted_filename=converted_filename,
-                                      original_filename=original_filename, parameters=parameters, other_fields=other_fields)
+                                          original_filename=original_filename, parameters=parameters, other_fields=other_fields)
         path = os.path.join(directory, filename)
         pdf_fields = self._get_pdf_info(path)
         if len(pdf_fields) > 0:

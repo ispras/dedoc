@@ -1,8 +1,7 @@
 import os
 from base64 import b64encode
-from typing import Optional, Dict
+from typing import Optional
 
-from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 from dedoc.utils.utils import get_file_mime_type
 

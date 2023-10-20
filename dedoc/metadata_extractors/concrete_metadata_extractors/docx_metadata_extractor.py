@@ -1,11 +1,10 @@
 import os
 from datetime import datetime
-from typing import Optional, Dict
+from typing import Optional
 
 import docx
 from docx.opc.exceptions import PackageNotFoundError
 
-from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
