@@ -1,4 +1,5 @@
 import re
+from copy import deepcopy
 from typing import List, Optional, Sized, Union
 from uuid import uuid1
 
@@ -45,7 +46,7 @@ class LineWithMeta(Sized, Serializable):
         if len(lines) == 0:
             return LineWithMeta("")
 
-        common_line = lines[0]
+        common_line = deepcopy(lines[0])
 
         for next_line in lines[1:]:
             common_line += delimiter

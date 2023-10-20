@@ -158,9 +158,9 @@ class OCRCellExtractor:
         return LineWithMeta(line=text, metadata=LineMetadata(page_id=0, line_id=None), annotations=annotations)
 
     @staticmethod
-    def upscale(image: Optional[np.ndarray], padding_px: int = 40) -> Optional[np.ndarray]:
+    def upscale(image: Optional[np.ndarray], padding_px: int = 40) -> Tuple[Optional[np.ndarray], int]:
         if image is None or sum(image.shape) < 5:
-            return image
+            return image, 0
 
         color_backgr = get_highest_pixel_frequency(image)
 
@@ -170,4 +170,5 @@ class OCRCellExtractor:
         else:
             bigger_cell = np.full((image.shape[0] + padding_px, image.shape[1] + padding_px, 3), color_backgr)
             bigger_cell[padding_px // 2:-padding_px // 2, padding_px // 2:-padding_px // 2, :] = image
-        return bigger_cell
+
+        return bigger_cell, padding_px // 2
