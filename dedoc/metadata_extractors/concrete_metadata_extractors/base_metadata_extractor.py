@@ -2,7 +2,6 @@ import os
 from base64 import b64encode
 from typing import Optional
 
-from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 from dedoc.utils.utils import get_file_mime_type
 
@@ -22,7 +21,6 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
     """
 
     def can_extract(self,
-                    document: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,
@@ -35,17 +33,16 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         """
         return True
 
-    def add_metadata(self,
-                     document: UnstructuredDocument,
-                     directory: str,
-                     filename: str,
-                     converted_filename: str,
-                     original_filename: str,
-                     parameters: Optional[dict] = None,
-                     other_fields: Optional[dict] = None) -> UnstructuredDocument:
+    def extract_metadata(self,
+                         directory: str,
+                         filename: str,
+                         converted_filename: str,
+                         original_filename: str,
+                         parameters: Optional[dict] = None,
+                         other_fields: Optional[dict] = None) -> dict:
         """
         Gets the basic meta-information about the file.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` documentation to get the information about parameters.
         """
         parameters = {} if parameters is None else parameters
         meta_info = self._get_base_meta_information(directory, filename, original_filename)
@@ -59,8 +56,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
 
         if other_fields is not None and len(other_fields) > 0:
             meta_info["other_fields"] = other_fields
-        document.metadata = meta_info
-        return document
+        return meta_info
 
     @staticmethod
     def _get_base_meta_information(directory: str, filename: str, name_actual: str) -> dict:

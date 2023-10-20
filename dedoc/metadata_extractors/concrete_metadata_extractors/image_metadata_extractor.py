@@ -7,7 +7,6 @@ import piexif
 from PIL import ExifTags, Image
 from dateutil import parser
 
-from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
@@ -54,7 +53,6 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
         }
 
     def can_extract(self,
-                    document: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,
@@ -67,25 +65,24 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
         """
         return filename.lower().endswith((".png", ".jpg", ".jpeg"))
 
-    def add_metadata(self,
-                     document: UnstructuredDocument,
-                     directory: str,
-                     filename: str,
-                     converted_filename: str,
-                     original_filename: str,
-                     parameters: dict = None,
-                     other_fields: Optional[dict] = None) -> UnstructuredDocument:
+    def extract_metadata(self,
+                         directory: str,
+                         filename: str,
+                         converted_filename: str,
+                         original_filename: str,
+                         parameters: dict = None,
+                         other_fields: Optional[dict] = None) -> dict:
         """
         Add the predefined list of metadata for images.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` documentation to get the information about parameters.
         """
-        result = super().add_metadata(document=document, directory=directory, filename=filename, converted_filename=converted_filename,
-                                      original_filename=original_filename, parameters=parameters, other_fields=other_fields)
+        result = super().extract_metadata(directory=directory, filename=filename, converted_filename=converted_filename,
+                                          original_filename=original_filename, parameters=parameters, other_fields=other_fields)
 
         path = os.path.join(directory, filename)
         exif_fields = self._get_exif(path)
         if len(exif_fields) > 0:
-            result.metadata["other_fields"] = {**result.metadata.get("other_fields", {}), **exif_fields}
+            result["other_fields"] = {**result.get("other_fields", {}), **exif_fields}
         return result
 
     def __encode_exif(self, exif: Union[str, bytes]) -> Optional[str]:
