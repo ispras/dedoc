@@ -16,7 +16,7 @@ class AbstractConverter(ABC):
         """
         :param config: configuration of the converter, e.g. logger for logging
         """
-        self.timeout = 10
+        self.timeout = 60
         self.period_checking = 0.05
         self.config = config
         self.logger = config.get("logger", logging.getLogger())

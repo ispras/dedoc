@@ -12,7 +12,6 @@ class PDFConverter(AbstractConverter):
     """
     def __init__(self, *, config: dict) -> None:
         super().__init__(config=config)
-        self.timeout = 60
 
     def can_convert(self, extension: str, mime: str, parameters: Optional[dict] = None) -> bool:
         """
