@@ -1,13 +1,14 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Extra, Field
 
 
 class DocumentMetadata(BaseModel):
     """
     Document metadata like its name, size, author, etc.
     """
-    model_config = ConfigDict(extra="allow")
+    class Config:
+        extra = Extra.allow
 
     uid: str = Field(description="Document unique identifier (useful for attached files)", example="doc_uid_auto_ba73d76a-326a-11ec-8092-417272234cb0")
     file_name: str = Field(description="Original document name before rename and conversion", example="example.odt")
