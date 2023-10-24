@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v1.1.0 (2023-10-24)
+-------------------
+Release note: `v1.1.0 <https://github.com/ispras/dedoc/releases/tag/v1.1.0>`_
+
+* Add `BBoxAnnotation` to table cells for `PdfTabbyReader`.
+* Fix swagger, add api schema classes, remove `to_dict` method from `ParsedDocument`.
+* Improve parsing PDF by `PdfTxtlayerReader`, add benchmarks.
+* Fix `BBoxAnnotation` extraction for tables in `PdfImageReader` using `table_type=split_last_column` parameter.
+* Change base method of metadata extractors, rename it to `extract_metadata`.
+* Unify `BBoxAnnotation` extraction for all PDF readers - return only words bboxes.
+* Increase timeout value for all converters.
+
 v1.0 (2023-10-10)
 -----------------
 Release note: `v1.0 <https://github.com/ispras/dedoc/releases/tag/v1.0>`_
