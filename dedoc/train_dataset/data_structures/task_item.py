@@ -1,10 +1,8 @@
 from collections import OrderedDict
 from typing import List, Optional
 
-from dedoc.data_structures.serializable import Serializable
 
-
-class TaskItem(Serializable):
+class TaskItem:
 
     def __init__(self, task_id: int, task_path: str, data: any, labeled: Optional[List[str]], additional_info: str = "", default_label: str = None) -> None:
         """
@@ -22,7 +20,7 @@ class TaskItem(Serializable):
         self.additional_info = additional_info
         self.default_label = default_label
 
-    def to_dict(self, old_version: bool = False) -> dict:
+    def to_dict(self) -> dict:
         result = OrderedDict()
         result["id"] = self.task_id
         result["task_path"] = self.task_path

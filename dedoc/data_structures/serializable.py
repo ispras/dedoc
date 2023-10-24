@@ -1,16 +1,17 @@
 from abc import ABC, abstractmethod
 
+from pydantic import BaseModel
+
 
 class Serializable(ABC):
     """
-    Base class for the serializable objects which we need convert to dict.
+    Base class for the API schema objects which we later need convert to dict.
     """
     @abstractmethod
-    def to_dict(self) -> dict:
+    def to_api_schema(self) -> BaseModel:
         """
-        Convert class data into dictionary representation.
-        Dictionary key should be string and dictionary value should be json serializable.
+        Convert class data into the corresponding API schema class.
 
-        :return: dict with all class data.
+        :return: API schema class
         """
         pass

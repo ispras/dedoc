@@ -167,23 +167,34 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
         for file_name in file_names:
             result = self._send_request(file_name, data=dict())
-            table0 = result["content"]["tables"][0]
             page_angle = result["metadata"]["other_fields"]["rotated_page_angles"][0]
 
             image = cv2.imread(self._get_abs_path(file_name))
             image = rotate_image(image, page_angle)
+
+            # draw boxes of content's words
+            structure = result["content"]["structure"]
+            word_annotations = self.__get_words_annotation(structure)
+            image = self.__draw_word_annotations(image, word_annotations)
+
+            # draw boxes of table's words
             tables = result["content"]["tables"]
             if len(tables) > 0:
                 image = self.__draw_tables_words(tables, image)
 
             cv2.imwrite(os.path.join(output_path, file_name.split('/')[-1]), image)
 
-    def test_document_image_reader(self) -> None:
+    def test_document_table_split_last_column(self) -> None:
         filename_to_parameters = {
-            "scanned/scan_orient_1.jpg": {},
-            "skew_corrector/rotated_2.jpg": {}
+            f"plat_por/plat_por_png ({i}).png": {
+                "table_type": "split_last_column+wo_external_bounds",
+                "need_text_localization": "False",
+                "language": "rus",
+                "is_one_column_document": "true",
+                "document_orientation": "no_change"
+            } for i in range(9)
         }
-        output_path = os.path.join(self.output_path, "document_pipeline_readers")
+        output_path = os.path.join(self.output_path, "tables")
         os.makedirs(output_path, exist_ok=True)
         for filename, parameters in filename_to_parameters.items():
             result = self._send_request(file_name=filename, data=parameters, expected_code=200)

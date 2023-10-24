@@ -2,6 +2,7 @@ import copy
 from typing import List
 
 import numpy as np
+from dedocutils.data_structures import BBox
 
 from dedoc.data_structures import ConfidenceAnnotation, LineWithMeta
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
@@ -142,25 +143,35 @@ def _split_row(cell_splitter: Cell, union_cell: List[Cell], language: str, image
         union_cell[col_id].y_top_left = y_top_split
         union_cell[col_id].y_bottom_right = y_bottom_split
 
-        cell_image = OCRCellExtractor.upscale(image[y_top_split:y_bottom_split, x_left:x_right])
-        result_row[col_id].lines = __get_ocr_lines(cell_image, language, page_image=image)
+        cell_image, padding_value = OCRCellExtractor.upscale(image[y_top_split:y_bottom_split, x_left:x_right])
+        result_row[col_id].lines = __get_ocr_lines(cell_image, language, page_image=image,
+                                                   cell_bbox=BBox(x_top_left=x_left, y_top_left=y_top_split,
+                                                                  width=x_right - x_left, height=y_bottom_split - y_top_split),
+                                                   padding_cell_value=padding_value)
 
         col_id -= 1
 
     return result_row
 
 
-def __get_ocr_lines(cell_image: np.ndarray, language: str, page_image: np.ndarray) -> List[LineWithMeta]:
+def __get_ocr_lines(cell_image: np.ndarray, language: str, page_image: np.ndarray, cell_bbox: BBox, padding_cell_value: int) -> List[LineWithMeta]:
 
     ocr_result = get_text_with_bbox_from_cells(cell_image, language)
     cell_lines = []
     for line in list(ocr_result.lines):
         text_line = OCRCellExtractor.get_line_with_meta("")
         for word in line.words:
+            # do absolute coordinate on src_image (inside src_image)
+            word.bbox.y_top_left -= padding_cell_value
+            word.bbox.x_top_left -= padding_cell_value
+            word.bbox.y_top_left += cell_bbox.y_top_left
+            word.bbox.x_top_left += cell_bbox.x_top_left
+
             # add space between words
             if len(text_line) != 0:
                 text_line += OCRCellExtractor.get_line_with_meta(" ", bbox=word.bbox, image=page_image)
-            # add confidence value
+                # add confidence value
+
             text_line += OCRCellExtractor.get_line_with_meta(
                 text=word.text, bbox=word.bbox, image=page_image,
                 confidences=[ConfidenceAnnotation(start=0, end=len(word.text), value=0. if word.confidence < 0 else word.confidence / 100.)]

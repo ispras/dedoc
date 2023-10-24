@@ -33,7 +33,7 @@ still, the docker application should be installed and configured properly.
 
     docker-compose up --build
 
-If you need to change some application settings, you may update `config.py` according to your needs and re-build the image.
+If you need to change some application settings, you may update ``config.py`` according to your needs and re-build the image.
 
 If you don't need to change the application configuration, you may use the built docker image as well.
 
@@ -59,7 +59,7 @@ Install dedoc using pip
 If you don't want to use docker for running the application, it's possible to run dedoc locally.
 However, it isn't suitable for any operating system (Ubuntu 20+ is recommended) and
 there may be not enough machine's resources for its work.
-You should have `python` (python3.8, python3.9 are recommended) and `pip` installed.
+You should have ``python`` (python3.8, python3.9 are recommended) and ``pip`` installed.
 
 .. _install_packages:
 
@@ -70,9 +70,9 @@ You should have `python` (python3.8, python3.9 are recommended) and `pip` instal
 
     sudo apt-get install -y libreoffice djvulibre-bin unzip unrar
 
-`libreoffice` and `djvulibre-bin` packages are used by converters (doc, odt to docx; xls, ods to xlsx; ppt, odp to pptx; djvu to pdf).
+``libreoffice`` and ``djvulibre-bin`` packages are used by converters (doc, odt to docx; xls, ods to xlsx; ppt, odp to pptx; djvu to pdf).
 If you don't need converters, you can skip this step.
-`unzip` and `unrar` packages are used in the process of extracting archives.
+``unzip`` and ``unrar`` packages are used in the process of extracting archives.
 
 .. _install_tesseract:
 
@@ -105,7 +105,7 @@ to get the example of Tesseract installing for dedoc container or use next comma
 
 3. Install the dedoc library via pip.
 *************************************
-You need `torch~=1.11.0` and `torchvision~=0.12.0` installed.
+You need ``torch~=1.11.0`` and ``torchvision~=0.12.0`` installed.
 If you already have torch and torchvision in your environment:
 
   .. code-block:: bash
@@ -124,15 +124,15 @@ Install and run dedoc from sources
 If you want to run dedoc as a service from sources. it's possible to run dedoc locally.
 However, it isn't suitable for any operating system (Ubuntu 20+ is recommended) and
 there may be not enough machine's resources for its work.
-You should have `python` (python3.8, python3.9 are recommended) and `pip` installed.
+You should have ``python`` (python3.8, python3.9 are recommended) and ``pip`` installed.
 
 1. Install necessary packages: according to instructions :ref:`install_packages`
 
 2. Build Tesseract from sources according to instructions :ref:`install_tesseract`
 
-3. We recommend to install python's virtual environment (for example, via `virtualenvwrapper`)
+3. We recommend to install python's virtual environment (for example, via ``virtualenvwrapper``)
 
-Below are the instructions for installing the package `virtualenvwrapper`:
+Below are the instructions for installing the package ``virtualenvwrapper``:
 
   .. code-block:: bash
 
@@ -144,7 +144,7 @@ Below are the instructions for installing the package `virtualenvwrapper`:
     source ~/.bashrc
     mkvirtualenv dedoc_env
 
-4. Install python's requirements and launch dedoc service on default port `1231`:
+4. Install python's requirements and launch dedoc service on default port ``1231``:
 
   .. code-block:: bash
 
@@ -162,7 +162,7 @@ Below are the instructions for installing the package `virtualenvwrapper`:
 Install trusted torch (verified version)
 ----------------------------------------------
 
-You can install a trusted library `torch` (as a verified version of the library, verified by tools developed by the Ivannikov Institute for System Programming of the Russian Academy of Sciences).
+You can install a trusted library ``torch`` (as a verified version of the library, verified by tools developed by the Ivannikov Institute for System Programming of the Russian Academy of Sciences).
 
 First you need to install two required packages.:
 
@@ -172,13 +172,13 @@ First you need to install two required packages.:
 
 Second you need to install torch and torchvision from built wheels:
 
-For `python3.8`:
+For ``python3.8``:
   .. code-block:: bash
 
      pip install https://github.com/ispras/dedockerfiles/raw/master/wheels/torch-1.11.0a0+git137096a-cp38-cp38-linux_x86_64.whl
      pip install https://github.com/ispras/dedockerfiles/raw/master/wheels/torchvision-0.12.0a0%2B9b5a3fe-cp38-cp38-linux_x86_64.whl
 
-For `python3.9`:
+For ``python3.9``:
   .. code-block:: bash
 
     pip install https://github.com/ispras/dedockerfiles/raw/master/wheels/torch-1.11.0a0+git137096a-cp39-cp39-linux_x86_64.whl

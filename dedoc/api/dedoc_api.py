@@ -14,6 +14,7 @@ from starlette.responses import FileResponse, HTMLResponse, JSONResponse, PlainT
 import dedoc
 from dedoc.api.api_args import QueryParameters
 from dedoc.api.api_utils import json2collapsed_tree, json2html, json2tree, json2txt
+from dedoc.api.schema.parsed_document import ParsedDocument
 from dedoc.common.exceptions.dedoc_error import DedocError
 from dedoc.common.exceptions.missing_file_error import MissingFileError
 from dedoc.config import get_config
@@ -60,7 +61,7 @@ def _get_static_file_path(request: Request) -> str:
     return os.path.abspath(os.path.join(directory, file))
 
 
-@app.post("/upload")
+@app.post("/upload", response_model=ParsedDocument)
 async def upload(file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:  # noqa
     parameters = dataclasses.asdict(query_params)
     if not file or file.filename == "":
@@ -81,15 +82,15 @@ async def upload(file: UploadFile = File(...), query_params: QueryParameters = D
         html_content = json2tree(paragraph=document_tree.content.structure)
         return HTMLResponse(content=html_content)
     elif return_format == "ujson":
-        return UJSONResponse(content=document_tree.to_dict())
+        return UJSONResponse(content=document_tree.to_api_schema().model_dump())
     elif return_format == "collapsed_tree":
         html_content = json2collapsed_tree(paragraph=document_tree.content.structure)
         return HTMLResponse(content=html_content)
     elif return_format == "pretty_json":
-        return PlainTextResponse(content=json.dumps(document_tree.to_dict(), ensure_ascii=False, indent=2))
+        return PlainTextResponse(content=json.dumps(document_tree.to_api_schema().model_dump(), ensure_ascii=False, indent=2))
     else:
         logger.info(f"Send result. File {file.filename} with parameters {parameters}")
-        return ORJSONResponse(content=document_tree.to_dict())
+        return ORJSONResponse(content=document_tree.to_api_schema().model_dump())
 
 
 @app.get("/upload_example")
@@ -100,7 +101,7 @@ async def upload_example(file_name: str, return_format: Optional[str] = None) ->
 
     if return_format == "html":
         return HTMLResponse(content=json2html(text="", paragraph=document_tree.content.structure, tables=document_tree.content.tables, tabs=0))
-    return ORJSONResponse(content=document_tree.to_dict(), status_code=200)
+    return ORJSONResponse(content=document_tree.to_api_schema().model_dump(), status_code=200)
 
 
 @app.exception_handler(DedocError)

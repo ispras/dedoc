@@ -203,7 +203,7 @@ Currently the following domains can be handled:
     * Russian thesis for bachelor or master degree (:ref:`structure description <diploma_structure>`).
 
 For a document of unknown or unsupported domain there is an option to use default structure extractor
-(`document_type=other` at :ref:`api_parameters`), the default document structure described :ref:`here <other_structure>`.
+(``document_type=other`` at :ref:`api_parameters`), the default document structure described :ref:`here <other_structure>`.
 
 
 .. toctree::
@@ -226,6 +226,7 @@ For a document of unknown or unsupported domain there is an option to use defaul
    :caption: Dedoc API usage
 
    dedoc_api_usage/api
+   dedoc_api_usage/api_schema
    dedoc_api_usage/return_format
 
 

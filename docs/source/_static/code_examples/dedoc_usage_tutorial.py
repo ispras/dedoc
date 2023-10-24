@@ -75,8 +75,8 @@ document.lines[5].annotations[-2]  # Attachment(0:10, attach_6de4dc06-0b75-11ee-
 
 """Using metadata extractors"""
 metadata_extractor = DocxMetadataExtractor()
-metadata_extractor.can_extract(document, file_dir, file_name, file_name, file_name)  # True
-document = metadata_extractor.add_metadata(document, file_dir, file_name, file_name, file_name)
+metadata_extractor.can_extract(file_dir, file_name, file_name, file_name)  # True
+document.metadata = metadata_extractor.extract_metadata(file_dir, file_name, file_name, file_name)
 document.metadata  # {'file_name': 'example.docx', 'file_type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'size': 373795,
 # 'access_time': 1686825619, 'created_time': 1686825617, 'modified_time': 1686823541, 'other_fields': {'document_subject': '', 'keywords': '',
 # 'category': '', 'comments': '', 'author': '', 'last_modified_by': '', 'created_date': 1568725611, 'modified_date': 1686752726,
@@ -113,5 +113,4 @@ manager = DedocManager()
 result = manager.parse(file_path=file_path, parameters={})
 
 result  # <dedoc.data_structures.ParsedDocument>
-result.to_dict()  # OrderedDict([('version', ''), ('warnings', []), ('content', OrderedDict([('structure', OrderedDict([('node_id', '0'), ('text', ''),
-# ('annotations', []), ('metadata', OrderedDict([('page_id', 0), ('line_id', 0), ('paragraph_type', 'root'), ('other_fields', {})])), ...
+result.to_api_schema().model_dump()  # {'content': {'structure': {'node_id': '0', 'text': '', 'annotations': [], 'metadata': {'paragraph_type': 'root', ...

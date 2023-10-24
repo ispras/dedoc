@@ -3,7 +3,6 @@ import pickle
 from typing import Optional
 
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
-from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
@@ -18,7 +17,6 @@ class NoteMetadataExtractor(BaseMetadataExtractor):
         super().__init__()
 
     def can_extract(self,
-                    document: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,
@@ -31,17 +29,16 @@ class NoteMetadataExtractor(BaseMetadataExtractor):
         """
         return filename.lower().endswith(".note.pickle")
 
-    def add_metadata(self,
-                     document: UnstructuredDocument,
-                     directory: str,
-                     filename: str,
-                     converted_filename: str,
-                     original_filename: str,
-                     parameters: dict = None,
-                     other_fields: Optional[dict] = None) -> UnstructuredDocument:
+    def extract_metadata(self,
+                         directory: str,
+                         filename: str,
+                         converted_filename: str,
+                         original_filename: str,
+                         parameters: dict = None,
+                         other_fields: Optional[dict] = None) -> dict:
         """
         Add the predefined list of metadata for the .note.pickle documents.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` documentation to get the information about parameters.
         """
 
         try:
@@ -59,7 +56,6 @@ class NoteMetadataExtractor(BaseMetadataExtractor):
                              created_time=note_dict["created_time"],
                              modified_time=note_dict["modified_time"],
                              other_fields=other_fields)
-            document.metadata = meta_info
-            return document
+            return meta_info
         except Exception:
             raise BadFileFormatError(f"Bad note file:\n file_name = {os.path.basename(filename)}. Seems note-format is broken")

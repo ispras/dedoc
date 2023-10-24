@@ -5,10 +5,9 @@ from uuid import uuid1
 from dedocutils.data_structures import BBox
 
 from dedoc.data_structures.annotation import Annotation
-from dedoc.data_structures.serializable import Serializable
 
 
-class TextWithBBox(Serializable):
+class TextWithBBox:
 
     def __init__(self,
                  bbox: BBox,

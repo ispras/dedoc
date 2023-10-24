@@ -28,9 +28,11 @@ class OCRLineExtractor:
             output_dict = get_text_with_bbox_from_document_page(image, language, ocr_conf_threshold)
 
         height, width = image.shape[:2]
+        extract_line_bbox = self.config.get("labeling_mode", False)
+
         line_boxes = [
-            TextWithBBox(text=line.text, page_num=page_num, bbox=line.bbox, line_num=line_num, annotations=line.get_annotations(width, height))
-            for line_num, line in enumerate(output_dict.lines)
+            TextWithBBox(text=line.text, page_num=page_num, bbox=line.bbox, line_num=line_num,
+                         annotations=line.get_annotations(width, height, extract_line_bbox)) for line_num, line in enumerate(output_dict.lines)
         ]
 
         return line_boxes

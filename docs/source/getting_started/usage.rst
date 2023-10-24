@@ -17,21 +17,21 @@ In the context of this tutorial, you'll need to include certain import statement
 Using converters
 ----------------
 
-Assume we have a file :download:`example.odt <../_static/code_examples/test_dir/example.odt>` and we need to convert it to `example.docx` using dedoc library.
-For this purpose one can use :class:`dedoc.converters.DocxConverter` class:
+Assume we have a file :download:`example.odt <../_static/code_examples/test_dir/example.odt>` and we need to convert it to ``example.docx`` using dedoc library.
+For this purpose one can use :class:`~dedoc.converters.DocxConverter` class:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
     :lines: 13
 
-Method :meth:`dedoc.converters.DocxConverter.can_convert` allows to check if the converter can convert the given file:
+Method :meth:`~dedoc.converters.DocxConverter.can_convert` allows to check if the converter can convert the given file:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
     :lines: 15-21
 
 Since we have checked if the converter is able to convert the file,
-we can convert it using :meth:`dedoc.converters.DocxConverter.do_convert` method:
+we can convert it using :meth:`~dedoc.converters.DocxConverter.do_convert` method:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
@@ -60,21 +60,21 @@ Assume we need to parse file :download:`example.docx <../_static/code_examples/t
 
 As we see, the file contains text of different styles, two tables and an attached image.
 
-To read the contents of this file in the intermediate representation (see :class:`dedoc.data_structures.UnstructuredDocument`)
-one can use :class:`dedoc.converters.DocxReader` class:
+To read the contents of this file in the intermediate representation (see :class:`~dedoc.data_structures.UnstructuredDocument`)
+one can use :class:`~dedoc.converters.DocxReader` class:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
     :lines: 25
 
-Method :meth:`dedoc.readers.DocxReader.can_read` allows to check if the reader can parse the given file:
+Method :meth:`~dedoc.readers.DocxReader.can_read` allows to check if the reader can parse the given file:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
     :lines: 27-32
 
 Since we have checked if the reader is able to read the file,
-we can get its content (:class:`dedoc.data_structures.UnstructuredDocument`) using :meth:`dedoc.readers.DocxReader.read` method:
+we can get its content (:class:`~dedoc.data_structures.UnstructuredDocument`) using :meth:`~dedoc.readers.DocxReader.read` method:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
@@ -86,15 +86,15 @@ Let's save the document in the variable and look at it in more detail:
     :language: python
     :lines: 36-38
 
-As we see, the document object has the following attributes: `lines`, `tables`, `attachments`, `metadata` and `warnings`.
+As we see, the document object has the following attributes: ``lines``, ``tables``, ``attachments``, ``metadata`` and ``warnings``.
 Document metadata is the empty dict on this stage, because it should be filled by one of the metadata extractors (see :ref:`dedoc_metadata_extractors` and :ref:`using_metadata_extractors`).
 Document warnings -- the list of strings with some warnings that occurred while document parsing.
-So the most useful information is stored in `lines`, `tables` and `attachments`.
+So the most useful information is stored in ``lines``, ``tables`` and ``attachments``.
 
 Document lines
 ~~~~~~~~~~~~~~
 
-The attribute `lines` in the :class:`dedoc.data_structures.UnstructuredDocument` is a list of :class:`dedoc.data_structures.LineWithMeta`.
+The attribute ``lines`` in the :class:`~dedoc.data_structures.UnstructuredDocument` is a list of :class:`~dedoc.data_structures.LineWithMeta`.
 
 We can get the text of any line:
 
@@ -109,7 +109,7 @@ Also some of the readers can detect line types based of their styles, e.g.:
     :language: python
     :lines: 41
 
-Formatting of each line is stored in the `annotations` attribute:
+Formatting of each line is stored in the ``annotations`` attribute:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
@@ -120,9 +120,9 @@ See :ref:`dedoc_data_structures` to get more information about main classes form
 Document tables
 ~~~~~~~~~~~~~~~
 
-The attribute `tables` in the :class:`dedoc.data_structures.UnstructuredDocument` is a list of :class:`dedoc.data_structures.Table`.
+The attribute ``tables`` in the :class:`~dedoc.data_structures.UnstructuredDocument` is a list of :class:`~dedoc.data_structures.Table`.
 
-Each table is represented as a list of table rows, each row is a list of cells with additional metadata :class:`dedoc.data_structures.CellWithMeta`.
+Each table is represented as a list of table rows, each row is a list of cells with additional metadata :class:`~dedoc.data_structures.CellWithMeta`.
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
@@ -153,12 +153,12 @@ The unique identifier links the table with the previous non-empty line in the do
     :lines: 64-66
 
 In the current example (:ref:`docx_example_image`), the line with the text "Bold, italic, small text." is the first non-empty line
-before the first table, so the table uid is linked to this line using :class:`dedoc.data_structures.TableAnnotation`.
+before the first table, so the table uid is linked to this line using :class:`~dedoc.data_structures.TableAnnotation`.
 
 Document attachments
 ~~~~~~~~~~~~~~~~~~~~
 
-The attribute `attachments` in the :class:`dedoc.data_structures.UnstructuredDocument` is a list of :class:`dedoc.data_structures.AttachedFile`.
+The attribute ``attachments`` in the :class:`~dedoc.data_structures.UnstructuredDocument` is a list of :class:`~dedoc.data_structures.AttachedFile`.
 
 In the :ref:`docx_example_image` there is an image attached to the file:
 
@@ -166,17 +166,17 @@ In the :ref:`docx_example_image` there is an image attached to the file:
     :language: python
     :lines: 68-71
 
-The `tmp_file_path` contains the path to the image saved on disk,
+The ``tmp_file_path`` contains the path to the image saved on disk,
 the image is saved in the same directory as the parent docx file.
 
-The unique identifier of the attachent links it with the previous non-empty line in the document.
+The unique identifier of the attachment links it with the previous non-empty line in the document.
 In our :ref:`docx_example_image` it is a line with text "More text.".
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
     :lines: 72-74
 
-The annotation uid is linked to the line using :class:`dedoc.data_structures.AttachAnnotation`.
+The annotation uid is linked to the line using :class:`~dedoc.data_structures.AttachAnnotation`.
 
 .. _using_metadata_extractors:
 
@@ -185,28 +185,28 @@ Using metadata extractors
 
 Continue the example from the :ref:`previous section <using_readers>`.
 
-The reader returned the intermediate representation of the document -- :class:`dedoc.data_structures.UnstructuredDocument`.
+The reader returned the intermediate representation of the document -- :class:`~dedoc.data_structures.UnstructuredDocument`.
 If we need to get some additional information about the file e.g. document subject or author,
-we can add some metadata using :class:`dedoc.metadata_extractors.DocxMetadataExtractor`.
+we can add some metadata using :class:`~dedoc.metadata_extractors.DocxMetadataExtractor`.
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
     :lines: 77
 
-Method :meth:`dedoc.metadata_extractors.DocxMetadataExtractor.can_extract` allows to check if
+Method :meth:`~dedoc.metadata_extractors.DocxMetadataExtractor.can_extract` allows to check if
 the metadata extractor can extract metadata from the given file:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
     :lines: 78
 
-To extract metadata, one can add them to the document using :meth:`dedoc.metadata_extractors.DocxMetadataExtractor.add_metadata` method.
+To extract metadata, one can add them to the document using :meth:`~dedoc.metadata_extractors.DocxMetadataExtractor.extract_metadata` method.
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
     :lines: 79-83
 
-As we see, the attribute `metadata` has been filled with some metadata fields.
+As we see, the attribute ``metadata`` has been filled with some metadata fields.
 The list of common fields for any metadata extractor along with the specific fields
 for different document formats are enlisted in :ref:`dedoc_metadata_extractors`.
 
@@ -217,27 +217,27 @@ In the section :ref:`using_readers` we already got the attachments of the file a
 If there is a need to extract attachments without reading the whole content of the document,
 one can use :ref:`dedoc_attachments_extractors`.
 
-For example, in the :ref:`docx_example_image` we can use :class:`dedoc.attachments_extractors.DocxAttachmentsExtractor`.
+For example, in the :ref:`docx_example_image` we can use :class:`~dedoc.attachments_extractors.DocxAttachmentsExtractor`.
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
     :lines: 87
 
-Method :meth:`dedoc.attachments_extractors.DocxAttachmentsExtractor.can_extract` allows to check if the attachments extractor can extract attachments from the given file:
+Method :meth:`~dedoc.attachments_extractors.DocxAttachmentsExtractor.can_extract` allows to check if the attachments extractor can extract attachments from the given file:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
     :lines: 88
 
 Since we have checked if the extractor can extract attachments from the file,
-we can extract them it using :meth:`dedoc.attachments_extractors.DocxAttachmentsExtractor.get_attachments` method:
+we can extract them it using :meth:`~dedoc.attachments_extractors.DocxAttachmentsExtractor.get_attachments` method:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
     :lines: 89-90
 
-As we see, attachment extractors return the same list of :class:`dedoc.data_structures.AttachedFile`,
-as in the attribute `attachments` of the :class:`dedoc.data_structures.UnstructuredDocument`,
+As we see, attachment extractors return the same list of :class:`~dedoc.data_structures.AttachedFile`,
+as in the attribute ``attachments`` of the :class:`~dedoc.data_structures.UnstructuredDocument`,
 that we can get via readers (see :ref:`using_readers`).
 
 See :ref:`dedoc_attachments_extractors` to get more information about available extractors, their methods and parameters.
@@ -249,7 +249,7 @@ Using structure extractors
 --------------------------
 
 After sections :ref:`using_readers` and :ref:`using_metadata_extractors` we got an intermediate representation of the document content and its metadata.
-The next step is to extract document structure, i.e. to find the :class:`dedoc.data_structures.HierarchyLevel` for each document line.
+The next step is to extract document structure, i.e. to find the :class:`~dedoc.data_structures.HierarchyLevel` for each document line.
 This class contains information about the type and the level of the line (or its importance in the document).
 
 Let's extract the default structure based on the document styles:
@@ -258,7 +258,7 @@ Let's extract the default structure based on the document styles:
     :language: python
     :lines: 94-97
 
-As we see, the `hierarchy_level` has been filled.
+As we see, the ``hierarchy_level`` has been filled.
 
 See :ref:`other_structure` for more details about the default document structure.
 Use :ref:`dedoc_structure_extractors` to get the information about available structure extractors, their methods and parameters.
@@ -268,7 +268,7 @@ Using structure constructors
 ----------------------------
 
 After we got the document content with hierarchy levels of each line (see :ref:`using_readers`, :ref:`using_metadata_extractors` and :ref:`using_structure_extractors`),
-it's possible to make the result class :class:`dedoc.data_structures.ParsedDocument`.
+it's possible to make the result class :class:`~dedoc.data_structures.ParsedDocument`.
 
 Let's construct the tree structure of the document:
 
@@ -276,14 +276,14 @@ Let's construct the tree structure of the document:
     :language: python
     :lines: 101-104
 
-As we see, parsed document has similar attributes as :class:`dedoc.data_structures.UnstructuredDocument`.
-The main difference is in the `content` attribute, that contains hierarchical document structure and tables.
+As we see, parsed document has similar attributes as :class:`~dedoc.data_structures.UnstructuredDocument`.
+The main difference is in the ``content`` attribute, that contains hierarchical document structure and tables.
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
     :lines: 106-108
 
-To get more information about :class:`dedoc.data_structures.ParsedDocument`, :class:`dedoc.data_structures.DocumentContent`
+To get more information about :class:`~dedoc.data_structures.ParsedDocument`, :class:`~dedoc.data_structures.DocumentContent`
 and other classes, that form the output format, see :ref:`dedoc_data_structures`.
 
 See :ref:`dedoc_structure_constructors` for the description of available structure constructors and structure types.
@@ -298,7 +298,7 @@ one may use manager class (see :ref:`dedoc_manager` for more details).
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
-    :lines: 112-117
+    :lines: 112-116
 
 Manager allows to run workflow (see :ref:`dedoc_workflow`) for a file of any format supported by dedoc (see :ref:`table_formats`).
-One can also make a custom `config` and `manager_config` (parameters of the manager constructor) for more flexible usage of the library.
+One can also make a custom ``config`` and ``manager_config`` (parameters of the manager constructor) for more flexible usage of the library.

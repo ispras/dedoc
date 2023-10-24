@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 
 
@@ -13,36 +12,33 @@ class MetadataExtractorComposition:
     """
     def __init__(self, extractors: List[AbstractMetadataExtractor]) -> None:
         """
-        :param extractors: the list of extractors with methods can_extract() and add_metadata() to extract metadata from file
+        :param extractors: the list of extractors with methods can_extract() and extract_metadata() to extract metadata from file
         """
         self.extractors = extractors
 
-    def add_metadata(self,
-                     document: UnstructuredDocument,
-                     directory: str,
-                     filename: str,
-                     converted_filename: str,
-                     original_filename: str,
-                     parameters: Optional[dict] = None,
-                     other_fields: Optional[dict] = None) -> UnstructuredDocument:
+    def extract_metadata(self,
+                         directory: str,
+                         filename: str,
+                         converted_filename: str,
+                         original_filename: str,
+                         parameters: Optional[dict] = None,
+                         other_fields: Optional[dict] = None) -> dict:
         """
-        Add metadata to the document using one of the extractors if suitable extractor was found.
-        Look to the method :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` of the class
+        Extract metadata using one of the extractors if suitable extractor was found.
+        Look to the method :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` of the class
         :class:`~dedoc.metadata_extractors.AbstractMetadataExtractor` documentation to get the information about method's parameters.
         """
         for extractor in self.extractors:
-            if extractor.can_extract(document=document,
-                                     directory=directory,
+            if extractor.can_extract(directory=directory,
                                      filename=filename,
                                      converted_filename=converted_filename,
                                      original_filename=original_filename,
                                      parameters=parameters,
                                      other_fields=other_fields):
-                return extractor.add_metadata(document=document,
-                                              directory=directory,
-                                              filename=filename,
-                                              converted_filename=converted_filename,
-                                              original_filename=original_filename,
-                                              parameters=parameters,
-                                              other_fields=other_fields)
+                return extractor.extract_metadata(directory=directory,
+                                                  filename=filename,
+                                                  converted_filename=converted_filename,
+                                                  original_filename=original_filename,
+                                                  parameters=parameters,
+                                                  other_fields=other_fields)
         raise Exception(f"Can't extract metadata from from file {filename}")

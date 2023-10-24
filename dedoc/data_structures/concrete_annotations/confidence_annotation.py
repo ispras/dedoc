@@ -1,5 +1,3 @@
-from flask_restx import Api, Model, fields
-
 from dedoc.data_structures.annotation import Annotation
 
 
@@ -22,11 +20,3 @@ class ConfidenceAnnotation(Annotation):
         except AssertionError:
             raise ValueError("the value of confidence annotation should be in range [0, 1]")
         super().__init__(start=start, end=end, name=ConfidenceAnnotation.name, value=value, is_mergeable=False)
-
-    @staticmethod
-    def get_api_dict(api: Api) -> Model:
-        return api.model("BoldAnnotation", {
-            "start": fields.Integer(description="annotation start index", required=True, example=0),
-            "end": fields.Integer(description="annotation end index", required=True, example=4),
-            "value": fields.String(description="confidence value", required=True, example="95")
-        })

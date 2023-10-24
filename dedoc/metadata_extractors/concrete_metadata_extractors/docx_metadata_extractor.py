@@ -5,7 +5,6 @@ from typing import Optional
 import docx
 from docx.opc.exceptions import PackageNotFoundError
 
-from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
@@ -24,7 +23,6 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
         - created, modified and last printed date.
     """
     def can_extract(self,
-                    document: UnstructuredDocument,
                     directory: str,
                     filename: str,
                     converted_filename: str,
@@ -37,27 +35,26 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
         """
         return converted_filename.lower().endswith("docx")
 
-    def add_metadata(self,
-                     document: UnstructuredDocument,
-                     directory: str,
-                     filename: str,
-                     converted_filename: str,
-                     original_filename: str,
-                     parameters: dict = None,
-                     other_fields: Optional[dict] = None) -> UnstructuredDocument:
+    def extract_metadata(self,
+                         directory: str,
+                         filename: str,
+                         converted_filename: str,
+                         original_filename: str,
+                         parameters: dict = None,
+                         other_fields: Optional[dict] = None) -> dict:
         """
         Add the predefined list of metadata for the docx documents.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.add_metadata` documentation to get the information about parameters.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` documentation to get the information about parameters.
         """
         parameters = {} if parameters is None else parameters
 
-        result = super().add_metadata(document=document, directory=directory, filename=filename, converted_filename=converted_filename,
-                                      original_filename=original_filename, parameters=parameters, other_fields=other_fields)
+        result = super().extract_metadata(directory=directory, filename=filename, converted_filename=converted_filename,
+                                          original_filename=original_filename, parameters=parameters, other_fields=other_fields)
 
         file_path = os.path.join(directory, converted_filename)
         docx_other_fields = self._get_docx_fields(file_path)
 
-        result.metadata["other_fields"] = {**result.metadata.get("other_fields", {}), **docx_other_fields}
+        result["other_fields"] = {**result.get("other_fields", {}), **docx_other_fields}
         return result
 
     def __convert_date(self, date: Optional[datetime]) -> Optional[int]:

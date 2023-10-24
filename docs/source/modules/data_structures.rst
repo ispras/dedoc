@@ -12,31 +12,26 @@ Main classes defining a document
 .. autoclass:: dedoc.data_structures.ParsedDocument
     :show-inheritance:
     :special-members: __init__
-    :exclude-members: to_dict
     :members:
 
 .. autoclass:: dedoc.data_structures.DocumentContent
     :show-inheritance:
     :special-members: __init__
-    :exclude-members: to_dict
     :members:
 
 .. autoclass:: dedoc.data_structures.DocumentMetadata
     :show-inheritance:
     :special-members: __init__
-    :exclude-members: to_dict
     :members:
 
 .. autoclass:: dedoc.data_structures.TreeNode
     :show-inheritance:
     :special-members: __init__
-    :exclude-members: to_dict
     :members:
 
 .. autoclass:: dedoc.data_structures.LineWithMeta
     :show-inheritance:
-    :special-members: __init__
-    :exclude-members: to_dict, get_api_dict
+    :special-members: __init__, __lt__
     :members:
     :undoc-members: line, uid, metadata, annotations
 
@@ -47,30 +42,25 @@ Main classes defining a document
 .. autoclass:: dedoc.data_structures.LineMetadata
     :show-inheritance:
     :special-members: __init__
-    :exclude-members: to_dict
     :members:
 
 .. autoclass:: dedoc.data_structures.HierarchyLevel
     :special-members: __init__, __eq__, __lt__
-    :exclude-members: to_dict
     :members:
 
 .. autoclass:: dedoc.data_structures.Table
     :show-inheritance:
     :special-members: __init__
-    :exclude-members: to_dict
     :members:
 
 .. autoclass:: dedoc.data_structures.TableMetadata
     :show-inheritance:
     :special-members: __init__
-    :exclude-members: to_dict
     :members:
 
 .. autoclass:: dedoc.data_structures.CellWithMeta
     :show-inheritance:
     :special-members: __init__
-    :exclude-members: to_dict
     :members:
 
 

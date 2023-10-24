@@ -7,4 +7,4 @@ from dedoc.structure_constructors import TreeConstructor
 structure_constructor = TreeConstructor()
 parsed_document = structure_constructor.structure_document(document=unstructured_document, structure_type="tree")
 
-print(parsed_document.to_dict())
+print(parsed_document.to_api_schema().model_dump())

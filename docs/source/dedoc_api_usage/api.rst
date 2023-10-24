@@ -3,8 +3,8 @@
 Using dedoc via API
 ===================
 
-Dedoc can be used as a web application that runs on the `localhost:1231`.
-It's possible to change the port via `config.py` file (if you clone the repository and run dedoc as a docker container).
+Dedoc can be used as a web application that runs on the ``localhost:1231``.
+It's possible to change the port via ``config.py`` file (if you clone the repository and run dedoc as a docker container).
 
 There are two ways to install and run dedoc as a web application:
 
@@ -20,14 +20,14 @@ There are two ways to install and run dedoc as a web application:
 Application usage
 -----------------
 
-Once you run the dedoc application, you can go to `localhost:1231` and
+Once you run the dedoc application, you can go to ``localhost:1231`` and
 look to the main page with the information about dedoc.
 From this page you can go to the upload page and manually choose settings for the file parsing.
-Then you can get the result after pressing the `upload` button.
+Then you can get the result after pressing the ``upload`` button.
 
 If you want to use the application in your program,
 you can send requests e.g. using `requests <https://pypi.org/project/requests>`_ python library.
-Post-requests should be sent to `http://localhost:1231/upload`.
+Post-requests should be sent to ``http://localhost:1231/upload``.
 
   .. code-block:: python
 
@@ -47,7 +47,7 @@ Post-requests should be sent to `http://localhost:1231/upload`.
         r = requests.post("http://localhost:1231/upload", files=files, data=data)
         result = r.content.decode('utf-8')
 
-The `data` dictionary in the example contains some parameters to parse the given file.
+The ``data`` dictionary in the example contains some parameters to parse the given file.
 They are described in the section :ref:`api_parameters`.
 
 .. _api_parameters:
@@ -119,15 +119,15 @@ Api parameters description
       - The option to enable attached files extraction.
         Some documents can have attached files (attachments), e.g. images or videos.
         Dedoc allows to find attachments of the given file, get their metadata and save them in the directory where the given file is located.
-        If the option is `false`, all attached files will be ignored.
+        If the option is ``false``, all attached files will be ignored.
 
     * - need_content_analysis
       - true, false
       - false
       - The option to enable file's attachments parsing along with the given file.
         The content of the parsed attachments will be represented as :class:`~dedoc.data_structures.ParsedDocument`
-        and saved in the specified return format in the `attachments` field (see :ref:`json_format` for examples).
-        Use `true` value to enable this behaviour.
+        and saved in the specified return format in the ``attachments`` field (see :ref:`json_format` for examples).
+        Use ``true`` value to enable this behaviour.
 
     * - recursion_deep_attachments
       - integer value >= 0
@@ -139,8 +139,8 @@ Api parameters description
       - true, false
       - false
       - Attached files can be encoded in base64 and their contents will be saved instead of saving attached file on disk.
-        The encoded contents will be saved in the attachment's metadata in the `base64_encode` field.
-        Use `true` value to enable this behaviour.
+        The encoded contents will be saved in the attachment's metadata in the ``base64_encode`` field.
+        Use ``true`` value to enable this behaviour.
 
     * - attachments_dir
       - optional string with a valid path
@@ -153,26 +153,26 @@ Api parameters description
       - true, false
       - true
       - This option is used for PDF documents which are images with text (PDF without a textual layer).
-        It is also used for PDF documents when `pdf_with_text_layer` is `true`, `false`, `auto` or `auto_tabby`.
-        Since costly table recognition methods are used to get tables, you may need to use `need_pdf_table_analysis=false`
+        It is also used for PDF documents when ``pdf_with_text_layer`` is ``true``, ``false``, ``auto`` or ``auto_tabby``.
+        Since costly table recognition methods are used to get tables, you may need to use ``need_pdf_table_analysis=false``
         to increase parsing speed and get text without tables.
-        If the document has a textual layer, it is recommended to use `pdf_with_text_layer=tabby`,
+        If the document has a textual layer, it is recommended to use ``pdf_with_text_layer=tabby``,
         in this case tables will be parsed much easier and faster.
 
     * - orient_analysis_cells
       - true, false
       - false
       - This option is used for a table recognition in case of PDF documents without a textual layer
-        (images, scanned documents or when `pdf_with_text_layer` is `true`, `false` or `auto`).
-        When set to `true`, it enables analysis of rotated cells in table headers.
+        (images, scanned documents or when ``pdf_with_text_layer`` is ``true``, ``false`` or ``auto``).
+        When set to ``true``, it enables analysis of rotated cells in table headers.
         Use this option if you are sure that the cells of the table header are rotated.
 
     * - orient_cell_angle
       - 90, 270
       - 90
       - This option is used for a table recognition in case of PDF documents without a textual layer
-        (images, scanned documents or when `pdf_with_text_layer` is `true`, `false` or `auto`).
-        It is ignored when `orient_analysis_cells=false`.
+        (images, scanned documents or when ``pdf_with_text_layer`` is ``true``, ``false`` or ``auto``).
+        It is ignored when ``orient_analysis_cells=false``.
         The option is used to set orientation of cells in table headers:
 
             * **270** -- cells are rotated 90 degrees clockwise;
@@ -188,8 +188,8 @@ Api parameters description
 
             * **true** -- use this option if you are sure that the PDF file has a textual layer (its text is copiable).
               In this case tables will be parsed using table recognition method for documents without a textual layer
-              (if you set `need_pdf_table_analysis=false` parsing will be faster but tables will be ignored).
-              It is recommended to use `pdf_with_text_layer=tabby` instead of `pdf_with_text_layer=true`,
+              (if you set ``need_pdf_table_analysis=false`` parsing will be faster but tables will be ignored).
+              It is recommended to use ``pdf_with_text_layer=tabby`` instead of ``pdf_with_text_layer=true``,
               but you can try this option as well.
 
             * **false** -- this value forces to use PDF reader for scanned documents (images, PDF without a textual layer)
@@ -200,17 +200,17 @@ Api parameters description
             * **tabby** -- use this option if you are sure that the PDF file has a textual layer (its text is copiable).
               This option value forces to use PDF reader for documents with a textual layer only,
               it also allows to extract tables easily and quickly.
-              The method enabled by this option is much faster than the method enabled by `pdf_with_text_layer=true`.
+              The method enabled by this option is much faster than the method enabled by ``pdf_with_text_layer=true``.
 
             * **auto** -- automatic detection of textual layer presence in the PDF document.
-              If the document has a textual layer (is copyable), PDF document parsing works like with `need_pdf_table_analysis=true`.
-              If the document doesn't have a textual layer (it is an image, scanned document), PDF document parsing works like with `need_pdf_table_analysis=false`.
-              It is recommended to use `pdf_with_text_layer=auto_tabby` instead of `pdf_with_text_layer=auto`,
+              If the document has a textual layer (is copyable), PDF document parsing works like with ``need_pdf_table_analysis=true``.
+              If the document doesn't have a textual layer (it is an image, scanned document), PDF document parsing works like with ``need_pdf_table_analysis=false``.
+              It is recommended to use ``pdf_with_text_layer=auto_tabby`` instead of ``pdf_with_text_layer=auto``,
               but you can try this option as well.
 
             * **auto_tabby** -- automatic detection of textual layer presence in the PDF document.
-              If the document has a textual layer (is copyable), PDF document parsing works like with `need_pdf_table_analysis=tabby`.
-              If the document doesn't have a textual layer (it is an image, scanned document), PDF document parsing works like with `need_pdf_table_analysis=false`.
+              If the document has a textual layer (is copyable), PDF document parsing works like with ``need_pdf_table_analysis=tabby``.
+              If the document doesn't have a textual layer (it is an image, scanned document), PDF document parsing works like with ``need_pdf_table_analysis=false``.
               It is highly recommended to use this option value for any PDF document parsing.
 
     * - language
@@ -226,17 +226,17 @@ Api parameters description
       - :, start:, :end, start:end
       - :
       - If you need to read a part of the PDF document, you can use page slice to define the reading range.
-        If the range is set like `start_page:end_page`, document will be processed from `start_page` to `end_page`
-        (`start_page` to `end_page` are included to the range).
+        If the range is set like ``start_page:end_page``, document will be processed from ``start_page`` to ``end_page``
+        (``start_page`` to ``end_page`` are included to the range).
 
             * using **:** means reading all document pages;
-            * using empty `end` -- **start:** (e.g. 5:) means reading the document from `start` up to the end of the document;
-            * using empty `start` -- **:end** (e.g. :5) means reading the document from the beginning up to the `end` page;
-            * using **start:end** means reading document pages from `start` to `end` inclusively.
+            * using empty ``end`` -- **start:** (e.g. 5:) means reading the document from ``start`` up to the end of the document;
+            * using empty ``start`` -- **:end** (e.g. :5) means reading the document from the beginning up to the ``end`` page;
+            * using **start:end** means reading document pages from ``start`` to ``end`` inclusively.
 
-        If `start` > `end` or `start` > the number of pages in the document, the empty document will be returned.
-        If `end` > the number of pages in the document, the document will be read up to its end.
-        For example, if `1:3` is given, 1, 2 and 3 document pages will be processed.
+        If ``start`` > ``end`` or ``start`` > the number of pages in the document, the empty document will be returned.
+        If ``end`` > the number of pages in the document, the document will be read up to its end.
+        For example, if ``1:3`` is given, 1, 2 and 3 document pages will be processed.
 
     * - is_one_column_document
       - true, false, auto
@@ -248,7 +248,7 @@ Api parameters description
             * **false** -- the document is multi-column (two columns parsing is supported);
             * **auto** -- automatic detection of the number of columns in the document.
 
-        If you are not sure about the number of columns in the documents you need to parse, it is recommended to use `auto`.
+        If you are not sure about the number of columns in the documents you need to parse, it is recommended to use ``auto``.
 
     * - document_orientation
       - auto, no_change
@@ -259,20 +259,20 @@ Api parameters description
             * **auto** -- automatic detection of rotated document pages (rotation angle 0, 90, 180, 270 degrees) and rotation of document pages;
             * **no_change** -- parse document pages as they are without rotated pages detection.
 
-        If you are sure that the documents you need to parse consist of vertical (not rotated) pages, you can use `no_change`.
+        If you are sure that the documents you need to parse consist of vertical (not rotated) pages, you can use ``no_change``.
 
     * - need_header_footer_analysis
       - true, false
       - false
       - This option is used to **remove** headers and footers of PDF documents from the output result.
-        If `need_header_footer_analysis=false`, header and footer lines will present in the output as well as all other document lines.
+        If ``need_header_footer_analysis=false``, header and footer lines will present in the output as well as all other document lines.
 
     * - need_binarization
       - true, false
       - false
       - This option is used to clean background (binarize) for pages of PDF documents without a textual layer.
         If the document's background is heterogeneous, this option may help to improve the result of document text recognition.
-        By default `need_binarization=false` because its usage may decrease the quality of the document page (and the recognised text on it).
+        By default ``need_binarization=false`` because its usage may decrease the quality of the document page (and the recognised text on it).
 
     * - :cspan:`3` **Other formats handling**
 
@@ -286,7 +286,7 @@ Api parameters description
       - any string
       - None
       - The encoding of documents of textual formats like TXT, CSV, TSV.
-        Look `here <https://docs.python.org/3/library/codecs.html#encodings-and-unicode>`_ to get the list of possible values for the `encoding` parameter.
+        Look `here <https://docs.python.org/3/library/codecs.html#encodings-and-unicode>`_ to get the list of possible values for the ``encoding`` parameter.
         By default the encoding of the document is detected automatically.
 
     * - handle_invisible_table

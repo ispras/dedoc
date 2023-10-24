@@ -142,7 +142,7 @@ class PdfminerExtractor(object):
 
     def __get_interpreter(self) -> Tuple[PDFPageAggregator, PDFPageInterpreter]:
         rsrcmgr = PDFResourceManager()
-        laparams = LAParams(line_margin=1.5, line_overlap=0.5, boxes_flow=0.5, word_margin=0.1, detect_vertical=False)  # TODO find the best parameters
+        laparams = LAParams(line_margin=1.5, line_overlap=0.5, boxes_flow=0.5, word_margin=0.1, char_margin=3, detect_vertical=False)
         device = PDFPageAggregator(rsrcmgr, laparams=laparams)
         interpreter = PDFPageInterpreter(rsrcmgr, device)
         return device, interpreter
