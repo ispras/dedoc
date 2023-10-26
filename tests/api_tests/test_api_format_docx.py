@@ -44,6 +44,12 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.__check_doc_like(result)
         self._check_metainfo(result["metadata"], "application/vnd.oasis.opendocument.text", file_name)
 
+    def test_rtf(self) -> None:
+        file_name = "example.rtf"
+        result = self._send_request(file_name)
+        self.__check_doc_like(result)
+        self._check_metainfo(result["metadata"], "application/rtf", file_name)
+
     def test_odt_with_split(self) -> None:
         file_name = "ТЗ_ГИС_3  .odt"
         result = self._send_request(file_name)
