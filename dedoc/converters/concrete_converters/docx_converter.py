@@ -15,7 +15,7 @@ class DocxConverter(AbstractConverter):
 
     def can_convert(self, extension: str, mime: str, parameters: Optional[dict] = None) -> bool:
         """
-        Checks if the document is docx-like, e.g. it has .doc or .odt extension.
+        Checks if the document is docx-like, e.g. it has .doc, .rtf or .odt extension.
         """
         return extension.lower() in converted_extensions.docx_like_format or mime in converted_mimes.docx_like_format
 

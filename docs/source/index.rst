@@ -84,7 +84,7 @@ to get more details about information that can be extracted by each available re
      - `+`
      - `+`
 
-   * - doc, odt
+   * - doc, odt, rtf
      - convert to docx using :class:`~dedoc.converters.DocxConverter`
      - `+`
      - `+`

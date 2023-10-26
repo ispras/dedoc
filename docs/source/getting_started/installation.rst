@@ -70,7 +70,7 @@ You should have ``python`` (python3.8, python3.9 are recommended) and ``pip`` in
 
     sudo apt-get install -y libreoffice djvulibre-bin unzip unrar
 
-``libreoffice`` and ``djvulibre-bin`` packages are used by converters (doc, odt to docx; xls, ods to xlsx; ppt, odp to pptx; djvu to pdf).
+``libreoffice`` and ``djvulibre-bin`` packages are used by converters (doc, odt, rtf to docx; xls, ods to xlsx; ppt, odp to pptx; djvu to pdf).
 If you don't need converters, you can skip this step.
 ``unzip`` and ``unrar`` packages are used in the process of extracting archives.
 
