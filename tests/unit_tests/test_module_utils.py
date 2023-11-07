@@ -3,7 +3,7 @@ import unittest
 from dedoc.utils.utils import splitext_
 
 
-class TestRecognizedTable(unittest.TestCase):
+class TestUtils(unittest.TestCase):
 
     def test_splitext_simple_name(self) -> None:
         name_extension = "name.doc"
