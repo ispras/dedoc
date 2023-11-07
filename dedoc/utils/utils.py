@@ -63,6 +63,13 @@ def splitext_(path: str) -> Tuple[str, str]:
     """
     get extensions with several dots
     """
+    if len(path.split()) > 1:
+        first, second = path.rsplit(maxsplit=1)
+        sep = path[len(first)]
+        name, ext = splitext(second)
+        if len(ext) == 0:
+            name, ext = ext, name
+        return first + sep + name, ext
     if len(path.split(".")) > 2:
         return path.split(".")[0], "." + ".".join(path.split(".")[-2:])
     return splitext(path)

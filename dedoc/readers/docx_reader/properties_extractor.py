@@ -74,7 +74,10 @@ def change_indent(old_properties: BaseProperties, tree: Tag) -> None:
     if not tree.ind:
         return
 
-    attributes = {attribute: 0 for attribute in ["firstLine", "firstLineChars", "hanging", "hangingChars", "start", "startChars", "left"]}
+    attributes = {
+        attribute: 0 for attribute in
+        ["firstLine", "firstLineChars", "hanging", "hangingChars", "start", "startChars", "left"]
+    }
     for attribute in attributes:
         attributes[attribute] = float(tree.ind.get(f"w:{attribute}", 0))
 
@@ -106,7 +109,8 @@ def change_size(old_properties: BaseProperties, tree: Tag) -> None:
     :param tree: BeautifulSoup tree with properties
     """
     if tree.sz:
-        old_properties.size = int(tree.sz.get("w:val", old_properties.size))
+        new_size = float(tree.sz.get("w:val", old_properties.size))
+        old_properties.size = int(new_size)
 
 
 def change_jc(old_properties: BaseProperties, tree: Tag) -> None:
@@ -176,19 +180,19 @@ def change_spacing(old_properties: BaseProperties, tree: Tag) -> None:
 
     if not before_autospacing:
         before_lines = tree.spacing.get("w:beforeLines", False)
-        before_lines = int(before_lines) if before_lines else before_lines
+        before_lines = int(float(before_lines)) if before_lines else before_lines
         if not before_lines:
             before_tag = tree.spacing.get("w:before", False)
-            before = int(before_tag) if before_tag else before
+            before = int(float(before_tag)) if before_tag else before
         else:
             before = before_lines
 
     if not after_autospacing:
         after_lines = tree.spacing.get("w:afterLines", False)
-        after_lines = int(after_lines) if after_lines else after_lines
+        after_lines = int(float(after_lines)) if after_lines else after_lines
         if not after_lines:
             after_tag = tree.spacing.get("w:after", False)
-            after = int(after_tag) if after_tag else after
+            after = int(float(after_tag)) if after_tag else after
         else:
             after = after_lines
 
