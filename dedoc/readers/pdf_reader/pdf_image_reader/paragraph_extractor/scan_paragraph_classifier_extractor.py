@@ -4,13 +4,13 @@ import os
 import pickle
 from typing import List
 
-import xgboost
 from xgboost import XGBClassifier
 
 from dedoc.config import get_config
 from dedoc.download_models import download_from_hub
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.paragraph_features import ParagraphFeatureExtractor
+from dedoc.utils.parameter_utils import get_param_gpu_avalable
 
 
 class ScanParagraphClassifierExtractor(object):
@@ -47,15 +47,10 @@ class ScanParagraphClassifierExtractor(object):
             self._classifier, parameters = pickle.load(file)
             self._feature_extractor = ParagraphFeatureExtractor(**parameters, config=self.config)
 
-        if self.config.get("on_gpu", False):
-            try:
-                gpu_params = dict(predictor="gpu_predictor", tree_method="auto", gpu_id=0)
-                self._classifier.set_params(**gpu_params)
-                self._classifier.get_booster().set_param(gpu_params)
-            except xgboost.core.XGBoostError:  # if no gpu available
-                self.logger.warning("No gpu device availiable! Changing configuration on_gpu to False!")
-                self.config["on_gpu"] = False
-                return self._unpickle()
+        if get_param_gpu_avalable(self.config, self.logger):
+            gpu_params = dict(predictor="gpu_predictor", tree_method="auto", gpu_id=0)
+            self._classifier.set_params(**gpu_params)
+            self._classifier.get_booster().set_param(gpu_params)
 
         return self._classifier
 
