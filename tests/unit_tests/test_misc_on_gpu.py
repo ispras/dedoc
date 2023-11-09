@@ -59,12 +59,7 @@ class TestOnGpu(AbstractTestApiDocReader):
             LineWithLocation(line="Example line", metadata=metadata, annotations=[], location=location),
             LineWithLocation(line="Example line 2", metadata=metadata2, annotations=[], location=location2)
         ]
-        data = classify_lines_with_location.feature_extractor.transform([lines])
+        lines = classify_lines_with_location.extract(lines)
 
-        if any((data[col].isna().all() for col in data.columns)):
-            labels = ["not_paragraph"] * len(lines)
-        else:
-            labels = classify_lines_with_location.classifier.predict(data)
-
-        self.assertEqual(labels[0], "paragraph")
-        self.assertEqual(labels[1], "paragraph")
+        self.assertEqual(lines[0].metadata.tag_hierarchy_level.can_be_multiline, False)
+        self.assertEqual(lines[1].metadata.tag_hierarchy_level.can_be_multiline, False)
