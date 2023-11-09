@@ -4,6 +4,8 @@ import os
 import sys
 from typing import Any, Optional
 
+import GPUtil
+
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(asctime)s - %(pathname)s - %(levelname)s - %(message)s")
 
 DEBUG_MODE = False
@@ -21,6 +23,10 @@ _config = dict(
     # --------------------------------------------JOBLIB SETTINGS-------------------------------------------------------
     # number of parallel jobs in some tasks as OCR
     n_jobs=1,
+
+    # --------------------------------------------GPU SETTINGS-------------------------------------------------------
+    # set gpu in XGBoost and torch models
+    on_gpu=False,
 
     # ---------------------------------------------API SETTINGS---------------------------------------------------------
     # max file size in bytes
@@ -80,6 +86,12 @@ class Configuration(object):
             self.__config = config_module._config
         else:
             self.__config = _config
+
+        gpus = GPUtil.getGPUs()
+        if self.__config.get("on_gpu", False) and len(gpus) == 0:
+            logger = self.__config.get("logger", logging.getLogger())
+            logger.warning("No gpu device available! Changing configuration on_gpu to False!")
+            self.__config["on_gpu"] = False
 
     def get_config(self, args: Optional[Any] = None) -> dict:
         if self.__config is None or args is not None:

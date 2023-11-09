@@ -61,6 +61,8 @@ class ColumnsOrientationClassifier(object):
             self.device = torch.device("cpu")
             self.location = "cpu"
 
+        self.logger.warning(f"Classifier is set to device {self.device}")
+
     def _load_weights(self, net: ClassificationModelTorch) -> None:
         path_checkpoint = path.join(self.checkpoint_path, "scan_orientation_efficient_net_b0.pth")
         if not path.isfile(path_checkpoint):
