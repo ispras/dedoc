@@ -5,8 +5,9 @@ import pickle
 from abc import ABC
 from typing import Tuple
 
-import GPUtil
+import xgboost
 from xgboost import XGBClassifier
+
 
 from dedoc.download_models import download_from_hub
 from dedoc.structure_extractors.line_type_classifiers.abstract_line_type_classifier import AbstractLineTypeClassifier
@@ -26,14 +27,15 @@ class AbstractPickledLineTypeClassifier(AbstractLineTypeClassifier, ABC):
         with gzip.open(path) as file:
             classifier, feature_extractor_parameters = pickle.load(file)
 
-        gpus = GPUtil.getGPUs()
-        if self.config.get("on_gpu", False) and len(gpus) > 0:
-            gpu_params = dict(predictor="gpu_predictor", tree_method="auto", gpu_id=0)
-            classifier.set_params(**gpu_params)
-            classifier.get_booster().set_param(gpu_params)
-        elif self.config.get("on_gpu", False) and len(gpus) == 0:
-            self.logger.warning("No gpu device availiable! Changing configuration on_gpu to False!")
-            self.config["on_gpu"] = False
+        if self.config.get("on_gpu", False):
+            try:
+                gpu_params = dict(predictor="gpu_predictor", tree_method="auto", gpu_id=0)
+                classifier.set_params(**gpu_params)
+                classifier.get_booster().set_param(gpu_params)
+            except xgboost.core.XGBoostError:  # if no gpu available
+                self.logger.warning("No gpu device availiable! Changing configuration on_gpu to False!")
+                self.config["on_gpu"] = False
+                return self.load()
 
         return classifier, feature_extractor_parameters
 

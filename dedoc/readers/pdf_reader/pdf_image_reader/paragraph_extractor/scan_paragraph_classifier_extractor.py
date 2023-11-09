@@ -4,7 +4,7 @@ import os
 import pickle
 from typing import List
 
-import GPUtil
+import xgboost
 from xgboost import XGBClassifier
 
 from dedoc.config import get_config
@@ -47,14 +47,17 @@ class ScanParagraphClassifierExtractor(object):
             self._classifier, parameters = pickle.load(file)
             self._feature_extractor = ParagraphFeatureExtractor(**parameters, config=self.config)
 
-        gpus = GPUtil.getGPUs()
-        if self.config.get("on_gpu", False) and len(gpus) > 0:
-            gpu_params = dict(predictor="gpu_predictor", tree_method="auto", gpu_id=0)
-            self._classifier.set_params(**gpu_params)
-            self._classifier.get_booster().set_param(gpu_params)
-        elif self.config.get("on_gpu", False) and len(gpus) == 0:
-            self.logger.warning("No gpu device availiable! Changing configuration on_gpu to False!")
-            self.config["on_gpu"] = False
+        if self.config.get("on_gpu", False):
+            try:
+                gpu_params = dict(predictor="gpu_predictor", tree_method="auto", gpu_id=0)
+                self._classifier.set_params(**gpu_params)
+                self._classifier.get_booster().set_param(gpu_params)
+            except xgboost.core.XGBoostError:  # if no gpu available
+                self.logger.warning("No gpu device availiable! Changing configuration on_gpu to False!")
+                self.config["on_gpu"] = False
+                return self._unpickle()
+
+        return self._classifier
 
     def extract(self, lines_with_links: List[LineWithLocation]) -> List[LineWithLocation]:
         data = self.feature_extractor.transform([lines_with_links])
