@@ -19,27 +19,21 @@ def get_param_language(parameters: Optional[dict]) -> str:
 def get_param_orient_analysis_cells(parameters: Optional[dict]) -> bool:
     if parameters is None:
         return False
-    orient_analysis_cells = (
-        parameters.get("orient_analysis_cells", "False").lower() == "true"
-    )
+    orient_analysis_cells = (parameters.get("orient_analysis_cells", "False").lower() == "true")
     return orient_analysis_cells
 
 
 def get_param_need_header_footers_analysis(parameters: Optional[dict]) -> bool:
     if parameters is None:
         return False
-    need_header_footers_analysis = (
-        parameters.get("need_header_footer_analysis", "False").lower() == "true"
-    )
+    need_header_footers_analysis = (parameters.get("need_header_footer_analysis", "False").lower() == "true")
     return need_header_footers_analysis
 
 
 def get_param_need_pdf_table_analysis(parameters: Optional[dict]) -> bool:
     if parameters is None:
         return False
-    need_pdf_table_analysis = (
-        parameters.get("need_pdf_table_analysis", "True").lower() == "true"
-    )
+    need_pdf_table_analysis = (parameters.get("need_pdf_table_analysis", "True").lower() == "true")
     return need_pdf_table_analysis
 
 
