@@ -128,7 +128,7 @@ def get_param_page_slice(parameters: Dict[str, Any]) -> Tuple[Optional[int], Opt
         raise ValueError(f"Error input parameter 'pages'. Bad page limit {pages}")
 
 
-def get_param_gpu_avalable(parameters: Optional[dict], logger: Logger) -> bool:
+def get_param_gpu_available(parameters: Optional[dict], logger: Logger) -> bool:
     """
     Check if GPU is available and update the configuration accordingly.
 
