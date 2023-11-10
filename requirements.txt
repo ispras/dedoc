@@ -4,7 +4,6 @@ Cython>=0.29.28,<=3.0.2
 docx==0.2.4
 dedoc-utils==0.3.5
 fastapi>=0.77.0,<=0.103.0
-GPUtil>=1.4.0
 huggingface-hub>=0.14.1,<=0.16.4
 imutils==0.5.4
 itsdangerous>=2.1.0,<=2.1.2
