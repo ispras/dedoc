@@ -1,3 +1,5 @@
+import subprocess
+from logging import Logger
 from typing import Any, Dict, Optional, Tuple
 
 
@@ -96,7 +98,6 @@ def get_param_image_document_page(parameters: Optional[dict]) -> str:
 
 
 def get_param_table_type(parameters: Optional[dict]) -> str:
-
     if parameters is None:
         return ""
 
@@ -119,3 +120,28 @@ def get_param_page_slice(parameters: Dict[str, Any]) -> Tuple[Optional[int], Opt
         return first_page, last_page
     except Exception:
         raise ValueError(f"Error input parameter 'pages'. Bad page limit {pages}")
+
+
+def get_param_gpu_available(parameters: Optional[dict], logger: Logger) -> bool:
+    """
+    Check if GPU is available and update the configuration accordingly.
+
+    Args:
+        parameters (Optional[dict]): A dictionary containing the parameters for the function. Usually supposed to be config.
+        logger (Logger): An instance of the logger.
+
+    Returns:
+        bool: True if GPU is available, False otherwise.
+    """
+
+    if not parameters.get("on_gpu", False):
+        return False
+
+    try:
+        subprocess.run(["nvidia-smi"], check=True, stdout=subprocess.DEVNULL)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        logger.warning("No gpu device available! Changing configuration on_gpu to False!")
+        parameters["on_gpu"] = False
+        return False
+
+    return True

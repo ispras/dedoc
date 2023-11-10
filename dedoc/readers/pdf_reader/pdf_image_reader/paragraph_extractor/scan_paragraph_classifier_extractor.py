@@ -1,4 +1,5 @@
 import gzip
+import logging
 import os
 import pickle
 from typing import List
@@ -9,6 +10,7 @@ from dedoc.config import get_config
 from dedoc.download_models import download_from_hub
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.paragraph_features import ParagraphFeatureExtractor
+from dedoc.utils.parameter_utils import get_param_gpu_available
 
 
 class ScanParagraphClassifierExtractor(object):
@@ -18,6 +20,7 @@ class ScanParagraphClassifierExtractor(object):
 
     def __init__(self, *, config: dict) -> None:
         super().__init__()
+        self.logger = config.get("logger", logging.getLogger())
         self.path = os.path.join(get_config()["resources_path"], "paragraph_classifier.pkl.gz")
         self.config = config
         self._feature_extractor = None
@@ -43,6 +46,13 @@ class ScanParagraphClassifierExtractor(object):
         with gzip.open(self.path) as file:
             self._classifier, parameters = pickle.load(file)
             self._feature_extractor = ParagraphFeatureExtractor(**parameters, config=self.config)
+
+        if get_param_gpu_available(self.config, self.logger):
+            gpu_params = dict(predictor="gpu_predictor", tree_method="auto", gpu_id=0)
+            self._classifier.set_params(**gpu_params)
+            self._classifier.get_booster().set_param(gpu_params)
+
+        return self._classifier
 
     def extract(self, lines_with_links: List[LineWithLocation]) -> List[LineWithLocation]:
         data = self.feature_extractor.transform([lines_with_links])
