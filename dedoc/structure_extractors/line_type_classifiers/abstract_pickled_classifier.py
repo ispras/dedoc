@@ -10,7 +10,7 @@ from xgboost import XGBClassifier
 
 from dedoc.download_models import download_from_hub
 from dedoc.structure_extractors.line_type_classifiers.abstract_line_type_classifier import AbstractLineTypeClassifier
-from dedoc.utils.parameter_utils import get_param_gpu_avalable
+from dedoc.utils.parameter_utils import get_param_gpu_available
 
 
 class AbstractPickledLineTypeClassifier(AbstractLineTypeClassifier, ABC):
@@ -27,7 +27,7 @@ class AbstractPickledLineTypeClassifier(AbstractLineTypeClassifier, ABC):
         with gzip.open(path) as file:
             classifier, feature_extractor_parameters = pickle.load(file)
 
-        if get_param_gpu_avalable(self.config, self.logger):
+        if get_param_gpu_available(self.config, self.logger):
             gpu_params = dict(predictor="gpu_predictor", tree_method="auto", gpu_id=0)
             classifier.set_params(**gpu_params)
             classifier.get_booster().set_param(gpu_params)
