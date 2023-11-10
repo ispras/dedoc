@@ -146,7 +146,7 @@ def get_param_gpu_available(parameters: Optional[dict], logger: Logger) -> bool:
     try:
         subprocess.run(["nvidia-smi"], check=True, stdout=subprocess.DEVNULL)
     except (subprocess.CalledProcessError, FileNotFoundError):
-        logger.warning("No gpu device availiable! Changing configuration on_gpu to False!")
+        logger.warning("No gpu device available! Changing configuration on_gpu to False!")
         parameters["on_gpu"] = False
         return False
 

@@ -4,7 +4,7 @@ import os
 import sys
 from typing import Any, Optional
 
-import GPUtil
+from dedoc.utils.parameter_utils import get_param_gpu_available
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(asctime)s - %(pathname)s - %(levelname)s - %(message)s")
 
@@ -87,11 +87,7 @@ class Configuration(object):
         else:
             self.__config = _config
 
-        gpus = GPUtil.getGPUs()
-        if self.__config.get("on_gpu", False) and len(gpus) == 0:
-            logger = self.__config.get("logger", logging.getLogger())
-            logger.warning("No gpu device available! Changing configuration on_gpu to False!")
-            self.__config["on_gpu"] = False
+        get_param_gpu_available(self.__config, self.__config.get("logger", logging.getLogger()))
 
     def get_config(self, args: Optional[Any] = None) -> dict:
         if self.__config is None or args is not None:
