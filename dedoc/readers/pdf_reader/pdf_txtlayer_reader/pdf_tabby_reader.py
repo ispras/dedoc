@@ -1,5 +1,6 @@
 import json
 import logging
+import math
 import os
 import subprocess
 import uuid
@@ -33,6 +34,7 @@ from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfB
 from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
 from dedoc.utils.parameter_utils import get_param_page_slice
+from dedoc.utils.pdf_utils import get_pdf_page_count
 from dedoc.utils.utils import calculate_file_hash
 
 
@@ -96,28 +98,27 @@ class PdfTabbyReader(PdfBaseReader):
 
     def __extract(self, path: str, parameters: dict, warnings: list)\
             -> Tuple[List[LineWithMeta], List[Table], List[ScanTable], List[PdfImageAttachment], Optional[dict]]:
-        file_hash = calculate_file_hash(path=path)
-        start_page, end_page = get_param_page_slice(parameters)
-        start_page = 0 if start_page is None else start_page
-
-        document = self.__process_pdf(path=path)  # TODO use start_page, end_page
-
-        all_lines = []
-        all_tables = []
-        all_tables_on_images = []
-        all_attached_images = []
-        pages = document.get("pages", [])
-
+        all_lines, all_tables, all_tables_on_images, all_attached_images = [], [], [], []
         document_metadata = None
-        if start_page > 0 or end_page < len(pages):
+        file_hash = calculate_file_hash(path=path)
+        page_count = get_pdf_page_count(path)
+        page_count = math.inf if page_count is None else page_count
+        first_page, last_page = get_param_page_slice(parameters)
+
+        if first_page >= page_count or last_page is not None and first_page >= last_page:
+            return all_lines, all_tables, all_tables_on_images, all_attached_images, document_metadata
+
+        # in java tabby reader page numeration starts with 1, end_page is included
+        first_tabby_page = 1 if first_page is None else first_page + 1
+        document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_page)
+
+        if first_page > 0 or last_page is not None and last_page < page_count:
             warnings.append("The document is partially parsed")
-            document_metadata = dict(first_page=start_page)
-            if end_page is not None:
-                document_metadata["last_page"] = end_page
+            document_metadata = dict(first_page=first_page)
+            if last_page is not None:
+                document_metadata["last_page"] = last_page
 
-        pages = pages[start_page:end_page]
-
-        for page in pages:
+        for page in document.get("pages", []):
             page_lines = self.__get_lines_with_location(page, file_hash)
             if page_lines:
                 all_lines.extend(page_lines)
