@@ -1,0 +1,92 @@
+{
+  "tabby": {
+    "Document635.pdf": [
+      "1.json",
+      "2.json"
+    ],
+    "example_with_attachments_depth_1.pdf": [
+      "1.json",
+      "attachment.txt",
+      "example_with_table4.jpg",
+      "header_test.pdf",
+      "header_test.pdf"
+    ],
+    "example_with_images.xlsx.pdf": [],
+    "with_attachments_0.docx.pdf": [],
+    "with_attachments_1.docx.pdf": [],
+    "with_attachments_1.pptx.pdf": [],
+    "with_attachments_2.docx.pdf": [],
+    "with_attachments_2.pptx.pdf": [],
+    "with_attachments_3.pdf": []
+  },
+  "pdfminer": {
+    "Document635.pdf": [
+      "1.json",
+      "1.png",
+      "2.json",
+      "2.png"
+    ],
+    "example_with_attachments_depth_1.pdf": [
+      "1.json",
+      "attachment.txt",
+      "example_with_table4.jpg",
+      "header_test.pdf",
+      "header_test.pdf"
+    ],
+    "example_with_images.xlsx.pdf": [
+      "1.png",
+      "2.png"
+    ],
+    "with_attachments_0.docx.pdf": [
+      "1.png",
+      "2.png",
+      "3.png",
+      "4.png"
+    ],
+    "with_attachments_1.docx.pdf": [
+      "1.png",
+      "2.png",
+      "3.png"
+    ],
+    "with_attachments_1.pptx.pdf": [
+      "1.png",
+      "2.png",
+      "3.png"
+    ],
+    "with_attachments_2.docx.pdf": [
+      "1.png",
+      "2.png"
+    ],
+    "with_attachments_2.pptx.pdf": [],
+    "with_attachments_3.pdf": [
+      "1.png",
+      "2.png",
+      "3.png",
+      "4.png",
+      "5.png",
+      "6.png",
+      "7.png"
+    ]
+  },
+  "common": {
+    "Document635.pdf": [
+      "1.json",
+      "2.json"
+    ],
+    "example_with_attachments_depth_1.pdf": [
+      "1.json",
+      "attachment.txt",
+      "example_with_table4.jpg",
+      "header_test.pdf",
+      "header_test.pdf"
+    ],
+    "example_with_images.xlsx.pdf": [],
+    "large.pdf": [],
+    "with_attachments_0.docx.pdf": [],
+    "with_attachments_1.docx.pdf": [],
+    "with_attachments_1.pptx.pdf": [],
+    "with_attachments_2.docx.pdf": [],
+    "with_attachments_2.pptx.pdf": [],
+    "with_attachments_3.pdf": []
+  }
+}
