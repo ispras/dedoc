@@ -2,7 +2,9 @@
   "tabby": {
     "Document635.pdf": [
       "1.json",
-      "2.json"
+      "1.png",
+      "2.json",
+      "2.png"
     ],
     "example_with_attachments_depth_1.pdf": [
       "1.json",
@@ -11,13 +13,55 @@
       "header_test.pdf",
       "header_test.pdf"
     ],
-    "example_with_images.xlsx.pdf": [],
-    "with_attachments_0.docx.pdf": [],
-    "with_attachments_1.docx.pdf": [],
-    "with_attachments_1.pptx.pdf": [],
+    "example_with_images.xlsx.pdf": [
+      "1.png",
+      "2.png"
+    ],
+    "with_attachments_0.docx.pdf": [
+      "1.png",
+      "2.png",
+      "3.png",
+      "4.png"
+    ],
+    "with_attachments_1.docx.pdf": [
+      "1.png",
+      "2.png",
+      "3.png"
+    ],
+    "with_attachments_1.pptx.pdf": [
+      "1.png"
+    ],
     "with_attachments_2.docx.pdf": [],
-    "with_attachments_2.pptx.pdf": [],
-    "with_attachments_3.pdf": []
+    "with_attachments_2.pptx.pdf": [
+      "1.png",
+      "2.png",
+      "3.png",
+      "4.png",
+      "5.png",
+      "6.png",
+      "7.png"
+    ],
+    "with_attachments_3.pdf": [
+      "1.png",
+      "10.png",
+      "11.png",
+      "12.png",
+      "13.png",
+      "14.png",
+      "15.png",
+      "16.png",
+      "17.png",
+      "18.png",
+      "19.png",
+      "2.png",
+      "3.png",
+      "4.png",
+      "5.png",
+      "6.png",
+      "7.png",
+      "8.png",
+      "9.png"
+    ]
   },
   "pdfminer": {
     "Document635.pdf": [

@@ -79,7 +79,7 @@ class PdfTabbyReader(PdfBaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        lines, tables, tables_on_images = self.__extract(path=path)
+        lines, tables, tables_on_images, image_attachments = self.__extract(path=path)
         warnings = []
         document_metadata = None
 
@@ -94,9 +94,9 @@ class PdfTabbyReader(PdfBaseReader):
             if last_page != math.inf:
                 document_metadata["last_page"] = last_page
 
-        lines = self.linker.link_objects(lines=lines, tables=tables_on_images, images=[])
+        lines = self.linker.link_objects(lines=lines, tables=tables_on_images, images=image_attachments)
 
-        attachments = []
+        attachments = image_attachments
         if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
             tmp_dir = os.path.dirname(path)
             file_name = os.path.basename(path)
@@ -108,14 +108,17 @@ class PdfTabbyReader(PdfBaseReader):
 
         return self._postprocess(result)
 
-    def __extract(self, path: str, start_page: int = None, end_page: int = None) -> Tuple[List[LineWithMeta], List[Table], List[ScanTable]]:
+    def __extract(self, path: str, start_page: int = None, end_page: int = None) \
+            -> Tuple[List[LineWithMeta], List[Table], List[ScanTable], List[PdfImageAttachment]]:
         file_hash = calculate_file_hash(path=path)
         document = self.__process_pdf(path=path, start_page=start_page, end_page=end_page)
+        start_page = 0 if start_page is None else start_page
 
         all_lines = []
         all_tables = []
         all_tables_on_images = []
-        for page in document.get("pages", []):
+        all_attached_images = []
+        for page_number, page in enumerate(document.get("pages", []), start=start_page):
             page_lines = self.__get_lines_with_location(page, file_hash)
             if page_lines:
                 all_lines.extend(page_lines)
@@ -125,7 +128,11 @@ class PdfTabbyReader(PdfBaseReader):
                 all_tables.extend(page_tables)
                 all_tables_on_images.extend(table_on_images)
 
-        return all_lines, all_tables, all_tables_on_images
+            attached_images = self.__get_attached_images(page=page, page_number=page_number)
+            if attached_images:
+                all_attached_images.extend(attached_images)
+
+        return all_lines, all_tables, all_tables_on_images, all_attached_images
 
     def __get_tables(self, page: dict) -> Tuple[List[Table], List[ScanTable]]:
         tables = []
@@ -167,6 +174,24 @@ class PdfTabbyReader(PdfBaseReader):
             tables_on_image.append(ScanTable(page_number=page_number, matrix_cells=None, bbox=table_bbox, name=table_name, order=order))
 
         return tables, tables_on_image
+
+    def __get_attached_images(self, page: dict, page_number: int) -> List[PdfImageAttachment]:
+        image_attachment_list = []
+        for image_dict in page["images"]:
+            image_location = Location(
+                page_number=page_number,
+                bbox=BBox(x_top_left=image_dict["x_top_left"], y_top_left=image_dict["y_top_left"], width=image_dict["width"], height=image_dict["height"])
+            )
+            image_attachment = PdfImageAttachment(
+                original_name=image_dict["original_name"],
+                tmp_file_path=image_dict["tmp_file_path"],
+                need_content_analysis=False,
+                uid=f"attach_{uuid.uuid4()}",
+                location=image_location
+            )
+            image_attachment_list.append(image_attachment)
+
+        return image_attachment_list
 
     def __get_lines_with_location(self, page: dict, file_hash: str) -> List[LineWithLocation]:
         lines = []
