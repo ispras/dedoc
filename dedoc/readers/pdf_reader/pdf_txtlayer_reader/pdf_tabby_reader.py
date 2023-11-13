@@ -110,7 +110,8 @@ class PdfTabbyReader(PdfBaseReader):
 
         # in java tabby reader page numeration starts with 1, end_page is included
         first_tabby_page = 1 if first_page is None else first_page + 1
-        document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_page)
+        last_tabby_page = None if last_page is not None and last_page > page_count else last_page
+        document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_tabby_page)
 
         if first_page > 0 or last_page is not None and last_page < page_count:
             warnings.append("The document is partially parsed")
