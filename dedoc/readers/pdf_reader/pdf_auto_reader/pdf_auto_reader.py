@@ -38,7 +38,7 @@ class PdfAutoReader(BaseReader):
         self.pdf_txtlayer_reader = PdfTxtlayerReader(config=config)
         self.pdf_tabby_reader = PdfTabbyReader(config=config)
         self.pdf_image_reader = PdfImageReader(config=config)
-        self.txtlayer_detector = TxtLayerDetector(pdf_reader=self.pdf_tabby_reader, config=config)
+        self.txtlayer_detector = TxtLayerDetector(pdf_txtlayer_reader=self.pdf_txtlayer_reader, pdf_tabby_reader=self.pdf_tabby_reader, config=config)
 
         self.config = config
         self.logger = config.get("logger", logging.getLogger())

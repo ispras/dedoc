@@ -105,21 +105,25 @@ class PdfTabbyReader(PdfBaseReader):
         page_count = math.inf if page_count is None else page_count
         first_page, last_page = get_param_page_slice(parameters)
 
-        if (first_page is not None and first_page >= page_count) or (last_page is not None and first_page >= last_page):
-            return all_lines, all_tables, all_tables_on_images, all_attached_images, document_metadata
-
-        # in java tabby reader page numeration starts with 1, end_page is included
-        first_tabby_page = first_page + 1 if first_page is not None else 1
-        last_tabby_page = None if last_page is not None and last_page > page_count else last_page
-        document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_tabby_page)
-
-        if (first_page is not None and first_page > 0) or (last_page is not None and last_page < page_count):
+        empty_page_limit = (first_page is not None and first_page >= page_count) or (last_page is not None and first_page >= last_page)
+        partial_page_limit = (first_page is not None and first_page > 0) or (last_page is not None and last_page < page_count)
+        if empty_page_limit or partial_page_limit:
             warnings.append("The document is partially parsed")
             document_metadata = dict(first_page=first_page)
             if last_page is not None:
                 document_metadata["last_page"] = last_page
 
-        for page in document.get("pages", []):
+            if empty_page_limit:
+                return all_lines, all_tables, all_tables_on_images, all_attached_images, document_metadata
+
+        # in java tabby reader page numeration starts with 1, end_page is included
+        # first_tabby_page = first_page + 1 if first_page is not None else 1
+        # last_tabby_page = None if last_page is not None and last_page > page_count else last_page
+        # document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_tabby_page) TODO TLDR-518
+
+        document = self.__process_pdf(path=path)
+        pages = document.get("pages", [])
+        for page in pages[first_page:last_page]:
             page_lines = self.__get_lines_with_location(page, file_hash)
             if page_lines:
                 all_lines.extend(page_lines)
