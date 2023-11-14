@@ -34,6 +34,7 @@ class TestApiPdfPageLimit(AbstractTestApiDocReader):
 
     def test_tabby_layer(self) -> None:
         self.__check_limit("tabby", check_partially=True)
+        self.__check_out_of_limit("tabby")
 
     def test_auto_tabby(self) -> None:
         self.__check_limit("auto_tabby", check_partially=True)

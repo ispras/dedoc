@@ -58,6 +58,7 @@ class PdfBaseReader(BaseReader):
         """
         :param config: configuration of the reader, e.g. logger for logging
         """
+        config["n_jobs"] = config.get("n_jobs", 1)
         self.table_recognizer = TableRecognizer(config=config)
         self.metadata_extractor = LineMetadataExtractor(config=config)
         self.config = config

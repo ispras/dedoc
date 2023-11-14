@@ -5,7 +5,7 @@ from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 class TestApiImageRefs(AbstractTestApiDocReader):
 
-    data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "docx")
+    data_directory_path = os.path.join(AbstractTestApiDocReader.data_directory_path, "with_attachments")
 
     def test_docx_with_images(self) -> None:
         file_name = "docx_with_images.docx"
@@ -57,6 +57,46 @@ class TestApiImageRefs(AbstractTestApiDocReader):
 
         image_paragraph = content["subparagraphs"][5]
         self.__check_image_paragraph(image_paragraph=image_paragraph, image_uid=attachments_name2uid["image3.png"])
+
+    def test_pdf_pdfminer_images_refs(self) -> None:
+        file_name = "with_attachments_1.docx.pdf"
+        result = self._send_request(file_name, dict(with_attachments=True, structure_type="linear", pdf_with_text_layer="true"))
+        structure = result["content"]["structure"]
+
+        attachment_uids = {attachment["metadata"]["uid"] for attachment in result["attachments"]}
+        self.assertEqual(len(attachment_uids), 3)
+
+        attach_annotation = structure["subparagraphs"][0]["annotations"][-1]
+        self.assertEqual(attach_annotation["name"], "attachment")
+        self.assertIn(attach_annotation["value"], attachment_uids)
+
+        attach_annotation = structure["subparagraphs"][3]["annotations"][-2]
+        self.assertEqual(attach_annotation["name"], "attachment")
+        self.assertIn(attach_annotation["value"], attachment_uids)
+
+        attach_annotation = structure["subparagraphs"][3]["annotations"][-1]
+        self.assertEqual(attach_annotation["name"], "attachment")
+        self.assertIn(attach_annotation["value"], attachment_uids)
+
+    def test_pdf_tabby_images_refs(self) -> None:
+        file_name = "with_attachments_1.docx.pdf"
+        result = self._send_request(file_name, dict(with_attachments=True, structure_type="linear", pdf_with_text_layer="tabby"))
+        structure = result["content"]["structure"]
+
+        attachment_uids = {attachment["metadata"]["uid"] for attachment in result["attachments"]}
+        self.assertEqual(len(attachment_uids), 3)
+
+        attach_annotation = structure["subparagraphs"][2]["annotations"][-1]
+        self.assertEqual(attach_annotation["name"], "attachment")
+        self.assertIn(attach_annotation["value"], attachment_uids)
+
+        attach_annotation = structure["subparagraphs"][4]["annotations"][-2]
+        self.assertEqual(attach_annotation["name"], "attachment")
+        self.assertIn(attach_annotation["value"], attachment_uids)
+
+        attach_annotation = structure["subparagraphs"][4]["annotations"][-1]
+        self.assertEqual(attach_annotation["name"], "attachment")
+        self.assertIn(attach_annotation["value"], attachment_uids)
 
     def __check_image_paragraph(self, image_paragraph: dict, image_uid: str) -> None:
         text = image_paragraph["text"]

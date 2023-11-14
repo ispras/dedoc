@@ -175,7 +175,8 @@ You should implement the following methods:
 For each line, you need to add its text, metadata, hierarchy level (if exists) and annotations (if exist).
 For tables, you need to add a list of rows (each row is a list of table cells) and metadata.
 You can use :ref:`dedoc_data_structures` to learn more about all the described structures.
-We use PyPDF2 to extract the text and tabula to extract tables. They must be added to ``requirements.txt`` of the project.
+We use `PyPDF2 <https://pypdf2.readthedocs.io>`_ to extract the text and `tabula <https://tabula-py.readthedocs.io>`_ to extract tables.
+They must be added to ``requirements.txt`` of the project.
 We use class ``PdfAttachmentsExtractor`` for attachments extraction (it was mentioned before).
 It must be added to the reader's constructor and used in ``read`` method.
 

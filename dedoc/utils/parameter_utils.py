@@ -117,6 +117,9 @@ def get_param_page_slice(parameters: Dict[str, Any]) -> Tuple[Optional[int], Opt
         first_page = None if first_page == "" else int(first_page) - 1
         last_page = None if last_page == "" else int(last_page)
 
+        first_page = 0 if first_page is None or first_page < 0 else first_page
+        last_page = 0 if last_page and last_page < 0 else last_page
+
         return first_page, last_page
     except Exception:
         raise ValueError(f"Error input parameter 'pages'. Bad page limit {pages}")
