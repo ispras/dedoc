@@ -47,8 +47,6 @@ class AttachmentsHandler:
         if not AbstractAttachmentsExtractor.with_attachments(parameters) or recursion_deep_attachments < 0:
             return parsed_attachment_files
 
-        self._handle_attachments(document=document, parameters=parameters)
-
         previous_log_time = time.time()
 
         for i, attachment in enumerate(document.attachments):
@@ -79,23 +77,6 @@ class AttachmentsHandler:
             parsed_file.metadata.set_uid(attachment.uid)
             parsed_attachment_files.append(parsed_file)
         return parsed_attachment_files
-
-    def _handle_attachments(self, document: UnstructuredDocument, parameters: dict) -> None:
-        """
-        Handle attached files, for example save it on disk or S3 storage.
-        This method can be redefined by other AttachmentHandler class.
-        """
-        attachments_dir = parameters.get("attachments_dir")
-        if not attachments_dir:
-            return
-
-        for attachment in document.attachments:
-            # TODO: Should I remove this part at all?
-            new_path = os.path.join(attachments_dir, os.path.split(attachment.get_filename_in_path())[1])
-            if new_path != attachment.get_filename_in_path():
-                raise ValueError(f"Attachment path {attachment.get_filename_in_path()} does not match {new_path}!")
-            shutil.move(attachment.get_filename_in_path(), new_path)
-            attachment.tmp_file_path = new_path
 
     def __get_empty_document(self, document_parser: "DedocManager", attachment: AttachedFile, parameters: dict) -> ParsedDocument:  # noqa
         attachment_dir, attachment_name = os.path.split(attachment.get_filename_in_path())
