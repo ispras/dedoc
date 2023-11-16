@@ -94,5 +94,5 @@ class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
                     # TODO process any ole files except \x01Ole10Native and PDF (looks like impossible task)
 
             need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
-            attachments = self._content2attach_file(content=result, tmpdir=tmpdir, need_content_analysis=need_content_analysis)
+            attachments = self._content2attach_file(content=result, tmpdir=tmpdir, need_content_analysis=need_content_analysis, parameters=parameters)
             return attachments

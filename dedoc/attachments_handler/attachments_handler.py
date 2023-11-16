@@ -90,7 +90,10 @@ class AttachmentsHandler:
             return
 
         for attachment in document.attachments:
+            # TODO: Should I remove this part at all?
             new_path = os.path.join(attachments_dir, os.path.split(attachment.get_filename_in_path())[1])
+            if new_path != attachment.get_filename_in_path():
+                raise ValueError(f"Attachment path {attachment.get_filename_in_path()} does not match {new_path}!")
             shutil.move(attachment.get_filename_in_path(), new_path)
             attachment.tmp_file_path = new_path
 
