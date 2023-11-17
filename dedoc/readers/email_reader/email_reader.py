@@ -49,6 +49,7 @@ class EmailReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
+        attachments_dir = parameters.get("attachments_dir", os.path.dirname(path))
         with open(path, "rb") as f:
             msg = email.message_from_binary_file(f)
         tables, attachments = [], []
@@ -58,7 +59,7 @@ class EmailReader(BaseReader):
         header_filename = "message_header_" + get_unique_name("message_header.json")
 
         # saving message header into separated file as an attachment
-        header_file_path = os.path.join(os.path.dirname(path), header_filename)
+        header_file_path = os.path.join(attachments_dir, header_filename)
         with open(header_file_path, "w", encoding="utf-8") as f:
             json.dump(all_header_fields, f, ensure_ascii=False, indent=4)
 
@@ -91,7 +92,7 @@ class EmailReader(BaseReader):
             if part.is_multipart():
                 continue
 
-            self.__add_attachment(part, path, attachments, need_content_analysis)
+            self.__add_attachment(part, attachments_dir, attachments, need_content_analysis)
 
         # text/plain has the same content as text/html
         if not html_found:
@@ -103,7 +104,7 @@ class EmailReader(BaseReader):
 
         return UnstructuredDocument(lines=lines, tables=tables, attachments=attachments)
 
-    def __add_attachment(self, message: Message, path: str, attachments: list, need_content_analysis: bool) -> None:
+    def __add_attachment(self, message: Message, attachments_dir: str, attachments: list, need_content_analysis: bool, ) -> None:
         content_type = message.get_content_type()
         payload = message.get_payload(decode=True)
 
@@ -121,7 +122,8 @@ class EmailReader(BaseReader):
             extension = mimetypes.guess_extension(content_type)
         extension = ".txt" if extension == ".bat" else extension
 
-        tmpdir = os.path.dirname(path)
+        # TODO: remove
+        tmpdir = attachments_dir
         filename = f"{filename}{extension}"
         tmp_file_name = save_data_to_unique_file(directory=tmpdir, filename=filename, binary_data=payload)
         attachments.append(AttachedFile(original_name=filename,

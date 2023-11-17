@@ -10,6 +10,7 @@ from dedoc.dedoc_manager import DedocManager
 from dedoc.readers import ArchiveReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from tests.test_utils import get_test_config
+from dedoc.utils.utils import calculate_file_hash
 
 
 class TestAttachmentsExtractor(unittest.TestCase):
@@ -110,17 +111,32 @@ class TestAttachmentsExtractor(unittest.TestCase):
             files = [file.original_name for file in document.attachments]
             return files
 
-    def test_attachments_dir(self) -> None:
-        file_name = "with_attachments_0.docx"
+    def test_manager_attachments_dir(self) -> None:
+        docx_file_path = os.path.join(self.src_dir, "with_attachments_0.docx")
+        mhtml_file_path = os.path.join(self.src_dir, "..", "mhtml","with_attachments.mhtml")
+        zip_file_path = os.path.join(self.src_dir, "..", "archives", "arch_with_attachs.zip")
+        eml_file_path = os.path.join(self.src_dir, "..", "eml", "message.eml")
+        files_to_parse = [docx_file_path, mhtml_file_path, eml_file_path]#, zip_file_path]
         manager = DedocManager()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            result = manager.parse(file_path=os.path.join(self.src_dir, file_name),
-                                   parameters=dict(with_attachments=True, need_content_analysis=False, attachments_dir=tmpdir))
+            for file_path in files_to_parse:
+                result = manager.parse(file_path=file_path, parameters=dict(with_attachments=True, need_content_analysis=False, attachments_dir=tmpdir))
 
-            attachment_names = os.listdir(tmpdir)
-            for attachment in result.attachments:
-                self.assertIn(attachment.metadata.temporary_file_name, attachment_names)
+                attachment_names = []
+                for file_name in os.listdir(tmpdir):
+                    if not os.path.isdir(os.path.join(tmpdir, file_name)):
+                        attachment_names.append(file_name)
+                    else:
+                        # In case of mhtml files could be nested
+                        # self.assertEqual(1, len(os.listdir(os.path.join(tmpdir, file_name)))) 
+                        # Folders can contain more than one file 
+                        # (see https://github.com/ispras/dedoc/pull/370#issuecomment-1816840077)
+                        self.assertEqual(calculate_file_hash(os.path.join(tmpdir, file_name, os.listdir(os.path.join(tmpdir, file_name))[0])),  file_name)
+                        attachment_names += os.listdir(os.path.join(tmpdir, file_name))
+
+                for attachment in result.attachments:
+                    self.assertIn(attachment.metadata.temporary_file_name, attachment_names)
 
     def test_reader_attachments_dir(self) -> None:
         file_name = "with_attachments_0.docx"

@@ -48,7 +48,8 @@ class MhtmlReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        save_dir = os.path.dirname(path)
+        attachments_dir = parameters.get("attachments_dir", False)
+        save_dir = attachments_dir if attachments_dir else os.path.dirname(path)
         names_list = self.__extract_files(path=path, save_dir=save_dir)
         names_html = self.__find_html(names_list=names_list)
 
@@ -91,7 +92,8 @@ class MhtmlReader(BaseReader):
                 tmp_path = os.path.join(tmpdir, content_name)
                 with open(tmp_path, "wb") as fp:
                     fp.write(part.get_payload(decode=True))
-
+                
+                # WHY IS HASH CALCULATED AND ADDED TO PATH HERE?
                 file_hash = calculate_file_hash(tmp_path)
                 file_dir = os.path.join(save_dir, file_hash)
                 os.makedirs(file_dir, exist_ok=True)
