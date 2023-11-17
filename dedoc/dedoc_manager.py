@@ -86,7 +86,7 @@ class DedocManager:
         :return: parsed document
         """
         if not os.path.isfile(path=file_path):
-            raise FileNotFoundError()
+            raise FileNotFoundError(file_path)
         self.logger.info(f"Start handle {file_path}")
         file_dir, file_name = os.path.split(file_path)
         unique_filename = get_unique_name(file_name)
