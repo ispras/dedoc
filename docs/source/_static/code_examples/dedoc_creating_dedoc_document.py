@@ -95,7 +95,7 @@ attached_file_line = LineWithMeta("Line with attached file", metadata=attached_f
 
 unstructured_document = UnstructuredDocument(
     tables=[table, complicated_table],
-    lines=[super_line, table_line, complicated_table_line],
+    lines=[super_line, table_line, complicated_table_line, attached_file_line],
     attachments=[attached_file]
 )
 

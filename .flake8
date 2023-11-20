@@ -19,6 +19,7 @@ exclude =
     venv,
     build,
     dedoc.egg-info
+    docs/_build
 
 # ANN101 - type annotations for self
 ignore =

@@ -25,7 +25,7 @@ Basic block of Dedoc document is :class:`~dedoc.data_structures.LineWithMeta` (l
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 8-9
+    :lines: 7-8
 
 Each document contains a hierarchy of its elements. For example, a header line should be on level higher than common
 paragraph lines. Hierarchy level is produced by :ref:`dedoc_structure_extractors` and may vary depending on the type
@@ -33,7 +33,7 @@ of document. To specify hierarchy in our handmade document use :class:`~dedoc.da
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 11-16
+    :lines: 10-15
 
 Hierarchy level compares by tuple (``level_1``, ``level_2``): lesser values are closer to the root of the tree.
 ``level_1`` is primary hierarchy dimension that defines type of line:
@@ -57,19 +57,19 @@ Define metadata with :class:`~dedoc.data_structures.LineMetadata`:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 18
+    :lines: 17
 
 Also there is an option to add some :ref:`annotations`:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 19
+    :lines: 18
 
-Now you can create new :class:`~dedoc.data_structures.LineMetadata` with hierarchy level, metadata and annotations:
+Now you can create new :class:`~dedoc.data_structures.LineWithMeta` with hierarchy level, metadata and annotations:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 21
+    :lines: 20
 
 A few words about ``tag_heirarchy_level`` parameter: some readers extracts information about hierarchy
 directly from tags in document. Dedoc store this information as :class:`~dedoc.data_structures.HierarchyLevel` object
@@ -92,34 +92,34 @@ Imagine you have table like this:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 23-26
+    :lines: 22-25
 
 Main block of tables is :class:`~dedoc.data_structures.CellWithMeta`. To create table, you should
 make list of lists of :class:`~dedoc.data_structures.CellWithMeta`.
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 28-35
+    :lines: 27-34
 
 Table also has some metadata, let's assume that our table is on the first page.
 Use :class:`~dedoc.data_structures.TableMetadata`:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 37
+    :lines: 36
 
 Finally, create :class:`~dedoc.data_structures.Table`:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 38
+    :lines: 37
 
 To place table to the specific place in hierarchy create :class:`~dedoc.data_structures.LineWithMeta`
 with :class:`~dedoc.data_structures.TableAnnotation`:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 40-50
+    :lines: 39-49
 
 Let's try to construct more complicated table such this one:
 
@@ -130,26 +130,26 @@ First steps is almost the same as for previous table:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 52-62
+    :lines: 51-61
 
 Then change ``colspan`` parameter of the first cell of first row to 3 like in HTML format.
 Set ``invisible`` to `True` on the other two cells of the row:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 64-66
+    :lines: 63-65
 
 Table is well done!
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 58-69
+    :lines: 57-68
 
 Add to :class:`~dedoc.data_structures.LineWithMeta`:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 71-81
+    :lines: 70-80
 
 AttachedFile
 ------------
@@ -158,14 +158,13 @@ Also we can attach some files:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 83
+    :lines: 82
 
 Following the example of tables:
 
-
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 85-95
+    :lines: 84-94
 
 
 Unstructured Document
@@ -175,7 +174,7 @@ Now we are ready to create :class:`~dedoc.data_structures.UnstructuredDocument` 
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 97-101
+    :lines: 96-100
 
 
 Parsed Document
@@ -189,16 +188,16 @@ building document from scratch we have to add it by ourselves.
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 103-111
+    :lines: 102-110
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 113-114
+    :lines: 112-113
 
 To get the tree as a dict:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 116
+    :lines: 115
 
 Great job! You just created from scratch your first document in Dedoc format!
