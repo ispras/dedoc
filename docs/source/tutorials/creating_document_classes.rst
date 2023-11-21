@@ -33,7 +33,7 @@ of document. To specify hierarchy in our handmade document use :class:`~dedoc.da
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 10-15
+    :lines: 10
 
 Hierarchy level compares by tuple (``level_1``, ``level_2``): lesser values are closer to the root of the tree.
 ``level_1`` is primary hierarchy dimension that defines type of line:
