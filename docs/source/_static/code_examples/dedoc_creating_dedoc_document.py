@@ -74,7 +74,6 @@ complicated_table_line_metadata = LineMetadata(
     ),
 )
 complicated_table_line_text = "complicated table line"
-
 complicated_table_line = LineWithMeta(complicated_table_line_text, metadata=table_line_metadata,
                                       annotations=[TableAnnotation(complicated_table_line_text, 0, len(complicated_table_line_text))])
 
