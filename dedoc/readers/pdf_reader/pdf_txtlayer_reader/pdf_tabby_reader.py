@@ -117,13 +117,13 @@ class PdfTabbyReader(PdfBaseReader):
                 return all_lines, all_tables, all_tables_on_images, all_attached_images, document_metadata
 
         # in java tabby reader page numeration starts with 1, end_page is included
-        # first_tabby_page = first_page + 1 if first_page is not None else 1
-        # last_tabby_page = None if last_page is not None and last_page > page_count else last_page
-        # document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_tabby_page) TODO TLDR-518
+        first_tabby_page = first_page + 1 if first_page is not None else 1
+        last_tabby_page = page_count if (last_page is None) or (last_page is not None and last_page > page_count) else last_page
+        self.logger.info(f"Reading PDF pages from {first_tabby_page} to {last_tabby_page}")
+        document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_tabby_page)
 
-        document = self.__process_pdf(path=path)
         pages = document.get("pages", [])
-        for page in pages[first_page:last_page]:
+        for page in pages:
             page_lines = self.__get_lines_with_location(page, file_hash)
             if page_lines:
                 all_lines.extend(page_lines)
