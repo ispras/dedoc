@@ -8,14 +8,15 @@ Let's dig inside Dedoc data structures and build Dedoc document from scratch. Du
 * How document structure is defined
 
 Raw document content is stored in :class:`~dedoc.data_structures.UnstructuredDocument`. This is de facto
-a container with lists of data structures objects:
+a container with data structures objects:
 
 * list of :class:`~dedoc.data_structures.Table`
 * list of text lines :class:`~dedoc.data_structures.LineWithMeta`
 * list of attachments :class:`~dedoc.data_structures.AttachedFile`
 * dict with metadata
 
-Order of data structures in lists doesn't matter. All document hierarchy and structure is held inside the data structures.
+Order of data structures in lists doesn't matter. All document hierarchy and structure can be held inside the data structures,
+but :class:`~dedoc.data_structures.UnstructuredDocument` don't provide any structure as is.
 
 
 LineWithMeta
@@ -51,7 +52,7 @@ etc.
 * `3.4.5.1` is ``level_2`` = 4
 
 Some parts of the document (for example title) may take more than one line. To union them set ``can_be_multiline``
-to `True` and then and copy ``level_1``, ``level_2`` and ``line_type`` from the first line to others.
+to `True` and then copy ``level_1``, ``level_2`` and ``line_type`` from the first line to others.
 
 Define metadata with :class:`~dedoc.data_structures.LineMetadata`:
 
@@ -71,9 +72,10 @@ Now you can create new :class:`~dedoc.data_structures.LineWithMeta` with hierarc
     :language: python
     :lines: 20
 
-A few words about ``tag_heirarchy_level`` parameter: some readers extracts information about hierarchy
-directly from tags in document. Dedoc store this information as :class:`~dedoc.data_structures.HierarchyLevel` object
-at ``tag_heirarchy_level`` property of :class:`~dedoc.data_structures.LineMetadata`. List of readers that
+A few words about ``tag_hierarchy_level`` parameter: some readers extract information about hierarchy
+directly from tags in document. For example, DOCX format provide tags for structure, formatting, headers and
+footers, metadata and other. Dedoc store this information as :class:`~dedoc.data_structures.HierarchyLevel` object
+at ``tag_hierarchy_level`` property of :class:`~dedoc.data_structures.LineMetadata`. List of readers that
 create ``tag_hierarchy_level``:
 
 * :class:`~dedoc.readers.DocxReader`
@@ -81,7 +83,7 @@ create ``tag_hierarchy_level``:
 * :class:`~dedoc.readers.HtmlReader`
 * :class:`~dedoc.readers.JsonReader`
 * :class:`~dedoc.readers.PdfImageReader`
-* :class:`~dedoc.readers.PdfImageReader`
+* :class:`~dedoc.readers.PdfTxtlayerReader`
 * :class:`~dedoc.readers.PdfTabbyReader`
 * :class:`~dedoc.readers.RawTextReader`
 
@@ -126,7 +128,7 @@ Let's try to construct more complicated table such this one:
 .. image:: ../_static/table_merged_horizontal.png
         :width: 700px
 
-First steps is almost the same as for previous table:
+First step is almost the same as for previous table:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
@@ -194,7 +196,15 @@ building document from scratch we have to add it by ourselves.
     :language: python
     :lines: 112-113
 
-To get the tree as a dict:
+Structure constructor returns :class:`~dedoc.data_structures.ParsedDocument`, which contains:
+
+* metadata – :class:`~dedoc.data_structures.DocumentMetadata`
+* content – :class:`~dedoc.data_structures.DocumentContent` with list of :class:`~dedoc.data_structures.Table`,
+:class:`~dedoc.data_structures.TreeNode` of root of the document tree
+* attachments – list of :class:`~dedoc.data_structures.ParsedDocument` (so attachments of attahcments store recursively
+as :class:`~dedoc.data_structures.ParsedDocument` objects)
+
+To get the document tree as a dict:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
