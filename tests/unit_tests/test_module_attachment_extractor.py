@@ -121,7 +121,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
         # previous order made debug difficult
         for file_path in files_to_parse:
             with tempfile.TemporaryDirectory() as tmpdir:
-                result = manager.parse(file_path=file_path, parameters=dict(with_attachments=True, need_content_analysis=False, attachments_dir=tmpdir))
+                result = manager.parse(file_path=file_path, parameters=dict(with_attachments=True, need_content_analysis=True, attachments_dir=tmpdir))
                 attachment_names = os.listdir(tmpdir)
                 for attachment in result.attachments:
                     self.assertIn(attachment.metadata.temporary_file_name, attachment_names)
