@@ -121,7 +121,7 @@ with :class:`~dedoc.data_structures.TableAnnotation`:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py
     :language: python
-    :lines: 32-43
+    :lines: 32-44
 
 Let's try to construct more complicated table such this one:
 

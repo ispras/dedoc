@@ -40,8 +40,8 @@ table_line_metadata = LineMetadata(
     ),
 )
 table_line_text = "Line with simple table"
-table_line = LineWithMeta(table_line_text, metadata=table_line_metadata, annotations=[TableAnnotation(name=table.metadata.uid, start=0, end=len(table_line_text))])
-
+table_line = LineWithMeta(table_line_text, metadata=table_line_metadata,
+                          annotations=[TableAnnotation(name=table.metadata.uid, start=0, end=len(table_line_text))])
 table_cells = [
     ["Last name First name Patronymic", "Last name First name Patronymic", "Last name First name Patronymic"],
     ["Ivanov", "Ivan", "Ivanovich"],
