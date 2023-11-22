@@ -2,10 +2,8 @@ import email
 import gzip
 import logging
 import os
-import shutil
-import tempfile
 import uuid
-from typing import List, Optional, Tuple
+from typing import List, Optional
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
@@ -15,8 +13,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.html_reader.html_reader import HtmlReader
 from dedoc.utils import supported_image_types
-from dedoc.utils.utils import calculate_file_hash, get_encoding, save_data_to_unique_file
-from dedoc.utils.utils import check_filename_length
+from dedoc.utils.utils import check_filename_length, get_encoding, save_data_to_unique_file
 
 
 class MhtmlReader(BaseReader):
@@ -48,9 +45,8 @@ class MhtmlReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        attachments_dir = parameters.get("attachments_dir", False)
-        save_dir = attachments_dir if attachments_dir else os.path.dirname(path)
-        names_list, original_names_list = self.__extract_files(path=path, save_dir=save_dir)
+        attachments_dir = parameters.get("attachments_dir", os.path.dirname(path))
+        names_list, original_names_list = self.__extract_files(path=path, save_dir=attachments_dir)
         names_html = self.__find_html(names_list=names_list)
 
         lines = []
@@ -61,17 +57,17 @@ class MhtmlReader(BaseReader):
             tables.extend(result.tables)
 
         need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
-        
+
         # Pairs of tmp_file_name and original_file_name
-        attachments_names = [
-            (os.path.basename(tmp_file_name), original_file_name) 
-            for tmp_file_name, original_file_name in zip(names_list, original_names_list) 
-            if tmp_file_name not in names_html
-            ]
-        
-        attachments = self.__get_attachments(
-            save_dir=save_dir, names_list=attachments_names, need_content_analysis=need_content_analysis
-        )
+        tmp_file_names = []
+        original_file_names = []
+        for tmp_file_name, original_file_name in zip(names_list, original_names_list):
+            if tmp_file_name not in names_html:
+                tmp_file_names.append(tmp_file_name)
+                original_file_names.append(original_file_name)
+
+        attachments = self.__get_attachments(save_dir=attachments_dir, tmp_names_list=tmp_file_names, original_names_list=original_file_names,
+                                             need_content_analysis=need_content_analysis)
 
         return UnstructuredDocument(tables=tables, lines=lines, attachments=attachments)
 
@@ -119,11 +115,9 @@ class MhtmlReader(BaseReader):
                 self.logger.error(e)
         return html_list
 
-    def __get_attachments(self, save_dir: str, names_list: List[Tuple[str, str]], need_content_analysis: bool) -> List[AttachedFile]:
+    def __get_attachments(self, save_dir: str, tmp_names_list: List[str], original_names_list: List[str], need_content_analysis: bool) -> List[AttachedFile]:
         attachments = []
-        for file_names in names_list:
-            tmp_file_name = file_names[0]
-            original_file_name = file_names[1]
+        for tmp_file_name, original_file_name in zip(tmp_names_list, original_names_list):
             *_, extension = tmp_file_name.rsplit(".", maxsplit=1)
             if extension not in supported_image_types:
                 continue

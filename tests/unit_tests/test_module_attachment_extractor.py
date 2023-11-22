@@ -10,7 +10,6 @@ from dedoc.dedoc_manager import DedocManager
 from dedoc.readers import ArchiveReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from tests.test_utils import get_test_config
-from dedoc.utils.utils import calculate_file_hash
 
 
 class TestAttachmentsExtractor(unittest.TestCase):
@@ -113,7 +112,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
 
     def test_manager_attachments_dir(self) -> None:
         docx_file_path = os.path.join(self.src_dir, "with_attachments_0.docx")
-        mhtml_file_path = os.path.join(self.src_dir, "..", "mhtml","with_attachments.mhtml")
+        mhtml_file_path = os.path.join(self.src_dir, "..", "mhtml", "with_attachments.mhtml")
         zip_file_path = os.path.join(self.src_dir, "..", "archives", "arch_with_attachs.zip")
         eml_file_path = os.path.join(self.src_dir, "..", "eml", "message.eml")
         files_to_parse = [docx_file_path, mhtml_file_path, eml_file_path, zip_file_path]

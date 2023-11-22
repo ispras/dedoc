@@ -104,7 +104,7 @@ class EmailReader(BaseReader):
 
         return UnstructuredDocument(lines=lines, tables=tables, attachments=attachments)
 
-    def __add_attachment(self, message: Message, attachments_dir: str, attachments: list, need_content_analysis: bool, ) -> None:
+    def __add_attachment(self, message: Message, attachments_dir: str, attachments: list, need_content_analysis: bool) -> None:
         content_type = message.get_content_type()
         payload = message.get_payload(decode=True)
 
