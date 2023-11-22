@@ -122,12 +122,10 @@ class EmailReader(BaseReader):
             extension = mimetypes.guess_extension(content_type)
         extension = ".txt" if extension == ".bat" else extension
 
-        # TODO: remove
-        tmpdir = attachments_dir
         filename = f"{filename}{extension}"
-        tmp_file_name = save_data_to_unique_file(directory=tmpdir, filename=filename, binary_data=payload)
+        tmp_file_name = save_data_to_unique_file(directory=attachments_dir, filename=filename, binary_data=payload)
         attachments.append(AttachedFile(original_name=filename,
-                                        tmp_file_path=os.path.join(tmpdir, tmp_file_name),
+                                        tmp_file_path=os.path.join(attachments_dir, tmp_file_name),
                                         uid=f"attach_{uuid.uuid1()}",
                                         need_content_analysis=need_content_analysis))
 
