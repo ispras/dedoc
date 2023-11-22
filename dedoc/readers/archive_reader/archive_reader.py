@@ -101,7 +101,6 @@ class ArchiveReader(BaseReader):
         if isinstance(binary_data, str):
             binary_data = binary_data.encode()
         tmp_path = save_data_to_unique_file(directory=tmp_dir, filename=file_name, binary_data=binary_data)
-        print(f"PRINT: File {file_name} saved to {tmp_dir}/{tmp_path}")
         attachment = AttachedFile(
             original_name=file_name,
             tmp_file_path=os.path.join(tmp_dir, tmp_path),
