@@ -46,6 +46,8 @@ class ArchiveReader(BaseReader):
         if not with_attachments:
             return UnstructuredDocument(lines=[], tables=[], attachments=[])
         attachments_dir = parameters.get("attachments_dir", os.path.dirname(path))
+        if attachments_dir is None:
+            attachments_dir = os.path.dirname(path)
         need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
         attachments = self.__get_attachments(path=path, tmp_dir=attachments_dir, need_content_analysis=need_content_analysis)
         return UnstructuredDocument(lines=[], tables=[], attachments=attachments)

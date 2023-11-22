@@ -46,6 +46,8 @@ class MhtmlReader(BaseReader):
         """
         parameters = {} if parameters is None else parameters
         attachments_dir = parameters.get("attachments_dir", os.path.dirname(path))
+        if attachments_dir is None:
+            attachments_dir = os.path.dirname(path)
         names_list, original_names_list = self.__extract_files(path=path, save_dir=attachments_dir)
         names_html = self.__find_html(names_list=names_list)
 

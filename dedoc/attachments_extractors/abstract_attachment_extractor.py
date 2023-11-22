@@ -51,7 +51,8 @@ class AbstractAttachmentsExtractor(ABC):
     def _content2attach_file(self, content: List[Tuple[str, bytes]], tmpdir: str, need_content_analysis: bool, parameters: dict) -> List[AttachedFile]:
         attachments = []
         attachments_dir = parameters.get("attachments_dir", tmpdir)
-
+        if attachments_dir is None:
+            attachments_dir = tmpdir
         for original_name, contents in content:
             tmp_file_name = save_data_to_unique_file(directory=attachments_dir, filename=original_name, binary_data=contents)
             tmp_file_path = os.path.join(attachments_dir, tmp_file_name)

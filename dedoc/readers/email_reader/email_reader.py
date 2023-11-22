@@ -50,6 +50,8 @@ class EmailReader(BaseReader):
         """
         parameters = {} if parameters is None else parameters
         attachments_dir = parameters.get("attachments_dir", os.path.dirname(path))
+        if attachments_dir is None:
+            attachments_dir = os.path.dirname(path)
         with open(path, "rb") as f:
             msg = email.message_from_binary_file(f)
         tables, attachments = [], []
