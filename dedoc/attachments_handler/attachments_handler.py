@@ -65,7 +65,8 @@ class AttachmentsHandler:
             try:
                 if attachment.need_content_analysis:
                     with tempfile.TemporaryDirectory() as tmpdir:
-                        attachment_path = os.path.join(tmpdir, attachment.get_original_filename())
+                        attachments_dir = parameters.get("attachments_dir", tmpdir)
+                        attachment_path = os.path.join(attachments_dir, attachment.get_original_filename())
                         shutil.copy(attachment.get_filename_in_path(), attachment_path)
                         parsed_file = document_parser.parse(attachment_path, parameters=parameters_copy)
                 else:
