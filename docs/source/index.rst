@@ -219,6 +219,7 @@ For a document of unknown or unsupported domain there is an option to use defaul
    :caption: Tutorials
 
    tutorials/add_new_doc_type
+   tutorials/creating_document_classes
 
 
 .. toctree::
