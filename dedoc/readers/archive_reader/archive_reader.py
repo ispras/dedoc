@@ -55,7 +55,6 @@ class ArchiveReader(BaseReader):
         return UnstructuredDocument(lines=[], tables=[], attachments=attachments)
 
     def __get_attachments(self, path: str, tmp_dir: str, need_content_analysis: bool) -> List[AttachedFile]:
-        # tmp_dir = os.path.dirname(path)
         mime = get_file_mime_type(path)
         if zipfile.is_zipfile(path) and mime == "application/zip":
             return list(self.__read_zip_archive(path=path, tmp_dir=tmp_dir, need_content_analysis=need_content_analysis))
