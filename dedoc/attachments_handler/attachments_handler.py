@@ -1,8 +1,6 @@
 import copy
 import logging
 import os
-import shutil
-import tempfile
 import time
 from typing import List
 
@@ -47,8 +45,6 @@ class AttachmentsHandler:
         if not AbstractAttachmentsExtractor.with_attachments(parameters) or recursion_deep_attachments < 0:
             return parsed_attachment_files
 
-        self._handle_attachments(document=document, parameters=parameters)
-
         previous_log_time = time.time()
 
         for i, attachment in enumerate(document.attachments):
@@ -66,12 +62,12 @@ class AttachmentsHandler:
 
             try:
                 if attachment.need_content_analysis:
-                    with tempfile.TemporaryDirectory() as tmpdir:
-                        attachment_path = os.path.join(tmpdir, attachment.get_original_filename())
-                        shutil.copy(attachment.get_filename_in_path(), attachment_path)
-                        parsed_file = document_parser.parse(attachment_path, parameters=parameters_copy)
+                    parsed_file = document_parser.parse(attachment.get_filename_in_path(), parameters=parameters_copy)
                 else:
                     parsed_file = self.__get_empty_document(document_parser=document_parser, attachment=attachment, parameters=parameters_copy)
+
+                parsed_file.metadata.file_name = attachment.original_name  # initial name of the attachment
+                parsed_file.metadata.temporary_file_name = os.path.split(attachment.get_filename_in_path())[-1]  # actual name in the file system
             except DedocError:
                 # return empty ParsedDocument with Meta information
                 parsed_file = self.__get_empty_document(document_parser=document_parser, attachment=attachment, parameters=parameters_copy)
@@ -79,20 +75,6 @@ class AttachmentsHandler:
             parsed_file.metadata.set_uid(attachment.uid)
             parsed_attachment_files.append(parsed_file)
         return parsed_attachment_files
-
-    def _handle_attachments(self, document: UnstructuredDocument, parameters: dict) -> None:
-        """
-        Handle attached files, for example save it on disk or S3 storage.
-        This method can be redefined by other AttachmentHandler class.
-        """
-        attachments_dir = parameters.get("attachments_dir")
-        if not attachments_dir:
-            return
-
-        for attachment in document.attachments:
-            new_path = os.path.join(attachments_dir, os.path.split(attachment.get_filename_in_path())[1])
-            shutil.move(attachment.get_filename_in_path(), new_path)
-            attachment.tmp_file_path = new_path
 
     def __get_empty_document(self, document_parser: "DedocManager", attachment: AttachedFile, parameters: dict) -> ParsedDocument:  # noqa
         attachment_dir, attachment_name = os.path.split(attachment.get_filename_in_path())

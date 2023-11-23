@@ -27,5 +27,5 @@ class PdfAttachmentsExtractor(AbstractAttachmentsExtractor):
                 f_dict = filenames[data_index].getObject()
                 f_data = f_dict["/EF"]["/F"].getData()
                 attachments.append((name, f_data))
-        attachments = self._content2attach_file(content=attachments, tmpdir=tmpdir, need_content_analysis=False)
+        attachments = self._content2attach_file(content=attachments, tmpdir=tmpdir, need_content_analysis=False, parameters=parameters)
         return attachments
