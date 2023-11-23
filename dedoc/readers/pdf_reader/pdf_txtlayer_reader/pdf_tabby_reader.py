@@ -2,6 +2,7 @@ import json
 import logging
 import math
 import os
+import shutil
 import subprocess
 import uuid
 from typing import List, Optional, Tuple
@@ -35,7 +36,7 @@ from dedoc.structure_extractors.concrete_structure_extractors.default_structure_
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
 from dedoc.utils.parameter_utils import get_param_page_slice
 from dedoc.utils.pdf_utils import get_pdf_page_count
-from dedoc.utils.utils import calculate_file_hash
+from dedoc.utils.utils import calculate_file_hash, get_unique_name
 
 
 class PdfTabbyReader(PdfBaseReader):
@@ -100,6 +101,9 @@ class PdfTabbyReader(PdfBaseReader):
             -> Tuple[List[LineWithMeta], List[Table], List[ScanTable], List[PdfImageAttachment], Optional[dict]]:
         all_lines, all_tables, all_tables_on_images, all_attached_images = [], [], [], []
         document_metadata = None
+        attachments_dir = parameters.get("attachments_dir", None)
+        attachments_dir = os.path.dirname(path) if attachments_dir is None else attachments_dir
+
         file_hash = calculate_file_hash(path=path)
         page_count = get_pdf_page_count(path)
         page_count = math.inf if page_count is None else page_count
@@ -133,7 +137,7 @@ class PdfTabbyReader(PdfBaseReader):
                 all_tables.extend(page_tables)
                 all_tables_on_images.extend(table_on_images)
 
-            attached_images = self.__get_attached_images(page=page)
+            attached_images = self.__get_attached_images(page=page, attachments_dir=attachments_dir)
             if attached_images:
                 all_attached_images.extend(attached_images)
 
@@ -180,16 +184,21 @@ class PdfTabbyReader(PdfBaseReader):
 
         return tables, tables_on_image
 
-    def __get_attached_images(self, page: dict) -> List[PdfImageAttachment]:
+    def __get_attached_images(self, page: dict, attachments_dir: str) -> List[PdfImageAttachment]:
         image_attachment_list = []
         for image_dict in page["images"]:
             image_location = Location(
                 page_number=page["number"],
                 bbox=BBox(x_top_left=image_dict["x_top_left"], y_top_left=image_dict["y_top_left"], width=image_dict["width"], height=image_dict["height"])
             )
+
+            tmp_file_name = get_unique_name(image_dict["original_name"])
+            tmp_file_path = os.path.join(attachments_dir, tmp_file_name)
+            shutil.move(image_dict["tmp_file_path"], tmp_file_path)
+
             image_attachment = PdfImageAttachment(
                 original_name=image_dict["original_name"],
-                tmp_file_path=image_dict["tmp_file_path"],
+                tmp_file_path=tmp_file_path,
                 need_content_analysis=False,
                 uid=f"attach_{uuid.uuid4()}",
                 location=image_location
