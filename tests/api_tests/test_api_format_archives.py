@@ -79,3 +79,8 @@ class TestApiArchiveReader(AbstractTestApiDocReader):
         self.assertEqual(len(result["attachments"]), 7)
         english_doc = [doc for doc in result["attachments"] if doc["metadata"]["file_name"].startswith("english_doc")][0]
         self._check_english_doc(english_doc)
+
+    def test_empty_params(self) -> None:
+        file_name = "arch_with_attachs.zip"
+        result = self._send_request(file_name, {})
+        self.assertEqual(len(result["attachments"]), 0)
