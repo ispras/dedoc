@@ -3,7 +3,7 @@ import gzip
 import logging
 import os
 import uuid
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
@@ -45,9 +45,9 @@ class MhtmlReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        attachments_dir = parameters.get("attachments_dir", os.path.dirname(path))
-        if attachments_dir is None:
-            attachments_dir = os.path.dirname(path)
+        attachments_dir = parameters.get("attachments_dir", None)
+        attachments_dir = os.path.dirname(path) if attachments_dir is None else attachments_dir
+
         names_list, original_names_list = self.__extract_files(path=path, save_dir=attachments_dir)
         names_html = self.__find_html(names_list=names_list)
 
@@ -60,7 +60,6 @@ class MhtmlReader(BaseReader):
 
         need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
 
-        # Pairs of tmp_file_name and original_file_name
         tmp_file_names = []
         original_file_names = []
         for tmp_file_name, original_file_name in zip(names_list, original_names_list):
@@ -73,7 +72,7 @@ class MhtmlReader(BaseReader):
 
         return UnstructuredDocument(tables=tables, lines=lines, attachments=attachments)
 
-    def __extract_files(self, path: str, save_dir: str) -> List[str]:
+    def __extract_files(self, path: str, save_dir: str) -> Tuple[List[str], List[str]]:
         names_list = []
         original_names_list = []
         if path.endswith(".gz"):

@@ -49,9 +49,9 @@ class EmailReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        attachments_dir = parameters.get("attachments_dir", os.path.dirname(path))
-        if attachments_dir is None:
-            attachments_dir = os.path.dirname(path)
+        attachments_dir = parameters.get("attachments_dir", None)
+        attachments_dir = os.path.dirname(path) if attachments_dir is None else attachments_dir
+
         with open(path, "rb") as f:
             msg = email.message_from_binary_file(f)
         tables, attachments = [], []

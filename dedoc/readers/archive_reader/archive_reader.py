@@ -42,12 +42,14 @@ class ArchiveReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        with_attachments = parameters.get("with_attachments", True)
+
+        with_attachments = str(parameters.get("with_attachments", "false")).lower() == "true"
         if not with_attachments:
             return UnstructuredDocument(lines=[], tables=[], attachments=[])
-        attachments_dir = parameters.get("attachments_dir", os.path.dirname(path))
-        if attachments_dir is None:
-            attachments_dir = os.path.dirname(path)
+
+        attachments_dir = parameters.get("attachments_dir", None)
+        attachments_dir = os.path.dirname(path) if attachments_dir is None else attachments_dir
+
         need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
         attachments = self.__get_attachments(path=path, tmp_dir=attachments_dir, need_content_analysis=need_content_analysis)
         return UnstructuredDocument(lines=[], tables=[], attachments=attachments)

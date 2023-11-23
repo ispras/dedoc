@@ -118,7 +118,6 @@ class TestAttachmentsExtractor(unittest.TestCase):
         files_to_parse = [docx_file_path, mhtml_file_path, eml_file_path, zip_file_path]
         manager = DedocManager()
 
-        # previous order made debug difficult
         for file_path in files_to_parse:
             with tempfile.TemporaryDirectory() as tmpdir:
                 result = manager.parse(file_path=file_path, parameters=dict(with_attachments=True, need_content_analysis=True, attachments_dir=tmpdir))
@@ -132,8 +131,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmpdir:
             params = {
-                "with_attachments": True,
-                "need_content_analysis": False,
+                "with_attachments": True,   
                 "attachments_dir": tmpdir
             }
             result = docx_reader.read(path=os.path.join(self.src_dir, file_name), parameters=params)
@@ -141,6 +139,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
             attachment_names = os.listdir(tmpdir)
             for attachment in result.attachments:
                 attachment_fname = attachment.tmp_file_path.split("/")[-1]
+                self.assertTrue(os.path.isfile(attachment.get_filename_in_path()))
                 self.assertIn(attachment_fname, attachment_names)
 
     def test_attachments_extractor_attachments_dir(self) -> None:
@@ -150,7 +149,6 @@ class TestAttachmentsExtractor(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             params = {
                 "with_attachments": True,
-                "need_content_analysis": False,
                 "attachments_dir": tmpdir
             }
             result = docx_attachment_extractor.get_attachments(tmpdir=self.src_dir, filename=file_name, parameters=params)
@@ -158,4 +156,5 @@ class TestAttachmentsExtractor(unittest.TestCase):
             attachment_names = os.listdir(tmpdir)
             for attachment in result:
                 attachment_fname = attachment.tmp_file_path.split("/")[-1]
+                self.assertTrue(os.path.isfile(attachment.get_filename_in_path()))
                 self.assertIn(attachment_fname, attachment_names)
