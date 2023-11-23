@@ -131,7 +131,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmpdir:
             params = {
-                "with_attachments": True,   
+                "with_attachments": True,
                 "attachments_dir": tmpdir
             }
             result = docx_reader.read(path=os.path.join(self.src_dir, file_name), parameters=params)
