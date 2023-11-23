@@ -1,8 +1,6 @@
 import copy
 import logging
 import os
-import shutil
-import tempfile
 import time
 from typing import List
 
@@ -64,12 +62,12 @@ class AttachmentsHandler:
 
             try:
                 if attachment.need_content_analysis:
-                    with tempfile.TemporaryDirectory() as tmpdir:
-                        attachment_path = os.path.join(tmpdir, attachment.get_original_filename())
-                        shutil.copy(attachment.get_filename_in_path(), attachment_path)
-                        parsed_file = document_parser.parse(attachment_path, parameters=parameters_copy)
+                    parsed_file = document_parser.parse(attachment.get_filename_in_path(), parameters=parameters_copy)
                 else:
                     parsed_file = self.__get_empty_document(document_parser=document_parser, attachment=attachment, parameters=parameters_copy)
+
+                parsed_file.metadata.file_name = attachment.original_name  # initial name of the attachment
+                parsed_file.metadata.temporary_file_name = os.path.split(attachment.get_filename_in_path())[-1]  # actual name in the file system
             except DedocError:
                 # return empty ParsedDocument with Meta information
                 parsed_file = self.__get_empty_document(document_parser=document_parser, attachment=attachment, parameters=parameters_copy)
