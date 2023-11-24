@@ -1,6 +1,20 @@
 Changelog
 =========
 
+v1.1.1 (2023-11-24)
+-------------------
+Release note: `v1.1.1 <https://github.com/ispras/dedoc/releases/tag/v1.1.1>`_
+
+* Use older `pydantic` version for improving compatibility with other libraries.
+* Add support for `RTF` format.
+* Fix bug in handling files' names with dots and spaces.
+* Fix bug in non-integer values of text formatting in `DocxReader`.
+* Add support of `on_gpu` parameter in `config`.
+* Add attached images extraction for `PdfTabbyReader`.
+* Fix partial file reading for `PdfTabbyReader`.
+* Add tutorial how to create dedoc's basic data structures.
+* Fix `attachments_dir` parameter for readers and attachments extractors.
+
 v1.1.0 (2023-10-24)
 -------------------
 Release note: `v1.1.0 <https://github.com/ispras/dedoc/releases/tag/v1.1.0>`_
