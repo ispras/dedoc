@@ -57,7 +57,7 @@ class PdfTxtlayerReader(PdfBaseReader):
         else:
             tables = []
 
-        page = self.extractor_layer.extract_text_layer(path=path, page_number=page_number)
+        page = self.extractor_layer.extract_text_layer(path=path, page_number=page_number, attachments_dir=parameters.attachments_dir)
         if page is None:
             return [], [], [], []
         unreadable_blocks = [location.bbox for table in tables for location in table.locations]
