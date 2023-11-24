@@ -10,6 +10,7 @@ from dedoc.config import get_config
 from dedoc.data_structures import LineWithMeta
 from dedoc.download_models import download_from_hub
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_feature_extractor import TxtlayerFeatureExtractor
+from dedoc.utils.parameter_utils import get_param_gpu_available
 
 
 class TxtlayerClassifier:
@@ -36,6 +37,11 @@ class TxtlayerClassifier:
         assert os.path.isfile(self.path)
         with gzip.open(self.path, "rb") as f:
             self.__model = pickle.load(f)
+
+        if get_param_gpu_available(self.config, self.logger):
+            gpu_params = dict(predictor="gpu_predictor", tree_method="auto", gpu_id=0)
+            self.__model.set_params(**gpu_params)
+            self.__model.get_booster().set_param(gpu_params)
 
         return self.__model
 

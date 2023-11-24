@@ -33,7 +33,7 @@ In the dedoc library two law types are separated and for each type specific stru
 The dedoc library allows to determine law type (simple law, foiv law) automatically during document analysis.
 Below there is an output structure description of each law type in more details.
 
-The dedoc library allows to handle Russian laws of all aforesaid types in txt, html, docx (doc, odt), pdf and png (jpg, bmp, etc.) formats.
+The dedoc library allows to handle Russian laws of all aforesaid types in txt, html, docx (doc, rtf, odt), pdf and png (jpg, bmp, etc.) formats.
 
 In the following description we will speak about the node depth inside the document tree as a node importance.
 The closer the node is to the document tree root, the more important it is.

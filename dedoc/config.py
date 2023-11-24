@@ -22,6 +22,10 @@ _config = dict(
     # number of parallel jobs in some tasks as OCR
     n_jobs=1,
 
+    # --------------------------------------------GPU SETTINGS-------------------------------------------------------
+    # set gpu in XGBoost and torch models
+    on_gpu=False,
+
     # ---------------------------------------------API SETTINGS---------------------------------------------------------
     # max file size in bytes
     max_content_length=512 * 1024 * 1024,

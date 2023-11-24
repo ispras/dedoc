@@ -2,6 +2,7 @@ import json
 import logging
 import math
 import os
+import shutil
 import subprocess
 import uuid
 from typing import List, Optional, Tuple
@@ -34,7 +35,8 @@ from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfB
 from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
 from dedoc.utils.parameter_utils import get_param_page_slice
-from dedoc.utils.utils import calculate_file_hash
+from dedoc.utils.pdf_utils import get_pdf_page_count
+from dedoc.utils.utils import calculate_file_hash, get_unique_name
 
 
 class PdfTabbyReader(PdfBaseReader):
@@ -79,24 +81,11 @@ class PdfTabbyReader(PdfBaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        lines, tables, tables_on_images = self.__extract(path=path)
         warnings = []
-        document_metadata = None
+        lines, tables, tables_on_images, image_attachments, document_metadata = self.__extract(path=path, parameters=parameters, warnings=warnings)
+        lines = self.linker.link_objects(lines=lines, tables=tables_on_images, images=image_attachments)
 
-        first_page, last_page = get_param_page_slice(parameters)
-        first_page = 0 if first_page is None else first_page
-        last_page = math.inf if last_page is None else last_page
-        extracted_lines_length = len(lines)
-        lines = [line for line in lines if first_page <= line.metadata.page_id < last_page]
-        if len(lines) < extracted_lines_length:
-            warnings.append("The document is partially parsed")
-            document_metadata = dict(first_page=first_page)
-            if last_page != math.inf:
-                document_metadata["last_page"] = last_page
-
-        lines = self.linker.link_objects(lines=lines, tables=tables_on_images, images=[])
-
-        attachments = []
+        attachments = image_attachments
         if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
             tmp_dir = os.path.dirname(path)
             file_name = os.path.basename(path)
@@ -108,14 +97,37 @@ class PdfTabbyReader(PdfBaseReader):
 
         return self._postprocess(result)
 
-    def __extract(self, path: str, start_page: int = None, end_page: int = None) -> Tuple[List[LineWithMeta], List[Table], List[ScanTable]]:
-        file_hash = calculate_file_hash(path=path)
-        document = self.__process_pdf(path=path, start_page=start_page, end_page=end_page)
+    def __extract(self, path: str, parameters: dict, warnings: list)\
+            -> Tuple[List[LineWithMeta], List[Table], List[ScanTable], List[PdfImageAttachment], Optional[dict]]:
+        all_lines, all_tables, all_tables_on_images, all_attached_images = [], [], [], []
+        document_metadata = None
+        attachments_dir = parameters.get("attachments_dir", None)
+        attachments_dir = os.path.dirname(path) if attachments_dir is None else attachments_dir
 
-        all_lines = []
-        all_tables = []
-        all_tables_on_images = []
-        for page in document.get("pages", []):
+        file_hash = calculate_file_hash(path=path)
+        page_count = get_pdf_page_count(path)
+        page_count = math.inf if page_count is None else page_count
+        first_page, last_page = get_param_page_slice(parameters)
+
+        empty_page_limit = (first_page is not None and first_page >= page_count) or (last_page is not None and first_page >= last_page)
+        partial_page_limit = (first_page is not None and first_page > 0) or (last_page is not None and last_page < page_count)
+        if empty_page_limit or partial_page_limit:
+            warnings.append("The document is partially parsed")
+            document_metadata = dict(first_page=first_page)
+            if last_page is not None:
+                document_metadata["last_page"] = last_page
+
+            if empty_page_limit:
+                return all_lines, all_tables, all_tables_on_images, all_attached_images, document_metadata
+
+        # in java tabby reader page numeration starts with 1, end_page is included
+        first_tabby_page = first_page + 1 if first_page is not None else 1
+        last_tabby_page = page_count if (last_page is None) or (last_page is not None and last_page > page_count) else last_page
+        self.logger.info(f"Reading PDF pages from {first_tabby_page} to {last_tabby_page}")
+        document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_tabby_page)
+
+        pages = document.get("pages", [])
+        for page in pages:
             page_lines = self.__get_lines_with_location(page, file_hash)
             if page_lines:
                 all_lines.extend(page_lines)
@@ -125,7 +137,11 @@ class PdfTabbyReader(PdfBaseReader):
                 all_tables.extend(page_tables)
                 all_tables_on_images.extend(table_on_images)
 
-        return all_lines, all_tables, all_tables_on_images
+            attached_images = self.__get_attached_images(page=page, attachments_dir=attachments_dir)
+            if attached_images:
+                all_attached_images.extend(attached_images)
+
+        return all_lines, all_tables, all_tables_on_images, all_attached_images, document_metadata
 
     def __get_tables(self, page: dict) -> Tuple[List[Table], List[ScanTable]]:
         tables = []
@@ -167,6 +183,29 @@ class PdfTabbyReader(PdfBaseReader):
             tables_on_image.append(ScanTable(page_number=page_number, matrix_cells=None, bbox=table_bbox, name=table_name, order=order))
 
         return tables, tables_on_image
+
+    def __get_attached_images(self, page: dict, attachments_dir: str) -> List[PdfImageAttachment]:
+        image_attachment_list = []
+        for image_dict in page["images"]:
+            image_location = Location(
+                page_number=page["number"],
+                bbox=BBox(x_top_left=image_dict["x_top_left"], y_top_left=image_dict["y_top_left"], width=image_dict["width"], height=image_dict["height"])
+            )
+
+            tmp_file_name = get_unique_name(image_dict["original_name"])
+            tmp_file_path = os.path.join(attachments_dir, tmp_file_name)
+            shutil.move(image_dict["tmp_file_path"], tmp_file_path)
+
+            image_attachment = PdfImageAttachment(
+                original_name=image_dict["original_name"],
+                tmp_file_path=tmp_file_path,
+                need_content_analysis=False,
+                uid=f"attach_{uuid.uuid4()}",
+                location=image_location
+            )
+            image_attachment_list.append(image_attachment)
+
+        return image_attachment_list
 
     def __get_lines_with_location(self, page: dict, file_hash: str) -> List[LineWithLocation]:
         lines = []

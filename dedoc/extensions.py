@@ -15,7 +15,7 @@ Extensions = namedtuple("Parts", "excel_like_format "
 
 converted_extensions = Extensions(
     excel_like_format=[".ods", "xls"],
-    docx_like_format=[".odt", ".doc"],
+    docx_like_format=[".odt", ".doc", ".rtf"],
     pptx_like_format=[".odp", ".ppt"],
     archive_like_format=[],
     image_like_format=[".pcx", ".webp", ".sgi", ".hdr", ".sr", ".pic", ".dib", ".jfif", ".j2k"],
@@ -26,7 +26,7 @@ converted_extensions = Extensions(
 # .sgi, .hdr, .sr, .ras - не зарегистрованы в mime
 converted_mimes = Extensions(
     excel_like_format=["application/vnd.oasis.opendocument.spreadsheet", "application/vnd.ms-excel"],
-    docx_like_format=["application/msword", "application/vnd.oasis.opendocument.text"],
+    docx_like_format=["application/msword", "application/vnd.oasis.opendocument.text", "application/rtf"],
     pptx_like_format=[
         "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         "application/vnd.ms-powerpoint",

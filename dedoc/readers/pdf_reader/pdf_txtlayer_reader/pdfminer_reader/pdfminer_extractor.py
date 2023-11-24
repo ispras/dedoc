@@ -44,11 +44,12 @@ class PdfminerExtractor(object):
         self.config = config
         self.logger = self.config.get("logger", logging.getLogger())
 
-    def extract_text_layer(self, path: str, page_number: int) -> Optional[PageWithBBox]:
+    def extract_text_layer(self, path: str, page_number: int, attachments_dir: str) -> Optional[PageWithBBox]:
         """
         Extract text information with metadata from pdf with help pdfminer.six
         :param path: path to pdf
         :param page_number: number of the page to read
+        :param attachments_dir: directory for saving attachments
         :return: pages_with_bbox - page with extracted text
         """
         with open(path, "rb") as fp:
@@ -56,10 +57,9 @@ class PdfminerExtractor(object):
             for page_num, page in enumerate(pages):
                 if page_num != page_number:
                     continue
-                return self.__handle_page(page=page, page_number=page_number, path=path)
+                return self.__handle_page(page=page, page_number=page_number, path=path, attachments_dir=attachments_dir)
 
-    def __handle_page(self, page: PDFPage, page_number: int, path: str) -> PageWithBBox:
-        directory = os.path.dirname(path)
+    def __handle_page(self, page: PDFPage, page_number: int, path: str, attachments_dir: str) -> PageWithBBox:
         device, interpreter = self.__get_interpreter()
         try:
             interpreter.process_page(page)
@@ -95,7 +95,7 @@ class PdfminerExtractor(object):
                 lobjs_textline.append(lobj)
 
             elif isinstance(lobj, LTFigure) and not page_broken:
-                attachment = self.__extract_image(directory, height, image_page, k_h, k_w, lobj, page_number)
+                attachment = self.__extract_image(attachments_dir, height, image_page, k_h, k_w, lobj, page_number)
                 if attachment is not None:
                     images.append(attachment)
 

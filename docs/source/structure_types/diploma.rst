@@ -11,7 +11,7 @@ This structure type is used for analysing student's works (in Russian):
 
 You can see the :download:`example  <../_static/structure_examples/diploma.docx>` of the document of this structure type.
 
-As a rule, the documents of this type have docx (doc, odt etc.) or pdf format.
+As a rule, the documents of this type have docx (doc, rtf, odt etc.) or pdf format.
 Therefore, it is recommended to use this structure representation for documents of these formats.
 For parsing pdf documents the parameter pdf_with_text_layer="auto_tabby" is recommended (see :ref:`api_parameters`).
 

@@ -25,3 +25,8 @@ class TestDocxConverter(AbstractConverterTest):
         filename = "english_doc"
         extension = ".doc"
         self._convert(filename=filename, extension=extension, converter=self.converter)
+
+    def test_convert_rtf(self) -> None:
+        filename = "english_doc"
+        extension = ".rtf"
+        self._convert(filename=filename, extension=extension, converter=self.converter)

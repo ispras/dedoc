@@ -46,7 +46,8 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "first_page",
     "last_page",
     "need_binarization",
-    "table_type"
+    "table_type",
+    "attachments_dir"
 ])
 
 
@@ -58,6 +59,7 @@ class PdfBaseReader(BaseReader):
         """
         :param config: configuration of the reader, e.g. logger for logging
         """
+        config["n_jobs"] = config.get("n_jobs", 1)
         self.table_recognizer = TableRecognizer(config=config)
         self.metadata_extractor = LineMetadataExtractor(config=config)
         self.config = config
@@ -74,6 +76,9 @@ class PdfBaseReader(BaseReader):
         """
         parameters = {} if parameters is None else parameters
         first_page, last_page = param_utils.get_param_page_slice(parameters)
+        attachments_dir = parameters.get("attachments_dir", None)
+        attachments_dir = os.path.dirname(path) if attachments_dir is None else attachments_dir
+
         params_for_parse = ParametersForParseDoc(
             language=param_utils.get_param_language(parameters),
             orient_analysis_cells=param_utils.get_param_orient_analysis_cells(parameters),
@@ -86,7 +91,8 @@ class PdfBaseReader(BaseReader):
             first_page=first_page,
             last_page=last_page,
             need_binarization=param_utils.get_param_need_binarization(parameters),
-            table_type=param_utils.get_param_table_type(parameters)
+            table_type=param_utils.get_param_table_type(parameters),
+            attachments_dir=attachments_dir
         )
 
         lines, scan_tables, attachments, warnings, other_fields = self._parse_document(path, params_for_parse)

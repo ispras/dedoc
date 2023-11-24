@@ -86,6 +86,8 @@ Helper classes
     :special-members: __init__
     :members:
 
+.. _annotations:
+
 Annotations of the text lines
 -----------------------------
 

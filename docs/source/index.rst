@@ -84,7 +84,7 @@ to get more details about information that can be extracted by each available re
      - `+`
      - `+`
 
-   * - doc, odt
+   * - doc, odt, rtf
      - convert to docx using :class:`~dedoc.converters.DocxConverter`
      - `+`
      - `+`
@@ -219,6 +219,7 @@ For a document of unknown or unsupported domain there is an option to use defaul
    :caption: Tutorials
 
    tutorials/add_new_doc_type
+   tutorials/creating_document_classes
 
 
 .. toctree::

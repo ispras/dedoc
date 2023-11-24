@@ -34,6 +34,7 @@ class TestApiPdfPageLimit(AbstractTestApiDocReader):
 
     def test_tabby_layer(self) -> None:
         self.__check_limit("tabby", check_partially=True)
+        self.__check_out_of_limit("tabby")
 
     def test_auto_tabby(self) -> None:
         self.__check_limit("auto_tabby", check_partially=True)
@@ -41,7 +42,7 @@ class TestApiPdfPageLimit(AbstractTestApiDocReader):
 
     def __check_out_of_limit(self, reader: str) -> None:
         text_expected = ""
-        for pages in ("10:11", ):
+        for pages in (":-1", "-1:0", "0:0", "10:11", "11:"):
             self.__check(pages, text_expected, reader=reader)
 
     def __check_limit(self, reader: str, check_partially: bool = False) -> None:
@@ -54,6 +55,18 @@ class TestApiPdfPageLimit(AbstractTestApiDocReader):
 
         text_expected = "\n".join(self.lines[0:2])
         self.__check("1:2", text_expected, reader=reader, check_partially=check_partially)
+
+        text_expected = self.lines[0]
+        self.__check("1:1", text_expected, reader=reader, check_partially=check_partially)
+
+        text_expected = self.lines[1]
+        self.__check("2:2", text_expected, reader=reader, check_partially=check_partially)
+
+        text_expected = "\n".join(self.lines[1:3])
+        self.__check("2:3", text_expected, reader=reader, check_partially=check_partially)
+
+        text_expected = "\n".join(self.lines[4:8])
+        self.__check("5:8", text_expected, reader=reader, check_partially=check_partially)
 
         text_expected = self.lines[8]
         self.__check("9:", text_expected, reader=reader, check_partially=False)

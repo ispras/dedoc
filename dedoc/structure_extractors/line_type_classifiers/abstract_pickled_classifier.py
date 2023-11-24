@@ -1,4 +1,5 @@
 import gzip
+import logging
 import os
 import pickle
 from abc import ABC
@@ -6,14 +7,17 @@ from typing import Tuple
 
 from xgboost import XGBClassifier
 
+
 from dedoc.download_models import download_from_hub
 from dedoc.structure_extractors.line_type_classifiers.abstract_line_type_classifier import AbstractLineTypeClassifier
+from dedoc.utils.parameter_utils import get_param_gpu_available
 
 
 class AbstractPickledLineTypeClassifier(AbstractLineTypeClassifier, ABC):
 
     def __init__(self, *, config: dict) -> None:
         super().__init__(config=config)
+        self.logger = self.config.get("logger", logging.getLogger())
 
     def load(self, classifier_type: str, path: str) -> Tuple[XGBClassifier, dict]:
         if not os.path.isfile(path):
@@ -22,6 +26,12 @@ class AbstractPickledLineTypeClassifier(AbstractLineTypeClassifier, ABC):
 
         with gzip.open(path) as file:
             classifier, feature_extractor_parameters = pickle.load(file)
+
+        if get_param_gpu_available(self.config, self.logger):
+            gpu_params = dict(predictor="gpu_predictor", tree_method="auto", gpu_id=0)
+            classifier.set_params(**gpu_params)
+            classifier.get_booster().set_param(gpu_params)
+
         return classifier, feature_extractor_parameters
 
     def save(self, path_out: str, parameters: object) -> str:

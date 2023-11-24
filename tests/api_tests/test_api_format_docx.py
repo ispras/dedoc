@@ -44,6 +44,12 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.__check_doc_like(result)
         self._check_metainfo(result["metadata"], "application/vnd.oasis.opendocument.text", file_name)
 
+    def test_rtf(self) -> None:
+        file_name = "example.rtf"
+        result = self._send_request(file_name)
+        self.__check_doc_like(result)
+        self._check_metainfo(result["metadata"], "application/rtf", file_name)
+
     def test_odt_with_split(self) -> None:
         file_name = "ТЗ_ГИС_3  .odt"
         result = self._send_request(file_name)
@@ -111,6 +117,16 @@ class TestApiDocReader(AbstractTestApiDocReader):
         file_name = "tz-1ek-20_minimum.docx"
         data = dict(structure_type="tree", return_format="html")
         _ = self._send_request(file_name, data=data)
+
+    def test_properties_extractor(self) -> None:
+        file_name = "broken_properties.docx"
+        result = self._send_request(file_name, data={})
+        content = result["content"]["structure"]
+        self.assertEqual("FonFfff", get_by_tree_path(content, "0.0")["text"].strip())
+
+    def test_name_with_apostrophe(self) -> None:
+        file_name = "Well. Known -Nik O'Tinn -Ireland 2023- DRAFT.doc"
+        _ = self._send_request(file_name, data={})
 
     def __check_doc_like(self, result: dict) -> None:
         content = result["content"]["structure"]

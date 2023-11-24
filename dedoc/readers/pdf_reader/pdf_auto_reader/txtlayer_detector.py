@@ -46,7 +46,7 @@ class TxtLayerDetector:
         parameters_copy["need_pdf_table_analysis"] = "false"
         num_pages = get_pdf_page_count(path)
         if num_pages is None or num_pages >= 50:
-            # TODO remove this when TLDR-404 is done
+            # TODO remove this when TLDR-518 is done
             document = self.pdf_txtlayer_reader.read(path, parameters=parameters_copy)
         else:
             # tabby reader reads the whole document regardless "pages" parameter
