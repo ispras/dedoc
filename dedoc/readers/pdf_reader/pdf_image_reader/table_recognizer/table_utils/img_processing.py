@@ -15,8 +15,6 @@ logger = get_config().get("logger", logging.getLogger())
 logger = logger if logger else logging.getLogger("TableRecognizer.detect_tables_by_contours")
 table_options = TableTypeAdditionalOptions()
 
-MIN_H_CELL = 8
-MIN_W_CELL = 20
 ROTATE_THRESHOLD = 0.3
 
 
@@ -196,8 +194,8 @@ def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, ta
         length_div = 55
         height_div = 100
 
-    kernel_length_weight = max(np.array(img_bin).shape[1] // length_div, MIN_W_CELL)  # 35
-    kernel_length_height = max(np.array(img_bin).shape[0] // height_div, MIN_H_CELL)  # 100
+    kernel_length_weight = max(np.array(img_bin).shape[1] // length_div, TableTree.min_w_cell)  # 35
+    kernel_length_height = max(np.array(img_bin).shape[0] // height_div, TableTree.min_h_cell)  # 100
 
     # A verticle kernel of (1 X kernel_length), which will detect all the verticle lines from the image.
     verticle_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, kernel_length_height))
