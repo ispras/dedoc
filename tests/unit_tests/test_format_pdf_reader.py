@@ -140,3 +140,10 @@ class TestPDFReader(unittest.TestCase):
             annotations = line.annotations
             annotations_set = {(a.name, a.value, a.start, a.end) for a in annotations}
             self.assertEqual(len(annotations_set), len(annotations))
+
+    def test_table_extractor(self) -> None:
+        config = {}  # Has to work without config
+        any_doc_reader = PdfTxtlayerReader(config=config)
+        path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer/english_doc.pdf")
+        result = any_doc_reader.read(path, document_type=None, parameters={"need_pdf_table_analysis": "True"})
+        self.assertEqual(len(result.tables), 0)
