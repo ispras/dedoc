@@ -15,12 +15,15 @@ logger = get_config().get("logger", logging.getLogger())
 logger = logger if logger else logging.getLogger("TableRecognizer.detect_tables_by_contours")
 table_options = TableTypeAdditionalOptions()
 
+MIN_H_CELL = 8
+MIN_W_CELL = 20
+ROTATE_THRESHOLD = 0.3
 
-def rotate_with_threshold(img: np.ndarray, angle: float, threshold: float = None, *, config: dict, params: dict) -> np.ndarray:
+
+def rotate_with_threshold(img: np.ndarray, angle: float, threshold: float = None, *, config: dict) -> np.ndarray:
     """rotates a table image and saving image.shape during rotation. It is important for word bounding box extraction"""
-    # TODO: rotate_threshold should be from params
     if threshold is None:
-        threshold = params["rotate_threshold"]
+        threshold = ROTATE_THRESHOLD
     rotated = img
     if abs(angle) > threshold:
         if config.get("debug_mode", False):
@@ -63,7 +66,7 @@ def apply_houph_line(img: np.ndarray, threshold_gap: int = 10, *, config: dict) 
     return cdst_p, angle
 
 
-def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict, params: dict) -> [Any, Any, np.ndarray, float]:
+def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict) -> [Any, Any, np.ndarray, float]:
     """
     function's steps:
     1) detects Houph lines for detecting rotate angle. Then input image has rotated on the rotate angle.
@@ -84,7 +87,7 @@ def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict, params
         os.makedirs(config["path_detect"], exist_ok=True)
         cv2.imwrite(os.path.join(config["path_detect"], "image_bin.jpg"), img_bin)
     # step 2
-    img_final_bin = __detect_horizontal_and_vertical_lines(img_bin, config, "tables", params)
+    img_final_bin = __detect_horizontal_and_vertical_lines(img_bin, config, "tables")
     # step 3
     img_final_bin_houph, angle_alignment = __apply_houph_lines_and_detect_angle(img_final_bin, config)
 
@@ -95,8 +98,8 @@ def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict, params
         cv2.imwrite(os.path.join(config["path_detect"], "img_final_bin_houph.jpg"), img_final_bin_houph)
 
     # step 4 - rotating
-    img_final_bin_houph = rotate_with_threshold(img_final_bin_houph, angle_alignment, config=config, params=params)
-    img = rotate_with_threshold(img, angle_alignment, config=config, params=params)
+    img_final_bin_houph = rotate_with_threshold(img_final_bin_houph, angle_alignment, config=config)
+    img = rotate_with_threshold(img, angle_alignment, config=config)
     if config.get("debug_mode", False):
         cv2.imwrite(os.path.join(config["path_detect"], "aligned_img.jpg"), img)
     img_final_bin_houph = __paint_bounds(img_final_bin_houph)
@@ -183,7 +186,7 @@ def __apply_houph_lines_and_detect_angle(image: np.ndarray, config: dict) -> [np
     return img_final_bin_houph, angle_alignment
 
 
-def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, task: str, params: dict) -> np.ndarray:
+def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, task: str) -> np.ndarray:
     # Defining a kernel length
 
     if task == "orientation":
@@ -192,9 +195,9 @@ def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, ta
     elif task == "tables":
         length_div = 55
         height_div = 100
-    # TODO: min_w_cell min_h_cell
-    kernel_length_weight = max(np.array(img_bin).shape[1] // length_div, params["min_w_cell"])  # 35
-    kernel_length_height = max(np.array(img_bin).shape[0] // height_div, params["min_h_cell"])  # 100
+
+    kernel_length_weight = max(np.array(img_bin).shape[1] // length_div, MIN_W_CELL)  # 35
+    kernel_length_height = max(np.array(img_bin).shape[0] // height_div, MIN_H_CELL)  # 100
 
     # A verticle kernel of (1 X kernel_length), which will detect all the verticle lines from the image.
     verticle_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, kernel_length_height))
@@ -252,8 +255,7 @@ def detect_tables_by_contours(img: np.ndarray,
                               orient_analysis_cells: bool = False,
                               table_type: str = "",
                               *,
-                              config: dict,
-                              params: dict) -> [TableTree, List[np.ndarray], float]:
+                              config: dict) -> [TableTree, List[np.ndarray], float]:
     """
     detecting contours and TreeTable with help contour analysis. TreeTable is
     :param orient_analysis_cells:
@@ -262,7 +264,7 @@ def detect_tables_by_contours(img: np.ndarray,
     :param config: dict from config.py
     :return: TreeTable, contour, rotate angle
     """
-    contours, hierarchy, image, angle_rotate = get_contours_cells(img, table_type, config=config, params=params)
+    contours, hierarchy, image, angle_rotate = get_contours_cells(img, table_type, config=config)
     tree_table = TableTree.parse_contours_to_tree(contours=contours, hierarchy=hierarchy, config=config)
 
     if config.get("debug_mode", False):
@@ -271,7 +273,7 @@ def detect_tables_by_contours(img: np.ndarray,
     if config.get("debug_mode", False):
         cv2.imwrite(os.path.join(config["path_detect"], "img_draw_counters.jpg"), img)
 
-    tree_table.set_text_into_tree(tree=tree_table, src_image=image, language=language, config=config, params=params)
+    tree_table.set_text_into_tree(tree=tree_table, src_image=image, language=language, config=config)
 
     if config.get("debug_mode", False):
         tree_table.print_tree(depth=0)

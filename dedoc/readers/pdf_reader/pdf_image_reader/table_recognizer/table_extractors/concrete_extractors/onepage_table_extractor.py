@@ -18,10 +18,9 @@ from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.img_
 
 class OnePageTableExtractor(BaseTableExtractor):
 
-    def __init__(self, *, config: dict, logger: logging.Logger, params: dict) -> None:
+    def __init__(self, *, config: dict, logger: logging.Logger) -> None:
         super().__init__(config=config, logger=logger)
 
-        self.params = params
         self.image = None
         self.page_number = 0
         self.attribute_selector = TableAttributeExtractor(logger=self.logger)
@@ -54,7 +53,6 @@ class OnePageTableExtractor(BaseTableExtractor):
         tables_tree, contours, angle_rotate = detect_tables_by_contours(image,
                                                                         language=language,
                                                                         config=self.config,
-                                                                        params=self.params,
                                                                         orient_analysis_cells=orient_analysis_cells,
                                                                         table_type=table_type)
 

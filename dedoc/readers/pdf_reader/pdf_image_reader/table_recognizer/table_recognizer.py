@@ -19,17 +19,12 @@ from dedoc.train_dataset.data_path_config import table_path as save_path
 
 
 class TableRecognizer(object):
-    params = dict(
-        min_h_cell=8,
-        min_w_cell=20,
-        rotate_threshold=0.3,
-    )
 
     def __init__(self, *, config: dict = None) -> None:
 
         self.logger = config.get("logger", logging.getLogger(__name__))
 
-        self.onepage_tables_extractor = OnePageTableExtractor(config=config, logger=self.logger, params=self.params)
+        self.onepage_tables_extractor = OnePageTableExtractor(config=config, logger=self.logger)
         self.multipage_tables_extractor = MultiPageTableExtractor(config=config, logger=self.logger)
         self.config = config
         self.table_type = TableTypeAdditionalOptions()

@@ -37,18 +37,9 @@ _config = dict(
     import_path_init_api_args="dedoc.api.api_args",
 
     # ----------------------------------------TABLE RECOGNIZER DEBUG SETTINGS-------------------------------------------
-    # min_h_cell=8,
-    # min_w_cell=20,
-    # type_top_attr=1,
-    # type_left_top_attr=2,
-    # type_left_attr=3,
-    # max_vertical_extended=20,
-    # minimal_cell_cnt_line=5,
-    # minimal_cell_avg_length_line=10,
-
+    # path to save debug images for tables recognizer
     path_cells=os.path.join(os.path.abspath(os.sep), "tmp", "dedoc", "debug_tables", "imgs", "cells"),
     path_detect=os.path.join(os.path.abspath(os.sep), "tmp", "dedoc", "debug_tables", "imgs", "detect_lines"),
-    # rotate_threshold=0.3,
 
     # -------------------------------------------RECOGNIZE SETTINGS-----------------------------------------------------
     # TESSERACT OCR confidence threshold ( values: [-1 - undefined;  0.0 : 100.0 % - confidence value)
