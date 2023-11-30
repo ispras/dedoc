@@ -182,7 +182,7 @@ def __apply_houph_lines_and_detect_angle(image: np.ndarray, config: dict) -> [np
         gap_avg = min(np.mean([c[2] for c in contours_table]) // 45, gap_avg)
     else:
         gap_avg = 5
-    if config["debug_mode"]:
+    if config.get("debug_mode", False):
         config.get("logger", logging.getLogger()).debug(f"Houph gap = {gap_avg}")
 
     # ----- image alignment -----
