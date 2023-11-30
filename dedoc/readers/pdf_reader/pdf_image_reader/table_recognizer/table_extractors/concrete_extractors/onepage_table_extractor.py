@@ -67,6 +67,50 @@ class OnePageTableExtractor(BaseTableExtractor):
 
         return tables
 
+
+    """ TODO fix in the future (REMOVE)
+    def __detect_diff_orient(self, cell_text: str) -> bool:
+        # 1 - разбиваем на строки длины которых состоят хотя бы из одного символа
+        parts = cell_text.split("\n")
+        parts = [p for p in parts if len(p) > 0]
+
+        # 2 - подсчитываем среднюю длину строк ячейки
+        len_parts = [len(p) for p in parts]
+        avg_len_part = np.average(len_parts)
+
+        # Эвристика: считаем что ячейка повернута, если у нас большое количество строк и строки короткие
+        if len(parts) > TableTree.minimal_cell_cnt_line \
+                and avg_len_part < TableTree.minimal_cell_avg_length_line:
+            return True
+        return False
+
+    def __correct_orient_cell(self, cell: Cell, language: str, rotated_angle: int) -> [Cell, np.ndarray]:
+        img_cell = self.image[cell.y_top_left: cell.y_bottom_right, cell.x_top_left: cell.x_bottom_right]
+        rotated_image_cell = rotate_image(img_cell, -rotated_angle)
+
+        output_dict = get_text_with_bbox_from_cells(img_cell, language=language)
+        line_boxes = [
+            TextWithBBox(text=line.text, page_num=page_num, bbox=line.bbox, line_num=line_num, annotations=line.get_annotations(width, height))
+            for line_num, line in enumerate(output_dict.lines)]
+        # get_cell_text_by_ocr(rotated_image_cell, language=language)
+        cell.set_rotated_angle(rotated_angle=-rotated_angle)
+        return cell, rotated_image_cell
+
+
+    def __analyze_header_cell_with_diff_orient(self, tables: List[ScanTable], language: str,
+                                               rotated_angle: int) -> List[ScanTable]:
+
+        for table in tables:
+            attrs = TableAttributeExtractor.get_header_table(table.matrix_cells)
+            for i, row in enumerate(attrs):
+                for j, attr in enumerate(row):
+                    if self.__detect_diff_orient(attr.text):
+                        rotated_cell, rotated_image = self.__correct_orient_cell(attr, language=language, rotated_angle=rotated_angle)
+                        table.matrix_cells[i][j] = rotated_cell
+
+        return tables
+    """
+
     def __select_attributes_matrix_tables(self, tables: List[ScanTable]) -> List[ScanTable]:
         for matrix in tables:
             matrix = self.attribute_selector.select_attributes(matrix)

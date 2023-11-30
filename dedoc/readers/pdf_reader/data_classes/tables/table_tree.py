@@ -17,12 +17,14 @@ ContourCell = namedtuple("ContourCell", ["id_con", "image"])
 
 
 class TableTree(object):
-    min_h_cell = 8
-    min_w_cell = 20
     """
     Table which has cells as sorted childs of tree.
     Table has type of tree and was obtained with help contour analysis.
     """
+    min_h_cell = 8
+    min_w_cell = 20
+    minimal_cell_cnt_line = 5
+    minimal_cell_avg_length_line = 10
 
     def __init__(self, *, config: dict) -> None:
         self.left = None
