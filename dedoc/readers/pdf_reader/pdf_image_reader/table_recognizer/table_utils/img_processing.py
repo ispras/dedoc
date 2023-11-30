@@ -80,10 +80,14 @@ def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict) -> [An
     # step 1 - Invert the image
     img_bin = 255 - img_bin
 
+    if config.get("debug", False):
+        path_detect = config.get("path_detect", None)
+        if path_detect is None:
+            path_detect = os.path.join(os.path.abspath(os.sep), "tmp", "dedoc", "debug_tables", "imgs", "detect_lines"),
+        os.makedirs(path_detect, exist_ok=True)
+
     if config.get("debug_mode", False):
-        os.makedirs(config["path_cells"], exist_ok=True)
-        os.makedirs(config["path_detect"], exist_ok=True)
-        cv2.imwrite(os.path.join(config["path_detect"], "image_bin.jpg"), img_bin)
+        cv2.imwrite(os.path.join(path_detect, "image_bin.jpg"), img_bin)
     # step 2
     img_final_bin = __detect_horizontal_and_vertical_lines(img_bin, config, "tables")
     # step 3
@@ -91,33 +95,36 @@ def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict) -> [An
 
     (thresh, img_final_bin_houph) = cv2.threshold(img_final_bin_houph, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     if config.get("debug_mode", False):
-        cv2.imwrite(os.path.join(config["path_detect"], "img_final_bin.jpg"), img_final_bin)
+        cv2.imwrite(os.path.join(path_detect, "img_final_bin.jpg"), img_final_bin)
     if config.get("debug_mode", False):
-        cv2.imwrite(os.path.join(config["path_detect"], "img_final_bin_houph.jpg"), img_final_bin_houph)
+        cv2.imwrite(os.path.join(path_detect, "img_final_bin_houph.jpg"), img_final_bin_houph)
 
     # step 4 - rotating
     img_final_bin_houph = rotate_with_threshold(img_final_bin_houph, angle_alignment, config=config)
     img = rotate_with_threshold(img, angle_alignment, config=config)
     if config.get("debug_mode", False):
-        cv2.imwrite(os.path.join(config["path_detect"], "aligned_img.jpg"), img)
+        # TODO: paths should be configurable but now could not exist
+        cv2.imwrite(os.path.join(path_detect, "aligned_img.jpg"), img)
     img_final_bin_houph = __paint_bounds(img_final_bin_houph)
 
     # step 5  - detect contours
     contours, hierarchy = cv2.findContours(img_final_bin_houph, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
 
     if config.get("debug_mode", False):
-        cv2.imwrite(os.path.join(config["path_detect"], "img_houph_and_morph_wo_bound.jpg"), img_final_bin_houph)
+        # TODO: paths should be configurable but now could not exist
+        cv2.imwrite(os.path.join(path_detect, "img_houph_and_morph_wo_bound.jpg"), img_final_bin_houph)
         img_w_contour = img.copy()
         cv2.drawContours(img_w_contour, contours, contourIdx=-1, color=(0, 0, 0), thickness=10, hierarchy=hierarchy, maxLevel=8)
-        cv2.imwrite(os.path.join(config["path_detect"], "img_with_contours.jpg"), img_w_contour)
+        cv2.imwrite(os.path.join(path_detect, "img_with_contours.jpg"), img_w_contour)
 
     # Draw external contours for tables without external contours. It is a rare case, but important for invoices
     if table_options.table_wo_external_bounds in table_type:
-        contours, hierarchy = __get_contours_for_table_wo_external_bounds(img, img_final_bin_houph.copy(), contours, hierarchy)
+        contours, hierarchy = __get_contours_for_table_wo_external_bounds(img, img_final_bin_houph.copy(), contours, hierarchy, path_detect)
     return contours, hierarchy, img, angle_alignment
 
 
-def __get_contours_for_table_wo_external_bounds(img: np.ndarray, img_with_contours: np.ndarray, contours: List, hierarchy: List) -> [Any, Any]:
+def __get_contours_for_table_wo_external_bounds(img: np.ndarray, img_with_contours: np.ndarray, contours: List, hierarchy: List,
+                                                path_detect: str) -> [Any, Any]:
     # get children (get table counters)
     contours = np.array(contours)
     list_contours, table_contours = __get_table_contours(contours, hierarchy)
@@ -140,7 +147,8 @@ def __get_contours_for_table_wo_external_bounds(img: np.ndarray, img_with_contou
         cv2.rectangle(img_with_contours, (x, y), (x + w, y + h), color=(0, 0, 0), thickness=5)
 
     if get_config().get("debug_mode", False):
-        cv2.imwrite(os.path.join(get_config()["path_detect"], "img_with_external_bounds.jpg"), img_with_contours)
+        # TODO: paths should be configurable but now could not exist
+        cv2.imwrite(os.path.join(path_detect, "img_with_external_bounds.jpg"), img_with_contours)
     contours, hierarchy = cv2.findContours(img_with_contours, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
 
     return contours, hierarchy
@@ -214,6 +222,7 @@ def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, ta
     horizontal_lines_img = cv2.dilate(img_temp2, hori_kernel, iterations=iterations)
 
     if config.get("debug_mode", False):
+        # TODO: paths should be configurable but now could not exist
         cv2.imwrite(os.path.join(config["path_detect"], "verticle_lines.jpg"), verticle_lines_img)
         cv2.imwrite(os.path.join(config["path_detect"], "horizontal_lines.jpg"), horizontal_lines_img)
 
@@ -231,6 +240,7 @@ def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, ta
     img_bin_with_lines = cv2.erode(~img_bin_with_lines, kernel, iterations=2)
     (thresh, img_bin_with_lines) = cv2.threshold(img_bin_with_lines, 200, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     if config.get("debug_mode", False):
+        # TODO: paths should be configurable but now could not exist
         cv2.imwrite(os.path.join(config["path_detect"], "img_bin_with_lines.jpg"), img_bin_with_lines)
 
     return img_bin_with_lines
@@ -269,6 +279,7 @@ def detect_tables_by_contours(img: np.ndarray,
         config.get("logger", logging.getLogger()).debug(f"Hierarchy [Next, Previous, First_Child, Parent]:\n {hierarchy}")
         tree_table.print_tree(depth=0)
     if config.get("debug_mode", False):
+        # TODO: paths should be configurable but now could not exist
         cv2.imwrite(os.path.join(config["path_detect"], "img_draw_counters.jpg"), img)
 
     tree_table.set_text_into_tree(tree=tree_table, src_image=image, language=language, config=config)

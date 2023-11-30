@@ -38,7 +38,6 @@ _config = dict(
 
     # ----------------------------------------TABLE RECOGNIZER DEBUG SETTINGS-------------------------------------------
     # path to save debug images for tables recognizer
-    path_cells=os.path.join(os.path.abspath(os.sep), "tmp", "dedoc", "debug_tables", "imgs", "cells"),
     path_detect=os.path.join(os.path.abspath(os.sep), "tmp", "dedoc", "debug_tables", "imgs", "detect_lines"),
 
     # -------------------------------------------RECOGNIZE SETTINGS-----------------------------------------------------

@@ -67,7 +67,6 @@ class OnePageTableExtractor(BaseTableExtractor):
 
         return tables
 
-
     """ TODO fix in the future (REMOVE)
     def __detect_diff_orient(self, cell_text: str) -> bool:
         # 1 - разбиваем на строки длины которых состоят хотя бы из одного символа
