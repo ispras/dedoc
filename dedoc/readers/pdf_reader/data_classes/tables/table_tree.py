@@ -96,7 +96,7 @@ class TableTree(object):
             if h[3] == cur.id_contours:
                 bbox = cv2.boundingRect(contours[i])  # [x_begin, y_begin, width, height]
                 # Эвристика №1 на ячейку
-                if bbox[2] < self.config["min_w_cell"] or bbox[3] < self.config["min_h_cell"]:
+                if bbox[2] < self.min_w_cell or bbox[3] < self.min_h_cell:
                     if self.config.get("debug_mode", False):
                         self.logger.debug(f"Contour {i} isn't correct")
                     continue
