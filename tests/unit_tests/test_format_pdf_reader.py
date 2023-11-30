@@ -7,6 +7,7 @@ from typing import List
 
 import cv2
 from dedocutils.preprocessing import SkewCorrector
+from dedoc.config import get_config
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
@@ -142,7 +143,10 @@ class TestPDFReader(unittest.TestCase):
             self.assertEqual(len(annotations_set), len(annotations))
 
     def test_table_extractor(self) -> None:
-        config = {}  # Has to work without config
+        config = {
+            'debug_mode': False,
+            'path_debug': '/tmp/dedoc'
+        }  # TODO: Has to work without config
         any_doc_reader = PdfTxtlayerReader(config=config)
         path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer/english_doc.pdf")
         result = any_doc_reader.read(path, document_type=None, parameters={"need_pdf_table_analysis": "True"})

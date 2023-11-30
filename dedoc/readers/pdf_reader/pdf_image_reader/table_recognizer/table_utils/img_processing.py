@@ -80,7 +80,7 @@ def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict) -> [An
     # step 1 - Invert the image
     img_bin = 255 - img_bin
 
-    if config.get("debug", False):
+    if config.get("debug_mode", False):
         path_detect = config.get("path_detect", None)
         if path_detect is None:
             path_detect = os.path.join(os.path.abspath(os.sep), "tmp", "dedoc", "debug_tables", "imgs", "detect_lines"),
