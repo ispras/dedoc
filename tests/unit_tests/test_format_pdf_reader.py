@@ -142,10 +142,7 @@ class TestPDFReader(unittest.TestCase):
             self.assertEqual(len(annotations_set), len(annotations))
 
     def test_table_extractor(self) -> None:
-        config = {
-            "debug_mode": False,
-            "path_debug": "/tmp/dedoc"
-        }  # TODO: Has to work without config
+        config = {}  # Has to work without config
         any_doc_reader = PdfTxtlayerReader(config=config)
         path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer/english_doc.pdf")
         result = any_doc_reader.read(path, document_type=None, parameters={"need_pdf_table_analysis": "True"})

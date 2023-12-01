@@ -64,7 +64,7 @@ def apply_houph_line(img: np.ndarray, threshold_gap: int = 10, *, config: dict) 
     return cdst_p, angle
 
 
-def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict) -> [Any, Any, np.ndarray, float]:
+def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict, path_detect: str) -> [Any, Any, np.ndarray, float]:
     """
     function's steps:
     1) detects Houph lines for detecting rotate angle. Then input image has rotated on the rotate angle.
@@ -81,15 +81,12 @@ def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict) -> [An
     img_bin = 255 - img_bin
 
     if config.get("debug_mode", False):
-        path_detect = config.get("path_detect", None)
-        if path_detect is None:
-            path_detect = os.path.join(os.path.abspath(os.sep), "tmp", "dedoc", "debug_tables", "imgs", "detect_lines"),
         os.makedirs(path_detect, exist_ok=True)
 
     if config.get("debug_mode", False):
         cv2.imwrite(os.path.join(path_detect, "image_bin.jpg"), img_bin)
     # step 2
-    img_final_bin = __detect_horizontal_and_vertical_lines(img_bin, config, "tables")
+    img_final_bin = __detect_horizontal_and_vertical_lines(img_bin, config, "tables", path_detect)
     # step 3
     img_final_bin_houph, angle_alignment = __apply_houph_lines_and_detect_angle(img_final_bin, config)
 
@@ -192,7 +189,7 @@ def __apply_houph_lines_and_detect_angle(image: np.ndarray, config: dict) -> [np
     return img_final_bin_houph, angle_alignment
 
 
-def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, task: str) -> np.ndarray:
+def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, task: str, path_detect: str) -> np.ndarray:
     # Defining a kernel length
 
     if task == "orientation":
@@ -223,8 +220,8 @@ def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, ta
 
     if config.get("debug_mode", False):
         # TODO: paths should be configurable but now could not exist
-        cv2.imwrite(os.path.join(config["path_detect"], "verticle_lines.jpg"), verticle_lines_img)
-        cv2.imwrite(os.path.join(config["path_detect"], "horizontal_lines.jpg"), horizontal_lines_img)
+        cv2.imwrite(os.path.join(path_detect, "verticle_lines.jpg"), verticle_lines_img)
+        cv2.imwrite(os.path.join(path_detect, "horizontal_lines.jpg"), horizontal_lines_img)
 
     """Now we will add these two images.
     This will have only boxes and the information written in the box will be erased.
@@ -241,7 +238,7 @@ def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, ta
     (thresh, img_bin_with_lines) = cv2.threshold(img_bin_with_lines, 200, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     if config.get("debug_mode", False):
         # TODO: paths should be configurable but now could not exist
-        cv2.imwrite(os.path.join(config["path_detect"], "img_bin_with_lines.jpg"), img_bin_with_lines)
+        cv2.imwrite(os.path.join(path_detect, "img_bin_with_lines.jpg"), img_bin_with_lines)
 
     return img_bin_with_lines
 
@@ -272,15 +269,18 @@ def detect_tables_by_contours(img: np.ndarray,
     :param config: dict from config.py
     :return: TreeTable, contour, rotate angle
     """
-    contours, hierarchy, image, angle_rotate = get_contours_cells(img, table_type, config=config)
+    path_detect = config.get("path_detect", None)
+    if config.get("debug_mode", False) and path_detect is None:
+        path_detect = os.path.join(os.path.abspath(os.sep), "tmp", "dedoc", "debug_tables", "imgs", "detect_lines")
+
+    contours, hierarchy, image, angle_rotate = get_contours_cells(img, table_type, config=config, path_detect=path_detect)
     tree_table = TableTree.parse_contours_to_tree(contours=contours, hierarchy=hierarchy, config=config)
 
     if config.get("debug_mode", False):
         config.get("logger", logging.getLogger()).debug(f"Hierarchy [Next, Previous, First_Child, Parent]:\n {hierarchy}")
         tree_table.print_tree(depth=0)
-    if config.get("debug_mode", False):
-        # TODO: paths should be configurable but now could not exist
-        cv2.imwrite(os.path.join(config["path_detect"], "img_draw_counters.jpg"), img)
+
+        cv2.imwrite(os.path.join(path_detect, "img_draw_counters.jpg"), img)
 
     tree_table.set_text_into_tree(tree=tree_table, src_image=image, language=language, config=config)
 
