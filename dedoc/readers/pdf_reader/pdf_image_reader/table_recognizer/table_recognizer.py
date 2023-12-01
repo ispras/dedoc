@@ -19,6 +19,7 @@ from dedoc.train_dataset.data_path_config import table_path as save_path
 
 
 class TableRecognizer(object):
+
     def __init__(self, *, config: dict = None) -> None:
 
         self.logger = config.get("logger", logging.getLogger(__name__))
@@ -27,11 +28,6 @@ class TableRecognizer(object):
         self.multipage_tables_extractor = MultiPageTableExtractor(config=config, logger=self.logger)
         self.config = config
         self.table_type = TableTypeAdditionalOptions()
-        if config.get("debug", False):
-            if not os.path.exists(self.config["path_cells"]):
-                os.makedirs(self.config["path_cells"])
-            if not os.path.exists(self.config["path_detect"]):
-                os.makedirs(self.config["path_detect"])
 
     def convert_to_multipages_tables(self, all_single_tables: List[ScanTable], lines_with_meta: List[LineWithMeta]) -> List[ScanTable]:
 

@@ -17,6 +17,7 @@ from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.co
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
 from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
 from dedoc.utils import supported_image_types
+from dedoc.utils.parameter_utils import get_path_param
 
 
 class PdfImageReader(PdfBaseReader):
@@ -52,8 +53,6 @@ class PdfImageReader(PdfBaseReader):
         self.binarizer = AdaptiveBinarizer()
         self.ocr = OCRLineExtractor(config=config)
         self.logger = config.get("logger", logging.getLogger())
-        if self.config.get("debug_mode") and not os.path.exists(self.config["path_debug"]):
-            os.makedirs(self.config["path_debug"])
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
@@ -70,14 +69,15 @@ class PdfImageReader(PdfBaseReader):
                           path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]]:
         #  --- Step 1: correct orientation and detect column count ---
         rotated_image, is_one_column_document, angle = self._detect_column_count_and_orientation(image, parameters)
-        if self.config.get("debug_mode"):
+        if self.config.get("debug_mode", False):
             self.logger.info(f"Angle page rotation = {angle}")
 
         #  --- Step 2: do binarization ---
         if parameters.need_binarization:
             rotated_image, _ = self.binarizer.preprocess(rotated_image)
-            if self.config.get("debug_mode"):
-                cv2.imwrite(os.path.join(self.config["path_debug"], f"{datetime.now().strftime('%H-%M-%S')}_result_binarization.jpg"), rotated_image)
+            if self.config.get("debug_mode", False):
+                debug_dir = get_path_param(self.config, "path_debug")
+                cv2.imwrite(os.path.join(debug_dir, f"{datetime.now().strftime('%H-%M-%S')}_result_binarization.jpg"), rotated_image)
 
         #  --- Step 3: table detection and recognition ---
         if parameters.need_pdf_table_analysis:
@@ -122,8 +122,9 @@ class PdfImageReader(PdfBaseReader):
         rotated_image, result_angle = self.scew_corrector.preprocess(image, {"orientation_angle": angle})
         result_angle = result_angle["rotated_angle"]
 
-        if self.config.get("debug_mode"):
-            img_path = os.path.join(self.config["path_debug"], f"{datetime.now().strftime('%H-%M-%S')}_result_orientation.jpg")
+        if self.config.get("debug_mode", False):
+            debug_dir = get_path_param(self.config, "path_debug")
+            img_path = os.path.join(debug_dir, f"{datetime.now().strftime('%H-%M-%S')}_result_orientation.jpg")
             self.logger.info(f"Save image to {img_path}")
             cv2.imwrite(img_path, rotated_image)
 
