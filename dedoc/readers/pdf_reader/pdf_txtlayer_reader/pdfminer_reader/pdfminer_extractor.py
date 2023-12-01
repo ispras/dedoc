@@ -28,6 +28,7 @@ from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageA
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_utils import cleaning_text_from_hieroglyphics, create_bbox, draw_annotation
+from dedoc.utils.parameter_utils import get_path_param
 from dedoc.utils.pdf_utils import get_page_image
 
 logging.getLogger("pdfminer").setLevel(logging.ERROR)
@@ -251,7 +252,7 @@ class PdfminerExtractor(object):
         :param layout: container of layout element
         :return: None
         """
-        tmp_dir = os.path.join(self.config.get("path_debug"), "pdfminer")
+        tmp_dir = os.path.join(get_path_param(self.config, "path_debug"), "pdfminer")
         os.makedirs(tmp_dir, exist_ok=True)
 
         file_text = open(os.path.join(tmp_dir, f"text_{page_num}.txt"), "wt")

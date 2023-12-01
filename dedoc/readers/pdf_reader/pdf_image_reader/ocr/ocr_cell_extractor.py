@@ -11,6 +11,7 @@ from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCR
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_page.ocr_page import OcrPage
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_utils import get_text_with_bbox_from_cells
 from dedoc.utils.image_utils import get_highest_pixel_frequency
+from dedoc.utils.parameter_utils import get_path_param
 
 
 class OCRCellExtractor:
@@ -30,7 +31,7 @@ class OCRCellExtractor:
         for num_batch, nodes_batch in enumerate(batches):
 
             if self.config.get("debug_mode", False):
-                tmp_dir = os.path.join(self.config.get("path_debug"), "debug_tables/batches/")
+                tmp_dir = os.path.join(get_path_param(self.config, "path_debug"), "debug_tables/batches/")
                 os.makedirs(tmp_dir, exist_ok=True)
                 for i, table_tree_node in enumerate(nodes_batch):
                     cv2.imwrite(os.path.join(tmp_dir, f"image_{num_batch}_{i}.png"), BBox.crop_image_by_box(page_image, table_tree_node.cell_box))
@@ -64,7 +65,9 @@ class OCRCellExtractor:
     def __handle_one_batch(self, src_image: np.ndarray, tree_table_nodes: List["TableTree"], num_batch: int, language: str = "rus") -> Tuple[OcrPage, List[BBox]]: # noqa
         concatenated, chunk_boxes = self.__concat_images(src_image=src_image, tree_table_nodes=tree_table_nodes)
         if self.config.get("debug_mode", False):
-            image_path = os.path.join(self.config.get("path_debug"), "debug_tables", "batches", f"stacked_batch_image_{num_batch}.png")
+            debug_dir = os.path.join(get_path_param(self.config, "path_debug"), "debug_tables", "batches")
+            os.makedirs(debug_dir, exist_ok=True)
+            image_path = os.path.join(debug_dir, f"stacked_batch_image_{num_batch}.png")
             cv2.imwrite(image_path, concatenated)
         ocr_result = get_text_with_bbox_from_cells(concatenated, language, ocr_conf_threshold=0.0)
 
@@ -82,8 +85,10 @@ class OCRCellExtractor:
         for tree_node in tree_table_nodes:
             x_coord = space
             cell_image = BBox.crop_image_by_box(src_image, tree_node.crop_text_box)
-            if self.config.get("debug_mode", False) and self.config.get("path_debug") is not None and os.path.exists(self.config.get("path_debug")):
-                image_path = os.path.join(self.config.get("path_debug"), "debug_tables", "batches", "cell_croped.png")
+            if self.config.get("debug_mode", False):
+                debug_dir = os.path.join(get_path_param(self.config, "path_debug"), "debug_tables", "batches")
+                os.makedirs(debug_dir, exist_ok=True)
+                image_path = os.path.join(debug_dir, "cell_croped.png")
                 cv2.imwrite(image_path, cell_image)
             cell_height, cell_width = cell_image.shape[0], cell_image.shape[1]
 

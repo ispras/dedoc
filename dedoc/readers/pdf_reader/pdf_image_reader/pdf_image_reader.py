@@ -17,6 +17,7 @@ from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.co
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
 from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
 from dedoc.utils import supported_image_types
+from dedoc.utils.parameter_utils import get_path_param
 
 
 class PdfImageReader(PdfBaseReader):
@@ -52,8 +53,6 @@ class PdfImageReader(PdfBaseReader):
         self.binarizer = AdaptiveBinarizer()
         self.ocr = OCRLineExtractor(config=config)
         self.logger = config.get("logger", logging.getLogger())
-        if self.config.get("debug_mode", False) and not os.path.exists(self.config["path_debug"]):
-            os.makedirs(self.config["path_debug"])
 
     def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
@@ -77,7 +76,8 @@ class PdfImageReader(PdfBaseReader):
         if parameters.need_binarization:
             rotated_image, _ = self.binarizer.preprocess(rotated_image)
             if self.config.get("debug_mode", False):
-                cv2.imwrite(os.path.join(self.config["path_debug"], f"{datetime.now().strftime('%H-%M-%S')}_result_binarization.jpg"), rotated_image)
+                debug_dir = get_path_param(self.config, "path_debug")
+                cv2.imwrite(os.path.join(debug_dir, f"{datetime.now().strftime('%H-%M-%S')}_result_binarization.jpg"), rotated_image)
 
         #  --- Step 3: table detection and recognition ---
         if parameters.need_pdf_table_analysis:
@@ -123,7 +123,8 @@ class PdfImageReader(PdfBaseReader):
         result_angle = result_angle["rotated_angle"]
 
         if self.config.get("debug_mode", False):
-            img_path = os.path.join(self.config["path_debug"], f"{datetime.now().strftime('%H-%M-%S')}_result_orientation.jpg")
+            debug_dir = get_path_param(self.config, "path_debug")
+            img_path = os.path.join(debug_dir, f"{datetime.now().strftime('%H-%M-%S')}_result_orientation.jpg")
             self.logger.info(f"Save image to {img_path}")
             cv2.imwrite(img_path, rotated_image)
 

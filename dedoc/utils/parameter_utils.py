@@ -1,6 +1,9 @@
+import os
 import subprocess
 from logging import Logger
 from typing import Any, Dict, Optional, Tuple
+
+from dedoc.config import RESOURCES_PATH, get_config
 
 
 def get_param_language(parameters: Optional[dict]) -> str:
@@ -136,6 +139,7 @@ def get_param_gpu_available(parameters: Optional[dict], logger: Logger) -> bool:
     Returns:
         bool: True if GPU is available, False otherwise.
     """
+    parameters = {} if parameters is None else parameters
 
     if not parameters.get("on_gpu", False):
         return False
@@ -148,3 +152,15 @@ def get_param_gpu_available(parameters: Optional[dict], logger: Logger) -> bool:
         return False
 
     return True
+
+
+def get_path_param(parameters: Optional[dict], path_key: str) -> str:
+    parameters = {} if parameters is None else parameters
+    path_value = parameters.get(path_key)
+
+    if path_value is None:
+        default_config = get_config()
+        path_value = default_config.get(path_key, RESOURCES_PATH)
+
+    os.makedirs(path_value, exist_ok=True)
+    return path_value
