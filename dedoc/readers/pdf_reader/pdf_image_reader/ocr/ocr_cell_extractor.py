@@ -82,7 +82,7 @@ class OCRCellExtractor:
         for tree_node in tree_table_nodes:
             x_coord = space
             cell_image = BBox.crop_image_by_box(src_image, tree_node.crop_text_box)
-            if self.config.get("debug_mode", False) and self.config.get("path_debug", False) and os.path.exists(self.config.get("path_debug")):
+            if self.config.get("debug_mode", False) and self.config.get("path_debug") is not None and os.path.exists(self.config.get("path_debug")):
                 image_path = os.path.join(self.config.get("path_debug"), "debug_tables", "batches", "cell_croped.png")
                 cv2.imwrite(image_path, cell_image)
             cell_height, cell_width = cell_image.shape[0], cell_image.shape[1]
