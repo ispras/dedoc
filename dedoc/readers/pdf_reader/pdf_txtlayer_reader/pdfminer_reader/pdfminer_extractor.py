@@ -269,10 +269,10 @@ class PdfminerExtractor(object):
 
         for lobj in lobjs:
             if isinstance(lobj, LTTextBoxHorizontal):
-                annotations.extend(self.__extract_words_bbox_annotation(lobj, k_w, k_h, height, width))
+                annotations.extend(self.__extract_words_bbox_annotation(lobj, height, width))
                 lobjs_textline.extend(lobj)
             elif isinstance(lobj, LTTextLineHorizontal):
-                annotations.extend(self.__extract_words_bbox_annotation(lobj, k_w, k_h, height, width))
+                annotations.extend(self.__extract_words_bbox_annotation(lobj, height, width))
                 lobjs_textline.append(lobj)
             elif isinstance(lobj, LTRect):
                 lobjs_box.append(lobj)
