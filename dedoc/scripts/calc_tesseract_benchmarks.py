@@ -102,7 +102,6 @@ def __parse_ocr_errors(lines: List[str]) -> List:
         # example line: " 2        0   { 6}-{б}"
         errors = re.findall(r"(\d+)", line)[0]
         chars = re.findall(r"{(.*)}-{(.*)}", line)[0]
-        print(f"{errors}, {chars[0]}, {chars[1]}")
         ocr_errors.append([errors, chars[0], chars[1]])
 
     return ocr_errors
@@ -149,30 +148,30 @@ def __get_summary_symbol_error(path_reports: str) -> Texttable:
     return ocr_err_by_symbol_table
 
 
-if __name__ == "__main__":
-    base_zip = "data_tesseract_benchmarks"
-    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "benchmarks"))
-    cache_dir = os.path.join(get_config()["intermediate_data_path"], "tesseract_data")
-    os.makedirs(cache_dir, exist_ok=True)
-
-    cache_dir_accuracy = os.path.join(cache_dir, "accuracy")
-    cache_dir_word_accuracy = os.path.join(cache_dir, "word_accuracy")
-    os.makedirs(cache_dir_accuracy, exist_ok=True)
-    os.makedirs(cache_dir_word_accuracy, exist_ok=True)
-
-    benchmark_data_path = os.path.join(cache_dir, f"{base_zip}.zip")
-
-    if not os.path.isfile(benchmark_data_path):
-        wget.download("https://at.ispras.ru/owncloud/index.php/s/HqKt53BWmR8nCVG/download", benchmark_data_path)
-        print(f"Benchmark data downloaded to {benchmark_data_path}")
-    else:
-        print(f"Use cached benchmark data from {benchmark_data_path}")
-    assert os.path.isfile(benchmark_data_path)
-
+def __create_statistic_tables(statistics: dict, accuracy_values: List) -> Tuple[Texttable, Texttable]:
     accs = [["Dataset", "Image name", "--psm", "Amount of words", "Accuracy OCR"]]
     accs_common = [["Dataset", "ASCII_Spacing_Chars", "ASCII_Special_Symbols", "ASCII_Digits",
                     "ASCII_Uppercase_Chars", "Latin1_Special_Symbols", "Cyrillic", "Amount of words", "AVG Accuracy"]]
+
+    table_accuracy_per_image = Texttable()
+    accs.extend(accuracy_values)
+    table_accuracy_per_image.add_rows(accs)
+
+    # calculating average accuracy for each data set
+    table_common = Texttable()
+
+    for dataset_name in sorted(statistics.keys()):
+        row = [dataset_name]
+        row.extend(_get_avg_by_dataset(statistics, dataset_name))
+        accs_common.append(row)
+    table_common.add_rows(accs_common)
+
+    return table_common, table_accuracy_per_image
+
+
+def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str) -> Tuple[Texttable, Texttable]:
     statistics = {}
+    accuracy_values = []
 
     with zipfile.ZipFile(benchmark_data_path, "r") as arch_file:
         names_dirs = [member.filename for member in arch_file.infolist() if member.file_size > 0]
@@ -192,7 +191,6 @@ if __name__ == "__main__":
                 gt_path = os.path.join(base_zip, dataset_name, "gts", f"{base_name}.txt")
                 imgs_path = os.path.join(base_zip, dataset_name, "imgs", img_name)
                 accuracy_path = os.path.join(cache_dir_accuracy, f"{dataset_name}_{base_name}_accuracy.txt")
-                word_accuracy_path = os.path.join(cache_dir_word_accuracy, f"{dataset_name}_{base_name}_accuracy.txt")
 
                 with TemporaryDirectory() as tmpdir:
                     tmp_gt_path = os.path.join(tmpdir, "tmp_gt.txt")
@@ -222,25 +220,35 @@ if __name__ == "__main__":
                             os.system(command)
 
                             statistics = _update_statistics_by_dataset(statistics, dataset_name, accuracy_path, word_cnt)
-                            accs.append([dataset_name, base_name, psm, word_cnt, statistics[dataset_name]["Accuracy"][-1]])
+                            accuracy_values.append([dataset_name, base_name, psm, word_cnt, statistics[dataset_name]["Accuracy"][-1]])
 
                     except Exception as ex:
                         print(ex)
                         print("If you have problems with libutf8proc.so.2, try the command: `apt install -y libutf8proc-dev`")
 
+    table_common, table_accuracy_per_image = __create_statistic_tables(statistics, accuracy_values)
+    return table_common, table_accuracy_per_image
+
+
+if __name__ == "__main__":
+    base_zip = "data_tesseract_benchmarks"
+    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "benchmarks"))
+    cache_dir = os.path.join(get_config()["intermediate_data_path"], "tesseract_data")
+    os.makedirs(cache_dir, exist_ok=True)
+    cache_dir_accuracy = os.path.join(cache_dir, "accuracy")
+    os.makedirs(cache_dir_accuracy, exist_ok=True)
+
+    benchmark_data_path = os.path.join(cache_dir, f"{base_zip}.zip")
+    if not os.path.isfile(benchmark_data_path):
+        wget.download("https://at.ispras.ru/owncloud/index.php/s/HqKt53BWmR8nCVG/download", benchmark_data_path)
+        print(f"Benchmark data downloaded to {benchmark_data_path}")
+    else:
+        print(f"Use cached benchmark data from {benchmark_data_path}")
+    assert os.path.isfile(benchmark_data_path)
+
+    table_common, table_accuracy_per_image = __calculate_ocr_reports(cache_dir_accuracy, benchmark_data_path)
+
     table_errors = __get_summary_symbol_error(path_reports=cache_dir_accuracy)
-
-    table_accuracy_per_image = Texttable()
-    table_accuracy_per_image.add_rows(accs)
-
-    # calculating average accuracy for each data set
-    table_common = Texttable()
-
-    for dataset_name in sorted(statistics.keys()):
-        row = [dataset_name]
-        row.extend(_get_avg_by_dataset(statistics, dataset_name))
-        accs_common.append(row)
-    table_common.add_rows(accs_common)
 
     with open(os.path.join(output_dir, "tesseract_benchmark.txt"), "w") as res_file:
         res_file.write(f"Tesseract version is {pytesseract.get_tesseract_version()}\nTable 1 - Accuracy for each file\n")
