@@ -46,7 +46,7 @@ class ErrorsSaver:
             with open(path_file) as file:
                 lines = file.readlines()
             lines_cnt = Counter(lines)
-            lines.sort(key=lambda l: (-lines_cnt[l], l))
+            lines.sort(key=lambda value: (-lines_cnt[value], value))
             path_out = os.path.join(self.errors_path, f"{int(1000 * len(lines) / errors_total_num):04d}_{file_name}")
 
             with open(path_out, "w") as file_out:
