@@ -38,8 +38,9 @@ class ColumnsOrientationClassifier(object):
                 self._load_weights(net)
             else:
                 net = ClassificationModelTorch(None)
-            net.to(self.device)
             self._nets[self.checkpoint_path] = net
+        if self.device != next(self._nets[self.checkpoint_path].parameters()).device:
+            self._nets[self.checkpoint_path].to(self.device)
         return self._nets[self.checkpoint_path]
 
     @staticmethod

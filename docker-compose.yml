@@ -12,7 +12,8 @@ services:
       - 1231:1231
     environment:
       DOCREADER_PORT: 1231
-
+      NVIDIA_VISIBLE_DEVICES: 0
+    runtime: nvidia
 
   test:
     depends_on:
@@ -26,6 +27,8 @@ services:
       DOCREADER_PORT: 1231
       is_test: $test
       PYTHONPATH: $PYTHONPATH:/dedoc_root/tests:/dedoc_root
+      NVIDIA_VISIBLE_DEVICES: 0
+    runtime: nvidia
     command:
         bash dedoc_root/tests/run_tests_in_docker.sh
 
