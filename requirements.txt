@@ -38,3 +38,4 @@ wget==3.2
 xgbfir==0.3.1
 xgboost>=1.1.1,<1.2.0
 xlrd==1.2.0
+textblob==0.17.1
