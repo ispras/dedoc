@@ -22,3 +22,15 @@ class TestUtils(unittest.TestCase):
         name, extension = splitext_(name_extension)
         self.assertEqual("some file ", name)
         self.assertEqual(".doc", extension)
+
+    def test_splitext_dots_name(self) -> None:
+        name_extension = "1700134420_941.23_to_csv.csv"
+        name, extension = splitext_(name_extension)
+        self.assertEqual("1700134420_941.23_to_csv", name)
+        self.assertEqual(".csv", extension)
+
+    def test_splitext_double_dot_extension(self) -> None:
+        name_extension = "some_name.tar.gz"
+        name, extension = splitext_(name_extension)
+        self.assertEqual("some_name", name)
+        self.assertEqual(".tar.gz", extension)

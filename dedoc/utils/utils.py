@@ -9,7 +9,6 @@ import random
 import re
 import shutil
 import time
-from os.path import splitext
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, TypeVar
 
 import requests
@@ -24,6 +23,7 @@ from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.tree_node import TreeNode
 
 T = TypeVar("T")
+double_dot_extensions = (".tar.gz", "mht.gz", "mhtml.gz", "note.pickle")
 
 
 def list_get(ls: List[T], index: int, default: Optional[T] = None) -> Optional[T]:
@@ -63,16 +63,11 @@ def splitext_(path: str) -> Tuple[str, str]:
     """
     get extensions with several dots
     """
-    if len(path.split()) > 1:
-        first, second = path.rsplit(maxsplit=1)
-        sep = path[len(first)]
-        name, ext = splitext(second)
-        if len(ext) == 0:
-            name, ext = ext, name
-        return first + sep + name, ext
-    if len(path.split(".")) > 2:
-        return path.split(".")[0], "." + ".".join(path.split(".")[-2:])
-    return splitext(path)
+    if not path.endswith(double_dot_extensions):
+        return os.path.splitext(path)
+
+    name, *ext_list = path.rsplit(".", maxsplit=2)
+    return name, f".{'.'.join(ext_list)}"
 
 
 def _text_from_item(item: dict) -> str:
