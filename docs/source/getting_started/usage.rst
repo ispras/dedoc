@@ -31,7 +31,7 @@ Method :meth:`~dedoc.converters.DocxConverter.can_convert` allows to check if th
     :lines: 15-21
 
 Since we have checked if the converter is able to convert the file,
-we can convert it using :meth:`~dedoc.converters.DocxConverter.do_convert` method:
+we can convert it using :meth:`~dedoc.converters.DocxConverter.convert` method:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
@@ -298,7 +298,7 @@ one may use manager class (see :ref:`dedoc_manager` for more details).
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
-    :lines: 112-116
+    :lines: 110-111
 
 Manager allows to run workflow (see :ref:`dedoc_workflow`) for a file of any format supported by dedoc (see :ref:`table_formats`).
 One can also make a custom ``config`` and ``manager_config`` (parameters of the manager constructor) for more flexible usage of the library.

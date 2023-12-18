@@ -11,15 +11,10 @@ from dedoc.structure_extractors import DefaultStructureExtractor
 
 """Using converters."""
 converter = DocxConverter(config={})
+file_path = "test_dir/example.odt"
 
-file_dir, file_name = "test_dir", "example.odt"
-file_path = os.path.join(file_dir, file_name)
-
-name_wo_extension, file_extension = os.path.splitext(file_name)
-file_mime = mimetypes.guess_type(file_path)[0]
-
-converter.can_convert(file_extension, file_mime)  # True
-converter.do_convert(file_dir, name_wo_extension, file_extension)  # 'example.docx'
+converter.can_convert(file_path)  # True
+converter.convert(file_path)  # 'test_dir/example.docx'
 
 """Using readers."""
 reader = DocxReader(config={})

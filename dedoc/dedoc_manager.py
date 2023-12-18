@@ -92,20 +92,21 @@ class DedocManager:
         unique_filename = get_unique_name(file_name)
 
         with tempfile.TemporaryDirectory() as tmp_dir:
-            shutil.copy(file_path, os.path.join(tmp_dir, unique_filename))
+            tmp_file_path = os.path.join(tmp_dir, unique_filename)
+            shutil.copy(file_path, tmp_file_path)
 
             # Step 1 - Converting
-            converted_filename = self.converter.do_converting(tmp_dir, unique_filename, parameters=parameters)
-            self.logger.info(f"Finish conversion {file_name} -> {converted_filename}")
+            converted_file_path = self.converter.convert(tmp_file_path)
+            self.logger.info(f"Finish conversion {file_name} -> {os.path.basename(converted_file_path)}")
 
             # Step 2 - Reading content
-            unstructured_document = self.reader.parse_file(tmp_dir=tmp_dir, filename=converted_filename, parameters=parameters)
+            unstructured_document = self.reader.parse_file(tmp_dir=tmp_dir, filename=os.path.basename(converted_file_path), parameters=parameters)
             self.logger.info(f"Finish parse file {file_name}")
 
             # Step 3 - Adding meta-information
             metadata = self.document_metadata_extractor.extract_metadata(directory=tmp_dir,
                                                                          filename=unique_filename,
-                                                                         converted_filename=converted_filename,
+                                                                         converted_filename=os.path.basename(converted_file_path),
                                                                          original_filename=file_name,
                                                                          parameters=parameters,
                                                                          other_fields=unstructured_document.metadata)

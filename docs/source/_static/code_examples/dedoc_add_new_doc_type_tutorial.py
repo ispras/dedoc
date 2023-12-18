@@ -13,18 +13,13 @@ from dedoc.structure_constructors import LinearConstructor, StructureConstructor
 from dedoc.structure_extractors import DefaultStructureExtractor, StructureExtractorComposition
 
 
-file_dir, file_name = "test_dir", "The_New_Yorker_Case_Study.djvu"
-file_path = os.path.join(file_dir, file_name)
+file_path = "test_dir/The_New_Yorker_Case_Study.djvu"
 
-
-djvu_converter = DjvuConverter(config=dict())
+djvu_converter = DjvuConverter()
 pdf_reader = PdfReader()
 
-name_wo_extension, file_extension = os.path.splitext(file_name)
-file_mime = mimetypes.guess_type(file_path)[0]
-
-djvu_converter.can_convert(file_extension, file_mime)  # True
-djvu_converter.do_convert(file_dir, name_wo_extension, file_extension)  # 'The_New_Yorker_Case_Study.pdf'
+djvu_converter.can_convert(file_path)  # True
+djvu_converter.convert(file_path)  # 'test_dir/The_New_Yorker_Case_Study.pdf'
 
 file_dir, file_name = "test_dir", "pdf_with_attachment.pdf"
 file_path = os.path.join(file_dir, file_name)

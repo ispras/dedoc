@@ -75,7 +75,10 @@ def splitext_(path: str) -> Tuple[str, str]:
     return splitext(path)
 
 
-def get_mime_extension(file_path: Optional[str], mime: Optional[str], extension: Optional[str]) -> Tuple[str, str]:
+def get_mime_extension(file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None) -> Tuple[str, str]:
+    if mime is not None and extension is not None:
+        return mime, extension
+
     if file_path:
         name, extension = splitext_(file_path)
         mime = get_file_mime_type(file_path)
@@ -83,6 +86,7 @@ def get_mime_extension(file_path: Optional[str], mime: Optional[str], extension:
         assert mime is not None or extension is not None, "When file_path is None, mime or extension should be provided"
         mime = "" if mime is None else mime
         extension = "" if extension is None else extension
+
     return mime, extension
 
 

@@ -3,7 +3,7 @@ from stat import S_IREAD, S_IRGRP, S_IROTH
 from typing import List, Optional
 
 from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
-from dedoc.utils.utils import get_file_mime_type, splitext_
+from dedoc.utils.utils import get_mime_extension
 
 
 class FileConverterComposition(object):
@@ -15,28 +15,26 @@ class FileConverterComposition(object):
     """
     def __init__(self, converters: List[AbstractConverter]) -> None:
         """
-        :param converters: the list of converters that have methods can_convert() and do_convert(), \
+        :param converters: the list of converters that have methods can_convert() and convert(), \
         they are used for files converting into specified formats
         """
         self.converters = converters
 
-    def do_converting(self, tmp_dir: str, filename: str, parameters: Optional[dict] = None) -> str:
+    def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:
         """
         Convert file if there is the converter that can do it.
         If there isn't any converter that is able to convert the file, it isn't changed.
 
-        :param tmp_dir: the directory where the file is located and where the converted file will be saved
-        :param filename: the name of the file to convert
+        :param file_path: path of the file to convert
         :param parameters: parameters of converting
-        :return: name of the converted file if conversion was executed else name of the original file
+        :return: path of converted file if conversion was executed else path of the original file
         """
-        name, extension = splitext_(filename)
-        mime = get_file_mime_type(os.path.join(tmp_dir, filename))
+        extension, mime = get_mime_extension(file_path=file_path)
+        converted_file_path = file_path
+
         for converter in self.converters:
-            can_convert = converter.can_convert(extension=extension, mime=mime, parameters=parameters)
-            if can_convert:
-                filename = converter.do_convert(tmp_dir, name, extension)
+            if converter.can_convert(file_path=file_path, extension=extension, mime=mime, parameters=parameters):
+                converted_file_path = converter.convert(file_path, parameters=parameters)
                 break
-        file_path = os.path.join(tmp_dir, filename)
-        os.chmod(file_path, S_IREAD | S_IRGRP | S_IROTH)
-        return filename
+        os.chmod(converted_file_path, S_IREAD | S_IRGRP | S_IROTH)
+        return converted_file_path
