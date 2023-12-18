@@ -88,7 +88,7 @@ General scheme of adding AttachmentExtractor
 2. You should implement methods according to the specifics of extracting attachments for this format.
 
 * :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.can_extract()` method checks if the new extractor can process the file, for example, you can return True for the list of some specific file extensions.
-* :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.get_attachments()` method should return a list of attachments that were extracted from the document: for each attachment :class:`~dedoc.data_structures.attached_file.AttachedFile` is returned, you can see its code in ``dedoc/data_structures/attached_file.py``.
+* :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.extract()` method should return a list of attachments that were extracted from the document: for each attachment :class:`~dedoc.data_structures.attached_file.AttachedFile` is returned, you can see its code in ``dedoc/data_structures/attached_file.py``.
 
 
 3. Add attachments extractor to the reader's code.
@@ -104,7 +104,7 @@ General scheme of adding AttachmentExtractor
 
         def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
             # some code
-            attachments = self.attachment_extractor.get_attachments(tmpdir, filename, parameters)
+            attachments = self.attachment_extractor.extract(tmpdir, filename, parameters)
             # some code
 
 Example of adding pdf/djvu handlers
@@ -151,7 +151,7 @@ Implement ``PdfAttachmentsExtractor``.
 You should implement the following methods:
 
 * :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.can_extract()`: use file extension or mime to check if we could read the given file. You can learn more about extensions and mime using file ``dedoc/extensions.py``
-* :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.get_attachments()` : use information about file path and file name to extract attachments from the given file.
+* :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.extract()` : use information about file path and file name to extract attachments from the given file.
 
 The method returns the list of :class:`~dedoc.data_structures.attached_file.AttachedFile` using
 :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor._content2attach_file` method.

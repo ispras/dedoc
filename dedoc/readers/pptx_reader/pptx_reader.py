@@ -1,4 +1,3 @@
-import os
 from typing import Optional
 
 from pptx import Presentation
@@ -53,6 +52,6 @@ class PptxReader(BaseReader):
 
                     tables.append(Table(cells=cells, metadata=TableMetadata(page_id=page_id)))
 
-        attachments = self.attachments_extractor.get_attachments(tmpdir=os.path.dirname(path), filename=os.path.basename(path), parameters=parameters)
+        attachments = self.attachments_extractor.extract(file_path=path, parameters=parameters)
 
         return UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=[])

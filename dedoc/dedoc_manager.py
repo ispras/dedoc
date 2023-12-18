@@ -66,7 +66,7 @@ class DedocManager:
         :param parameters: any parameters, specify how to parse file (see API parameters documentation for more details)
         :return: parsed document
         """
-        parameters = self.__init_parameters(parameters)
+        parameters = self.__init_parameters(file_path, parameters)
         self.logger.info(f"Get file {os.path.basename(file_path)} with parameters {parameters}")
 
         try:
@@ -133,12 +133,15 @@ class DedocManager:
             self.logger.info(f"Finish handle {file_name}")
         return parsed_document
 
-    def __init_parameters(self, parameters: Optional[dict]) -> dict:
+    def __init_parameters(self, file_path: str, parameters: Optional[dict]) -> dict:
         parameters = {} if parameters is None else parameters
         result_parameters = {}
 
         for parameter_name, parameter_value in self.default_parameters.items():
             result_parameters[parameter_name] = parameters.get(parameter_name, parameter_value)
+
+        attachments_dir = parameters.get("attachments_dir", None)
+        result_parameters["attachments_dir"] = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
 
         return result_parameters
 

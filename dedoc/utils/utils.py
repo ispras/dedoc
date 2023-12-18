@@ -75,6 +75,17 @@ def splitext_(path: str) -> Tuple[str, str]:
     return splitext(path)
 
 
+def get_mime_extension(file_path: Optional[str], mime: Optional[str], extension: Optional[str]) -> Tuple[str, str]:
+    if file_path:
+        name, extension = splitext_(file_path)
+        mime = get_file_mime_type(file_path)
+    else:
+        assert mime is not None or extension is not None, "When file_path is None, mime or extension should be provided"
+        mime = "" if mime is None else mime
+        extension = "" if extension is None else extension
+    return mime, extension
+
+
 def _text_from_item(item: dict) -> str:
     res = item.get("text", "")
     if "subparagraphs" in item:

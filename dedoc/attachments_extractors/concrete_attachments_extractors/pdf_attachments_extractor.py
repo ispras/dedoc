@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import uuid
@@ -8,36 +9,43 @@ from PyPDF2.pdf import PageObject
 from PyPDF2.utils import PdfReadError
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
-from dedoc.attachments_extractors.utils import create_note
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.extensions import recognized_extensions, recognized_mimes
-from dedoc.utils.utils import convert_datetime
+from dedoc.utils.utils import convert_datetime, get_mime_extension, get_unique_name
 
 
 class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
     """
     Extract attachments from pdf files.
     """
-    def __init__(self, *, config: dict) -> None:
+    def __init__(self, *, config: Optional[dict] = None) -> None:
         """
         :param config: configuration of the extractor, e.g. logger for logging
         """
-        self.config = config
+        self.config = {} if config is None else config
         self.logger = config.get("logger", logging.getLogger())
 
-    def can_extract(self, extension: str, mime: str, parameters: Optional[dict] = None) -> bool:
+    def can_extract(self,
+                    file_path: Optional[str] = None,
+                    extension: Optional[str] = None,
+                    mime: Optional[str] = None,
+                    parameters: Optional[dict] = None) -> bool:
         """
         Checks if this extractor can get attachments from the document (it should have .pdf extension)
         """
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in recognized_extensions.docx_like_format or mime in recognized_mimes.docx_like_format
 
-    def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[AttachedFile]:
+    def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
         """
         Get attachments from the given pdf document.
 
         Look to the :class:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor` documentation to get the information about \
         the methods' parameters.
         """
+        parameters = {} if parameters is None else parameters
+        tmpdir, filename = os.path.split(file_path)
+
         with open(os.path.join(tmpdir, filename), "rb") as handler:
             try:
                 reader = PyPDF2.PdfFileReader(handler)
@@ -74,7 +82,7 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
                     user = note.get("/T")
                     data = note.get("/Contents", "")
 
-                    name, content = create_note(content=data, modified_time=modified_time, created_time=created_time, author=user)
+                    name, content = self.__create_note(content=data, modified_time=modified_time, created_time=created_time, author=user)
                     attachments.append((name, bytes(content)))
         return attachments
 
@@ -108,3 +116,16 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
                         attachments.append((name, data))
 
         return attachments
+
+    def __create_note(self, content: str, modified_time: int, created_time: int, author: str, size: int = None) -> [str, bytes]:
+        filename = get_unique_name("note.json")
+        note_dict = {
+            "content": content,
+            "modified_time": modified_time,
+            "created_time": created_time,
+            "size": size if size else len(content),
+            "author": author
+        }
+        encode_data = json.dumps(note_dict).encode("utf-8")
+
+        return filename, encode_data

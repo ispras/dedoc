@@ -4,19 +4,26 @@ from typing import List, Optional
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
+from dedoc.utils.utils import get_mime_extension
 
 
 class JsonAttachmentsExtractor(AbstractAttachmentsExtractor):
     """
     Extract attachments from json files.
     """
-    def can_extract(self, extension: str, mime: str, parameters: Optional[dict] = None) -> bool:
+
+    def can_extract(self,
+                    file_path: Optional[str] = None,
+                    extension: Optional[str] = None,
+                    mime: Optional[str] = None,
+                    parameters: Optional[dict] = None) -> bool:
         """
         Checks if this extractor can get attachments from the document (it should have .json extension)
         """
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower().endswith(".json")
 
-    def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[AttachedFile]:
+    def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
         """
         Get attachments from the given json document.
         Attached files are html files if the option `html_fields` is given in the `parameters`.
@@ -33,6 +40,8 @@ class JsonAttachmentsExtractor(AbstractAttachmentsExtractor):
         Look to the :class:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor` documentation to get the information about \
         the methods' parameters.
         """
+        parameters = {} if parameters is None else parameters
+        tmpdir, filename = os.path.split(file_path)
         attachments = []
 
         with open(os.path.join(tmpdir, filename)) as f:

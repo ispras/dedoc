@@ -208,7 +208,7 @@ For a document of unknown or unsupported domain there is an option to use defaul
 
 .. toctree::
    :maxdepth: 1
-   :caption: Getting started:
+   :caption: Getting started
 
    getting_started/installation
    getting_started/usage
@@ -221,6 +221,16 @@ For a document of unknown or unsupported domain there is an option to use defaul
    tutorials/add_new_doc_type
    tutorials/creating_document_classes
 
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Parameters description
+
+   parameters/structure_type
+   parameters/attachments_handling
+   parameters/tables_handling
+   parameters/pdf_handling
+   parameters/other_formats_handling
 
 .. toctree::
    :maxdepth: 1

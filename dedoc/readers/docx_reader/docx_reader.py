@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import List, Optional
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
@@ -37,7 +36,7 @@ class DocxReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path), filename=os.path.basename(path), parameters=parameters)
+        attachments = self.attachment_extractor.extract(file_path=path, parameters=parameters)
 
         docx_document = DocxDocument(path=path, attachments=attachments, logger=self.logger)
         lines = self.__fix_lines(docx_document.lines)

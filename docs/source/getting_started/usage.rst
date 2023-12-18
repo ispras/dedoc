@@ -230,7 +230,7 @@ Method :meth:`~dedoc.attachments_extractors.DocxAttachmentsExtractor.can_extract
     :lines: 88
 
 Since we have checked if the extractor can extract attachments from the file,
-we can extract them it using :meth:`~dedoc.attachments_extractors.DocxAttachmentsExtractor.get_attachments` method:
+we can extract them it using :meth:`~dedoc.attachments_extractors.DocxAttachmentsExtractor.extract` method:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python

@@ -85,8 +85,8 @@ document.metadata  # {'file_name': 'example.docx', 'file_type': 'application/vnd
 
 """Using attachments extractors"""
 attachments_extractor = DocxAttachmentsExtractor()
-attachments_extractor.can_extract(file_extension, file_mime)  # True
-attachments = attachments_extractor.get_attachments(file_dir, file_name, {})
+attachments_extractor.can_extract(file_path=file_path)  # True
+attachments = attachments_extractor.extract(file_path=file_path)
 attachments[0]  # <dedoc.data_structures.AttachedFile>
 
 

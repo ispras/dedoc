@@ -1,4 +1,3 @@
-import os
 from json import JSONDecodeError
 from typing import Any, List, Optional
 
@@ -51,7 +50,7 @@ class JsonReader(BaseReader):
             except (JSONDecodeError, ValueError):
                 raise BadParametersError(f"can't read html_fields {fields}")
             json_data = self.__exclude_html_fields(json_data, key_fields)
-            attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path), filename=os.path.basename(path), parameters=parameters)
+            attachments = self.attachment_extractor.extract(file_path=path, parameters=parameters)
         else:
             attachments = []
 

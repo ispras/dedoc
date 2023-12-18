@@ -104,9 +104,7 @@ class PdfBaseReader(BaseReader):
             tables.append(table)
 
         if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
-            tmp_dir = os.path.dirname(path)
-            file_name = os.path.basename(path)
-            attachments += self.attachment_extractor.get_attachments(tmpdir=tmp_dir, filename=file_name, parameters=parameters)
+            attachments += self.attachment_extractor.extract(file_path=path, parameters=parameters)
 
         result = UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=warnings, metadata=other_fields)
         return self._postprocess(result)
