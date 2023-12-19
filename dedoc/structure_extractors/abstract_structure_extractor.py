@@ -1,6 +1,7 @@
+import logging
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from typing import List
+from typing import List, Optional
 
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
@@ -21,9 +22,15 @@ class AbstractStructureExtractor(ABC):
     The paragraph type of the line should be one of the predefined types for some certain document domain, e.g. header, list_item, raw_text, etc.
     Each concrete structure extractor defines the rules of structuring: the levels and possible types of the lines.
     """
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        """
+        :param config: configuration of the extractor, e.g. logger for logging
+        """
+        self.config = {} if config is None else config
+        self.logger = self.config.get("logger", logging.getLogger())
 
     @abstractmethod
-    def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
+    def extract(self, document: UnstructuredDocument, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         This method extracts structure for the document content received from some reader:
         it finds lines types and their hierarchy levels and adds them to the lines' metadata.

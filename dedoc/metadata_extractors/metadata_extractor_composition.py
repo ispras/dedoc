@@ -13,7 +13,7 @@ class MetadataExtractorComposition:
     """
     def __init__(self, extractors: List[AbstractMetadataExtractor]) -> None:
         """
-        :param extractors: the list of extractors with methods can_extract() and extract_metadata() to extract metadata from file
+        :param extractors: the list of extractors with methods can_extract() and extract() to extract metadata from file
         """
         self.extractors = extractors
 

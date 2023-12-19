@@ -22,7 +22,7 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
 
     prefix_list: List[LinePrefix] = [DottedPrefix, BracketPrefix, LetterPrefix, BulletPrefix]
 
-    def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
+    def extract(self, document: UnstructuredDocument, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         Extract basic structure from the given document and add additional information to the lines' metadata.
         To get the information about the method's parameters look at the documentation of the class \

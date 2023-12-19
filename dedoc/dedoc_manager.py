@@ -110,7 +110,7 @@ class DedocManager:
             self.logger.info(f"Add metadata of file {file_name}")
 
             # Step 4 - Extract structure
-            unstructured_document = self.structure_extractor.extract_structure(unstructured_document, parameters)
+            unstructured_document = self.structure_extractor.extract(unstructured_document, parameters)
             self.logger.info(f"Extract structure from file {file_name}")
 
             if self.config.get("labeling_mode", False):

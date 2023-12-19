@@ -1,6 +1,6 @@
 import os
 import re
-from typing import List
+from typing import List, Optional
 
 from dedoc.config import get_config
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -21,19 +21,20 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
     """
     document_type = "diploma"
 
-    def __init__(self, *, config: dict) -> None:
+    def __init__(self, *, config: Optional[dict] = None) -> None:
         """
         :param config: some configuration for document parsing
         """
+        super().__init__(config=config)
         self.toc_extractor = TOCFeatureExtractor()
         self.header_builder = HeaderHierarchyLevelBuilder()
         self.toc_builder = TocBuilder()
         self.body_builder = DiplomaBodyBuilder()
         path = os.path.join(get_config()["resources_path"], "line_type_classifiers")
-        self.classifier = DiplomaLineTypeClassifier(path=os.path.join(path, "diploma_classifier.pkl.gz"), config=config)
+        self.classifier = DiplomaLineTypeClassifier(path=os.path.join(path, "diploma_classifier.pkl.gz"), config=self.config)
         self.footnote_start_regexp = re.compile(r"^\d+ ")
 
-    def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
+    def extract(self, document: UnstructuredDocument, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         Extract diploma structure from the given document and add additional information to the lines' metadata.
         To get the information about the method's parameters look at the documentation of the class \

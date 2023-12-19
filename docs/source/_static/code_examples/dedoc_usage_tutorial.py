@@ -80,7 +80,7 @@ attachments[0]  # <dedoc.data_structures.AttachedFile>
 """Using structure extractors"""
 structure_extractor = DefaultStructureExtractor()
 document.lines[0].metadata.hierarchy_level  # None
-document = structure_extractor.extract_structure(document, {})
+document = structure_extractor.extract(document)
 document.lines[0].metadata.hierarchy_level  # HierarchyLevel(level_1=1, level_2=1, can_be_multiline=False, line_type=header)
 
 

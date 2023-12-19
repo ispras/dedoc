@@ -86,7 +86,7 @@ def _get_manager_config(config: dict) -> dict:
         LawStructureExtractor.document_type: LawStructureExtractor(config=config)
     }
     structure_extractors = {
-        DefaultStructureExtractor.document_type: DefaultStructureExtractor(),
+        DefaultStructureExtractor.document_type: DefaultStructureExtractor(config=config),
         DiplomaStructureExtractor.document_type: DiplomaStructureExtractor(config=config),
         TzStructureExtractor.document_type: TzStructureExtractor(config=config),
         ClassifyingLawStructureExtractor.document_type: ClassifyingLawStructureExtractor(extractors=law_extractors, config=config)

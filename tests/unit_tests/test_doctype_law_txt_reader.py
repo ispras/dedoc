@@ -20,7 +20,7 @@ class TestLawTxtReader(AbstractTestApiDocReader):
         path = self._get_abs_path("коап_москвы_8_7_2015_utf.txt")
         document = self.txt_reader.read(file_path=path)
         document.metadata = self.metadata_extractor.extract(path)
-        document = self.law_extractor.extract_structure(document, {})
+        document = self.law_extractor.extract(document)
 
         self.assertListEqual([], document.attachments)
         self.assertListEqual([], document.tables)
