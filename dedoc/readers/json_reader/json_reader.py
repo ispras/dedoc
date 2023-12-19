@@ -18,9 +18,10 @@ class JsonReader(BaseReader):
     """
     This reader allows handle json files.
     """
-    def __init__(self) -> None:
-        super().__init__()
-        self.attachment_extractor = JsonAttachmentsExtractor()
+
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        super().__init__(config=config)
+        self.attachment_extractor = JsonAttachmentsExtractor(config=self.config)
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """

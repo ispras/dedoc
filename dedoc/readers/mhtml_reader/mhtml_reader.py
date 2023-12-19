@@ -1,6 +1,5 @@
 import email
 import gzip
-import logging
 import os
 import uuid
 from typing import List, Optional, Tuple
@@ -20,16 +19,13 @@ class MhtmlReader(BaseReader):
     """
     This reader can process files with the following extensions: .mhtml, .mht, .mhtml.gz, .mht.gz
     """
+
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
-        self.config = {} if config is None else config
-        self.logger = self.config.get("logger", logging.getLogger())
+        super().__init__(config=config)
         self.mhtml_extensions = [".mhtml", ".mht"]
         self.mhtml_extensions += [f"{extension}.gz" for extension in self.mhtml_extensions]
         self.mhtml_extensions = tuple(self.mhtml_extensions)
-        self.html_reader = HtmlReader(config=config)
+        self.html_reader = HtmlReader(config=self.config)
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """

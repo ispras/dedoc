@@ -62,8 +62,8 @@ document.lines[5].annotations[-2]  # Attachment(0:10, attach_6de4dc06-0b75-11ee-
 
 """Using metadata extractors"""
 metadata_extractor = DocxMetadataExtractor()
-metadata_extractor.can_extract(file_dir, file_name, file_name, file_name)  # True
-document.metadata = metadata_extractor.extract_metadata(file_dir, file_name, file_name, file_name)
+metadata_extractor.can_extract(file_path)  # True
+document.metadata = metadata_extractor.extract(file_path)
 document.metadata  # {'file_name': 'example.docx', 'file_type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'size': 373795,
 # 'access_time': 1686825619, 'created_time': 1686825617, 'modified_time': 1686823541, 'other_fields': {'document_subject': '', 'keywords': '',
 # 'category': '', 'comments': '', 'author': '', 'last_modified_by': '', 'created_date': 1568725611, 'modified_date': 1686752726,
@@ -72,8 +72,8 @@ document.metadata  # {'file_name': 'example.docx', 'file_type': 'application/vnd
 
 """Using attachments extractors"""
 attachments_extractor = DocxAttachmentsExtractor()
-attachments_extractor.can_extract(file_path=file_path)  # True
-attachments = attachments_extractor.extract(file_path=file_path)
+attachments_extractor.can_extract(file_path)  # True
+attachments = attachments_extractor.extract(file_path)
 attachments[0]  # <dedoc.data_structures.AttachedFile>
 
 

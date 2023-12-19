@@ -1,5 +1,4 @@
 import copy
-import logging
 import os
 from itertools import chain
 from typing import Optional
@@ -33,15 +32,11 @@ class PdfAutoReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
-        self.config = {} if config is None else config
+        super().__init__(config=config)
         self.pdf_txtlayer_reader = PdfTxtlayerReader(config=self.config)
         self.pdf_tabby_reader = PdfTabbyReader(config=self.config)
         self.pdf_image_reader = PdfImageReader(config=self.config)
         self.txtlayer_detector = TxtLayerDetector(pdf_txtlayer_reader=self.pdf_txtlayer_reader, pdf_tabby_reader=self.pdf_tabby_reader, config=self.config)
-        self.logger = self.config.get("logger", logging.getLogger())
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """

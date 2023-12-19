@@ -57,13 +57,13 @@ def _get_manager_config(config: dict) -> dict:
     ]
     readers = [
         DocxReader(config=config),
-        ExcelReader(),
-        PptxReader(),
-        CSVReader(),
+        ExcelReader(config=config),
+        PptxReader(config=config),
+        CSVReader(config=config),
         HtmlReader(config=config),
         RawTextReader(config=config),
         NoteReader(config=config),
-        JsonReader(),
+        JsonReader(config=config),
         ArchiveReader(config=config),
         PdfAutoReader(config=config),
         PdfTabbyReader(config=config),
@@ -74,11 +74,11 @@ def _get_manager_config(config: dict) -> dict:
     ]
 
     metadata_extractors = [
-        DocxMetadataExtractor(),
+        DocxMetadataExtractor(config=config),
         PdfMetadataExtractor(config=config),
         ImageMetadataExtractor(config=config),
-        NoteMetadataExtractor(),
-        BaseMetadataExtractor()
+        NoteMetadataExtractor(config=config),
+        BaseMetadataExtractor(config=config)
     ]
 
     law_extractors = {

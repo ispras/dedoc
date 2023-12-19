@@ -1,5 +1,4 @@
 import json
-import logging
 import math
 import os
 import shutil
@@ -51,12 +50,7 @@ class PdfTabbyReader(PdfBaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
-        self.config = {} if config is None else config
-        super().__init__(config=self.config)
-        self.logger = self.config.get("logger", logging.getLogger())
+        super().__init__(config=config)
         self.tabby_java_version = "2.0.0"
         self.jar_name = "ispras_tbl_extr.jar"
         self.jar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "tabbypdf", "jars"))

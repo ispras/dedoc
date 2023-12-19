@@ -1,4 +1,3 @@
-import logging
 from typing import List, Optional
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
@@ -16,13 +15,10 @@ class DocxReader(BaseReader):
     This class is used for parsing documents with .docx extension.
     Please use :class:`~dedoc.converters.DocxConverter` for getting docx file from similar formats.
     """
+
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
-        self.config = {} if config is None else config
-        self.attachment_extractor = DocxAttachmentsExtractor()
-        self.logger = self.config.get("logger", logging.getLogger())
+        super().__init__(config=config)
+        self.attachment_extractor = DocxAttachmentsExtractor(config=self.config)
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """

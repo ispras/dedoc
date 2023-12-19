@@ -1,4 +1,3 @@
-import logging
 import os
 import pickle
 from typing import Optional
@@ -14,12 +13,9 @@ class NoteReader(BaseReader):
     """
     This class is used for parsing documents with .note.pickle extension.
     """
+
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
-        self.config = {} if config is None else config
-        self.logger = self.config.get("logger", logging.getLogger())
+        super().__init__(config=config)
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """

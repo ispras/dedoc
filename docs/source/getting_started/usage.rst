@@ -200,7 +200,7 @@ the metadata extractor can extract metadata from the given file:
     :language: python
     :lines: 78
 
-To extract metadata, one can add them to the document using :meth:`~dedoc.metadata_extractors.DocxMetadataExtractor.extract_metadata` method.
+To extract metadata, one can add them to the document using :meth:`~dedoc.metadata_extractors.DocxMetadataExtractor.extract` method.
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
@@ -274,14 +274,14 @@ Let's construct the tree structure of the document:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
-    :lines: 101-104
+    :lines: 101-103
 
 As we see, parsed document has similar attributes as :class:`~dedoc.data_structures.UnstructuredDocument`.
 The main difference is in the ``content`` attribute, that contains hierarchical document structure and tables.
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
-    :lines: 106-108
+    :lines: 101-103
 
 To get more information about :class:`~dedoc.data_structures.ParsedDocument`, :class:`~dedoc.data_structures.DocumentContent`
 and other classes, that form the output format, see :ref:`dedoc_data_structures`.
@@ -298,7 +298,7 @@ one may use manager class (see :ref:`dedoc_manager` for more details).
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
-    :lines: 110-111
+    :lines: 101-103
 
 Manager allows to run workflow (see :ref:`dedoc_workflow`) for a file of any format supported by dedoc (see :ref:`table_formats`).
 One can also make a custom ``config`` and ``manager_config`` (parameters of the manager constructor) for more flexible usage of the library.

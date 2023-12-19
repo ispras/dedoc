@@ -1,3 +1,4 @@
+import logging
 import os
 import uuid
 from abc import ABC, abstractmethod
@@ -11,6 +12,12 @@ class AbstractAttachmentsExtractor(ABC):
     """
     This class is responsible for extracting files attached to the documents of different formats.
     """
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        """
+        :param config: configuration of the attachments extractor, e.g. logger for logging
+        """
+        self.config = {} if config is None else config
+        self.logger = self.config.get("logger", logging.getLogger())
 
     @abstractmethod
     def can_extract(self,

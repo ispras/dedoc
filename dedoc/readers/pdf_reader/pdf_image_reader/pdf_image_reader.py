@@ -1,4 +1,3 @@
-import logging
 import os
 from datetime import datetime
 from typing import List, Optional, Tuple
@@ -44,17 +43,12 @@ class PdfImageReader(PdfBaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
-        self.config = {} if config is None else config
-        super().__init__(config=self.config)
+        super().__init__(config=config)
         self.skew_corrector = SkewCorrector()
         self.column_orientation_classifier = ColumnsOrientationClassifier(on_gpu=self.config.get("on_gpu", False),
                                                                           checkpoint_path=get_config()["resources_path"], config=self.config)
         self.binarizer = AdaptiveBinarizer()
         self.ocr = OCRLineExtractor(config=self.config)
-        self.logger = self.config.get("logger", logging.getLogger())
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """

@@ -1,6 +1,5 @@
 import codecs
 import gzip
-import logging
 import re
 import time
 from typing import Iterable, List, Optional, Tuple
@@ -21,13 +20,10 @@ class RawTextReader(BaseReader):
     """
     This class allows to parse files with the following extensions: .txt, .txt.gz
     """
+
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
+        super().__init__(config=config)
         self.space_regexp = re.compile(r"^\s+")
-        self.config = {} if config is None else config
-        self.logger = self.config.get("logger", logging.getLogger())
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """

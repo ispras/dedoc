@@ -1,4 +1,3 @@
-import logging
 import math
 import os
 from abc import abstractmethod
@@ -54,19 +53,15 @@ class PdfBaseReader(BaseReader):
     """
     Base class for pdf documents parsing.
     """
-    def __init__(self, config: Optional[dict] = None) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
-        config = {} if config is None else config
-        config["n_jobs"] = config.get("n_jobs", 1)
-        self.table_recognizer = TableRecognizer(config=config)
-        self.metadata_extractor = LineMetadataExtractor(config=config)
-        self.config = config
-        self.logger = config.get("logger", logging.getLogger())
-        self.attachment_extractor = PDFAttachmentsExtractor(config=config)
-        self.linker = LineObjectLinker(config=config)
-        self.paragraph_extractor = ScanParagraphClassifierExtractor(config=config)
+
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        super().__init__(config=config)
+        self.config["n_jobs"] = config.get("n_jobs", 1)
+        self.table_recognizer = TableRecognizer(config=self.config)
+        self.metadata_extractor = LineMetadataExtractor(config=self.config)
+        self.attachment_extractor = PDFAttachmentsExtractor(config=self.config)
+        self.linker = LineObjectLinker(config=self.config)
+        self.paragraph_extractor = ScanParagraphClassifierExtractor(config=self.config)
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

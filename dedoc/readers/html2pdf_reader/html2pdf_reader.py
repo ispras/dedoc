@@ -1,4 +1,3 @@
-import logging
 import os
 import re
 from copy import deepcopy
@@ -21,9 +20,7 @@ class Html2PdfReader(HtmlReader):
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
-        self.pdf_reader = PdfTxtlayerReader(config=config)
-        self.config = {} if config is None else config
-        self.logger = self.config.get("logger", logging.getLogger())
+        self.pdf_reader = PdfTxtlayerReader(config=self.config)
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         parameters = {} if parameters is None else parameters

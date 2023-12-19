@@ -18,6 +18,8 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
     """
     Extract attachments from docx files.
     """
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        super().__init__(config=config)
 
     def can_extract(self,
                     file_path: Optional[str] = None,

@@ -104,12 +104,8 @@ class DedocManager:
             self.logger.info(f"Finish parse file {file_name}")
 
             # Step 3 - Adding meta-information
-            metadata = self.document_metadata_extractor.extract_metadata(directory=tmp_dir,
-                                                                         filename=unique_filename,
-                                                                         converted_filename=os.path.basename(converted_file_path),
-                                                                         original_filename=file_name,
-                                                                         parameters=parameters,
-                                                                         other_fields=unstructured_document.metadata)
+            metadata = self.document_metadata_extractor.extract(file_path=tmp_file_path, converted_filename=os.path.basename(converted_file_path),
+                                                                original_filename=file_name, parameters=parameters, other_fields=unstructured_document.metadata)
             unstructured_document.metadata = metadata
             self.logger.info(f"Add metadata of file {file_name}")
 

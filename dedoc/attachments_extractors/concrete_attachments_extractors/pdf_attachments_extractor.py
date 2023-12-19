@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import uuid
 from typing import List, Optional, Tuple
@@ -19,11 +18,7 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
     Extract attachments from pdf files.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        """
-        :param config: configuration of the extractor, e.g. logger for logging
-        """
-        self.config = {} if config is None else config
-        self.logger = self.config.get("logger", logging.getLogger())
+        super().__init__(config=config)
 
     def can_extract(self,
                     file_path: Optional[str] = None,

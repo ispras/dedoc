@@ -22,8 +22,10 @@ class ExcelReader(BaseReader):
     This class is used for parsing documents with .xlsx extension.
     Please use :class:`~dedoc.converters.ExcelConverter` for getting xlsx file from similar formats.
     """
-    def __init__(self) -> None:
-        self.attachment_extractor = ExcelAttachmentsExtractor()
+
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        super().__init__(config=config)
+        self.attachment_extractor = ExcelAttachmentsExtractor(config=self.config)
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """

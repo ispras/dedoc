@@ -41,7 +41,7 @@ Attachments handling
       - True, False
       - False
       - * :meth:`dedoc.DedocManager.parse`
-        * :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` for inheritors of :class:`~dedoc.metadata_extractors.AbstractMetadataExtractor`
+        * :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` for inheritors of :class:`~dedoc.metadata_extractors.AbstractMetadataExtractor`
       - Attached files can be encoded in base64 and their contents will be saved instead of saving attached file on disk.
         The encoded contents will be saved in the attachment's metadata in the ``base64_encode`` field.
         Use ``True`` value to enable this behaviour.

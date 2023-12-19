@@ -13,7 +13,7 @@ class BinaryConverter(AbstractConverter):
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
-        self.png_converter = PNGConverter(config=config)
+        self.png_converter = PNGConverter(config=self.config)
 
     def can_convert(self,
                     file_path: Optional[str] = None,

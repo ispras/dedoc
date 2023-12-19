@@ -199,18 +199,18 @@ your custom handlers directly in your code. Example of a manager config with the
 
 .. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
     :language: python
-    :lines: 1-15, 44-55
+    :lines: 1-15, 44-52
 
 Then create an object of :class:`~dedoc.DedocManager` and use :meth:`~dedoc.DedocManager.parse` method:
 
 .. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
     :language: python
-    :lines: 16-17, 57-58
+    :lines: 16-17, 51-52
 
 Result is :class:`~dedoc.data_structures.ParsedDocument`:
 
 .. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
     :language: python
-    :lines: 58-59
+    :lines: 51-52
 
 Adding support for a new document type is completed.

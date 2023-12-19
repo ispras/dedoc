@@ -15,7 +15,9 @@ class CSVReader(BaseReader):
     """
     This class allows to parse files with the following extensions: .csv, .tsv.
     """
-    def __init__(self) -> None:
+
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        super().__init__(config=config)
         self.default_separator = ","
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:

@@ -20,8 +20,9 @@ class PptxReader(BaseReader):
     Please use :class:`~dedoc.converters.PptxConverter` for getting pptx file from similar formats.
     """
 
-    def __init__(self) -> None:
-        self.attachments_extractor = PptxAttachmentsExtractor()
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        super().__init__(config=config)
+        self.attachments_extractor = PptxAttachmentsExtractor(config=self.config)
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """

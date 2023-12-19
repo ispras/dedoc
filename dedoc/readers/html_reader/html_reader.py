@@ -1,5 +1,4 @@
 import hashlib
-import logging
 import string
 from typing import List, Optional, Union
 
@@ -26,11 +25,7 @@ class HtmlReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
-        self.config = {} if config is None else config
-        self.logger = self.config.get("logger", logging.getLogger())
+        super().__init__(config=config)
         self.postprocessor = HtmlLinePostprocessing()
         self.tag_annotation_parser = HtmlTagAnnotationParser()
 
