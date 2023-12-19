@@ -16,14 +16,16 @@ from dedoc.utils.utils import get_mime_extension
 
 class PdfReader(BaseReader):
 
-    def __init__(self) -> None:
-        self.attachment_extractor = PdfAttachmentsExtractor()
+    def __init__(self, config: Optional[dict] = None) -> None:
+        super().__init__(config=config)
+        self.attachment_extractor = PdfAttachmentsExtractor(config=self.config)
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension in recognized_extensions.pdf_like_format or mime in recognized_mimes.pdf_like_format
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        parameters = {} if parameters is None else parameters
         lines = self.__process_lines(file_path)
         tables = self.__process_tables(file_path)
         attachments = self.attachment_extractor.extract(file_path=file_path, parameters=parameters)

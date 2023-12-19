@@ -9,7 +9,7 @@ from dedoc.common.exceptions.conversion_error import ConversionError
 
 class AbstractConverter(ABC):
     """
-    This class provides the common methods for all converters: can_convert() and do_convert().
+    This class provides the common methods for all converters: can_convert() and convert().
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
         """

@@ -19,6 +19,7 @@ class PdfAttachmentsExtractor(AbstractAttachmentsExtractor):
         return extension in recognized_extensions.pdf_like_format or mime in recognized_mimes.pdf_like_format
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
+        parameters = {} if parameters is None else parameters
         handler = open(os.path.join(file_path), "rb")
         reader = PyPDF2.PdfFileReader(handler)
         catalog = reader.trailer["/Root"]

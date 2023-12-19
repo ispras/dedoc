@@ -97,7 +97,7 @@ parsed_document.content.structure.subparagraphs[0].text  # Document example
 
 """Run the whole pipeline"""
 manager = DedocManager()
-result = manager.parse(file_path=file_path, parameters={})
+result = manager.parse(file_path=file_path)
 
 result  # <dedoc.data_structures.ParsedDocument>
 result.to_api_schema().model_dump()  # {'content': {'structure': {'node_id': '0', 'text': '', 'annotations': [], 'metadata': {'paragraph_type': 'root', ...

@@ -23,20 +23,24 @@ You should call the constructor of the base class in the constructor of the curr
     from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
 
     class NewtypeConverter(AbstractConverter):
-       def __init__(self, config):
-           super().__init__(config=config)
+        def __init__(self, config: Optional[dict] = None) -> None:
+            super().__init__(config=config)
 
-       def can_convert(self, extension: str, mime: str, parameters: Optional[dict] = None) -> bool:
+        def can_convert(self,
+                        file_path: Optional[str] = None,
+                        extension: Optional[str] = None,
+                        mime: Optional[str] = None,
+                        parameters: Optional[dict] = None) -> bool:
            pass  # some code here
 
-       def do_convert(self, tmp_dir: str, filename: str, extension: str) -> str:
+       def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:
             pass  # some code here
 
 2. Implement converter methods to convert other formats to this format:
 
 * :meth:`~dedoc.converters.AbstractConverter.can_convert` method checks if the new converter can process the file, for example, you can return True for the list of some specific file extensions.
 
-* :meth:`~dedoc.converters.AbstractConverter.convert` method performs the required file conversion. Don't worry about the file name containing spaces or other unwanted characters because the file has been renamed by the manager.
+* :meth:`~dedoc.converters.AbstractConverter.convert` method performs the required file conversion.
 
 3. Add the converter to manager config, see :ref:`adding_handlers_to_manager_config`.
 
@@ -52,15 +56,15 @@ General scheme of adding Reader
 
     class NewtypeReader(BaseReader):
 
-        def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
             pass  # some code here
 
-        def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
             pass  # some code here
 
 2. You should implement reader methods according to specific file format processing.
 
-* :meth:`~dedoc.readers.BaseReader.can_read` method checks if the given file can be processed. For processing the following information is required: the path to the file, file extension, mime and document type (for example, you can process only articles). It is better to make this method fast because it will be called frequently.
+* :meth:`~dedoc.readers.BaseReader.can_read` method checks if the given file can be processed. For processing the following information is required: the path to the file, file extension or mime. It is better to make this method fast because it will be called frequently.
 * :meth:`~dedoc.readers.BaseReader.read` method must form :class:`~dedoc.data_structures.unstructured_document.UnstructuredDocument` (document lines, tables and attachments).
 
 3. Add the reader to manager config, see :ref:`adding_handlers_to_manager_config`.
@@ -78,10 +82,14 @@ General scheme of adding AttachmentExtractor
     from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 
     class NewtypeAttachmentsExtractor(AbstractAttachmentsExtractor):
-        def can_extract(self, extension: str, mime: str, parameters: Optional[dict] = None) -> bool:
+        def can_extract(self,
+                        file_path: Optional[str] = None,
+                        extension: Optional[str] = None,
+                        mime: Optional[str] = None,
+                        parameters: Optional[dict] = None) -> bool:
              pass # some code here
 
-        def get_attachments(self, tmpdir: str, filename: str, parameters: dict) -> List[AttachedFile]:
+        def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
             pass  # some code here
 
 
@@ -99,12 +107,13 @@ General scheme of adding AttachmentExtractor
 .. code-block:: python
 
     class NewtypeReader(BaseReader):
-        def __init__(self) -> None:
-            self.attachment_extractor = PdfAttachmentsExtractor()
+        def __init__(self, config: Optional[dict] = None) -> None:
+            super().__init__(config=config)
+            self.attachment_extractor = PdfAttachmentsExtractor(config=self.config)
 
-        def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
             # some code
-            attachments = self.attachment_extractor.extract(tmpdir, filename, parameters)
+            attachments = self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
             # some code
 
 Example of adding pdf/djvu handlers
@@ -114,9 +123,9 @@ Suppose we want to add the ability to handle pdf/djvu documents with a text laye
 We don't want to deal with two formats, because we can convert djvu to pdf.
 The following steps are proposed:
 
-1. Implementing the converter from djvu to pdf DjvuConverter.
-2. Implementing of PdfAttachmentsExtractor.
-3. Implementing of PdfReader.
+1. Implementing the converter from djvu to pdf ``DjvuConverter``.
+2. Implementing of ``PdfAttachmentsExtractor``.
+3. Implementing of ``PdfReader``.
 4. Adding the implemented handlers to the manager config.
 
 Let's describe each step in more detail.
@@ -132,13 +141,13 @@ Implement class ``DjvuConverter``.
 You should implement the following methods:
 
 * :meth:`~dedoc.converters.AbstractConverter.can_convert`: return True if file extension is `.djvu`. You can see the file ``dedoc/extensions.py`` for more accurate work with extensions.
-* :meth:`~dedoc.converters.AbstractConverter.convert`: use `ddjvu` utility and run it using ``os.system``. ``._await_for_conversion()`` method ensures that the converted file was saved.
+* :meth:`~dedoc.converters.AbstractConverter.convert`: use `ddjvu` utility and run it using ``._run_subprocess`` method ensures that the converted file was saved.
 
 You can use the converter in your code:
 
 .. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
     :language: python
-    :lines: 20, 16-17, 22-27
+    :lines: 15-19
 
 Implementing of PdfAttachmentsExtractor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -184,7 +193,7 @@ You can use the reader in your code:
 
 .. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
     :language: python
-    :lines: 21, 29-41
+    :lines: 21-30
 
 .. _adding_handlers_to_manager_config:
 
@@ -199,18 +208,18 @@ your custom handlers directly in your code. Example of a manager config with the
 
 .. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
     :language: python
-    :lines: 1-15, 44-52
+    :lines: 1-14, 33-43
 
 Then create an object of :class:`~dedoc.DedocManager` and use :meth:`~dedoc.DedocManager.parse` method:
 
 .. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
     :language: python
-    :lines: 16-17, 51-52
+    :lines: 15, 45-46
 
 Result is :class:`~dedoc.data_structures.ParsedDocument`:
 
 .. literalinclude:: ../_static/code_examples/dedoc_add_new_doc_type_tutorial.py
     :language: python
-    :lines: 51-52
+    :lines: 48-49
 
 Adding support for a new document type is completed.

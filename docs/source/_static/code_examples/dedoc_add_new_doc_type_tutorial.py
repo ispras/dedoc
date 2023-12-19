@@ -15,10 +15,10 @@ from dedoc.structure_extractors import DefaultStructureExtractor, StructureExtra
 file_path = "test_dir/The_New_Yorker_Case_Study.djvu"
 
 djvu_converter = DjvuConverter()
-pdf_reader = PdfReader()
-
 djvu_converter.can_convert(file_path)  # True
 djvu_converter.convert(file_path)  # 'test_dir/The_New_Yorker_Case_Study.pdf'
+
+pdf_reader = PdfReader()
 
 file_path = "test_dir/pdf_with_attachment.pdf"
 pdf_reader.can_read(file_path)  # True
