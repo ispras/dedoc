@@ -39,7 +39,6 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "orient_cell_angle",
     "is_one_column_document",
     "document_orientation",
-    "document_type",
     "language",
     "need_header_footers_analysis",
     "need_pdf_table_analysis",
@@ -55,10 +54,11 @@ class PdfBaseReader(BaseReader):
     """
     Base class for pdf documents parsing.
     """
-    def __init__(self, config: dict) -> None:
+    def __init__(self, config: Optional[dict] = None) -> None:
         """
         :param config: configuration of the reader, e.g. logger for logging
         """
+        config = {} if config is None else config
         config["n_jobs"] = config.get("n_jobs", 1)
         self.table_recognizer = TableRecognizer(config=config)
         self.metadata_extractor = LineMetadataExtractor(config=config)
@@ -68,7 +68,7 @@ class PdfBaseReader(BaseReader):
         self.linker = LineObjectLinker(config=config)
         self.paragraph_extractor = ScanParagraphClassifierExtractor(config=config)
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines, tables and attachments.
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
@@ -77,7 +77,7 @@ class PdfBaseReader(BaseReader):
         parameters = {} if parameters is None else parameters
         first_page, last_page = param_utils.get_param_page_slice(parameters)
         attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = os.path.dirname(path) if attachments_dir is None else attachments_dir
+        attachments_dir = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
 
         params_for_parse = ParametersForParseDoc(
             language=param_utils.get_param_language(parameters),
@@ -85,7 +85,6 @@ class PdfBaseReader(BaseReader):
             orient_cell_angle=param_utils.get_param_orient_cell_angle(parameters),
             is_one_column_document=param_utils.get_param_is_one_column_document(parameters),
             document_orientation=param_utils.get_param_document_orientation(parameters),
-            document_type=document_type,
             need_header_footers_analysis=param_utils.get_param_need_header_footers_analysis(parameters),
             need_pdf_table_analysis=param_utils.get_param_need_pdf_table_analysis(parameters),
             first_page=first_page,
@@ -95,7 +94,7 @@ class PdfBaseReader(BaseReader):
             attachments_dir=attachments_dir
         )
 
-        lines, scan_tables, attachments, warnings, other_fields = self._parse_document(path, params_for_parse)
+        lines, scan_tables, attachments, warnings, other_fields = self._parse_document(file_path, params_for_parse)
         tables = []
         for scan_table in scan_tables:
             metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name, rotated_angle=scan_table.location.rotated_angle)
@@ -103,8 +102,8 @@ class PdfBaseReader(BaseReader):
             table = Table(metadata=metadata, cells=cells_with_meta)
             tables.append(table)
 
-        if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
-            attachments += self.attachment_extractor.extract(file_path=path, parameters=parameters)
+        if self._can_contain_attachements(file_path) and self.attachment_extractor.with_attachments(parameters):
+            attachments += self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
 
         result = UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=warnings, metadata=other_fields)
         return self._postprocess(result)

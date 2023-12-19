@@ -19,22 +19,22 @@ from dedoc.utils.utils import calculate_file_hash
 
 class Html2PdfReader(HtmlReader):
 
-    def __init__(self, *, config: dict) -> None:
+    def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
         self.pdf_reader = PdfTxtlayerReader(config=config)
-        self.config = config
-        self.logger = config.get("logger", logging.getLogger())
+        self.config = {} if config is None else config
+        self.logger = self.config.get("logger", logging.getLogger())
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         parameters = {} if parameters is None else parameters
         with TemporaryDirectory() as tmp_dir:
-            modified_path, tables = self._modify_html(path, tmp_dir)
-            converted_path = os.path.join(tmp_dir, os.path.basename(path).replace(".html", ".pdf"))
+            modified_path, tables = self._modify_html(file_path, tmp_dir)
+            converted_path = os.path.join(tmp_dir, os.path.basename(file_path).replace(".html", ".pdf"))
             HTML(filename=modified_path).write_pdf(converted_path)
             self.logger.info(f"Convert {modified_path} to {converted_path}")
             parameters_new = deepcopy(parameters)
             parameters_new["pdf_with_text_layer"] = "true"
-            unstructured_document = self.pdf_reader.read(path=converted_path, document_type=document_type, parameters=parameters_new)
+            unstructured_document = self.pdf_reader.read(file_path=converted_path, parameters=parameters_new)
 
         return self._add_tables(document=unstructured_document, tables=tables)
 

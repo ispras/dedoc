@@ -11,6 +11,7 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
+from dedoc.utils.utils import get_mime_extension
 
 xlrd.xlsx.ensure_elementtree_imported(False, None)
 xlrd.xlsx.Element_has_iter = True
@@ -24,27 +25,28 @@ class ExcelReader(BaseReader):
     def __init__(self) -> None:
         self.attachment_extractor = ExcelAttachmentsExtractor()
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in recognized_extensions.excel_like_format or mime in recognized_mimes.excel_like_format
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         This method extracts tables and attachments from the document, `lines` attribute remains empty.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        with xlrd.open_workbook(path) as book:
+        with xlrd.open_workbook(file_path) as book:
             sheets_num = book.nsheets
             tables = []
             for sheet_num in range(sheets_num):
                 sheet = book.sheet_by_index(sheet_num)
                 tables.append(self.__parse_sheet(sheet_num, sheet))
             if self.attachment_extractor.with_attachments(parameters=parameters):
-                attachments = self.attachment_extractor.extract(file_path=path, parameters=parameters)
+                attachments = self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
             else:
                 attachments = []
             return UnstructuredDocument(lines=[], tables=tables, attachments=attachments, warnings=[])

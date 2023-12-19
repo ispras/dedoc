@@ -14,36 +14,37 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
-from dedoc.utils.utils import calculate_file_hash, get_encoding
+from dedoc.utils.utils import calculate_file_hash, get_encoding, get_mime_extension
 
 
 class RawTextReader(BaseReader):
     """
     This class allows to parse files with the following extensions: .txt, .txt.gz
     """
-    def __init__(self, *, config: dict) -> None:
+    def __init__(self, *, config: Optional[dict] = None) -> None:
         """
         :param config: configuration of the reader, e.g. logger for logging
         """
         self.space_regexp = re.compile(r"^\s+")
-        self.config = config
-        self.logger = config.get("logger", logging.getLogger())
+        self.config = {} if config is None else config
+        self.logger = self.config.get("logger", logging.getLogger())
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower().endswith((".txt", "txt.gz"))
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         This method returns only document lines, some types of the lines (e.g. `list_item`) may be found using regular expressions.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        encoding = self.__get_encoding(path=path, parameters=parameters)
-        lines = self._get_lines_with_meta(path=path, encoding=encoding)
+        encoding = self.__get_encoding(path=file_path, parameters=parameters)
+        lines = self._get_lines_with_meta(path=file_path, encoding=encoding)
         encoding_warning = f"encoding is {encoding}"
         result = UnstructuredDocument(lines=lines, tables=[], attachments=[], warnings=[encoding_warning])
         return self._postprocess(result)

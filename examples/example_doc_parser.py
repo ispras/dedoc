@@ -8,7 +8,7 @@ docx_reader = DocxReader(config=get_config())
 file_name = "example.docx"
 
 # we get unstructured file with lines and tables
-unstructured_document = docx_reader.read(path=file_name, document_type="example")
+unstructured_document = docx_reader.read(file_path=file_name)
 
 # let's look at the content of unstructured_file, it consists of tables and lines
 print(unstructured_document.tables, unstructured_document.lines)

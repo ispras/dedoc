@@ -8,6 +8,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.docx_reader.data_structures.docx_document import DocxDocument
+from dedoc.utils.utils import get_mime_extension
 
 
 class DocxReader(BaseReader):
@@ -15,30 +16,32 @@ class DocxReader(BaseReader):
     This class is used for parsing documents with .docx extension.
     Please use :class:`~dedoc.converters.DocxConverter` for getting docx file from similar formats.
     """
-    def __init__(self, *, config: dict) -> None:
+    def __init__(self, *, config: Optional[dict] = None) -> None:
         """
         :param config: configuration of the reader, e.g. logger for logging
         """
+        self.config = {} if config is None else config
         self.attachment_extractor = DocxAttachmentsExtractor()
-        self.logger = config.get("logger", logging.getLogger())
+        self.logger = self.config.get("logger", logging.getLogger())
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in recognized_extensions.docx_like_format or mime in recognized_mimes.docx_like_format
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines, tables and attachments.
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        attachments = self.attachment_extractor.extract(file_path=path, parameters=parameters)
+        attachments = self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
 
-        docx_document = DocxDocument(path=path, attachments=attachments, logger=self.logger)
+        docx_document = DocxDocument(path=file_path, attachments=attachments, logger=self.logger)
         lines = self.__fix_lines(docx_document.lines)
         return UnstructuredDocument(lines=lines, tables=docx_document.tables, attachments=attachments, warnings=[])
 

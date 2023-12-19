@@ -32,7 +32,7 @@ class DedocManager:
         :param manager_config: dictionary with different stage document processors.
 
         The following keys should be in the `manager_config` dictionary:
-            - converter (optional) (:class:`~dedoc.converters.FileConverterComposition`)
+            - converter (optional) (:class:`~dedoc.converters.ConverterComposition`)
             - reader (:class:`~dedoc.readers.ReaderComposition`)
             - structure_extractor (:class:`~dedoc.structure_extractors.StructureExtractorComposition`)
             - structure_constructor (:class:`~dedoc.structure_constructors.StructureConstructorComposition`)
@@ -100,7 +100,7 @@ class DedocManager:
             self.logger.info(f"Finish conversion {file_name} -> {os.path.basename(converted_file_path)}")
 
             # Step 2 - Reading content
-            unstructured_document = self.reader.parse_file(tmp_dir=tmp_dir, filename=os.path.basename(converted_file_path), parameters=parameters)
+            unstructured_document = self.reader.parse_file(file_path=converted_file_path, parameters=parameters)
             self.logger.info(f"Finish parse file {file_name}")
 
             # Step 3 - Adding meta-information

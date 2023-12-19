@@ -6,7 +6,7 @@ from dedoc.converters.concrete_converters.abstract_converter import AbstractConv
 from dedoc.utils.utils import get_mime_extension
 
 
-class FileConverterComposition(object):
+class ConverterComposition(object):
     """
     This class allows to convert any document into the predefined list of formats according to the available list of converters.
     The list of converters is set via the class constructor.

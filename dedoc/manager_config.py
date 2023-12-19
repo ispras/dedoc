@@ -8,7 +8,7 @@ from dedoc.converters.concrete_converters.pdf_converter import PDFConverter
 from dedoc.converters.concrete_converters.png_converter import PNGConverter
 from dedoc.converters.concrete_converters.pptx_converter import PptxConverter
 from dedoc.converters.concrete_converters.txt_converter import TxtConverter
-from dedoc.converters.file_converter import FileConverterComposition
+from dedoc.converters.converter_composition import ConverterComposition
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.metadata_extractors.concrete_metadata_extractors.docx_metadata_extractor import DocxMetadataExtractor
 from dedoc.metadata_extractors.concrete_metadata_extractors.image_metadata_extractor import ImageMetadataExtractor
@@ -93,7 +93,7 @@ def _get_manager_config(config: dict) -> dict:
     }
 
     return dict(
-        converter=FileConverterComposition(converters=converters),
+        converter=ConverterComposition(converters=converters),
         reader=ReaderComposition(readers=readers),
         structure_extractor=StructureExtractorComposition(extractors=structure_extractors, default_key="other"),
         structure_constructor=StructureConstructorComposition(

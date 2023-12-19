@@ -23,7 +23,7 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
         :param config: configuration of the extractor, e.g. logger for logging
         """
         self.config = {} if config is None else config
-        self.logger = config.get("logger", logging.getLogger())
+        self.logger = self.config.get("logger", logging.getLogger())
 
     def can_extract(self,
                     file_path: Optional[str] = None,

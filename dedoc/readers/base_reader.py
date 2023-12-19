@@ -16,32 +16,31 @@ class BaseReader(ABC):
     """
 
     @abstractmethod
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
-        Read file from disk and extract text with annotations, tables and attachments from the document.
-        The given file should have appropriate extension and type so it should be checked by the method
-        :meth:`~dedoc.readers.BaseReader.can_read`, which should return True beforehand.
+        Check if this reader can handle the given file.
+        You should provide at least one of the following parameters: file_path, extension, mime.
 
-        :param path: path to the file in the file system
-        :param document_type: type of the file, for example scientific article, presentation slides and so on
+        :param file_path: path to the file in the file system
+        :param mime: MIME type of a file
+        :param extension: file extension, for example .doc or .pdf
         :param parameters: dict with additional parameters for document reader (as language for scans or delimiter for csv)
 
-        :return: intermediate representation of the document with lines, tables and attachments
+        :return: True if this reader can handle the file, False otherwise
         """
         pass
 
     @abstractmethod
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
-        Check if this reader can handle the given file.
+        Read file from disk and extract text with annotations, tables and attachments from the document.
+        The given file should have appropriate extension and mime type, so it should be checked by the method
+        :meth:`~dedoc.readers.BaseReader.can_read`, which should return True beforehand.
 
-        :param path: path to the file in the file system
-        :param mime: MIME type of a file
-        :param extension: file extension, for example .doc or .pdf
-        :param document_type: type of file, for example scientific article, presentation slides and so on
+        :param file_path: path to the file in the file system
         :param parameters: dict with additional parameters for document reader (as language for scans or delimiter for csv)
 
-        :return: True if this reader can handle the file, False otherwise
+        :return: intermediate representation of the document with lines, tables and attachments
         """
         pass
 

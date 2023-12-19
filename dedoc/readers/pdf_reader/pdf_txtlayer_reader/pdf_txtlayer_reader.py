@@ -4,12 +4,14 @@ from typing import List, Optional, Tuple
 import numpy as np
 from dedocutils.data_structures import BBox
 
+from dedoc.extensions import recognized_mimes
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_extractor import PdfminerExtractor
 from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
+from dedoc.utils.utils import get_mime_extension
 
 
 class PdfTxtlayerReader(PdfBaseReader):
@@ -20,14 +22,15 @@ class PdfTxtlayerReader(PdfBaseReader):
     For more information, look to `pdf_with_text_layer` option description in the table :ref:`table_parameters`.
     """
 
-    def __init__(self, *, config: dict) -> None:
+    def __init__(self, *, config: Optional[dict] = None) -> None:
         """
         :param config: configuration of the reader, e.g. logger for logging
         """
-        super().__init__(config=config)
-        self.extractor_layer = PdfminerExtractor(config=config)
+        self.config = {} if config is None else config
+        super().__init__(config=self.config)
+        self.extractor_layer = PdfminerExtractor(config=self.config)
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader (PDF format is supported only).
         This method returns `True` only when the key `pdf_with_text_layer` with value `true` is set in the dictionary `parameters`.
@@ -37,7 +40,9 @@ class PdfTxtlayerReader(PdfBaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        return extension.lower().endswith("pdf") and (str(parameters.get("pdf_with_text_layer", "false")).lower() == "true")
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        return (mime in recognized_mimes.pdf_like_format or extension.lower().endswith("pdf")) and \
+            str(parameters.get("pdf_with_text_layer", "false")).lower() == "true"
 
     def _process_one_page(self,
                           image: np.ndarray,
@@ -72,7 +77,7 @@ class PdfTxtlayerReader(PdfBaseReader):
 
     def __change_table_boxes_page_width_heigth(self, pdf_width: int, pdf_height: int, tables: List[ScanTable]) -> None:
         """
-        Change table boxes's width height into pdf space like textual lines
+        Change table boxes' width height into pdf space like textual lines
         """
 
         for table in tables:

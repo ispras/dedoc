@@ -11,6 +11,7 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
+from dedoc.utils.utils import get_mime_extension
 
 
 class PdfReader(BaseReader):
@@ -18,13 +19,14 @@ class PdfReader(BaseReader):
     def __init__(self) -> None:
         self.attachment_extractor = PdfAttachmentsExtractor()
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
-        return (extension in recognized_extensions.pdf_like_format or mime in recognized_mimes.pdf_like_format) and not document_type
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        return extension in recognized_extensions.pdf_like_format or mime in recognized_mimes.pdf_like_format
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
-        lines = self.__process_lines(path)
-        tables = self.__process_tables(path)
-        attachments = self.attachment_extractor.extract(file_path=path, parameters=parameters)
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        lines = self.__process_lines(file_path)
+        tables = self.__process_tables(file_path)
+        attachments = self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
         return UnstructuredDocument(lines=lines, tables=tables, attachments=attachments)
 
     def __process_tables(self, path: str) -> List[Table]:

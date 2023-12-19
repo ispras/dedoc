@@ -19,7 +19,7 @@ class TestLawTxtReader(AbstractTestApiDocReader):
     def test_law_document_spaces_correctness(self) -> None:
         path = self._get_abs_path("коап_москвы_8_7_2015_utf.txt")
         directory, filename = os.path.split(path)
-        document = self.txt_reader.read(path=path, document_type="law", parameters={})
+        document = self.txt_reader.read(file_path=path, parameters={})
         document.metadata = self.metadata_extractor.extract_metadata(directory, filename, filename, filename)
         document = self.law_extractor.extract_structure(document, {})
 

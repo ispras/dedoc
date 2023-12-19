@@ -11,6 +11,7 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
+from dedoc.utils.utils import get_mime_extension
 
 
 class PptxReader(BaseReader):
@@ -22,20 +23,21 @@ class PptxReader(BaseReader):
     def __init__(self) -> None:
         self.attachments_extractor = PptxAttachmentsExtractor()
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: str = None, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in recognized_extensions.pptx_like_format or mime in recognized_mimes.pptx_like_format
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines, tables and attachments.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        prs = Presentation(path)
+        prs = Presentation(file_path)
         lines, tables = [], []
 
         for page_id, slide in enumerate(prs.slides, start=1):
@@ -52,6 +54,6 @@ class PptxReader(BaseReader):
 
                     tables.append(Table(cells=cells, metadata=TableMetadata(page_id=page_id)))
 
-        attachments = self.attachments_extractor.extract(file_path=path, parameters=parameters)
+        attachments = self.attachments_extractor.extract(file_path=file_path, parameters=parameters)
 
         return UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=[])

@@ -8,7 +8,7 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils.utils import get_encoding
+from dedoc.utils.utils import get_encoding, get_mime_extension
 
 
 class CSVReader(BaseReader):
@@ -18,14 +18,15 @@ class CSVReader(BaseReader):
     def __init__(self) -> None:
         self.default_separator = ","
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in recognized_extensions.csv_like_format
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method will place all extracted content inside tables of the :class:`~dedoc.data_structures.UnstructuredDocument`.
         The lines and attachments remain empty.
@@ -33,9 +34,9 @@ class CSVReader(BaseReader):
         """
         delimiter = parameters.get("delimiter")
         if delimiter is None:
-            delimiter = "\t" if path.endswith(".tsv") else self.default_separator
-        encoding, encoding_warning = self.__get_encoding(path, parameters)
-        with open(path, errors="ignore", encoding=encoding) as file:
+            delimiter = "\t" if file_path.endswith(".tsv") else self.default_separator
+        encoding, encoding_warning = self.__get_encoding(file_path, parameters)
+        with open(file_path, errors="ignore", encoding=encoding) as file:
             csv_reader = csv.reader(file, delimiter=delimiter)
             data = list(csv_reader)
         table_metadata = TableMetadata(page_id=0)

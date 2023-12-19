@@ -17,29 +17,30 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.html_reader.html_reader import HtmlReader
-from dedoc.utils.utils import get_unique_name, save_data_to_unique_file
+from dedoc.utils.utils import get_mime_extension, get_unique_name, save_data_to_unique_file
 
 
 class EmailReader(BaseReader):
     """
     This class is used for parsing documents with .eml extension (e-mail messages saved into files).
     """
-    def __init__(self, *, config: dict) -> None:
+    def __init__(self, *, config: Optional[dict] = None) -> None:
         """
         :param config: configuration of the reader, e.g. logger for logging
         """
-        super().__init__()
-        self.logger = config.get("logger", logging.getLogger())
+        self.config = {} if config is None else config
+        self.logger = self.config.get("logger", logging.getLogger())
         self.html_reader = HtmlReader(config=config)
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension or mime is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
-        return path.lower().endswith(".eml") or mime == "message/rfc822"
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        return file_path.lower().endswith(".eml") or mime == "message/rfc822"
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines, tables and attachments.
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
@@ -50,9 +51,9 @@ class EmailReader(BaseReader):
         """
         parameters = {} if parameters is None else parameters
         attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = os.path.dirname(path) if attachments_dir is None else attachments_dir
+        attachments_dir = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
 
-        with open(path, "rb") as f:
+        with open(file_path, "rb") as f:
             msg = email.message_from_binary_file(f)
         tables, attachments = [], []
 
@@ -143,7 +144,7 @@ class EmailReader(BaseReader):
 
         file.write(payload)
         file.flush()
-        document = self.html_reader.read(path=file.name)
+        document = self.html_reader.read(file_path=file.name)
         part_messages = [line for line in document.lines if line.line is not None]
         for line in part_messages:
             line._line += "\n"

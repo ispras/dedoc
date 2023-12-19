@@ -1,6 +1,3 @@
-import mimetypes
-import os
-
 from dedoc import DedocManager
 from dedoc.attachments_extractors import DocxAttachmentsExtractor
 from dedoc.converters import DocxConverter
@@ -10,22 +7,17 @@ from dedoc.structure_constructors import TreeConstructor
 from dedoc.structure_extractors import DefaultStructureExtractor
 
 """Using converters."""
-converter = DocxConverter(config={})
+converter = DocxConverter()
 file_path = "test_dir/example.odt"
 
 converter.can_convert(file_path)  # True
 converter.convert(file_path)  # 'test_dir/example.docx'
 
 """Using readers."""
-reader = DocxReader(config={})
+reader = DocxReader()
+file_path = "test_dir/example.docx"
 
-file_dir, file_name = "test_dir", "example.docx"
-file_path = os.path.join(file_dir, file_name)
-
-name_wo_extension, file_extension = os.path.splitext(file_name)
-file_mime = mimetypes.guess_type(file_path)[0]
-reader.can_read(file_path, file_mime, file_extension)  # True
-
+reader.can_read(file_path)  # True
 reader.read(file_path, parameters={"with_attachments": "true"})  # <dedoc.data_structures.UnstructuredDocument>
 
 document = reader.read(file_path, parameters={"with_attachments": "true"})

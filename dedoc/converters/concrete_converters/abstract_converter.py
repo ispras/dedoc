@@ -18,7 +18,7 @@ class AbstractConverter(ABC):
         self.timeout = 60
         self.period_checking = 0.05
         self.config = {} if config is None else config
-        self.logger = config.get("logger", logging.getLogger())
+        self.logger = self.config.get("logger", logging.getLogger())
 
     @abstractmethod
     def can_convert(self,

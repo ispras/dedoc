@@ -7,34 +7,36 @@ from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
+from dedoc.utils.utils import get_mime_extension
 
 
 class NoteReader(BaseReader):
     """
     This class is used for parsing documents with .note.pickle extension.
     """
-    def __init__(self, *, config: dict) -> None:
+    def __init__(self, *, config: Optional[dict] = None) -> None:
         """
         :param config: configuration of the reader, e.g. logger for logging
         """
-        self.config = config
-        self.logger = config.get("logger", logging.getLogger())
+        self.config = {} if config is None else config
+        self.logger = self.config.get("logger", logging.getLogger())
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower().endswith(".note.pickle")
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
 
         try:
-            with open(path, "rb") as infile:
+            with open(file_path, "rb") as infile:
                 note_dict = pickle.load(infile)
             text = note_dict["content"]
             if isinstance(text, bytes):
@@ -44,5 +46,5 @@ class NoteReader(BaseReader):
 
             return unstructured
         except Exception as e:
-            self.logger.warning(f"Can't handle {path}\n{e}")
-            raise BadFileFormatError(f"Bad note file:\n file_name = {os.path.basename(path)}. Seems note-format is broken")
+            self.logger.warning(f"Can't handle {file_path}\n{e}")
+            raise BadFileFormatError(f"Bad note file:\n file_name = {os.path.basename(file_path)}. Seems note-format is broken")

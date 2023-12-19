@@ -27,6 +27,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.extensions import recognized_mimes
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
@@ -36,7 +37,7 @@ from dedoc.structure_extractors.concrete_structure_extractors.default_structure_
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
 from dedoc.utils.parameter_utils import get_param_page_slice
 from dedoc.utils.pdf_utils import get_pdf_page_count
-from dedoc.utils.utils import calculate_file_hash, get_unique_name
+from dedoc.utils.utils import calculate_file_hash, get_mime_extension, get_unique_name
 
 
 class PdfTabbyReader(PdfBaseReader):
@@ -49,20 +50,20 @@ class PdfTabbyReader(PdfBaseReader):
     For more information, look to `pdf_with_text_layer` option description in the table :ref:`table_parameters`.
     """
 
-    def __init__(self, *, config: dict) -> None:
+    def __init__(self, *, config: Optional[dict] = None) -> None:
         """
         :param config: configuration of the reader, e.g. logger for logging
         """
-        super().__init__(config=config)
-        self.config = config
-        self.logger = config.get("logger", logging.getLogger())
+        self.config = {} if config is None else config
+        super().__init__(config=self.config)
+        self.logger = self.config.get("logger", logging.getLogger())
         self.tabby_java_version = "2.0.0"
         self.jar_name = "ispras_tbl_extr.jar"
         self.jar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "tabbypdf", "jars"))
         self.java_not_found_error = "`java` command is not found from this Python process. Please ensure Java is installed and PATH is set for `java`"
         self.default_config = {"JAR_PATH": os.path.join(self.jar_dir, self.jar_name)}
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader (PDF format is supported only).
         This method returns `True` only when the key `pdf_with_text_layer` with value `tabby` is set in the dictionary `parameters`.
@@ -72,9 +73,11 @@ class PdfTabbyReader(PdfBaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        return extension.endswith("pdf") and (str(parameters.get("pdf_with_text_layer", "false")).lower() == "tabby")
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        return (mime in recognized_mimes.pdf_like_format or extension.lower().endswith("pdf")) and \
+            str(parameters.get("pdf_with_text_layer", "false")).lower() == "tabby"
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines, tables and attachments.
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
@@ -82,12 +85,12 @@ class PdfTabbyReader(PdfBaseReader):
         """
         parameters = {} if parameters is None else parameters
         warnings = []
-        lines, tables, tables_on_images, image_attachments, document_metadata = self.__extract(path=path, parameters=parameters, warnings=warnings)
+        lines, tables, tables_on_images, image_attachments, document_metadata = self.__extract(path=file_path, parameters=parameters, warnings=warnings)
         lines = self.linker.link_objects(lines=lines, tables=tables_on_images, images=image_attachments)
 
         attachments = image_attachments
-        if self._can_contain_attachements(path) and self.attachment_extractor.with_attachments(parameters):
-            attachments += self.attachment_extractor.extract(file_path=path, parameters=parameters)
+        if self._can_contain_attachements(file_path) and self.attachment_extractor.with_attachments(parameters):
+            attachments += self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
 
         lines = [line for line_group in lines for line in line_group.split("\n")]
         lines = self.paragraph_extractor.extract(lines)

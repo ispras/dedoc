@@ -107,7 +107,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
             file_path = os.path.join(tmp_dir, file_name)
             shutil.copyfile(os.path.join(self.src_dir, file_name), file_path)
             config = get_test_config()
-            document = ArchiveReader(config=config).read(path=file_path, parameters={"with_attachments": True})
+            document = ArchiveReader(config=config).read(file_path=file_path, parameters={"with_attachments": True})
             files = [file.original_name for file in document.attachments]
             return files
 
@@ -135,7 +135,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
 
         for file_name, reader in file_name_reader_list:
             with tempfile.TemporaryDirectory() as tmpdir:
-                result = reader.read(path=os.path.join(self.src_dir, file_name), parameters=dict(with_attachments=True, attachments_dir=tmpdir))
+                result = reader.read(file_path=os.path.join(self.src_dir, file_name), parameters=dict(with_attachments=True, attachments_dir=tmpdir))
 
                 attachment_names = os.listdir(tmpdir)
                 for attachment in result.attachments:
