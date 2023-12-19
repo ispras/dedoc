@@ -23,7 +23,7 @@ from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.tree_node import TreeNode
 
 T = TypeVar("T")
-double_dot_extensions = (".txt.gz", ".tar.gz", "mht.gz", "mhtml.gz", "note.pickle")
+double_dot_extensions = (".txt.gz", ".tar.gz", ".mht.gz", ".mhtml.gz", ".note.pickle")
 
 
 def list_get(ls: List[T], index: int, default: Optional[T] = None) -> Optional[T]:
