@@ -86,7 +86,7 @@ document.lines[0].metadata.hierarchy_level  # HierarchyLevel(level_1=1, level_2=
 
 """Using structure constructors"""
 constructor = TreeConstructor()
-parsed_document = constructor.structure_document(document)
+parsed_document = constructor.construct(document)
 parsed_document  # <dedoc.data_structures.ParsedDocument>
 list(vars(parsed_document))  # ['metadata', 'content', 'attachments', 'version', 'warnings']
 

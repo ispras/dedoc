@@ -117,9 +117,9 @@ class DedocManager:
                 self.__save(os.path.join(tmp_dir, unique_filename), unstructured_document)
 
             # Step 5 - Form the output structure
-            parsed_document = self.structure_constructor.structure_document(document=unstructured_document,
-                                                                            structure_type=parameters.get("structure_type"),
-                                                                            parameters=parameters)
+            parsed_document = self.structure_constructor.construct(document=unstructured_document,
+                                                                   structure_type=parameters.get("structure_type"),
+                                                                   parameters=parameters)
             self.logger.info(f"Get structured document {file_name}")
 
             # Step 6 - Get attachments
