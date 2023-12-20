@@ -74,7 +74,7 @@ class EmailReader(BaseReader):
         if content_type == "text/plain":
             text_parts.append(msg)
         if content_type == "text/html":
-            self.__add_content_from_html(msg, lines, tables)
+            self.__add_content_from_html(msg, lines, tables, parameters)
             html_found = True
 
         for part in msg.walk():
@@ -84,7 +84,7 @@ class EmailReader(BaseReader):
                 continue
 
             if content_type == "text/html":
-                self.__add_content_from_html(part, lines, tables)
+                self.__add_content_from_html(part, lines, tables, parameters)
                 html_found = True
                 continue
 
@@ -128,7 +128,7 @@ class EmailReader(BaseReader):
                                         uid=f"attach_{uuid.uuid1()}",
                                         need_content_analysis=need_content_analysis))
 
-    def __add_content_from_html(self, message: Message, lines: list, tables: list) -> None:
+    def __add_content_from_html(self, message: Message, lines: list, tables: list, parameters: dict) -> None:
         payload = message.get_payload(decode=True)
         if payload is None:
             return
@@ -140,7 +140,7 @@ class EmailReader(BaseReader):
 
         file.write(payload)
         file.flush()
-        document = self.html_reader.read(file_path=file.name)
+        document = self.html_reader.read(file_path=file.name, parameters=parameters)
         part_messages = [line for line in document.lines if line.line is not None]
         for line in part_messages:
             line._line += "\n"

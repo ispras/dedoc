@@ -20,12 +20,14 @@ class StructureConstructorComposition(AbstractStructureConstructor):
         self.constructors = constructors
         self.default_constructor = default_constructor
 
-    def construct(self, document: UnstructuredDocument, structure_type: Optional[str] = None, parameters: Optional[dict] = None) -> ParsedDocument:
+    def construct(self, document: UnstructuredDocument, parameters: Optional[dict] = None) -> ParsedDocument:
         """
         Construct the result document structure according to the `structure_type` parameter.
         If `structure_type` is empty string or None the default constructor will be used.
         To get the information about the parameters look at the documentation of :class:`~dedoc.structure_constructors.AbstractStructureConstructor`.
         """
+        structure_type = parameters.get("structure_type")
+
         if structure_type in self.constructors:
             return self.constructors[structure_type].construct(document)
 

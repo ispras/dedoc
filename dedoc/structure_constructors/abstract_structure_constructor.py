@@ -19,14 +19,13 @@ class AbstractStructureConstructor(ABC):
     """
 
     @abstractmethod
-    def construct(self, document: UnstructuredDocument, structure_type: Optional[str] = None, parameters: Optional[dict] = None) -> ParsedDocument:
+    def construct(self, document: UnstructuredDocument, parameters: Optional[dict] = None) -> ParsedDocument:
         """
         Process unstructured document and build parsed document representation on this basis.
 
         :param document: intermediate representation of the document received from some structure extractor \
         (there should be filled hierarchy levels for all lines)
-        :param structure_type: type of the structure that should be retrieved for the document
-        :param parameters: additional parameters for document parsing
+        :param parameters: additional parameters for document parsing, see :ref:`structure_type_parameters` for more details
         :return:  the structured representation of the given document
         """
         pass

@@ -28,7 +28,7 @@ class PdfAutoReader(BaseReader):
 
     * if PDF document doesn't have a correct textual layer then :class:`~dedoc.readers.PdfImageReader` is used for document content extraction.
 
-    For more information, look to `pdf_with_text_layer` option description in the table :ref:`table_parameters`.
+    For more information, look to `pdf_with_text_layer` option description in :ref:`pdf_handling_parameters`.
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
@@ -45,23 +45,21 @@ class PdfAutoReader(BaseReader):
         is set in the dictionary `parameters`.
 
         It is recommended to use `pdf_with_text_layer=auto_tabby` because it's faster and allows to get better results.
-        You can look to the table :ref:`table_parameters` to get more information about `parameters` dictionary possible arguments.
-
-        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        You can look to :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
         extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         if not (mime in recognized_mimes.pdf_like_format or extension.lower() == ".pdf"):
             return False
 
         parameters = {} if parameters is None else parameters
-        pdf_with_txt_layer = get_param_pdf_with_txt_layer(parameters)
-        return pdf_with_txt_layer in ("auto", "auto_tabby")
+        return get_param_pdf_with_txt_layer(parameters) in ("auto", "auto_tabby")
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines, tables and attachments.
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+        You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
         warnings = []
         txtlayer_parameters = self.txtlayer_detector.detect_txtlayer(path=file_path, parameters=parameters)

@@ -63,7 +63,7 @@ class DedocManager:
         If some error occurred, file metadata are stored in the exception's metadata field.
 
         :param file_path: full path where the file is located
-        :param parameters: any parameters, specify how to parse file (see API parameters documentation for more details)
+        :param parameters: any parameters, specify how to parse file, see :ref:`parameters_description` for more details
         :return: parsed document
         """
         parameters = self.__init_parameters(file_path, parameters)
@@ -100,7 +100,7 @@ class DedocManager:
             self.logger.info(f"Finish conversion {file_name} -> {os.path.basename(converted_file_path)}")
 
             # Step 2 - Reading content
-            unstructured_document = self.reader.parse_file(file_path=converted_file_path, parameters=parameters)
+            unstructured_document = self.reader.read(file_path=converted_file_path, parameters=parameters)
             self.logger.info(f"Finish parse file {file_name}")
 
             # Step 3 - Adding meta-information
@@ -117,9 +117,7 @@ class DedocManager:
                 self.__save(os.path.join(tmp_dir, unique_filename), unstructured_document)
 
             # Step 5 - Form the output structure
-            parsed_document = self.structure_constructor.construct(document=unstructured_document,
-                                                                   structure_type=parameters.get("structure_type"),
-                                                                   parameters=parameters)
+            parsed_document = self.structure_constructor.construct(document=unstructured_document, parameters=parameters)
             self.logger.info(f"Get structured document {file_name}")
 
             # Step 6 - Get attachments

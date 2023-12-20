@@ -34,6 +34,7 @@ class CSVReader(BaseReader):
         The lines and attachments remain empty.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
+        parameters = {} if parameters is None else parameters
         delimiter = parameters.get("delimiter")
         if delimiter is None:
             delimiter = "\t" if file_path.endswith(".tsv") else self.default_separator

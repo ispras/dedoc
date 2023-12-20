@@ -36,7 +36,7 @@ class AbstractStructureExtractor(ABC):
         it finds lines types and their hierarchy levels and adds them to the lines' metadata.
 
         :param document: document content that has been received from some of the readers
-        :param parameters: additional parameters for document parsing
+        :param parameters: additional parameters for document parsing, see :ref:`structure_type_parameters` for more details
         :return: document content with added additional information about lines types and hierarchy levels
         """
         pass

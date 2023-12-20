@@ -17,8 +17,9 @@ Attachments handling
     * - with_attachments
       - True, False
       - False
-      - * :meth:`dedoc.DedocManager.parse`,
+      - * :meth:`dedoc.DedocManager.parse`
         * method :meth:`~dedoc.readers.BaseReader.read` of inheritors of :class:`~dedoc.readers.BaseReader`
+        * :meth:`dedoc.readers.ReaderComposition.read`
       - The option to enable attached files extraction.
         If the option is ``False``, all attached files will be ignored.
 
@@ -42,6 +43,7 @@ Attachments handling
       - False
       - * :meth:`dedoc.DedocManager.parse`
         * :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` for inheritors of :class:`~dedoc.metadata_extractors.AbstractMetadataExtractor`
+        * :meth:`dedoc.metadata_extractors.MetadataExtractorComposition.extract`
       - Attached files can be encoded in base64 and their contents will be saved instead of saving attached file on disk.
         The encoded contents will be saved in the attachment's metadata in the ``base64_encode`` field.
         Use ``True`` value to enable this behaviour.
@@ -52,5 +54,6 @@ Attachments handling
       - * :meth:`dedoc.DedocManager.parse`
         * method :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.extract` of inheritors of :class:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor`
         * method :meth:`~dedoc.readers.BaseReader.read` of inheritors of :class:`~dedoc.readers.BaseReader`
+        * :meth:`dedoc.readers.ReaderComposition.read`
       - The path to the directory where document's attached files can be saved.
         By default, attachments are saved into the directory where the given file is located.

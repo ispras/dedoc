@@ -11,6 +11,7 @@ from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_extractor import PdfminerExtractor
 from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
+from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
 from dedoc.utils.utils import get_mime_extension
 
 
@@ -19,7 +20,7 @@ class PdfTxtlayerReader(PdfBaseReader):
     This class allows to extract content (text, tables, attachments) from the .pdf documents with a textual layer (copyable documents).
     It uses a pdfminer library for content extraction.
 
-    For more information, look to `pdf_with_text_layer` option description in the table :ref:`table_parameters`.
+    For more information, look to `pdf_with_text_layer` option description in :ref:`pdf_handling_parameters`.
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
@@ -31,14 +32,13 @@ class PdfTxtlayerReader(PdfBaseReader):
         Check if the document extension is suitable for this reader (PDF format is supported only).
         This method returns `True` only when the key `pdf_with_text_layer` with value `true` is set in the dictionary `parameters`.
 
-        You can look to the table :ref:`table_parameters` to get more information about `parameters` dictionary possible arguments.
+        You can look to :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
         extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return (mime in recognized_mimes.pdf_like_format or extension.lower().endswith("pdf")) and \
-            str(parameters.get("pdf_with_text_layer", "false")).lower() == "true"
+        return (mime in recognized_mimes.pdf_like_format or extension.lower().endswith("pdf")) and get_param_pdf_with_txt_layer(parameters) == "true"
 
     def _process_one_page(self,
                           image: np.ndarray,

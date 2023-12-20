@@ -31,7 +31,7 @@ class BaseReader(ABC):
         :param file_path: path to the file in the file system
         :param mime: MIME type of a file
         :param extension: file extension, for example .doc or .pdf
-        :param parameters: dict with additional parameters for document reader (as language for scans or delimiter for csv)
+        :param parameters: dict with additional parameters for document reader, see :ref:`parameters_description` for more details
 
         :return: True if this reader can handle the file, False otherwise
         """
@@ -45,7 +45,7 @@ class BaseReader(ABC):
         :meth:`~dedoc.readers.BaseReader.can_read`, which should return True beforehand.
 
         :param file_path: path to the file in the file system
-        :param parameters: dict with additional parameters for document reader (as language for scans or delimiter for csv)
+        :param parameters: dict with additional parameters for document reader, see :ref:`parameters_description` for more details
 
         :return: intermediate representation of the document with lines, tables and attachments
         """

@@ -45,7 +45,7 @@ class AbstractAttachmentsExtractor(ABC):
         :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.can_extract` is True for the given file.
 
         :param file_path: path of the file to extract attachments from
-        :param parameters: dict with different parameters for extracting
+        :param parameters: dict with different parameters for extracting, see :ref:`attachments_handling_parameters` for more details
         :return: list of file's attachments
         """
         pass

@@ -34,7 +34,7 @@ from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
 from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
-from dedoc.utils.parameter_utils import get_param_page_slice
+from dedoc.utils.parameter_utils import get_param_page_slice, get_param_pdf_with_txt_layer
 from dedoc.utils.pdf_utils import get_pdf_page_count
 from dedoc.utils.utils import calculate_file_hash, get_mime_extension, get_unique_name
 
@@ -46,7 +46,7 @@ class PdfTabbyReader(PdfBaseReader):
 
     It is recommended to use this class as a handler for PDF documents with a correct textual layer
     if you don't need to check textual layer correctness.
-    For more information, look to `pdf_with_text_layer` option description in the table :ref:`table_parameters`.
+    For more information, look to `pdf_with_text_layer` option description in :ref:`pdf_handling_parameters`.
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
@@ -62,20 +62,21 @@ class PdfTabbyReader(PdfBaseReader):
         Check if the document extension is suitable for this reader (PDF format is supported only).
         This method returns `True` only when the key `pdf_with_text_layer` with value `tabby` is set in the dictionary `parameters`.
 
-        You can look to the table :ref:`table_parameters` to get more information about `parameters` dictionary possible arguments.
+        You can look to :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
         extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return (mime in recognized_mimes.pdf_like_format or extension.lower().endswith("pdf")) and \
-            str(parameters.get("pdf_with_text_layer", "false")).lower() == "tabby"
+        return (mime in recognized_mimes.pdf_like_format or extension.lower().endswith("pdf")) and get_param_pdf_with_txt_layer(parameters) == "tabby"
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines, tables and attachments.
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+
+        You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
         parameters = {} if parameters is None else parameters
         warnings = []

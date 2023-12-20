@@ -47,7 +47,7 @@ class AbstractConverter(ABC):
         If the file format is unsupported the ConversionException will be thrown.
 
         :param file_path: path of the file to convert
-        :param parameters: parameters of converting
+        :param parameters: parameters of converting, see :ref:`parameters_description` for more details
         :return: path of converted file if conversion was executed
         """
         pass

@@ -26,7 +26,7 @@ class ConverterComposition(object):
         If there isn't any converter that is able to convert the file, it isn't changed.
 
         :param file_path: path of the file to convert
-        :param parameters: parameters of converting
+        :param parameters: parameters of converting, see :ref:`parameters_description` for more details
         :return: path of converted file if conversion was executed else path of the original file
         """
         extension, mime = get_mime_extension(file_path=file_path)

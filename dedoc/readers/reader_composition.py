@@ -20,13 +20,13 @@ class ReaderComposition(object):
         """
         self.readers = readers
 
-    def parse_file(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         Get intermediate representation for the document of any format which one of the available readers can parse.
         If there is no suitable reader for the given document, the BadFileFormatException will be raised.
 
         :param file_path: path of the file to be parsed
-        :param parameters: dict with additional parameters for document reader (as language for scans or delimiter for csv)
+        :param parameters: dict with additional parameters for document readers, see :ref:`parameters_description` for more details
         :return: intermediate representation of the document with lines, tables and attachments
         """
         file_name = os.path.basename(file_path)

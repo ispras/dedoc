@@ -68,6 +68,8 @@ class PdfBaseReader(BaseReader):
         The method return document content with all document's lines, tables and attachments.
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+
+        You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
         parameters = {} if parameters is None else parameters
         first_page, last_page = param_utils.get_param_page_slice(parameters)

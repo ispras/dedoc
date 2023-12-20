@@ -54,6 +54,7 @@ class PdfImageReader(PdfBaseReader):
         """
         Check if the document extension is suitable for this reader, i.e. it has .pdf extension, or it is an image.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
         extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return mime in recognized_mimes.pdf_like_format or mime in recognized_mimes.image_like_format or \
