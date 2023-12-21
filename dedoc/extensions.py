@@ -45,14 +45,14 @@ converted_mimes = Extensions(
 )
 
 recognized_extensions = Extensions(
-    excel_like_format=[],
-    docx_like_format=[],
-    pptx_like_format=[],
+    excel_like_format=[".xlsx"],
+    docx_like_format=[".docx"],
+    pptx_like_format=[".pptx"],
     archive_like_format=[".tar.gz"],
-    image_like_format=[],
-    pdf_like_format=[],
+    image_like_format=[".png"],
+    pdf_like_format=[".pdf"],
     csv_like_format=[".csv", ".tsv"],
-    txt_like_format=[]
+    txt_like_format=[".txt", ".txt.gz"]
 )
 
 recognized_mimes = Extensions(
@@ -62,7 +62,7 @@ recognized_mimes = Extensions(
     archive_like_format=["application/zip", "application/x-tar", "application/x-rar-compressed", "application/rar", "application/x-7z-compressed"],
     image_like_format=["image/jpeg", "image/png", "image/tiff", "image/x-ms-bmp", "image/bmp"],
     pdf_like_format=["application/pdf"],
-    csv_like_format=[],
+    csv_like_format=["text/csv"],
     txt_like_format=["text/plain", "text/html"]
 )
 

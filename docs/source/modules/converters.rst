@@ -7,7 +7,7 @@ dedoc.converters
     :special-members: __init__
     :members:
 
-.. autoclass:: dedoc.converters.FileConverterComposition
+.. autoclass:: dedoc.converters.ConverterComposition
     :special-members: __init__
     :members:
 

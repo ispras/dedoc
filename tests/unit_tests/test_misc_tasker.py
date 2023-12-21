@@ -8,7 +8,7 @@ from zipfile import ZipFile
 from PIL import Image
 
 from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
-from dedoc.converters.file_converter import FileConverterComposition
+from dedoc.converters.converter_composition import ConverterComposition
 from dedoc.dedoc_manager import DedocManager
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
@@ -157,7 +157,7 @@ class TestTasker(unittest.TestCase):
         }
 
         return dict(
-            converter=FileConverterComposition(converters=[]),
+            converter=ConverterComposition(converters=[]),
             reader=ReaderComposition(readers=readers),
             structure_extractor=StructureExtractorComposition(extractors=structure_extractors, default_key="other"),
             structure_constructor=StructureConstructorComposition(default_constructor=TreeConstructor(), constructors={"tree": TreeConstructor()}),

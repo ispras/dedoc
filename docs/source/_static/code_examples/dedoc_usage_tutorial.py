@@ -1,6 +1,3 @@
-import mimetypes
-import os
-
 from dedoc import DedocManager
 from dedoc.attachments_extractors import DocxAttachmentsExtractor
 from dedoc.converters import DocxConverter
@@ -10,27 +7,17 @@ from dedoc.structure_constructors import TreeConstructor
 from dedoc.structure_extractors import DefaultStructureExtractor
 
 """Using converters."""
-converter = DocxConverter(config={})
+converter = DocxConverter()
+file_path = "test_dir/example.odt"
 
-file_dir, file_name = "test_dir", "example.odt"
-file_path = os.path.join(file_dir, file_name)
-
-name_wo_extension, file_extension = os.path.splitext(file_name)
-file_mime = mimetypes.guess_type(file_path)[0]
-
-converter.can_convert(file_extension, file_mime)  # True
-converter.do_convert(file_dir, name_wo_extension, file_extension)  # 'example.docx'
+converter.can_convert(file_path)  # True
+converter.convert(file_path)  # 'test_dir/example.docx'
 
 """Using readers."""
-reader = DocxReader(config={})
+reader = DocxReader()
+file_path = "test_dir/example.docx"
 
-file_dir, file_name = "test_dir", "example.docx"
-file_path = os.path.join(file_dir, file_name)
-
-name_wo_extension, file_extension = os.path.splitext(file_name)
-file_mime = mimetypes.guess_type(file_path)[0]
-reader.can_read(file_path, file_mime, file_extension)  # True
-
+reader.can_read(file_path)  # True
 reader.read(file_path, parameters={"with_attachments": "true"})  # <dedoc.data_structures.UnstructuredDocument>
 
 document = reader.read(file_path, parameters={"with_attachments": "true"})
@@ -75,8 +62,8 @@ document.lines[5].annotations[-2]  # Attachment(0:10, attach_6de4dc06-0b75-11ee-
 
 """Using metadata extractors"""
 metadata_extractor = DocxMetadataExtractor()
-metadata_extractor.can_extract(file_dir, file_name, file_name, file_name)  # True
-document.metadata = metadata_extractor.extract_metadata(file_dir, file_name, file_name, file_name)
+metadata_extractor.can_extract(file_path)  # True
+document.metadata = metadata_extractor.extract(file_path)
 document.metadata  # {'file_name': 'example.docx', 'file_type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'size': 373795,
 # 'access_time': 1686825619, 'created_time': 1686825617, 'modified_time': 1686823541, 'other_fields': {'document_subject': '', 'keywords': '',
 # 'category': '', 'comments': '', 'author': '', 'last_modified_by': '', 'created_date': 1568725611, 'modified_date': 1686752726,
@@ -85,21 +72,21 @@ document.metadata  # {'file_name': 'example.docx', 'file_type': 'application/vnd
 
 """Using attachments extractors"""
 attachments_extractor = DocxAttachmentsExtractor()
-attachments_extractor.can_extract(file_extension, file_mime)  # True
-attachments = attachments_extractor.get_attachments(file_dir, file_name, {})
+attachments_extractor.can_extract(file_path)  # True
+attachments = attachments_extractor.extract(file_path)
 attachments[0]  # <dedoc.data_structures.AttachedFile>
 
 
 """Using structure extractors"""
 structure_extractor = DefaultStructureExtractor()
 document.lines[0].metadata.hierarchy_level  # None
-document = structure_extractor.extract_structure(document, {})
+document = structure_extractor.extract(document)
 document.lines[0].metadata.hierarchy_level  # HierarchyLevel(level_1=1, level_2=1, can_be_multiline=False, line_type=header)
 
 
 """Using structure constructors"""
 constructor = TreeConstructor()
-parsed_document = constructor.structure_document(document)
+parsed_document = constructor.construct(document)
 parsed_document  # <dedoc.data_structures.ParsedDocument>
 list(vars(parsed_document))  # ['metadata', 'content', 'attachments', 'version', 'warnings']
 
@@ -110,7 +97,7 @@ parsed_document.content.structure.subparagraphs[0].text  # Document example
 
 """Run the whole pipeline"""
 manager = DedocManager()
-result = manager.parse(file_path=file_path, parameters={})
+result = manager.parse(file_path=file_path)
 
 result  # <dedoc.data_structures.ParsedDocument>
 result.to_api_schema().model_dump()  # {'content': {'structure': {'node_id': '0', 'text': '', 'annotations': [], 'metadata': {'paragraph_type': 'root', ...

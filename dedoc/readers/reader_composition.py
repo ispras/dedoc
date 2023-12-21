@@ -1,11 +1,10 @@
 import os
-from typing import Dict, List
+from typing import List, Optional
 
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
-from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils.utils import get_file_mime_type, splitext_
+from dedoc.utils.utils import get_mime_extension
 
 
 class ReaderComposition(object):
@@ -21,30 +20,24 @@ class ReaderComposition(object):
         """
         self.readers = readers
 
-    def parse_file(self, tmp_dir: str, filename: str, parameters: Dict[str, str]) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         Get intermediate representation for the document of any format which one of the available readers can parse.
         If there is no suitable reader for the given document, the BadFileFormatException will be raised.
 
-        :param tmp_dir: the directory where the file is located
-        :param filename: name of the given file
-        :param parameters: dict with additional parameters for document reader (as language for scans or delimiter for csv)
+        :param file_path: path of the file to be parsed
+        :param parameters: dict with additional parameters for document readers, see :ref:`parameters_description` for more details
         :return: intermediate representation of the document with lines, tables and attachments
         """
-        name, extension = splitext_(filename)
-        file_path = os.path.join(tmp_dir, filename)
-        mime = get_file_mime_type(file_path)
-        document_type = parameters.get("document_type")
+        file_name = os.path.basename(file_path)
+        extension, mime = get_mime_extension(file_path=file_path)
 
         for reader in self.readers:
-            can_read = reader.can_read(path=file_path, mime=mime, extension=extension, document_type=document_type, parameters=parameters)
-
-            if can_read:
-                unstructured_document = reader.read(path=file_path, document_type=document_type, parameters=parameters)
-                assert len(unstructured_document.lines) == 0 or isinstance(unstructured_document.lines[0], LineWithMeta)
+            if reader.can_read(file_path=file_path, mime=mime, extension=extension, parameters=parameters):
+                unstructured_document = reader.read(file_path=file_path, parameters=parameters)
                 return unstructured_document
 
         raise BadFileFormatError(
-            msg=f"No one can read file: name = {filename}, extension = {extension}, mime = {mime}, document type = {document_type}",
-            msg_api=f"Unsupported file format {mime} of the input file {filename}"
+            msg=f"No one can read file: name = {file_name}, extension = {extension}, mime = {mime}",
+            msg_api=f"Unsupported file format {mime} of the input file {file_name}"
         )

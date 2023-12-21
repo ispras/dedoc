@@ -32,7 +32,7 @@ class DedocManager:
         :param manager_config: dictionary with different stage document processors.
 
         The following keys should be in the `manager_config` dictionary:
-            - converter (optional) (:class:`~dedoc.converters.FileConverterComposition`)
+            - converter (optional) (:class:`~dedoc.converters.ConverterComposition`)
             - reader (:class:`~dedoc.readers.ReaderComposition`)
             - structure_extractor (:class:`~dedoc.structure_extractors.StructureExtractorComposition`)
             - structure_constructor (:class:`~dedoc.structure_constructors.StructureConstructorComposition`)
@@ -63,10 +63,10 @@ class DedocManager:
         If some error occurred, file metadata are stored in the exception's metadata field.
 
         :param file_path: full path where the file is located
-        :param parameters: any parameters, specify how to parse file (see API parameters documentation for more details)
+        :param parameters: any parameters, specify how to parse file, see :ref:`parameters_description` for more details
         :return: parsed document
         """
-        parameters = self.__init_parameters(parameters)
+        parameters = self.__init_parameters(file_path, parameters)
         self.logger.info(f"Get file {os.path.basename(file_path)} with parameters {parameters}")
 
         try:
@@ -92,37 +92,32 @@ class DedocManager:
         unique_filename = get_unique_name(file_name)
 
         with tempfile.TemporaryDirectory() as tmp_dir:
-            shutil.copy(file_path, os.path.join(tmp_dir, unique_filename))
+            tmp_file_path = os.path.join(tmp_dir, unique_filename)
+            shutil.copy(file_path, tmp_file_path)
 
             # Step 1 - Converting
-            converted_filename = self.converter.do_converting(tmp_dir, unique_filename, parameters=parameters)
-            self.logger.info(f"Finish conversion {file_name} -> {converted_filename}")
+            converted_file_path = self.converter.convert(tmp_file_path)
+            self.logger.info(f"Finish conversion {file_name} -> {os.path.basename(converted_file_path)}")
 
             # Step 2 - Reading content
-            unstructured_document = self.reader.parse_file(tmp_dir=tmp_dir, filename=converted_filename, parameters=parameters)
+            unstructured_document = self.reader.read(file_path=converted_file_path, parameters=parameters)
             self.logger.info(f"Finish parse file {file_name}")
 
             # Step 3 - Adding meta-information
-            metadata = self.document_metadata_extractor.extract_metadata(directory=tmp_dir,
-                                                                         filename=unique_filename,
-                                                                         converted_filename=converted_filename,
-                                                                         original_filename=file_name,
-                                                                         parameters=parameters,
-                                                                         other_fields=unstructured_document.metadata)
+            metadata = self.document_metadata_extractor.extract(file_path=tmp_file_path, converted_filename=os.path.basename(converted_file_path),
+                                                                original_filename=file_name, parameters=parameters, other_fields=unstructured_document.metadata)
             unstructured_document.metadata = metadata
             self.logger.info(f"Add metadata of file {file_name}")
 
             # Step 4 - Extract structure
-            unstructured_document = self.structure_extractor.extract_structure(unstructured_document, parameters)
+            unstructured_document = self.structure_extractor.extract(unstructured_document, parameters)
             self.logger.info(f"Extract structure from file {file_name}")
 
             if self.config.get("labeling_mode", False):
                 self.__save(os.path.join(tmp_dir, unique_filename), unstructured_document)
 
             # Step 5 - Form the output structure
-            parsed_document = self.structure_constructor.structure_document(document=unstructured_document,
-                                                                            structure_type=parameters.get("structure_type"),
-                                                                            parameters=parameters)
+            parsed_document = self.structure_constructor.construct(document=unstructured_document, parameters=parameters)
             self.logger.info(f"Get structured document {file_name}")
 
             # Step 6 - Get attachments
@@ -133,12 +128,15 @@ class DedocManager:
             self.logger.info(f"Finish handle {file_name}")
         return parsed_document
 
-    def __init_parameters(self, parameters: Optional[dict]) -> dict:
+    def __init_parameters(self, file_path: str, parameters: Optional[dict]) -> dict:
         parameters = {} if parameters is None else parameters
         result_parameters = {}
 
         for parameter_name, parameter_value in self.default_parameters.items():
             result_parameters[parameter_name] = parameters.get(parameter_name, parameter_value)
+
+        attachments_dir = parameters.get("attachments_dir", None)
+        result_parameters["attachments_dir"] = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
 
         return result_parameters
 

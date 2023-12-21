@@ -6,7 +6,7 @@ from .concrete_converters.pdf_converter import PDFConverter
 from .concrete_converters.png_converter import PNGConverter
 from .concrete_converters.pptx_converter import PptxConverter
 from .concrete_converters.txt_converter import TxtConverter
-from .file_converter import FileConverterComposition
+from .converter_composition import ConverterComposition
 
-__all__ = ["AbstractConverter", "BinaryConverter", "DocxConverter", "ExcelConverter", "FileConverterComposition", "PDFConverter", "PNGConverter",
+__all__ = ["AbstractConverter", "BinaryConverter", "DocxConverter", "ExcelConverter", "ConverterComposition", "PDFConverter", "PNGConverter",
            "PptxConverter", "TxtConverter"]

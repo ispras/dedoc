@@ -1,4 +1,3 @@
-import logging
 import os
 import tarfile
 import uuid
@@ -14,7 +13,7 @@ from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils.utils import get_file_mime_type, save_data_to_unique_file
+from dedoc.utils.utils import get_file_mime_type, get_mime_extension, save_data_to_unique_file
 
 
 class ArchiveReader(BaseReader):
@@ -22,21 +21,18 @@ class ArchiveReader(BaseReader):
     This reader allows to get archived files as attachments of the :class:`~dedoc.data_structures.UnstructuredDocument`.
     Documents with the following extensions can be parsed: .zip, .tar, .tar.gz, .rar, .7z.
     """
-    def __init__(self, *, config: dict) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
-        self.config = config
-        self.logger = config.get("logger", logging.getLogger())
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        super().__init__(config=config)
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in recognized_extensions.archive_like_format or mime in recognized_mimes.archive_like_format
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return empty content of archive, all content will be placed inside attachments.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
@@ -48,10 +44,10 @@ class ArchiveReader(BaseReader):
             return UnstructuredDocument(lines=[], tables=[], attachments=[])
 
         attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = os.path.dirname(path) if attachments_dir is None else attachments_dir
+        attachments_dir = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
 
         need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
-        attachments = self.__get_attachments(path=path, tmp_dir=attachments_dir, need_content_analysis=need_content_analysis)
+        attachments = self.__get_attachments(path=file_path, tmp_dir=attachments_dir, need_content_analysis=need_content_analysis)
         return UnstructuredDocument(lines=[], tables=[], attachments=attachments)
 
     def __get_attachments(self, path: str, tmp_dir: str, need_content_analysis: bool) -> List[AttachedFile]:

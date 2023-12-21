@@ -1,5 +1,4 @@
 import copy
-import logging
 import os
 from itertools import chain
 from typing import Optional
@@ -14,6 +13,7 @@ from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageR
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 from dedoc.utils.parameter_utils import get_param_page_slice, get_param_pdf_with_txt_layer
+from dedoc.utils.utils import get_mime_extension
 
 
 class PdfAutoReader(BaseReader):
@@ -28,55 +28,49 @@ class PdfAutoReader(BaseReader):
 
     * if PDF document doesn't have a correct textual layer then :class:`~dedoc.readers.PdfImageReader` is used for document content extraction.
 
-    For more information, look to `pdf_with_text_layer` option description in the table :ref:`table_parameters`.
+    For more information, look to `pdf_with_text_layer` option description in :ref:`pdf_handling_parameters`.
     """
 
-    def __init__(self, *, config: dict) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
-        self.pdf_txtlayer_reader = PdfTxtlayerReader(config=config)
-        self.pdf_tabby_reader = PdfTabbyReader(config=config)
-        self.pdf_image_reader = PdfImageReader(config=config)
-        self.txtlayer_detector = TxtLayerDetector(pdf_txtlayer_reader=self.pdf_txtlayer_reader, pdf_tabby_reader=self.pdf_tabby_reader, config=config)
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        super().__init__(config=config)
+        self.pdf_txtlayer_reader = PdfTxtlayerReader(config=self.config)
+        self.pdf_tabby_reader = PdfTabbyReader(config=self.config)
+        self.pdf_image_reader = PdfImageReader(config=self.config)
+        self.txtlayer_detector = TxtLayerDetector(pdf_txtlayer_reader=self.pdf_txtlayer_reader, pdf_tabby_reader=self.pdf_tabby_reader, config=self.config)
 
-        self.config = config
-        self.logger = config.get("logger", logging.getLogger())
-
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader (PDF format is supported only).
         This method returns `True` only when the key `pdf_with_text_layer` with value `auto` or `auto_tabby`
         is set in the dictionary `parameters`.
 
         It is recommended to use `pdf_with_text_layer=auto_tabby` because it's faster and allows to get better results.
-        You can look to the table :ref:`table_parameters` to get more information about `parameters` dictionary possible arguments.
-
-        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        You can look to :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
-        if mime not in recognized_mimes.pdf_like_format:
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        if not (mime in recognized_mimes.pdf_like_format or extension.lower() == ".pdf"):
             return False
 
         parameters = {} if parameters is None else parameters
-        pdf_with_txt_layer = get_param_pdf_with_txt_layer(parameters)
-        return pdf_with_txt_layer in ("auto", "auto_tabby")
+        return get_param_pdf_with_txt_layer(parameters) in ("auto", "auto_tabby")
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines, tables and attachments.
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+        You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
         warnings = []
-        txtlayer_parameters = self.txtlayer_detector.detect_txtlayer(path=path, parameters=parameters)
+        txtlayer_parameters = self.txtlayer_detector.detect_txtlayer(path=file_path, parameters=parameters)
 
         if txtlayer_parameters.is_correct_text_layer:
             result = self.__handle_correct_text_layer(is_first_page_correct=txtlayer_parameters.is_first_page_correct,
                                                       parameters=parameters,
-                                                      path=path,
+                                                      path=file_path,
                                                       warnings=warnings)
         else:
-            result = self.__handle_incorrect_text_layer(parameters, path, warnings)
+            result = self.__handle_incorrect_text_layer(parameters, file_path, warnings)
 
         result.warnings.extend(warnings)
         return result
@@ -84,7 +78,7 @@ class PdfAutoReader(BaseReader):
     def __handle_incorrect_text_layer(self, parameters_copy: dict, path: str, warnings: list) -> UnstructuredDocument:
         self.logger.info(f"Assume document {os.path.basename(path)} has incorrect textual layer")
         warnings.append("Assume document has incorrect textual layer")
-        result = self.pdf_image_reader.read(path=path, parameters=parameters_copy)
+        result = self.pdf_image_reader.read(file_path=path, parameters=parameters_copy)
         return result
 
     def __handle_correct_text_layer(self, is_first_page_correct: bool, parameters: dict, path: str, warnings: list) -> UnstructuredDocument:
@@ -99,14 +93,14 @@ class PdfAutoReader(BaseReader):
 
             # GET THE FIRST PAGE: recognize the first page like a scanned page
             scan_parameters = self.__preparing_first_page_parameters(parameters)
-            recognized_first_page = self.pdf_image_reader.read(path=path, parameters=scan_parameters)
+            recognized_first_page = self.pdf_image_reader.read(file_path=path, parameters=scan_parameters)
 
             # PREPARE PARAMETERS: from the second page we recognize the content like PDF with a textual layer
             parameters = self.__preparing_other_pages_parameters(parameters)
 
         pdf_with_txt_layer = get_param_pdf_with_txt_layer(parameters)
         reader = self.pdf_txtlayer_reader if pdf_with_txt_layer == "auto" else self.pdf_tabby_reader
-        result = reader.read(path=path, parameters=parameters)
+        result = reader.read(file_path=path, parameters=parameters)
         result = self.__merge_documents(recognized_first_page, result) if recognized_first_page is not None else result
         return result
 

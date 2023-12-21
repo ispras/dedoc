@@ -60,9 +60,7 @@ class TestPDFReader(unittest.TestCase):
             filename = "prospectus.pdf"
             path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer", filename)
             shutil.copy(path, os.path.join(tmpdir, filename))
-            result = any_doc_reader.read(os.path.join(tmpdir, filename),
-                                         document_type=None,
-                                         parameters={"need_header_footer_analysis": "True", "need_pdf_table_analysis": "False"})
+            result = any_doc_reader.read(os.path.join(tmpdir, filename), parameters={"need_header_footer_analysis": "True", "need_pdf_table_analysis": "False"})
 
         lines_by_page = self._split_lines_on_pages(result.lines)
 
@@ -79,9 +77,7 @@ class TestPDFReader(unittest.TestCase):
             filename = "with_changed_header_footer.pdf"
             path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer", filename)
             shutil.copy(path, os.path.join(tmpdir, filename))
-            result = any_doc_reader.read(os.path.join(tmpdir, filename),
-                                         document_type=None,
-                                         parameters={"need_header_footer_analysis": "True", "need_pdf_table_analysis": "False"})
+            result = any_doc_reader.read(os.path.join(tmpdir, filename), parameters={"need_header_footer_analysis": "True", "need_pdf_table_analysis": "False"})
 
         lines_by_page = self._split_lines_on_pages(result.lines)
 
@@ -98,9 +94,7 @@ class TestPDFReader(unittest.TestCase):
             filename = "with_header_footer_2.pdf"
             path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer", filename)
             shutil.copy(path, os.path.join(tmpdir, filename))
-            result = any_doc_reader.read(os.path.join(tmpdir, filename),
-                                         document_type=None,
-                                         parameters={"need_header_footer_analysis": "True", "need_pdf_table_analysis": "False"})
+            result = any_doc_reader.read(os.path.join(tmpdir, filename), parameters={"need_header_footer_analysis": "True", "need_pdf_table_analysis": "False"})
 
         lines_by_page = self._split_lines_on_pages(result.lines)
 
@@ -114,7 +108,7 @@ class TestPDFReader(unittest.TestCase):
         config = get_test_config()
         any_doc_reader = PdfImageReader(config=config)
         path = os.path.join(os.path.dirname(__file__), "../data/scanned/doc_with_long_list.pdf")
-        result = any_doc_reader.read(path, document_type=None, parameters={"need_pdf_table_analysis": "False"})
+        result = any_doc_reader.read(path, parameters={"need_pdf_table_analysis": "False"})
         list_elements = result.lines[1:]
         self.assertEqual(list_elements[0].line.lower().strip(), "1. январь")
         self.assertEqual(list_elements[1].line.lower().strip(), "2. февраль")
@@ -134,7 +128,7 @@ class TestPDFReader(unittest.TestCase):
         config = get_test_config()
         any_doc_reader = PdfTxtlayerReader(config=config)
         path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer/english_doc.pdf")
-        result = any_doc_reader.read(path, document_type=None, parameters={})
+        result = any_doc_reader.read(path, parameters={})
         for line in result.lines:
             # check that annotations not duplicated
             annotations = line.annotations
@@ -145,5 +139,5 @@ class TestPDFReader(unittest.TestCase):
         config = {}  # Has to work without config
         any_doc_reader = PdfTxtlayerReader(config=config)
         path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer/english_doc.pdf")
-        result = any_doc_reader.read(path, document_type=None, parameters={"need_pdf_table_analysis": "True"})
+        result = any_doc_reader.read(path, parameters={"need_pdf_table_analysis": "True"})
         self.assertEqual(len(result.tables), 1)

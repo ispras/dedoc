@@ -8,9 +8,6 @@ import PIL
 import numpy as np
 from PIL.Image import Image
 
-from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.readers.pdf_reader.data_classes.page_with_bboxes import PageWithBBox
-
 
 def __to_pil(image: np.ndarray) -> Image:
     return PIL.Image.fromarray(image)
@@ -33,7 +30,7 @@ def _get_images_path(config: dict, document_name: str) -> str:
     return os.path.join(get_path_original_documents(config), document_name.split(".")[0])
 
 
-def save_page_with_bbox(page: PageWithBBox, document_name: str, *, config: dict) -> None:
+def save_page_with_bbox(page: "PageWithBBox", document_name: str, *, config: dict) -> None:  # noqa
     __create_images_path(config)
     uid = document_name
     images_path = _get_images_path(config=config, document_name=document_name)
@@ -63,7 +60,7 @@ def _convert2zip(config: dict, document_name: str) -> str:
     return archive_filename
 
 
-def save_line_with_meta(lines: List[LineWithMeta], original_document: str, *, config: dict) -> None:
+def save_line_with_meta(lines: List["LineWithMeta"], original_document: str, *, config: dict) -> None:  # noqa
 
     __create_images_path(config)
     if original_document.endswith((".jpg", ".png", ".pdf")):

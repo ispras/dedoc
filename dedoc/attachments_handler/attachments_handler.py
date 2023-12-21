@@ -2,7 +2,7 @@ import copy
 import logging
 import os
 import time
-from typing import List
+from typing import List, Optional
 
 from dedoc.attachments_extractors import AbstractAttachmentsExtractor
 from dedoc.common.exceptions.dedoc_error import DedocError
@@ -22,11 +22,11 @@ class AttachmentsHandler:
             the parsing recursion may be set via `recursion_deep_attachments` parameter.
     """
 
-    def __init__(self, *, config: dict) -> None:
+    def __init__(self, *, config: Optional[dict] = None) -> None:
         """
         :param config: configuration of the handler, e.g. logger for logging
         """
-        self.config = config
+        self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
 
     def handle_attachments(self, document_parser: "DedocManager", document: UnstructuredDocument, parameters: dict) -> List[ParsedDocument]:  # noqa
@@ -77,10 +77,10 @@ class AttachmentsHandler:
         return parsed_attachment_files
 
     def __get_empty_document(self, document_parser: "DedocManager", attachment: AttachedFile, parameters: dict) -> ParsedDocument:  # noqa
-        attachment_dir, attachment_name = os.path.split(attachment.get_filename_in_path())
-        metadata = document_parser.document_metadata_extractor.extract_metadata(directory=attachment_dir,
-                                                                                filename=attachment_name, converted_filename=attachment_name,
-                                                                                original_filename=attachment.get_original_filename(),
-                                                                                parameters=parameters)
+        metadata = document_parser.document_metadata_extractor.extract(
+            file_path=attachment.get_filename_in_path(),
+            original_filename=attachment.get_original_filename(),
+            parameters=parameters
+        )
         metadata = DocumentMetadata(**metadata)
         return ParsedDocument(content=get_empty_content(), metadata=metadata)

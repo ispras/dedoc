@@ -19,7 +19,7 @@ class TestTOCFeatureExtractor(unittest.TestCase):
     @property
     def document(self) -> UnstructuredDocument:
         if self._document is None:
-            self._document = self.reader.read(path=self.path, parameters={}, document_type=None)
+            self._document = self.reader.read(file_path=self.path, parameters={})
         return self._document
 
     def test_toc_extractor(self) -> None:
