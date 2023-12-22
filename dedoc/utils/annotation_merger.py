@@ -71,6 +71,7 @@ class AnnotationMerger:
         """
         if not annotations:
             return []
+
         annotations_group_by_name_value = self._group_annotations(annotations).values()
         spaces = [Space(m.start(), m.end()) for m in self.spaces.finditer(text)]
 
@@ -78,7 +79,9 @@ class AnnotationMerger:
         for annotation_group in annotations_group_by_name_value:
             group = self._merge_one_group(annotations=annotation_group, spaces=spaces)
             merged.extend(group)
-        return merged
+
+        filtered = self.__filter_contradicting_annotations(merged, text)
+        return filtered
 
     def _merge_one_group(self, annotations: List[Annotation], spaces: List[Space]) -> List[Annotation]:
         """
@@ -117,6 +120,26 @@ class AnnotationMerger:
         for annotation in annotations:
             annotations_group_by_value[(annotation.name, annotation.value)].append(annotation)
         return annotations_group_by_value
+
+    def __filter_contradicting_annotations(self, annotations: List[Annotation], text: str) -> List[Annotation]:
+        annotations_by_type = defaultdict(list)
+        for annotation in annotations:
+            annotations_by_type[annotation.name].append(annotation)
+
+        filtered = []
+        for annotation_list in annotations_by_type.values():
+            sorted_annotations = sorted(annotation_list, key=lambda x: x.start)
+            prev_end = 0
+            for annotation in sorted_annotations:
+                if annotation.start >= prev_end:
+                    filtered.append(annotation)
+                    prev_end = annotation.end
+                elif self.spaces.match(text[filtered[-1].start:filtered[-1].end]):
+                    del filtered[-1]
+                    filtered.append(annotation)
+                    prev_end = annotation.end
+
+        return filtered
 
     @staticmethod
     def delete_previous_merged(merged: List[Annotation], new_annotations: Annotation) -> List[Annotation]:

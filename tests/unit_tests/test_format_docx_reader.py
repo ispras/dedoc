@@ -284,12 +284,15 @@ class TestDocxReader(unittest.TestCase):
         path = os.path.abspath(path)
         self.assertDictEqual({"broken_docx": True}, extractor._get_docx_fields(path))
 
-    @unittest.skip("For issues")
     def test_annotations(self) -> None:
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("size1.docx")
-        # test 'pt' ending in size
-        document = docx_reader.read(path) # TODO fix this and check font size value
+        # test 'pt' ending in size and check font size value
+        document = docx_reader.read(path)
+        for i in range(len(document.lines)):
+            for annotation in document.lines[i].annotations:
+                if annotation.name == SizeAnnotation.name:
+                    self.assertEqual(12.0, float(annotation.value))
 
         # test that different annotations of one type don't overlap
         path = self._get_path("size2.docx")
