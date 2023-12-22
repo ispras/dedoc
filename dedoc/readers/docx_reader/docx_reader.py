@@ -35,7 +35,9 @@ class DocxReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        attachments = self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
+
+        with_attachments = self.attachment_extractor.with_attachments(parameters=parameters)
+        attachments = self.attachment_extractor.extract(file_path=file_path, parameters=parameters) if with_attachments else []
 
         docx_document = DocxDocument(path=file_path, attachments=attachments, logger=self.logger)
         lines = self.__fix_lines(docx_document.lines)
