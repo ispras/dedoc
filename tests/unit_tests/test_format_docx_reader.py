@@ -245,7 +245,7 @@ class TestDocxReader(unittest.TestCase):
     def test_diagram_annotation(self) -> None:
         docx_reader = DocxReader(config=get_config())
         path = self._get_path("diagram_1.docx")
-        result = docx_reader.read(path)
+        result = docx_reader.read(path, parameters={"with_attachments": True})
 
         for annotation in result.lines[0].annotations:
             if annotation.name == "attachment":
@@ -253,7 +253,7 @@ class TestDocxReader(unittest.TestCase):
             break
 
         path = self._get_path("diagram_2.docx")
-        result = docx_reader.read(path)
+        result = docx_reader.read(path, parameters={"with_attachments": True})
 
         for i in [0, 22]:
             annotation_found = False

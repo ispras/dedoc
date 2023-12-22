@@ -1,5 +1,6 @@
 import os
 
+from dedoc.data_structures import AttachAnnotation
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
@@ -97,6 +98,22 @@ class TestApiImageRefs(AbstractTestApiDocReader):
         attach_annotation = structure["subparagraphs"][4]["annotations"][-1]
         self.assertEqual(attach_annotation["name"], "attachment")
         self.assertIn(attach_annotation["value"], attachment_uids)
+
+    def test_pptx_images_refs(self) -> None:
+        file_name = "with_attachments_1.pptx"
+        result = self._send_request(file_name, dict(with_attachments=True, structure_type="linear"))
+
+        attachment_uids = {attachment["metadata"]["uid"] for attachment in result["attachments"]}
+        self.assertEqual(len(attachment_uids), 5)
+
+        subparagraphs = result["content"]["structure"]["subparagraphs"]
+        attach_annotations = [ann for ann in subparagraphs[1]["annotations"] if ann["name"] == AttachAnnotation.name]
+        self.assertEqual(len(attach_annotations), 1)
+        self.assertIn(attach_annotations[0]["value"], attachment_uids)
+
+        attach_annotations = [ann for ann in subparagraphs[3]["annotations"] if ann["name"] == AttachAnnotation.name]
+        self.assertEqual(len(attach_annotations), 1)
+        self.assertIn(attach_annotations[0]["value"], attachment_uids)
 
     def __check_image_paragraph(self, image_paragraph: dict, image_uid: str) -> None:
         text = image_paragraph["text"]
