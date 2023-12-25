@@ -97,16 +97,7 @@ test="true" docker-compose up --build
 ```
 
 If you need to change some application settings, you may update `config.py` according to your needs and re-build the image.
-For example, you can run dedoc on CUDA by setting `on_gpu` to `True` in `config.py`. 
 
-To run Dedoc on CUDA with Docker use files from `docker_gpu` directory 
-([CUDA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) 
-should be installed on your machine):
-
-```shell
-cd docker_gpu
-docker-compose up --build
-```
 
 ## Install dedoc using pip
 
