@@ -36,7 +36,7 @@ class ColumnsOrientationClassifier(object):
             else:
                 net = ClassificationModelTorch(None)
             self._net = net
-
+        self._net.to(self.device)
         return self._net
 
     @staticmethod

@@ -31,8 +31,3 @@ services:
     runtime: nvidia
     command:
         bash dedoc_root/tests/run_tests_in_docker.sh
-
-## By default this config uses default local driver,
-## For custom volumes replace with volume driver configuration.
-volumes:
-  data1-1:
