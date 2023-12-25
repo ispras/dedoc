@@ -14,4 +14,4 @@ class TableAnnotation(Annotation):
         :param start: start of the annotated text (usually zero)
         :param end: end of the annotated text (usually end of the line)
         """
-        super().__init__(start=start, end=end, name=TableAnnotation.name, value=name)
+        super().__init__(start=start, end=end, name=TableAnnotation.name, value=name, is_mergeable=False)

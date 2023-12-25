@@ -4,6 +4,7 @@ import unittest
 from tempfile import TemporaryDirectory
 
 from dedoc.config import get_config
+from dedoc.data_structures import SizeAnnotation
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.metadata_extractors.concrete_metadata_extractors.docx_metadata_extractor import DocxMetadataExtractor
 from dedoc.readers.docx_reader.docx_reader import DocxReader
@@ -282,6 +283,26 @@ class TestDocxReader(unittest.TestCase):
         path = os.path.join(os.path.dirname(__file__), "..", "data", "docx", "broken.docx")
         path = os.path.abspath(path)
         self.assertDictEqual({"broken_docx": True}, extractor._get_docx_fields(path))
+
+    def test_annotations(self) -> None:
+        docx_reader = DocxReader(config=get_config())
+        path = self._get_path("size1.docx")
+        # test 'pt' ending in size and check font size value
+        document = docx_reader.read(path)
+        for i in range(len(document.lines)):
+            for annotation in document.lines[i].annotations:
+                if annotation.name == SizeAnnotation.name:
+                    self.assertEqual(12.0, float(annotation.value))
+
+        # test that different annotations of one type don't overlap
+        path = self._get_path("size2.docx")
+        document = docx_reader.read(path)
+        size_annotations = [annotation for annotation in document.lines[2].annotations if annotation.name == SizeAnnotation.name]
+        size_annotations = sorted(size_annotations, key=lambda x: x.start)
+        prev_end = size_annotations[0].end
+        for annotation in size_annotations[1:]:
+            self.assertGreaterEqual(annotation.start, prev_end, "Annotations of one type with different values shouldn't overlap")
+            prev_end = annotation.end
 
     def _get_path(self, file_name: str) -> str:
         path_in = os.path.join(self.directory, file_name)

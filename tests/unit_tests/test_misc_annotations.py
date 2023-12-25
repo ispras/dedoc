@@ -173,6 +173,34 @@ class TestAnnotationMerger(unittest.TestCase):
             result = self.merge(annotations, text)
         self.assertSetEqual({(a.start, a.end, a.name, a.value) for a in annotations}, result)
 
+    def test_merge_space(self) -> None:
+        annotations = [
+            Annotation(start=0, end=6, name="size", value="12.0"),
+            Annotation(start=7, end=11, name="size", value="12.0"),
+            Annotation(start=6, end=7, name="size", value="1"),
+            Annotation(start=6, end=7, name="bold", value="True")
+        ]
+        text = "normal text"
+        result = self.merge(annotations, text)
+        self.assertEqual(2, len(result))
+        self.assertIn((0, 11, "size", "12.0"), result)
+        self.assertIn((6, 7, "bold", "True"), result)
+
+    def test_merge_only_spaces(self) -> None:
+        annotations = [
+            Annotation(start=0, end=1, name="size", value="12.0"),
+            Annotation(start=0, end=1, name="bold", value="True"),
+            Annotation(start=1, end=2, name="italic", value="True"),
+            Annotation(start=2, end=3, name="bold", value="False"),
+            Annotation(start=3, end=4, name="size", value="1"),
+            Annotation(start=4, end=5, name="size", value="5")
+        ]
+        text = " \t \t\n"
+        result = self.merge(annotations, text)
+        self.assertEqual(6, len(result))
+        actual_result = {(ann.start, ann.end, ann.name, ann.value) for ann in annotations}
+        self.assertSetEqual(actual_result, result)
+
 
 class TestAbstractStructureExtractor(unittest.TestCase):
     def test_annotation_extractor_left(self) -> None:
