@@ -9,7 +9,7 @@ cd docker_gpu
 docker-compose up --build
 ```
 
-You can change index if CUDA device at `docker-compose.yml`:
+You can change index of CUDA device at `docker-compose.yml`:
 ```
 NVIDIA_VISIBLE_DEVICES: 0
 NVIDIA_VISIBLE_DEVICES: 0, 3
