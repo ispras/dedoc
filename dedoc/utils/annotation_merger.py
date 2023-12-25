@@ -85,7 +85,7 @@ class AnnotationMerger:
 
     def _merge_one_group(self, annotations: List[Annotation], spaces: List[Space]) -> List[Annotation]:
         """
-        Merge one group annotations, assume that all annotations has the same name and value
+        Merge one group annotations, assume that all annotations have the same name and value
         """
         if len(annotations) <= 1 or not annotations[0].is_mergeable:
             return annotations
@@ -128,7 +128,7 @@ class AnnotationMerger:
 
         filtered = []
         for annotation_list in annotations_by_type.values():
-            if not annotation_list[0].is_exclusive:  # there may be different values of the same annotation type on the text
+            if not annotation_list[0].is_mergeable:  # there may be different values of the same annotation type on the text
                 filtered.extend(annotation_list)
                 continue
 
@@ -139,8 +139,7 @@ class AnnotationMerger:
                     filtered.append(annotation)
                     prev_end = annotation.end
                 elif self.spaces.match(text[filtered[-1].start:filtered[-1].end]):
-                    del filtered[-1]
-                    filtered.append(annotation)
+                    filtered[-1] = annotation
                     prev_end = annotation.end
 
         return filtered
