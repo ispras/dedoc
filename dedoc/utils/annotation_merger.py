@@ -128,6 +128,10 @@ class AnnotationMerger:
 
         filtered = []
         for annotation_list in annotations_by_type.values():
+            if not annotation_list[0].is_exclusive:  # there may be different values of the same annotation type on the text
+                filtered.extend(annotation_list)
+                continue
+
             sorted_annotations = sorted(annotation_list, key=lambda x: x.start)
             prev_end = 0
             for annotation in sorted_annotations:

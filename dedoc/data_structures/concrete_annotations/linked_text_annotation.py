@@ -14,4 +14,4 @@ class LinkedTextAnnotation(Annotation):
         :param end: end of the annotated text (not included)
         :param value: text, linked to given one, for example text of the footnote
         """
-        super().__init__(start=start, end=end, name=LinkedTextAnnotation.name, value=value)
+        super().__init__(start=start, end=end, name=LinkedTextAnnotation.name, value=value, is_exclusive=False)

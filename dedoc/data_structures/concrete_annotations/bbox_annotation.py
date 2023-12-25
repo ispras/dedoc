@@ -23,7 +23,7 @@ class BBoxAnnotation(Annotation):
         if not isinstance(value, BBox):
             raise ValueError("the value of bounding box annotation should be instance of BBox")
 
-        super().__init__(start=start, end=end, name=BBoxAnnotation.name, value=json.dumps(value.to_relative_dict(page_width, page_height)))
+        super().__init__(start=start, end=end, name=BBoxAnnotation.name, value=json.dumps(value.to_relative_dict(page_width, page_height)), is_exclusive=False)
 
     @staticmethod
     def get_bbox_from_value(value: str) -> Tuple[BBox, int, int]:

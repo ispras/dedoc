@@ -9,7 +9,7 @@ class Annotation(Serializable):
     Look to the concrete kind of annotations to get mode examples.
     """
 
-    def __init__(self, start: int, end: int, name: str, value: str, is_mergeable: bool = True) -> None:
+    def __init__(self, start: int, end: int, name: str, value: str, is_mergeable: bool = True, is_exclusive: bool = True) -> None:
         """
         Some kind of text information about symbols between start and end.
         For example Annotation(1, 13, "italic", "True") says that text between 1st and 13th symbol was writen in italic.
@@ -19,12 +19,14 @@ class Annotation(Serializable):
         :param name: annotation's name
         :param value: information about annotated text
         :param is_mergeable: is it possible to merge annotations with the same value
+        :param is_exclusive: is it possible to annotate the same text with different values of this annotation
         """
         self.start = start
         self.end = end
         self.name = name
         self.value = value
         self.is_mergeable = is_mergeable
+        self.is_exclusive = is_exclusive
 
     def __eq__(self, o: object) -> bool:
         if not isinstance(o, Annotation):
