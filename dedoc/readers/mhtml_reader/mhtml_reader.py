@@ -1,6 +1,5 @@
 import email
 import gzip
-import logging
 import os
 import uuid
 from typing import List, Optional, Tuple
@@ -13,32 +12,30 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.html_reader.html_reader import HtmlReader
 from dedoc.utils import supported_image_types
-from dedoc.utils.utils import check_filename_length, get_encoding, save_data_to_unique_file
+from dedoc.utils.utils import check_filename_length, get_encoding, get_mime_extension, save_data_to_unique_file
 
 
 class MhtmlReader(BaseReader):
     """
     This reader can process files with the following extensions: .mhtml, .mht, .mhtml.gz, .mht.gz
     """
-    def __init__(self, *, config: dict) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
-        self.config = config
-        self.logger = config.get("logger", logging.getLogger())
+
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        super().__init__(config=config)
         self.mhtml_extensions = [".mhtml", ".mht"]
         self.mhtml_extensions += [f"{extension}.gz" for extension in self.mhtml_extensions]
         self.mhtml_extensions = tuple(self.mhtml_extensions)
-        self.html_reader = HtmlReader(config=config)
+        self.html_reader = HtmlReader(config=self.config)
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower().endswith(tuple(self.mhtml_extensions))
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines, tables and attachments.
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
@@ -46,15 +43,15 @@ class MhtmlReader(BaseReader):
         """
         parameters = {} if parameters is None else parameters
         attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = os.path.dirname(path) if attachments_dir is None else attachments_dir
+        attachments_dir = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
 
-        names_list, original_names_list = self.__extract_files(path=path, save_dir=attachments_dir)
+        names_list, original_names_list = self.__extract_files(path=file_path, save_dir=attachments_dir)
         names_html = self.__find_html(names_list=names_list)
 
         lines = []
         tables = []
         for html_file in names_html:
-            result = self.html_reader.read(path=html_file, parameters=parameters, document_type=document_type)
+            result = self.html_reader.read(file_path=html_file, parameters=parameters)
             lines.extend(result.lines)
             tables.extend(result.tables)
 

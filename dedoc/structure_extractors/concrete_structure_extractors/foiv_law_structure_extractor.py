@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.concrete_structure_extractors.abstract_law_structure_extractor import AbstractLawStructureExtractor
@@ -18,7 +18,7 @@ class FoivLawStructureExtractor(AbstractLawStructureExtractor):
     """
     document_type = "foiv_law"
 
-    def __init__(self, *, config: dict) -> None:
+    def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
         self.hierarchy_level_builders = [
             HeaderHierarchyLevelBuilder(),

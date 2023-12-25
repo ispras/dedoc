@@ -20,6 +20,7 @@ class OnePageTableExtractor(BaseTableExtractor):
 
     def __init__(self, *, config: dict, logger: logging.Logger) -> None:
         super().__init__(config=config, logger=logger)
+
         self.image = None
         self.page_number = 0
         self.attribute_selector = TableAttributeExtractor(logger=self.logger)
@@ -77,8 +78,8 @@ class OnePageTableExtractor(BaseTableExtractor):
         avg_len_part = np.average(len_parts)
 
         # Эвристика: считаем что ячейка повернута, если у нас большое количество строк и строки короткие
-        if len(parts) > self.config["minimal_cell_cnt_line"] \
-                and avg_len_part < self.config["minimal_cell_avg_length_line"]:
+        if len(parts) > TableTree.minimal_cell_cnt_line \
+                and avg_len_part < TableTree.minimal_cell_avg_length_line:
             return True
         return False
 

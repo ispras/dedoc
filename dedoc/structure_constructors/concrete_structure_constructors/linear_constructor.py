@@ -14,7 +14,7 @@ class LinearConstructor(AbstractStructureConstructor):
     The result contains the empty root node with the consecutive list of all document lines as its children.
     """
 
-    def structure_document(self, document: UnstructuredDocument, structure_type: Optional[str] = None) -> ParsedDocument:
+    def construct(self, document: UnstructuredDocument, parameters: Optional[dict] = None) -> ParsedDocument:
         """
         Build the linear structure representation for the given document intermediate representation.
         To get the information about the parameters look at the documentation of :class:`~dedoc.structure_constructors.AbstractStructureConstructor`.

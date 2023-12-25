@@ -8,29 +8,25 @@ dedoc.metadata_extractors
     :members:
 
 .. autoclass:: dedoc.metadata_extractors.AbstractMetadataExtractor
+    :special-members: __init__
     :members:
 
 .. autoclass:: dedoc.metadata_extractors.BaseMetadataExtractor
     :show-inheritance:
-    :special-members: __init__
     :members:
 
 .. autoclass:: dedoc.metadata_extractors.DocxMetadataExtractor
     :show-inheritance:
-    :special-members: __init__
     :members:
 
 .. autoclass:: dedoc.metadata_extractors.ImageMetadataExtractor
     :show-inheritance:
-    :special-members: __init__
     :members:
 
 .. autoclass:: dedoc.metadata_extractors.NoteMetadataExtractor
     :show-inheritance:
-    :special-members: __init__
     :members:
 
 .. autoclass:: dedoc.metadata_extractors.PdfMetadataExtractor
     :show-inheritance:
-    :special-members: __init__
     :members:

@@ -19,28 +19,25 @@ class ColumnsOrientationClassifier(object):
     Class Classifier for work with Orientation Network. This class set device,
     preprocessing (transform) input data, weights of model
     """
-
-    _nets = {}
-
     def __init__(self, on_gpu: bool, checkpoint_path: Optional[str], *, config: dict) -> None:
         self.logger = config.get("logger", logging.getLogger())
         self._set_device(on_gpu)
         self._set_transform_image()
         self.checkpoint_path = path.abspath(checkpoint_path)
         self.classes = [1, 2, 0, 90, 180, 270]
+        self._net = None
 
     @property
     def net(self) -> ClassificationModelTorch:
-        # lazy loading and net sharing, comrade
-        if self.checkpoint_path not in self._nets:
+        if self._net is None:
             if self.checkpoint_path is not None:
                 net = ClassificationModelTorch(path.join(self.checkpoint_path, "scan_orientation_efficient_net_b0.pth"))
                 self._load_weights(net)
             else:
                 net = ClassificationModelTorch(None)
-            net.to(self.device)
-            self._nets[self.checkpoint_path] = net
-        return self._nets[self.checkpoint_path]
+            self._net = net
+        self._net.to(self.device)
+        return self._net
 
     @staticmethod
     def my_resize(image: Image) -> Image:

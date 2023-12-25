@@ -1,6 +1,14 @@
+from typing import Union
+
 from bs4 import Tag
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
+
+
+def spacing_to_float(spacing: Union[str, int, float]) -> float:
+    if str(spacing).endswith("pt"):
+        return float(spacing[:-2])
+    return float(spacing)
 
 
 def check_if_true(value: str) -> bool:
@@ -79,7 +87,7 @@ def change_indent(old_properties: BaseProperties, tree: Tag) -> None:
         ["firstLine", "firstLineChars", "hanging", "hangingChars", "start", "startChars", "left"]
     }
     for attribute in attributes:
-        attributes[attribute] = float(tree.ind.get(f"w:{attribute}", 0))
+        attributes[attribute] = spacing_to_float(tree.ind.get(f"w:{attribute}", 0))
 
     indentation = 0
     if attributes["left"] != 0:
@@ -109,7 +117,7 @@ def change_size(old_properties: BaseProperties, tree: Tag) -> None:
     :param tree: BeautifulSoup tree with properties
     """
     if tree.sz:
-        new_size = float(tree.sz.get("w:val", old_properties.size))
+        new_size = spacing_to_float(tree.sz.get("w:val", old_properties.size))
         old_properties.size = int(new_size)
 
 
@@ -180,19 +188,19 @@ def change_spacing(old_properties: BaseProperties, tree: Tag) -> None:
 
     if not before_autospacing:
         before_lines = tree.spacing.get("w:beforeLines", False)
-        before_lines = int(float(before_lines)) if before_lines else before_lines
+        before_lines = int(spacing_to_float(before_lines)) if before_lines else before_lines
         if not before_lines:
             before_tag = tree.spacing.get("w:before", False)
-            before = int(float(before_tag)) if before_tag else before
+            before = int(spacing_to_float(before_tag)) if before_tag else before
         else:
             before = before_lines
 
     if not after_autospacing:
         after_lines = tree.spacing.get("w:afterLines", False)
-        after_lines = int(float(after_lines)) if after_lines else after_lines
+        after_lines = int(spacing_to_float(after_lines)) if after_lines else after_lines
         if not after_lines:
             after_tag = tree.spacing.get("w:after", False)
-            after = int(float(after_tag)) if after_tag else after
+            after = int(spacing_to_float(after_tag)) if after_tag else after
         else:
             after = after_lines
 

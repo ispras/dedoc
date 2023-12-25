@@ -9,7 +9,7 @@ pdf_txt_layer_reader = PdfTxtlayerReader(config=get_config())
 file_name = "example_with_text_layer.pdf"
 
 # we get unstructured file with lines and tables
-unstructured_document = pdf_txt_layer_reader.read(path=file_name, document_type="example")
+unstructured_document = pdf_txt_layer_reader.read(file_path=file_name)
 
 # let's look at the content of unstructured_file, it consists of tables and lines
 print(unstructured_document.tables, unstructured_document.lines)
@@ -38,7 +38,7 @@ pdf_image_reader = PdfImageReader(config=get_config())
 file_name = "example_without_text_layer.pdf"
 
 # we get unstructured file with lines and tables
-unstructured_document = pdf_image_reader.read(path=file_name, document_type="example")
+unstructured_document = pdf_image_reader.read(file_path=file_name)
 
 # let's look at the content of unstructured_file, it consists of tables and lines
 print(unstructured_document.tables, unstructured_document.lines)

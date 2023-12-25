@@ -21,7 +21,7 @@ class TestFoivApiDocreader(unittest.TestCase):
     def _test_document_type(self, file_name: str, expected_type: str) -> None:
         config = {}
         base_reader = RawTextReader(config=config)
-        unstructured_document = base_reader.read(path=self._get_abs_path(file_name), document_type=None, parameters=None)
+        unstructured_document = base_reader.read(file_path=self._get_abs_path(file_name), parameters=None)
         result = self.structure_extractor._predict_extractor(unstructured_document.lines)
 
         self.assertEqual(result.document_type, expected_type)

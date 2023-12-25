@@ -41,7 +41,7 @@ class TestApiJSONReader(AbstractTestApiDocReader):
         result = self._send_request(file_name)["content"]["structure"]
         first_list_items = result["subparagraphs"][0]["subparagraphs"][0]["subparagraphs"]
         second_list_items = result["subparagraphs"][1]["subparagraphs"][0]["subparagraphs"]
-        first_list_items, second_list_items = sorted([first_list_items, second_list_items], key=lambda l: -len(l))
+        first_list_items, second_list_items = sorted([first_list_items, second_list_items], key=lambda value: -len(value))
 
         nodes = result["subparagraphs"][1]["subparagraphs"]
         self.assertEqual("list", nodes[0]["metadata"]["paragraph_type"])

@@ -15,7 +15,7 @@ class TestRawTextReader(TestCase):
         file = os.path.join(self.path, "laws", "коап_москвы_8_7_2015_utf.txt")
         uids_set = set()
         prefix = "txt_6210f1fb59150aae33a09f49c8724baf"  # это строка, содержащая хэш файла, который обратаывается ридером
-        document = self.reader.read(file, None, {})
+        document = self.reader.read(file, {})
         for line in document.lines:
             self.assertNotIn(line.uid, uids_set)
             uids_set.add(line.uid)
@@ -25,7 +25,7 @@ class TestRawTextReader(TestCase):
         file = os.path.join(self.path, "tz", "tz.txt")
         uids_set = set()
         prefix = "txt_0e576a9e0008225ac27f961af60c0bee"
-        document = self.reader.read(file, None, {})
+        document = self.reader.read(file, {})
         for line in document.lines:
             self.assertNotIn(line.uid, uids_set)
             uids_set.add(line.uid)

@@ -1,5 +1,4 @@
 import hashlib
-import logging
 import string
 from typing import List, Optional, Union
 
@@ -17,7 +16,7 @@ from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.html_reader.html_line_postprocessing import HtmlLinePostprocessing
 from dedoc.readers.html_reader.html_tag_annotation_parser import HtmlTagAnnotationParser
 from dedoc.readers.html_reader.html_tags import HtmlTags
-from dedoc.utils.utils import calculate_file_hash
+from dedoc.utils.utils import calculate_file_hash, get_mime_extension
 
 
 class HtmlReader(BaseReader):
@@ -25,34 +24,31 @@ class HtmlReader(BaseReader):
     This reader allows to handle documents with the following extensions: .html, .shtml
     """
 
-    def __init__(self, *, config: dict) -> None:
-        """
-        :param config: configuration of the reader, e.g. logger for logging
-        """
-        self.config = config
-        self.logger = config.get("logger", logging.getLogger())
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        super().__init__(config=config)
         self.postprocessor = HtmlLinePostprocessing()
         self.tag_annotation_parser = HtmlTagAnnotationParser()
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in [".html", ".shtml"] or mime in ["text/html"]
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines and tables, attachments remain empty.
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        with open(path, "rb") as f:
+        with open(file_path, "rb") as f:
             soup = BeautifulSoup(f.read(), "html.parser")
 
         handle_invisible_table = str(parameters.get("handle_invisible_table", "false")).lower() == "true"
-        path_hash = calculate_file_hash(path=path)
+        path_hash = calculate_file_hash(path=file_path)
         lines = self.__read_blocks(soup, path_hash=path_hash, handle_invisible_table=handle_invisible_table)
         tables = [
             self._read_table(table, path_hash) for table in soup.find_all("table") if self._visible_table(table, handle_invisible_table=handle_invisible_table)

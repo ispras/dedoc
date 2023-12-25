@@ -1,6 +1,6 @@
 import os
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from dedoc.config import get_config
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
@@ -20,19 +20,20 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
     You can find the description of this type of structure in the section :ref:`law_structure`.
     """
 
-    def __init__(self, *, config: dict) -> None:
+    def __init__(self, *, config: Optional[dict] = None) -> None:
         """
         :param config: some configuration for document parsing
         """
+        super().__init__(config=config)
         path = os.path.join(get_config()["resources_path"], "line_type_classifiers")
-        self.classifier = LawLineTypeClassifier(classifier_type="law", path=os.path.join(path, "law_classifier.pkl.gz"), config=config)
-        self.txt_classifier = LawLineTypeClassifier(classifier_type="law_txt", path=os.path.join(path, "law_txt_classifier.pkl.gz"), config=config)
+        self.classifier = LawLineTypeClassifier(classifier_type="law", path=os.path.join(path, "law_classifier.pkl.gz"), config=self.config)
+        self.txt_classifier = LawLineTypeClassifier(classifier_type="law_txt", path=os.path.join(path, "law_txt_classifier.pkl.gz"), config=self.config)
         self.hierarchy_level_builders = [StubHierarchyLevelBuilder()]
         self.hl_type = "law"
         self.init_hl_depth = 1
         self.except_words = {"приказ", "положение", "требования", "постановление", "перечень", "регламент", "закон"}
 
-    def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
+    def extract(self, document: UnstructuredDocument, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         Extract law structure from the given document and add additional information to the lines' metadata.
         To get the information about the method's parameters look at the documentation of the class \

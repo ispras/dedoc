@@ -1,0 +1,33 @@
+version: '2.4'
+
+services:
+  dedoc:
+    mem_limit: 16G
+    build:
+      context: ..
+      dockerfile: docker_gpu/Dockerfile
+    restart: always
+    tty: true
+    ports:
+      - 1231:1231
+    environment:
+      DOCREADER_PORT: 1231
+      NVIDIA_VISIBLE_DEVICES: 0
+    runtime: nvidia
+
+  test:
+    depends_on:
+      - dedoc
+    build:
+          context: ..
+          dockerfile: docker_gpu/Dockerfile
+    tty: true
+    environment:
+      DOC_READER_HOST: "dedoc"
+      DOCREADER_PORT: 1231
+      is_test: $test
+      PYTHONPATH: $PYTHONPATH:/dedoc_root/tests:/dedoc_root
+      NVIDIA_VISIBLE_DEVICES: 0
+    runtime: nvidia
+    command:
+        bash dedoc_root/tests/run_tests_in_docker.sh

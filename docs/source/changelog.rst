@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v2.0 (2023-12-25)
+-----------------
+Release note: `v2.0 <https://github.com/ispras/dedoc/releases/tag/v2.0>`_
+
+* Fix table extraction from PDF using empty config (see `issue <https://github.com/ispras/dedoc/issues/373>`_)
+* Add more benchmarks for Tesseract
+* Fix extension extraction for file names with several dots
+* Change names of some methods and their parameters for all main classes (attachments extractors, converters, readers, metadata extractors, structure extractors, structure constructors).
+  Please look to the `Package reference` of `documentation <https://dedoc.readthedocs.io>`_ for more details
+* Add `AttachAnnotation` and `TableAnnotation` to `PPTX` (see `discussion <https://github.com/ispras/dedoc/discussions/386>`_)
+* Fix bugs in `DOCX` handling (see issues `378 <https://github.com/ispras/dedoc/issues/378>`_, `379 <https://github.com/ispras/dedoc/issues/379>`_
+
 v1.1.1 (2023-11-24)
 -------------------
 Release note: `v1.1.1 <https://github.com/ispras/dedoc/releases/tag/v1.1.1>`_

@@ -7,7 +7,7 @@ from typing import List
 from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
 from dedoc.attachments_extractors.concrete_attachments_extractors.pptx_attachments_extractor import PptxAttachmentsExtractor
 from dedoc.dedoc_manager import DedocManager
-from dedoc.readers import ArchiveReader, PdfTabbyReader, PdfTxtlayerReader
+from dedoc.readers import ArchiveReader, PdfTabbyReader, PdfTxtlayerReader, PptxReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from tests.test_utils import get_test_config
 
@@ -41,7 +41,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
 
             with tempfile.TemporaryDirectory() as tmpdir:
                 shutil.copy(os.path.join(self.src_dir, filename), os.path.join(tmpdir, filename))
-                attachments = docx_attachment_extractor.get_attachments(tmpdir, filename, {})
+                attachments = docx_attachment_extractor.extract(file_path=os.path.join(tmpdir, filename))
 
                 for _, file in enumerate(attachments):
                     self.assertIn(file.original_name, attachments_name_list)
@@ -72,7 +72,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
 
             with tempfile.TemporaryDirectory() as tmpdir:
                 shutil.copy(os.path.join(self.src_dir, filename), os.path.join(tmpdir, filename))
-                attachments = pptx_attachment_extractor.get_attachments(tmpdir, filename, {})
+                attachments = pptx_attachment_extractor.extract(file_path=os.path.join(tmpdir, filename))
 
                 for _, file in enumerate(attachments):
                     self.assertIn(file.original_name, attachments_name_list)
@@ -86,7 +86,8 @@ class TestAttachmentsExtractor(unittest.TestCase):
         files = [("diagram_1.docx", 1), ("diagram_2.docx", 5)]
         with tempfile.TemporaryDirectory() as tmp_dir:
             for file, num_attachments in files:
-                attachments = docx_attachment_extractor.get_attachments(tmp_dir, os.path.join(docx_dir, file), {})
+                shutil.copy(os.path.join(docx_dir, file), os.path.join(tmp_dir, file))
+                attachments = docx_attachment_extractor.extract(file_path=os.path.join(tmp_dir, file))
                 self.assertEqual(num_attachments, len(attachments))
 
     def test_archive_with_slash(self) -> None:
@@ -106,7 +107,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
             file_path = os.path.join(tmp_dir, file_name)
             shutil.copyfile(os.path.join(self.src_dir, file_name), file_path)
             config = get_test_config()
-            document = ArchiveReader(config=config).read(path=file_path, parameters={"with_attachments": True})
+            document = ArchiveReader(config=config).read(file_path=file_path, parameters={"with_attachments": True})
             files = [file.original_name for file in document.attachments]
             return files
 
@@ -134,7 +135,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
 
         for file_name, reader in file_name_reader_list:
             with tempfile.TemporaryDirectory() as tmpdir:
-                result = reader.read(path=os.path.join(self.src_dir, file_name), parameters=dict(with_attachments=True, attachments_dir=tmpdir))
+                result = reader.read(file_path=os.path.join(self.src_dir, file_name), parameters=dict(with_attachments=True, attachments_dir=tmpdir))
 
                 attachment_names = os.listdir(tmpdir)
                 for attachment in result.attachments:
@@ -148,10 +149,21 @@ class TestAttachmentsExtractor(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmpdir:
             params = {"with_attachments": True, "attachments_dir": tmpdir}
-            result = docx_attachment_extractor.get_attachments(tmpdir=self.src_dir, filename=file_name, parameters=params)
+            result = docx_attachment_extractor.extract(file_path=os.path.join(self.src_dir, file_name), parameters=params)
 
             attachment_names = os.listdir(tmpdir)
             for attachment in result:
                 attachment_fname = attachment.tmp_file_path.split("/")[-1]
                 self.assertTrue(os.path.isfile(attachment.get_filename_in_path()))
                 self.assertIn(attachment_fname, attachment_names)
+
+    def test_with_attachments_false(self) -> None:
+        files = ["with_attachments_0.docx", "with_attachments_1.pptx"]
+        readers = [DocxReader(), PptxReader()]
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            for file_name, reader in zip(files, readers):
+                params = {"attachments_dir": tmpdir}
+                result = reader.read(file_path=os.path.join(self.src_dir, file_name), parameters=params)
+                self.assertEqual(len(result.attachments), 0)
+                self.assertEqual(len(os.listdir(tmpdir)), 0)

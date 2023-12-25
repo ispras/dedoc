@@ -57,7 +57,7 @@ def get_attachments(attachments_extractor: AbstractAttachmentsExtractor, input_d
         with tempfile.TemporaryDirectory() as tmp_dir:
             file_path = os.path.join(tmp_dir, file_name)
             shutil.copy(os.path.join(input_dir, file_name), file_path)
-            attachments = attachments_extractor.get_attachments(tmpdir=tmp_dir, filename=file_name, parameters={})
+            attachments = attachments_extractor.extract(file_path=file_path)
             os.remove(file_path)
 
             file_attachments_dir = os.path.join(attachments_dir, file_name.replace(".", "_"))

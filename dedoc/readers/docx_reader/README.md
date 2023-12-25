@@ -1,6 +1,5 @@
 # Docx reader documentation
-
-[стандарт Office Open XML File Formats с. 28-62; 167-1301](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-376,%20Fifth%20Edition,%20Part%201%20-%20Fundamentals%20And%20Markup%20Language%20Reference.zip)
+[Стандарт Office Open XML File Formats с. 28-62; 167-1301](https://ecma-international.org/wp-content/uploads/ECMA-376-1_5th_edition_december_2016.zip)
 
 ## Структура docx
 

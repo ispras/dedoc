@@ -1,4 +1,3 @@
-import logging
 import re
 from abc import ABC
 from collections import OrderedDict
@@ -56,13 +55,13 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
     """
     document_type = "law"
 
-    def __init__(self, extractors: Dict[str, AbstractStructureExtractor], *, config: dict) -> None:
+    def __init__(self, extractors: Dict[str, AbstractStructureExtractor], *, config: Optional[dict] = None) -> None:
         """
         :param extractors: mapping law_type -> structure extractor, defined for certain law types
         :param config: configuration of the extractor, e.g. logger for logging
         """
+        super().__init__(config=config)
         self.extractors = extractors
-        self.logger = config.get("logger", logging.getLogger())
 
         self.hat_batch_size = 3
         self.hat_batch_count = 7
@@ -106,14 +105,15 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
         instruction_ws = self.__add_whitespace_match("инструкция")
         self.main_templates[LawDocType.instruction] = {rf"\b{instruction_ws}\b"}
 
-    def extract_structure(self, document: UnstructuredDocument, parameters: dict) -> UnstructuredDocument:
+    def extract(self, document: UnstructuredDocument, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         Classify law kind and extract structure according to the specific law format.
         To get the information about the method's parameters look at the documentation of the class \
         :class:`~dedoc.structure_extractors.AbstractStructureExtractor`.
         """
+        parameters = {} if parameters is None else parameters
         selected_extractor = self._predict_extractor(lines=document.lines)
-        result = selected_extractor.extract_structure(document, parameters)
+        result = selected_extractor.extract(document, parameters)
         warning = f"Use {selected_extractor.document_type} classifier"
         result.warnings = result.warnings + [warning]
         return result

@@ -110,6 +110,6 @@ unstructured_document.metadata = {
 }
 
 structure_constructor = TreeConstructor()
-parsed_document = structure_constructor.structure_document(document=unstructured_document, structure_type="tree")
+parsed_document = structure_constructor.construct(document=unstructured_document)
 
 parsed_document.to_api_schema().model_dump()

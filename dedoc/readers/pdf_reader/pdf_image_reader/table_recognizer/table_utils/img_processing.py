@@ -10,16 +10,19 @@ import numpy as np
 from dedoc.config import get_config
 from dedoc.readers.pdf_reader.data_classes.tables.table_tree import TableTree
 from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdditionalOptions
+from dedoc.utils.parameter_utils import get_path_param
 
 logger = get_config().get("logger", logging.getLogger())
 logger = logger if logger else logging.getLogger("TableRecognizer.detect_tables_by_contours")
 table_options = TableTypeAdditionalOptions()
 
+ROTATE_THRESHOLD = 0.3
+
 
 def rotate_with_threshold(img: np.ndarray, angle: float, threshold: float = None, *, config: dict) -> np.ndarray:
     """rotates a table image and saving image.shape during rotation. It is important for word bounding box extraction"""
     if threshold is None:
-        threshold = config["rotate_threshold"]
+        threshold = ROTATE_THRESHOLD
     rotated = img
     if abs(angle) > threshold:
         if config.get("debug_mode", False):
@@ -79,9 +82,7 @@ def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict) -> [An
     img_bin = 255 - img_bin
 
     if config.get("debug_mode", False):
-        os.makedirs(config["path_cells"], exist_ok=True)
-        os.makedirs(config["path_detect"], exist_ok=True)
-        cv2.imwrite(os.path.join(config["path_detect"], "image_bin.jpg"), img_bin)
+        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "image_bin.jpg"), img_bin)
     # step 2
     img_final_bin = __detect_horizontal_and_vertical_lines(img_bin, config, "tables")
     # step 3
@@ -89,33 +90,33 @@ def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict) -> [An
 
     (thresh, img_final_bin_houph) = cv2.threshold(img_final_bin_houph, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     if config.get("debug_mode", False):
-        cv2.imwrite(os.path.join(config["path_detect"], "img_final_bin.jpg"), img_final_bin)
+        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "img_final_bin.jpg"), img_final_bin)
     if config.get("debug_mode", False):
-        cv2.imwrite(os.path.join(config["path_detect"], "img_final_bin_houph.jpg"), img_final_bin_houph)
+        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "img_final_bin_houph.jpg"), img_final_bin_houph)
 
     # step 4 - rotating
     img_final_bin_houph = rotate_with_threshold(img_final_bin_houph, angle_alignment, config=config)
     img = rotate_with_threshold(img, angle_alignment, config=config)
     if config.get("debug_mode", False):
-        cv2.imwrite(os.path.join(config["path_detect"], "aligned_img.jpg"), img)
+        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "aligned_img.jpg"), img)
     img_final_bin_houph = __paint_bounds(img_final_bin_houph)
 
     # step 5  - detect contours
     contours, hierarchy = cv2.findContours(img_final_bin_houph, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
 
     if config.get("debug_mode", False):
-        cv2.imwrite(os.path.join(config["path_detect"], "img_houph_and_morph_wo_bound.jpg"), img_final_bin_houph)
+        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "img_houph_and_morph_wo_bound.jpg"), img_final_bin_houph)
         img_w_contour = img.copy()
         cv2.drawContours(img_w_contour, contours, contourIdx=-1, color=(0, 0, 0), thickness=10, hierarchy=hierarchy, maxLevel=8)
-        cv2.imwrite(os.path.join(config["path_detect"], "img_with_contours.jpg"), img_w_contour)
+        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "img_with_contours.jpg"), img_w_contour)
 
     # Draw external contours for tables without external contours. It is a rare case, but important for invoices
     if table_options.table_wo_external_bounds in table_type:
-        contours, hierarchy = __get_contours_for_table_wo_external_bounds(img, img_final_bin_houph.copy(), contours, hierarchy)
+        contours, hierarchy = __get_contours_for_table_wo_external_bounds(img, img_final_bin_houph.copy(), contours, hierarchy, config)
     return contours, hierarchy, img, angle_alignment
 
 
-def __get_contours_for_table_wo_external_bounds(img: np.ndarray, img_with_contours: np.ndarray, contours: List, hierarchy: List) -> [Any, Any]:
+def __get_contours_for_table_wo_external_bounds(img: np.ndarray, img_with_contours: np.ndarray, contours: List, hierarchy: List, config: dict) -> [Any, Any]:
     # get children (get table counters)
     contours = np.array(contours)
     list_contours, table_contours = __get_table_contours(contours, hierarchy)
@@ -137,8 +138,8 @@ def __get_contours_for_table_wo_external_bounds(img: np.ndarray, img_with_contou
         x, y, w, h = cv2.boundingRect(c)
         cv2.rectangle(img_with_contours, (x, y), (x + w, y + h), color=(0, 0, 0), thickness=5)
 
-    if get_config().get("debug_mode", False):
-        cv2.imwrite(os.path.join(get_config()["path_detect"], "img_with_external_bounds.jpg"), img_with_contours)
+    if config.get("debug_mode", False):
+        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "img_with_external_bounds.jpg"), img_with_contours)
     contours, hierarchy = cv2.findContours(img_with_contours, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
 
     return contours, hierarchy
@@ -172,7 +173,7 @@ def __apply_houph_lines_and_detect_angle(image: np.ndarray, config: dict) -> [np
         gap_avg = min(np.mean([c[2] for c in contours_table]) // 45, gap_avg)
     else:
         gap_avg = 5
-    if config["debug_mode"]:
+    if config.get("debug_mode", False):
         config.get("logger", logging.getLogger()).debug(f"Houph gap = {gap_avg}")
 
     # ----- image alignment -----
@@ -191,8 +192,9 @@ def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, ta
     elif task == "tables":
         length_div = 55
         height_div = 100
-    kernel_length_weight = max(np.array(img_bin).shape[1] // length_div, config["min_w_cell"])  # 35
-    kernel_length_height = max(np.array(img_bin).shape[0] // height_div, config["min_h_cell"])  # 100
+
+    kernel_length_weight = max(np.array(img_bin).shape[1] // length_div, TableTree.min_w_cell)  # 35
+    kernel_length_height = max(np.array(img_bin).shape[0] // height_div, TableTree.min_h_cell)  # 100
 
     # A verticle kernel of (1 X kernel_length), which will detect all the verticle lines from the image.
     verticle_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, kernel_length_height))
@@ -211,8 +213,8 @@ def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, ta
     horizontal_lines_img = cv2.dilate(img_temp2, hori_kernel, iterations=iterations)
 
     if config.get("debug_mode", False):
-        cv2.imwrite(os.path.join(config["path_detect"], "verticle_lines.jpg"), verticle_lines_img)
-        cv2.imwrite(os.path.join(config["path_detect"], "horizontal_lines.jpg"), horizontal_lines_img)
+        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "verticle_lines.jpg"), verticle_lines_img)
+        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "horizontal_lines.jpg"), horizontal_lines_img)
 
     """Now we will add these two images.
     This will have only boxes and the information written in the box will be erased.
@@ -228,7 +230,7 @@ def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, ta
     img_bin_with_lines = cv2.erode(~img_bin_with_lines, kernel, iterations=2)
     (thresh, img_bin_with_lines) = cv2.threshold(img_bin_with_lines, 200, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     if config.get("debug_mode", False):
-        cv2.imwrite(os.path.join(config["path_detect"], "img_bin_with_lines.jpg"), img_bin_with_lines)
+        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "img_bin_with_lines.jpg"), img_bin_with_lines)
 
     return img_bin_with_lines
 
@@ -265,8 +267,8 @@ def detect_tables_by_contours(img: np.ndarray,
     if config.get("debug_mode", False):
         config.get("logger", logging.getLogger()).debug(f"Hierarchy [Next, Previous, First_Child, Parent]:\n {hierarchy}")
         tree_table.print_tree(depth=0)
-    if config.get("debug_mode", False):
-        cv2.imwrite(os.path.join(config["path_detect"], "img_draw_counters.jpg"), img)
+
+        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "img_draw_counters.jpg"), img)
 
     tree_table.set_text_into_tree(tree=tree_table, src_image=image, language=language, config=config)
 

@@ -1,4 +1,3 @@
-import os
 from json import JSONDecodeError
 from typing import Any, List, Optional
 
@@ -12,24 +11,27 @@ from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
+from dedoc.utils.utils import get_mime_extension
 
 
 class JsonReader(BaseReader):
     """
     This reader allows handle json files.
     """
-    def __init__(self) -> None:
-        super().__init__()
-        self.attachment_extractor = JsonAttachmentsExtractor()
 
-    def can_read(self, path: str, mime: str, extension: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        super().__init__(config=config)
+        self.attachment_extractor = JsonAttachmentsExtractor(config=self.config)
+
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if the document extension is suitable for this reader (it has .json extension).
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower().endswith(".json")
 
-    def read(self, path: str, document_type: Optional[str] = None, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines and attachments, tables remain empty.
         This reader considers json lists as list items and adds this information to the `tag_hierarchy_level`
@@ -38,7 +40,7 @@ class JsonReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        with open(path) as file:
+        with open(file_path) as file:
             try:
                 json_data = json.load(file)
             except (JSONDecodeError, ValueError):
@@ -51,7 +53,7 @@ class JsonReader(BaseReader):
             except (JSONDecodeError, ValueError):
                 raise BadParametersError(f"can't read html_fields {fields}")
             json_data = self.__exclude_html_fields(json_data, key_fields)
-            attachments = self.attachment_extractor.get_attachments(tmpdir=os.path.dirname(path), filename=os.path.basename(path), parameters=parameters)
+            attachments = self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
         else:
             attachments = []
 

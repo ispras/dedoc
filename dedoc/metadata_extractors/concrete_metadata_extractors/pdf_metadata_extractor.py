@@ -1,4 +1,3 @@
-import logging
 import os
 from typing import Optional
 
@@ -24,11 +23,9 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
         - creation date;
         - modification date.
     """
-    def __init__(self, *, config: dict) -> None:
-        """
-        :param config: configuration of the extractor, e.g. logger for logging
-        """
-        super().__init__()
+
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        super().__init__(config=config)
         self.keys = {
             "/Producer": "producer",
             "/Creator": "creator",
@@ -42,36 +39,34 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
             "/CreationDate": "creation_date",
             "/ModDate": "modification_date",
         }
-        self.config = config
-        self.logger = config.get("logger", logging.getLogger())
 
     def can_extract(self,
-                    directory: str,
-                    filename: str,
-                    converted_filename: str,
-                    original_filename: str,
-                    parameters: dict = None,
+                    file_path: str,
+                    converted_filename: Optional[str] = None,
+                    original_filename: Optional[str] = None,
+                    parameters: Optional[dict] = None,
                     other_fields: Optional[dict] = None) -> bool:
         """
         Check if the document has .pdf extension.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
         """
-        return filename.lower().endswith(".pdf")
+        file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
+        return converted_filename.lower().endswith(".pdf")
 
-    def extract_metadata(self,
-                         directory: str,
-                         filename: str,
-                         converted_filename: str,
-                         original_filename: str,
-                         parameters: dict = None,
-                         other_fields: Optional[dict] = None) -> dict:
+    def extract(self,
+                file_path: str,
+                converted_filename: Optional[str] = None,
+                original_filename: Optional[str] = None,
+                parameters: Optional[dict] = None,
+                other_fields: Optional[dict] = None) -> dict:
         """
         Add the predefined list of metadata for the pdf documents.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract_metadata` documentation to get the information about parameters.
+        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
         """
-        result = super().extract_metadata(directory=directory, filename=filename, converted_filename=converted_filename,
-                                          original_filename=original_filename, parameters=parameters, other_fields=other_fields)
-        path = os.path.join(directory, filename)
+        file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
+        result = super().extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters,
+                                 other_fields=other_fields)
+        path = os.path.join(file_dir, converted_filename)
         pdf_fields = self._get_pdf_info(path)
         if len(pdf_fields) > 0:
             result["other_fields"] = {**result.get("other_fields", {}), **pdf_fields}

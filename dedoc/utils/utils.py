@@ -9,7 +9,6 @@ import random
 import re
 import shutil
 import time
-from os.path import splitext
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, TypeVar
 
 import requests
@@ -24,6 +23,7 @@ from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.tree_node import TreeNode
 
 T = TypeVar("T")
+double_dot_extensions = (".txt.gz", ".tar.gz", ".mht.gz", ".mhtml.gz", ".note.pickle")
 
 
 def list_get(ls: List[T], index: int, default: Optional[T] = None) -> Optional[T]:
@@ -63,16 +63,26 @@ def splitext_(path: str) -> Tuple[str, str]:
     """
     get extensions with several dots
     """
-    if len(path.split()) > 1:
-        first, second = path.rsplit(maxsplit=1)
-        sep = path[len(first)]
-        name, ext = splitext(second)
-        if len(ext) == 0:
-            name, ext = ext, name
-        return first + sep + name, ext
-    if len(path.split(".")) > 2:
-        return path.split(".")[0], "." + ".".join(path.split(".")[-2:])
-    return splitext(path)
+    if not path.endswith(double_dot_extensions):
+        return os.path.splitext(path)
+
+    name, *ext_list = path.rsplit(".", maxsplit=2)
+    return name, f".{'.'.join(ext_list)}"
+
+
+def get_mime_extension(file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None) -> Tuple[str, str]:
+    if mime is not None and extension is not None:
+        return mime, extension
+
+    if file_path:
+        name, extension = splitext_(file_path)
+        mime = get_file_mime_type(file_path)
+    else:
+        assert mime is not None or extension is not None, "When file_path is None, mime or extension should be provided"
+        mime = "" if mime is None else mime
+        extension = "" if extension is None else extension
+
+    return mime, extension
 
 
 def _text_from_item(item: dict) -> str:

@@ -208,11 +208,15 @@ For a document of unknown or unsupported domain there is an option to use defaul
 
 .. toctree::
    :maxdepth: 1
-   :caption: Getting started:
+   :caption: Getting started
 
    getting_started/installation
    getting_started/usage
 
+.. toctree::
+   :maxdepth: 1
+
+   parameters/parameters
 
 .. toctree::
    :maxdepth: 1

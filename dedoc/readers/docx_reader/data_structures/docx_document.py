@@ -73,7 +73,7 @@ class DocxDocument:
                 self.__handle_table_xml(paragraph_xml, table_refs)
                 continue
 
-            if paragraph_xml.pict:  # diagrams are saved using docx_attachments_extractor
+            if self.attachment_name2uid and paragraph_xml.pict:  # diagrams are saved using docx_attachments_extractor
                 self.__handle_diagram_xml(paragraph_xml, diagram_refs)
                 continue
 
@@ -84,9 +84,11 @@ class DocxDocument:
                 continue
 
             self.paragraph_list.append(self.paragraph_maker.make_paragraph(paragraph_xml, self.paragraph_list))
-            images = paragraph_xml.find_all("pic:pic")
-            if images:
-                self.__handle_images_xml(images, image_refs)
+
+            if self.attachment_name2uid:
+                images = paragraph_xml.find_all("pic:pic")
+                if images:
+                    self.__handle_images_xml(images, image_refs)
 
         return self.__paragraphs2lines(image_refs, table_refs, diagram_refs)
 
