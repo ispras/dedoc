@@ -116,7 +116,3 @@ class ColumnsOrientationClassifier(object):
         columns_predict = self.classes[columns]
         angle_predict = self.classes[2 + orientation]
         return columns_predict, angle_predict
-
-    @net.setter
-    def net(self, value):
-        self._net = value
