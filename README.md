@@ -105,7 +105,7 @@ should be installed on your machine):
 
 ```shell
 cd docker_gpu
-test="true" docker-compose up --build
+docker-compose up --build
 ```
 
 ## Install dedoc using pip
