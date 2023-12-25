@@ -11,12 +11,11 @@ RUN pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://downloa
 
 
 RUN mkdir /dedoc_root
-RUN mkdir /dedoc_root/dedoc
+ADD dedoc /dedoc_root/dedoc
 ADD docker_gpu/config_on_gpu.py /dedoc_root/dedoc/config.py
-ADD dedoc/download_models.py /dedoc_root/dedoc/download_models.py
 RUN python3 /dedoc_root/dedoc/download_models.py
 
-ADD dedoc /dedoc_root/dedoc
+
 ADD VERSION /dedoc_root
 RUN echo "__version__ = \"$(cat /dedoc_root/VERSION)\"" > /dedoc_root/dedoc/version.py
 
