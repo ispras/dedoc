@@ -10,8 +10,6 @@ from dedoc.data_structures import LineWithMeta
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
 from dedoc.utils.image_utils import crop_image_text
 
-logger = logging.getLogger("TableRecognizer.TableTree")
-
 """-------------------------------Таблица в виде дерева, полученная от OpenCV----------------------------------------"""
 ContourCell = namedtuple("ContourCell", ["id_con", "image"])
 

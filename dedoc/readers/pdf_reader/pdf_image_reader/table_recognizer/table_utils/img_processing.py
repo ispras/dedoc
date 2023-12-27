@@ -13,7 +13,6 @@ from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdd
 from dedoc.utils.parameter_utils import get_path_param
 
 logger = get_config().get("logger", logging.getLogger())
-logger = logger if logger else logging.getLogger("TableRecognizer.detect_tables_by_contours")
 table_options = TableTypeAdditionalOptions()
 
 ROTATE_THRESHOLD = 0.3

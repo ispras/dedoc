@@ -22,7 +22,7 @@ class TableRecognizer(object):
 
     def __init__(self, *, config: dict = None) -> None:
 
-        self.logger = config.get("logger", logging.getLogger(__name__))
+        self.logger = config.get("logger", logging.getLogger())
 
         self.onepage_tables_extractor = OnePageTableExtractor(config=config, logger=self.logger)
         self.multipage_tables_extractor = MultiPageTableExtractor(config=config, logger=self.logger)
