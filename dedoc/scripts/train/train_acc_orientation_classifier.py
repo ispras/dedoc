@@ -7,6 +7,7 @@ import torch
 from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader
+from torchvision import transforms
 
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.dataset_executor import DataLoaderImageOrient
@@ -21,15 +22,47 @@ checkpoint_path = "../../../resources"
 parser.add_argument("-t", "--train", type=bool, help="run for train model", default=False)
 parser.add_argument("-s", "--checkpoint_save", help="Path to checkpoint for save or load",
                     default=checkpoint_path_save)
-parser.add_argument("-l", "--checkpoint_load", help="Path to checkpoint for load",
-                    default=checkpoint_path_load)
-parser.add_argument("-f", "--from_checkpoint", type=bool, help="run for train model", default=True)
 parser.add_argument("-d", "--input_data_folder", help="Path to data with folders train or test",
                     default="/home/nasty/data/columns_orientation")
+parser.add_argument("-a", "--attack", type=bool, help="apply fgsm attack during test", default=False)
+parser.add_argument("-p", "--protection", type=bool, help="apply defense from fgsm during test", default=False)
 
 args = parser.parse_args()
 BATCH_SIZE = 1
 ON_GPU = False
+
+
+# FGSM attack code
+def fgsm_attack(image, epsilon, data_grad):
+    # Collect the element-wise sign of the data gradient
+    sign_data_grad = data_grad.sign()
+    # Create the perturbed image by adjusting each pixel of the input image
+    perturbed_image = image + epsilon * sign_data_grad
+    # Adding clipping to maintain [0,1] range
+    perturbed_image = torch.clamp(perturbed_image, 0, 1)
+    # Return the perturbed image
+    return perturbed_image
+
+
+# restores the tensors to their original scale
+def denorm(batch, device, mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]):
+    """
+    Convert a batch of tensors to their original scale.
+
+    Args:
+        batch (torch.Tensor): Batch of normalized tensors.
+        mean (torch.Tensor or list): Mean used for normalization.
+        std (torch.Tensor or list): Standard deviation used for normalization.
+
+    Returns:
+        torch.Tensor: batch of tensors without normalization applied to them.
+    """
+    if isinstance(mean, list):
+        mean = torch.tensor(mean).to(device)
+    if isinstance(std, list):
+        std = torch.tensor(std).to(device)
+
+    return batch * std.view(1, -1, 1, 1) + mean.view(1, -1, 1, 1)
 
 
 def accuracy_step(data_executor: DataLoaderImageOrient, net_executor: ColumnsOrientationClassifier) -> None:
@@ -70,36 +103,73 @@ def calc_accuracy_by_classes(testloader: DataLoader,
     class_total = list(0. for i in range(len(classes)))
     time_predict = 0
     cnt_predict = 0
-    with torch.no_grad():
-        for data in testloader:
-            images, orientation, columns = data['image'], data['orientation'], data['columns']
-            time_begin = time()
 
-            outputs = classifier.net(images.float().to(classifier.device))
-            time_predict += time() - time_begin
-            cnt_predict += len(images)
-            # first 2 classes mean columns number
-            # last 4 classes mean orientation
+    criterion = nn.CrossEntropyLoss()
+
+    for data in testloader:
+        images, orientation, columns = data['image'], data['orientation'], data['columns']
+        time_begin = time()
+
+        # Sending inputs to device
+        images = images.float().to(classifier.device)
+
+        # Set requires_grad attribute of tensor. Important for Attack
+        images.requires_grad = True
+
+        outputs = classifier.net(images)
+        time_predict += time() - time_begin
+        cnt_predict += len(images)
+
+        loss = criterion(outputs[:, :2],
+                         columns.to(classifier.device)) + criterion(outputs[:, 2:],
+                                                                    orientation.to(classifier.device))
+
+        # Zero all existing gradients
+        classifier.net.zero_grad()
+
+        # Calculate gradients of model in backward pass
+        loss.backward()
+
+        # Collect ``datagrad``
+        data_grad = images.grad.data
+
+        # Restore the data to its original scale
+        data_denorm = denorm(images, device=classifier.device)
+
+        # Call FGSM Attack
+        perturbed_data = fgsm_attack(data_denorm, epsilon=0.03, data_grad=data_grad)
+
+        # Reapply normalization
+        perturbed_data_normalized = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])(perturbed_data)
+
+        # Re-classify the perturbed image
+        new_outputs = classifier.net(perturbed_data_normalized)
+
+        # first 2 classes mean columns number
+        # last 4 classes mean orientation
+        if args.attack:
+            columns_out, orientation_out = new_outputs[:, :2], new_outputs[:, 2:]
+        else:
             columns_out, orientation_out = outputs[:, :2], outputs[:, 2:]
-            _, columns_predicted = torch.max(columns_out, 1)
-            _, orientation_predicted = torch.max(orientation_out, 1)
+        _, columns_predicted = torch.max(columns_out, 1)
+        _, orientation_predicted = torch.max(orientation_out, 1)
 
-            orientation_c = (orientation_predicted == orientation.to(classifier.device)).squeeze()
-            columns_c = (columns_predicted == columns.to(classifier.device)).squeeze()
+        orientation_c = (orientation_predicted == orientation.to(classifier.device)).squeeze()
+        columns_c = (columns_predicted == columns.to(classifier.device)).squeeze()
 
-            for i in range(batch_size):
-                orientation_i = orientation[i]
-                columns_i = columns[i]
-                orientation_bool_predict = orientation_c.item() if batch_size == 1 else orientation_c[i].item()
-                columns_bool_predict = columns_c.item() if batch_size == 1 else columns_c[i].item()
-                class_correct[2 + orientation_i] += orientation_bool_predict
-                class_total[2 + orientation_i] += 1
-                class_correct[columns_i] += orientation_bool_predict
-                class_total[columns_i] += 1
-                if not orientation_bool_predict or not columns_bool_predict:
-                    print('{} predict as \norientation: {} \ncolumns: {}'.format(data['image_name'][i],
-                                                                                 classes[2 + orientation_predicted[i]],
-                                                                                 classes[columns_predicted[i]]))
+        for i in range(batch_size):
+            orientation_i = orientation[i]
+            columns_i = columns[i]
+            orientation_bool_predict = orientation_c.item() if batch_size == 1 else orientation_c[i].item()
+            columns_bool_predict = columns_c.item() if batch_size == 1 else columns_c[i].item()
+            class_correct[2 + orientation_i] += orientation_bool_predict
+            class_total[2 + orientation_i] += 1
+            class_correct[columns_i] += orientation_bool_predict
+            class_total[columns_i] += 1
+            if not orientation_bool_predict or not columns_bool_predict:
+                print('{} predict as \norientation: {} \ncolumns: {}'.format(data['image_name'][i],
+                                                                             classes[2 + orientation_predicted[i]],
+                                                                             classes[columns_predicted[i]]))
 
     for i in range(len(classes)):
         print('Accuracy of %5s : %2d %%' % (
@@ -184,7 +254,8 @@ if __name__ == "__main__":
     data_executor = DataLoaderImageOrient()
     net = ColumnsOrientationClassifier(on_gpu=True,
                                        checkpoint_path=checkpoint_path if not args.train else '',
-                                       config=config)
+                                       config=config,
+                                       defense=args.protection)
     if args.train:
         train_step(data_executor, net)
     else:

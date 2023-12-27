@@ -19,19 +19,23 @@ class ColumnsOrientationClassifier(object):
     Class Classifier for work with Orientation Network. This class set device,
     preprocessing (transform) input data, weights of model
     """
-    def __init__(self, on_gpu: bool, checkpoint_path: Optional[str], *, config: dict) -> None:
+    def __init__(self, on_gpu: bool, checkpoint_path: Optional[str], defense: Optional[bool], *, config: dict) -> None:
         self.logger = config.get("logger", logging.getLogger())
         self._set_device(on_gpu)
         self._set_transform_image()
         self.checkpoint_path = path.abspath(checkpoint_path)
         self.classes = [1, 2, 0, 90, 180, 270]
         self._net = None
+        self.defense = defense if defense else False
 
     @property
     def net(self) -> ClassificationModelTorch:
         if self._net is None:
             if self.checkpoint_path is not None:
-                net = ClassificationModelTorch(path.join(self.checkpoint_path, "scan_orientation_efficient_net_b0.pth"))
+                if not self.defense:
+                    net = ClassificationModelTorch(path.join(self.checkpoint_path, "scan_orientation_efficient_net_b0.pth"))
+                else:
+                    net = ClassificationModelTorch(path.join(self.checkpoint_path, "attack_efficient_net_b0_fixed.pth"))
                 self._load_weights(net)
             else:
                 net = ClassificationModelTorch(None)
@@ -61,7 +65,10 @@ class ColumnsOrientationClassifier(object):
         self.logger.warning(f"Classifier is set to device {self.device}")
 
     def _load_weights(self, net: ClassificationModelTorch) -> None:
-        path_checkpoint = path.join(self.checkpoint_path, "scan_orientation_efficient_net_b0.pth")
+        if not self.defense:
+            path_checkpoint = path.join(self.checkpoint_path, "scan_orientation_efficient_net_b0.pth")
+        else:
+            path_checkpoint = path.join(self.checkpoint_path, "attack_efficient_net_b0_fixed.pth")
         if not path.isfile(path_checkpoint):
             download_from_hub(out_dir=self.checkpoint_path,
                               out_name="scan_orientation_efficient_net_b0.pth",
