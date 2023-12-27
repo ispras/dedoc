@@ -31,6 +31,7 @@ from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_utils
 from dedoc.utils.parameter_utils import get_path_param
 from dedoc.utils.pdf_utils import get_page_image
 
+logging.getLogger("pdfminer").setLevel(logging.ERROR)
 WordObj = namedtuple("Word", ["start", "end", "value"])
 
 
