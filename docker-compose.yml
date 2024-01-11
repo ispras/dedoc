@@ -18,8 +18,8 @@ services:
     depends_on:
       - dedoc
     build:
-          context: .
-          dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile
     tty: true
     environment:
       DOC_READER_HOST: "dedoc"

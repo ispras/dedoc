@@ -21,4 +21,4 @@ RUN echo "__version__ = \"$(cat /dedoc_root/VERSION)\"" > /dedoc_root/dedoc/vers
 ADD tests /dedoc_root/tests
 ADD resources /dedoc_root/resources
 
-CMD ["python3", "/dedoc_root/dedoc/main.py", "-c", "/dedoc_root/dedoc/config.py"]
+CMD ["python3", "/dedoc_root/dedoc/main.py"]

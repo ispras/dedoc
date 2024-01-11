@@ -10,7 +10,7 @@ from dedoc.config import get_config
 from dedoc.data_structures import ParsedDocument, UnstructuredDocument
 from dedoc.manager_config import get_manager_config
 from dedoc.metadata_extractors import BaseMetadataExtractor
-from dedoc.train_dataset.train_dataset_utils import get_path_original_documents, save_line_with_meta
+from dedoc.utils.train_dataset_utils import get_path_original_documents, save_line_with_meta
 from dedoc.utils.utils import get_unique_name
 
 

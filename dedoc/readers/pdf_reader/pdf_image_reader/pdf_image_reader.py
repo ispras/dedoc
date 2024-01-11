@@ -14,9 +14,9 @@ from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
-from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
 from dedoc.utils import supported_image_types
 from dedoc.utils.parameter_utils import get_path_param
+from dedoc.utils.train_dataset_utils import save_page_with_bbox
 from dedoc.utils.utils import get_mime_extension
 
 

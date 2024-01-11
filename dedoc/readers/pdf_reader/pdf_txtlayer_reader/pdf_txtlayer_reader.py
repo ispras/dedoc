@@ -10,8 +10,8 @@ from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageA
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_extractor import PdfminerExtractor
-from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
 from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
+from dedoc.utils.train_dataset_utils import save_page_with_bbox
 from dedoc.utils.utils import get_mime_extension
 
 
