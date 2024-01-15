@@ -12,7 +12,6 @@ from train_dataset.taskers.images_creators.image_creator_composition import Imag
 class FilteredLineLabelTasker(LineLabelTasker):
 
     def __init__(self,
-                 path2bboxes: str,
                  path2lines: str,
                  path2docs: str,
                  manifest_path: str,
@@ -22,7 +21,7 @@ class FilteredLineLabelTasker(LineLabelTasker):
                  item2label: Callable = None,
                  *,
                  config: dict) -> None:
-        super().__init__(path2bboxes, path2lines, path2docs, manifest_path, config_path, tmp_dir, progress_bar, item2label, config=config)
+        super().__init__(path2lines, path2docs, manifest_path, config_path, tmp_dir, progress_bar, item2label, config=config)
         # we can use page numbers only in pdf
         self.images_creators = ImageCreatorComposition(creators=[
             ScannedImagesCreator(path2docs=self.path2docs),

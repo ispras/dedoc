@@ -55,7 +55,6 @@ templates = Jinja2Templates(directory=static_path)
 manager = DedocManager(config=config)
 
 path2lines = os.path.join(config["intermediate_data_path"], "lines.jsonlines")
-boxes_path = os.path.join(config["intermediate_data_path"], "bboxes.jsonlines")
 progress_bar = {}
 
 label2label_law = {
@@ -91,7 +90,6 @@ label2label_diploma = {
 
 taskers = {
     "law_classifier": LineLabelTasker(
-        path2bboxes=boxes_path,
         path2lines=path2lines,
         path2docs=get_path_original_documents(config),
         manifest_path=os.path.join(train_resources_path, "law", "manifest.pdf"),
@@ -101,7 +99,6 @@ taskers = {
         item2label=lambda t: label2label_law.get(t["_metadata"]["hierarchy_level"]["line_type"], "raw_text"),
         config=config),
     "paragraph_classifier": LineLabelTasker(
-        path2bboxes=boxes_path,
         path2lines=path2lines,
         path2docs=get_path_original_documents(config),
         manifest_path=os.path.join(train_resources_path, "paragraph", "manifest.pdf"),
@@ -111,7 +108,6 @@ taskers = {
         item2label=lambda t: "not_paragraph",
         config=config),
     "tz_classifier": LineLabelTasker(
-        path2bboxes=boxes_path,
         path2lines=path2lines,
         path2docs=get_path_original_documents(config),
         manifest_path=os.path.join(train_resources_path, "tz", "manifest.pdf"),
@@ -121,7 +117,6 @@ taskers = {
         item2label=lambda t: label2label_tz.get(t["_metadata"]["hierarchy_level"]["line_type"], "raw_text"),
         config=config),
     "diploma_classifier": FilteredLineLabelTasker(
-        path2bboxes=boxes_path,
         path2lines=path2lines,
         path2docs=get_path_original_documents(config),
         manifest_path=os.path.join(train_resources_path, "diploma", "manifest.pdf"),
@@ -131,7 +126,6 @@ taskers = {
         item2label=lambda t: label2label_diploma.get(t["_metadata"]["hierarchy_level"]["line_type"], "raw_text"),
         config=config),
     "header_classifier": HeaderFooterTasker(
-        path2bboxes=boxes_path,
         path2lines=path2lines,
         path2docs=get_path_original_documents(config),
         manifest_path=os.path.join(train_resources_path, "header", "manifest.pdf"),
@@ -143,8 +137,7 @@ taskers = {
     "tables_classifier": TableTasker()
 }
 
-tasker = Tasker(boxes_label_path=os.path.join(config["intermediate_data_path"], "bboxes.jsonlines"),
-                line_info_path=os.path.join(config["intermediate_data_path"], "lines.jsonlines"),
+tasker = Tasker(line_info_path=os.path.join(config["intermediate_data_path"], "lines.jsonlines"),
                 images_path=get_path_original_documents(config),
                 save_path=UPLOAD_FOLDER,
                 concrete_taskers=taskers,

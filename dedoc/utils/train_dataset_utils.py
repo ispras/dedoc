@@ -1,7 +1,5 @@
 import json
 import os
-import shutil
-import zipfile
 from typing import List
 
 import PIL
@@ -27,44 +25,16 @@ def get_path_original_documents(config: dict) -> str:
 
 
 def _get_images_path(config: dict, document_name: str) -> str:
-    return os.path.join(get_path_original_documents(config), document_name.split(".")[0])
-
-
-def save_page_with_bbox(page: "PageWithBBox", document_name: str, *, config: dict) -> None:  # noqa
-    __create_images_path(config)
-    uid = document_name
-    images_path = _get_images_path(config=config, document_name=document_name)
-    if not os.path.isdir(images_path):
-        os.makedirs(images_path)
-
-    with open(os.path.join(config["intermediate_data_path"], "bboxes.jsonlines"), "a") as out:
-        image = __to_pil(page.image)
-        image_name = f"img_{uid}_{page.page_num:06d}.png"
-        image.save(os.path.join(images_path, image_name))
-        for bbox in page.bboxes:
-            bbox_dict = bbox.to_dict()
-            bbox_dict["original_image"] = image_name
-            out.write(json.dumps(bbox_dict, ensure_ascii=False))
-            out.write("\n")
-
-
-def _convert2zip(config: dict, document_name: str) -> str:
-    images_path = _get_images_path(config=config, document_name=document_name)
-    images = [os.path.join(images_path, file) for file in sorted(os.listdir(images_path))]
-
-    archive_filename = images_path + ".zip"
-    with zipfile.ZipFile(archive_filename, "w") as archive:
-        for image in images:
-            archive.write(filename=image, arcname=os.path.basename(image))
-    shutil.rmtree(images_path)
-    return archive_filename
+    images_path = os.path.join(get_path_original_documents(config), document_name.split(".")[0])
+    os.makedirs(images_path, exist_ok=True)
+    return images_path
 
 
 def save_line_with_meta(lines: List["LineWithMeta"], original_document: str, *, config: dict) -> None:  # noqa
-
     __create_images_path(config)
-    if original_document.endswith((".jpg", ".png", ".pdf")):
-        original_document = _convert2zip(config=config, document_name=original_document)
+
+    # merge lines with the same bbox
+    lines = __postprocess_lines(lines)
 
     with open(os.path.join(config["intermediate_data_path"], "lines.jsonlines"), "a") as out:
         for line in lines:
@@ -73,6 +43,25 @@ def save_line_with_meta(lines: List["LineWithMeta"], original_document: str, *, 
             line_dict["original_document"] = os.path.basename(original_document)
             out.write(json.dumps(line_dict, ensure_ascii=False))
             out.write("\n")
+
+
+def __postprocess_lines(lines: List["LineWithMeta"]) -> List["LineWithMeta"]:  # noqa
+    postprocessed_lines = []
+    prev_bbox = None
+    for line in lines:
+        bbox_annotations = [annotation for annotation in line.annotations if annotation.name == "bounding box"]
+        if not bbox_annotations:
+            postprocessed_lines.append(line)
+            continue
+
+        bbox = bbox_annotations[0].value
+        if not prev_bbox or prev_bbox != bbox:
+            postprocessed_lines.append(line)
+            prev_bbox = bbox
+            continue
+        postprocessed_lines[-1] += line
+
+    return postprocessed_lines
 
 
 def get_original_document_path(path2documents: str, page: List[dict]) -> str:

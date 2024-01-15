@@ -207,6 +207,7 @@ class PdfTabbyReader(PdfBaseReader):
         lines = []
         page_number, page_width, page_height = page["number"], int(page["width"]), int(page["height"])
         prev_line = None
+        labeling_mode = self.config.get("labeling_mode", False)
 
         for block in page["blocks"]:
             annotations = []
@@ -219,9 +220,12 @@ class PdfTabbyReader(PdfBaseReader):
             for annotation in block["annotations"]:
                 start = annotation["start"]
                 end = annotation["end"]
-                box = BBox(x_top_left=int(annotation["x_top_left"]), y_top_left=int(annotation["y_top_left"]),
-                           width=int(annotation["width"]), height=int(annotation["height"]))
-                annotations.append(BBoxAnnotation(start, end, box, page_width=page_width, page_height=page_height))
+
+                if not labeling_mode:
+                    box = BBox(x_top_left=int(annotation["x_top_left"]), y_top_left=int(annotation["y_top_left"]),
+                               width=int(annotation["width"]), height=int(annotation["height"]))
+                    annotations.append(BBoxAnnotation(start, end, box, page_width=page_width, page_height=page_height))
+
                 annotations.append(SizeAnnotation(start, end, str(annotation["font_size"])))
                 annotations.append(StyleAnnotation(start, end, annotation["font_name"]))
 
@@ -235,7 +239,7 @@ class PdfTabbyReader(PdfBaseReader):
                     annotations.append(LinkedTextAnnotation(start, end, annotation["url"]))
 
             bbox = BBox(x_top_left=int(block["x_top_left"]), y_top_left=int(block["y_top_left"]), width=int(block["width"]), height=int(block["height"]))
-            if self.config.get("labeling_mode", False):
+            if labeling_mode:
                 annotations.append(BBoxAnnotation(0, len_block, bbox, page_width=page_width, page_height=page_height))
 
             meta = block["metadata"].lower()

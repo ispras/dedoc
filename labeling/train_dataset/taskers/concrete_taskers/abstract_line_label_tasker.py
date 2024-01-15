@@ -17,7 +17,7 @@ from train_dataset.taskers.concrete_taskers.abstract_tasker import AbstractTaske
 
 class AbstractLineLabelTasker(AbstractTasker):
 
-    def __init__(self, path2bboxes: str,
+    def __init__(self,
                  path2lines: str,
                  path2docs: str,
                  manifest_path: str,
@@ -28,8 +28,6 @@ class AbstractLineLabelTasker(AbstractTasker):
                  *,
                  config: dict) -> None:
         """
-
-        @param path2bboxes: path to file with bboxes
         @param path2lines: path to file with line with meta information
         @param path2docs: path to images (or original document)
         @param manifest_path: path to manifest file (instruction for annotator)
@@ -43,7 +41,6 @@ class AbstractLineLabelTasker(AbstractTasker):
         self.manifest_path = manifest_path
         self.path2docs = path2docs
         self.path2lines = path2lines
-        self.path2bboxes = path2bboxes
         self.item2label = item2label if item2label is not None else (lambda t: None)
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
@@ -133,13 +130,7 @@ class AbstractLineLabelTasker(AbstractTasker):
         pass
 
     def _get_pages(self) -> List[List[dict]]:
-        bboxes = {bbox["_uid"]: bbox for bbox in self._read_json(self.path2bboxes, required=False)}
         lines = self._read_json(self.path2lines, required=True)
-        for line in lines:
-            line_uid = line["_uid"]
-            if line_uid in bboxes:
-                line["bbox"] = bboxes[line_uid]
-                # line["original_document"] = bboxes[line_uid]["original_image"]
         pages = defaultdict(list)
         for line in lines:
             if "original_document" in line:

@@ -1,38 +1,17 @@
-import json
 import os
 import tempfile
 import unittest
-import zipfile
 from zipfile import ZipFile
 
 from PIL import Image
 
-from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
 from dedoc.config import get_config
-from dedoc.converters.converter_composition import ConverterComposition
-from dedoc.dedoc_manager import DedocManager
-from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
-from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
-from dedoc.readers.docx_reader.docx_reader import DocxReader
-from dedoc.readers.reader_composition import ReaderComposition
-from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
-from dedoc.structure_constructors.concrete_structure_constructors.tree_constructor import TreeConstructor
-from dedoc.structure_constructors.structure_constructor_composition import StructureConstructorComposition
-from dedoc.structure_extractors.concrete_structure_extractors.classifying_law_structure_extractor import ClassifyingLawStructureExtractor
-from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
-from dedoc.structure_extractors.concrete_structure_extractors.foiv_law_structure_extractor import FoivLawStructureExtractor
-from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
-from dedoc.structure_extractors.structure_extractor_composition import StructureExtractorComposition
-from dedoc.utils.train_dataset_utils import get_path_original_documents
 from train_dataset.taskers.concrete_taskers.line_label_tasker import LineLabelTasker
-from train_dataset.taskers.images_creators.concrete_creators.docx_images_creator import DocxImagesCreator
-from train_dataset.taskers.images_creators.concrete_creators.txt_images_creator import TxtImagesCreator
 from train_dataset.taskers.tasker import Tasker
 
 
 class TestTaskers(unittest.TestCase):
     base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "taskers"))
-    path2bboxes = os.path.join(base_path, "bboxes.jsonlines")
     path2lines = os.path.join(base_path, "lines.jsonlines")
     path2docs = os.path.join(base_path, "images")
     manifest_path = os.path.join(base_path, "test_manifest.md")
@@ -41,7 +20,6 @@ class TestTaskers(unittest.TestCase):
     config["labeling_mode"] = True
 
     def test_paths(self) -> None:
-        self.assertTrue(os.path.isfile(self.path2bboxes), self.path2bboxes)
         self.assertTrue(os.path.isfile(self.path2lines), self.path2lines)
         self.assertTrue(os.path.isfile(self.manifest_path), self.manifest_path)
         self.assertTrue(os.path.isfile(self.config_path), self.config_path)
@@ -66,7 +44,6 @@ class TestTaskers(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             taskers = {
                 "law_classifier": LineLabelTasker(
-                    path2bboxes=self.path2bboxes,
                     path2lines=self.path2lines,
                     path2docs=self.path2docs,
                     manifest_path=self.manifest_path,
@@ -75,12 +52,7 @@ class TestTaskers(unittest.TestCase):
                     config=self.config
                 )
             }
-            tasker = Tasker(boxes_label_path=self.path2bboxes,
-                            line_info_path=self.path2lines,
-                            images_path=self.path2docs,
-                            save_path=tmpdir,
-                            concrete_taskers=taskers,
-                            config=self.config)
+            tasker = Tasker(line_info_path=self.path2lines, images_path=self.path2docs, save_path=tmpdir, concrete_taskers=taskers, config=self.config)
             tasks_path, task_size = tasker.create_tasks(type_of_task="law_classifier", task_size=1)
             self.assertTrue(os.path.isfile(tasks_path))
             self.assertEqual(1, task_size)
@@ -89,7 +61,6 @@ class TestTaskers(unittest.TestCase):
 
     def _get_line_label_classifier(self) -> LineLabelTasker:
         tasker = LineLabelTasker(
-            path2bboxes=self.path2bboxes,
             path2lines=self.path2lines,
             path2docs=self.path2docs,
             manifest_path=self.manifest_path,
@@ -111,53 +82,3 @@ class TestTaskers(unittest.TestCase):
                 with archive.open(image_path) as image_file:
                     image = Image.open(image_file)
                     self.assertEqual((1276, 1754), image.size)
-
-    def test_images_creators(self) -> None:
-        test_dict = {"english_doc.docx": 3, "txt_example.txt": 7}
-        path2docs = get_path_original_documents(self.config)
-        files_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "images_creators"))
-        images_creators = [DocxImagesCreator(path2docs, config=self.config), TxtImagesCreator(path2docs, config=self.config)]
-
-        test_manager = DedocManager(manager_config=self.__create_test_manager_config(self.config), config=self.config)
-        for doc in os.listdir(files_dir):
-            if not doc.endswith(("docx", "txt")):
-                continue
-
-            with tempfile.TemporaryDirectory() as tmp_dir:
-                with zipfile.ZipFile(os.path.join(tmp_dir, "archive.zip"), "w") as archive:
-                    _ = test_manager.parse(file_path=os.path.join(files_dir, doc), parameters=dict(document_type="law"))
-                    lines_path = os.path.join(self.config["intermediate_data_path"], "lines.jsonlines")
-                    self.assertTrue(os.path.isfile(lines_path))
-                    with open(lines_path, "r") as f:
-                        lines = [json.loads(line) for line in f]
-                    original_doc = lines[0]["original_document"]
-                    path = os.path.join(get_path_original_documents(self.config), original_doc)
-                    self.assertTrue(os.path.isfile(path))
-                    for images_creator in images_creators:
-                        if images_creator.can_read(lines):
-                            images_creator.add_images(page=lines, archive=archive)
-                            break
-                    self.assertEqual(len(archive.namelist()), test_dict[doc])
-            os.remove(path)
-            os.remove(lines_path)
-
-    def __create_test_manager_config(self, config: dict) -> dict:
-        readers = [DocxReader(config=config), RawTextReader(config=config)]
-        metadata_extractors = [BaseMetadataExtractor()]
-        law_extractors = {
-            FoivLawStructureExtractor.document_type: FoivLawStructureExtractor(config=config),
-            LawStructureExtractor.document_type: LawStructureExtractor(config=config)
-        }
-        structure_extractors = {
-            DefaultStructureExtractor.document_type: DefaultStructureExtractor(),
-            ClassifyingLawStructureExtractor.document_type: ClassifyingLawStructureExtractor(extractors=law_extractors, config=config)
-        }
-
-        return dict(
-            converter=ConverterComposition(converters=[]),
-            reader=ReaderComposition(readers=readers),
-            structure_extractor=StructureExtractorComposition(extractors=structure_extractors, default_key="other"),
-            structure_constructor=StructureConstructorComposition(default_constructor=TreeConstructor(), constructors={"tree": TreeConstructor()}),
-            document_metadata_extractor=MetadataExtractorComposition(extractors=metadata_extractors),
-            attachments_handler=AttachmentsHandler(config=config)
-        )

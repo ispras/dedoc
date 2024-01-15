@@ -13,7 +13,6 @@ from train_dataset.taskers.concrete_taskers.abstract_tasker import AbstractTaske
 class Tasker(object):
 
     def __init__(self,
-                 boxes_label_path: str,
                  line_info_path: str,
                  images_path: str,
                  save_path: str,
@@ -23,7 +22,6 @@ class Tasker(object):
                  *,
                  config: dict) -> None:
         """
-        :param boxes_label_path: abs path to boxes.jsonlines file
         :param line_info_path: abs path to lines.jsonlines
         :param images_path: abs path to folder of images
         :param save_path: abs path to save of result archive of tasks
@@ -32,7 +30,6 @@ class Tasker(object):
         """
 
         self.config = config if config is not None else {}
-        self.boxes_label_path = boxes_label_path
         self.line_info_path = line_info_path
         self.images_path = images_path
         os.makedirs(save_path, exist_ok=True)

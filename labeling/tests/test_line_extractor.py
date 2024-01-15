@@ -11,7 +11,7 @@ class TestLineWithMetaExtractor(unittest.TestCase):
     def test_txt_file(self) -> None:
         config = get_config()
         config["labeling_mode"] = True
-        documents_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "data"))
+        documents_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "laws"))
         path = os.path.join(documents_path, "law_classifier_000000_Bhw.json")
         self.assertTrue(os.path.isfile(path))
         extractor = LineWithMetaExtractor(path=path, documents_path=documents_path, config=config)

@@ -16,7 +16,6 @@ from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.co
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
 from dedoc.utils import supported_image_types
 from dedoc.utils.parameter_utils import get_path_param
-from dedoc.utils.train_dataset_utils import save_page_with_bbox
 from dedoc.utils.utils import get_mime_extension
 
 
@@ -94,9 +93,6 @@ class PdfImageReader(PdfBaseReader):
         page = self.ocr.split_image2lines(image=clean_image, language=parameters.language, is_one_column_document=is_one_column_document, page_num=page_number)
 
         lines = self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page)
-        if self.config.get("labeling_mode"):
-            save_page_with_bbox(page=page, config=self.config, document_name=os.path.basename(path))
-
         return lines, tables, page.attachments, [angle]
 
     def _detect_column_count_and_orientation(self, image: np.ndarray, parameters: ParametersForParseDoc) -> Tuple[np.ndarray, bool, float]:

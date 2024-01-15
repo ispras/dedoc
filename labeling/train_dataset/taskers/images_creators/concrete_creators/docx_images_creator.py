@@ -45,7 +45,7 @@ class DocxImagesCreator(AbstractImagesCreator):
         """
         The algorithm if as follows:
         1 create two pdf: the first with bboxes around paragraph (each of different color) and the second with
-        bboxe of two colors.
+        bboxes of two colors.
         2 We read images from both pdf (one page by one) and subtracting first image from the second (we get image with
         nonzero pixels on bboxes only)
         3 we clear bboxes from first image
@@ -73,7 +73,7 @@ class DocxImagesCreator(AbstractImagesCreator):
 
     def __create_pair_pdfs(self, docx_archive: zipfile.ZipFile, document: DocxDocument, tmp_dir: str) -> PairedPdf:
         """
-        here we create two paired pdfs, we modify docx xml (drow bbox around paragraph) and create pdf, based on this
+        here we create two paired pdfs, we modify docx xml (draw bbox around paragraph) and create pdf, based on this
         modified docx. We create pdf with multi colors and with two colors
         @param docx_archive: opened docx document (docx is a zip archive)
         @param document: parsed document

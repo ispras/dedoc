@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 import zipfile
@@ -13,7 +14,6 @@ from pdf2image import convert_from_path
 
 from dedoc.utils.image_utils import draw_rectangle
 from dedoc.utils.train_dataset_utils import get_original_document_path
-from train_dataset.data_structures.images_archive import ImagesArchive
 from train_dataset.taskers.images_creators.concrete_creators.abstract_images_creator import AbstractImagesCreator
 
 
@@ -22,15 +22,17 @@ class ScannedImagesCreator(AbstractImagesCreator):
     def __init__(self, path2docs: str) -> None:
         self.path2docs = path2docs
 
-    @staticmethod
-    def _draw_one_bbox(image: np.ndarray, line: dict) -> np.ndarray:
-        bbox = line["bbox"]["bbox"]
-        image_bbox = draw_rectangle(image=image,
-                                    x_top_left=bbox["x_top_left"],
-                                    y_top_left=bbox["y_top_left"],
-                                    width=bbox["width"],
-                                    height=bbox["height"],
-                                    color=line.get("color", "black"))
+    def __draw_one_bbox(self, image: np.ndarray, line: dict) -> np.ndarray:
+        bbox_annotation = self.__get_bbox_annotations(line)[0]
+        bbox = json.loads(bbox_annotation["value"])
+        image_bbox = draw_rectangle(
+            image=image,
+            x_top_left=int(bbox["x_top_left"] * bbox["page_width"]),
+            y_top_left=int(bbox["y_top_left"] * bbox["page_height"]),
+            width=bbox["width"] * bbox["page_width"],
+            height=bbox["height"] * bbox["page_height"],
+            color=line.get("color", (0, 0, 0))
+        )
         image_bbox = cv2.resize(np.array(image_bbox), (1276, 1754))
         return image_bbox
 
@@ -42,11 +44,9 @@ class ScannedImagesCreator(AbstractImagesCreator):
         @return:
         """
         path = get_original_document_path(self.path2docs, page)
-        page = [line for line in page if "bbox" in line]
+        page = [line for line in page if self.__get_bbox_annotations(line)]
         if path.endswith("pdf"):
             images = self._create_image_pdf(path=path, page=page)
-        elif path.endswith("zip"):
-            images = self._create_image_zip(path=path, page=page)
         else:
             images = self._create_image_jpg(path=path, page=page)
         for image, line in zip_longest(images, page):
@@ -63,22 +63,7 @@ class ScannedImagesCreator(AbstractImagesCreator):
         @return:
         """
         image_name = get_original_document_path(self.path2docs, page)
-        return image_name.endswith(("png", "jpg", "jpeg", "pdf", "zip"))
-
-    def _create_image_zip(self, path: str, page: List[dict]) -> Iterator[Image]:
-        current_image = None
-        current_page = None
-        archive = ImagesArchive(path)
-        for line in page:
-            page_id = line["_metadata"]["page_id"]
-            if current_image is None or current_page != page_id:
-                current_page = page_id
-                current_image = archive.get_page(page_id)
-            image = deepcopy(current_image)
-            image_bbox = self._draw_one_bbox(image, line)
-            image_bbox = PIL.Image.fromarray(image_bbox)
-            image_bbox = image_bbox.convert("RGB")
-            yield image_bbox
+        return image_name.endswith(("png", "jpg", "jpeg", "pdf"))
 
     def _create_image_pdf(self, path: str, page: List[dict]) -> Iterator[Image]:
         current_image = None
@@ -89,7 +74,7 @@ class ScannedImagesCreator(AbstractImagesCreator):
                 current_page = page_id
                 current_image = convert_from_path(path, first_page=current_page, last_page=current_page + 1)[0]
             image = deepcopy(current_image)
-            image_bbox = self._draw_one_bbox(image, line)
+            image_bbox = self.__draw_one_bbox(image, line)
             image_bbox = PIL.Image.fromarray(image_bbox)
             image_bbox = image_bbox.convert("RGB")
             yield image_bbox
@@ -97,7 +82,11 @@ class ScannedImagesCreator(AbstractImagesCreator):
     def _create_image_jpg(self, path: str, page: List[dict]) -> Iterator[Image]:
         image = PIL.Image.open(path)
         for line in page:
-            image_bbox = self._draw_one_bbox(image, line)
+            image_bbox = self.__draw_one_bbox(image, line)
             image_bbox = PIL.Image.fromarray(image_bbox)
             image_bbox = image_bbox.convert("RGB")
             yield image_bbox
+
+    def __get_bbox_annotations(self, line: dict) -> List[dict]:
+        bbox_annotations = [annotation for annotation in line["_annotations"] if annotation["name"] == "bounding box"]
+        return bbox_annotations

@@ -16,7 +16,6 @@ class HeaderFooterTasker(LineLabelTasker):
     bottom_lines_count = 3
 
     def __init__(self,
-                 path2bboxes: str,
                  path2lines: str,
                  path2docs: str,
                  manifest_path: str,
@@ -26,7 +25,7 @@ class HeaderFooterTasker(LineLabelTasker):
                  item2label: Callable = None,
                  *,
                  config: dict) -> None:
-        super().__init__(path2bboxes, path2lines, path2docs, manifest_path, config_path, tmp_dir, progress_bar, item2label, config=config)
+        super().__init__(path2lines, path2docs, manifest_path, config_path, tmp_dir, progress_bar, item2label, config=config)
         self.images_creators = ImageCreatorComposition(creators=[
             ScannedImagesCreator(path2docs=self.path2docs),
             DocxImagesCreator(path2docs=self.path2docs, config=config),
