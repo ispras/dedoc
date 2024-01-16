@@ -45,13 +45,15 @@ class TableTasker(AbstractTasker):
                 image_directory = f"{task_directory}/images"
                 with ZipFile(archive_path, "a") as task_archive:
                     self.__add_task(archive=task_archive, files=batch, task_directory=task_directory)
-                    dockerfile_directory = os.path.join(self.resources_path, "train_dataset/img_classifier_dockerfile")
+                    dockerfile_directory = os.path.join(self.resources_path, "img_classifier_dockerfile")
                     self._add_docker_files(archive=task_archive, task_directory=task_directory, dockerfile_directory=dockerfile_directory)
                     self._add_config(task_archive=task_archive,
                                      task_name=task_directory,
                                      task_directory=task_directory,
-                                     config_path=os.path.join(self.resources_path, "train_dataset/tables/config.json"),
+                                     config_path=os.path.join(self.resources_path, "tables", "config.json"),
                                      tmp_dir=tmp_dir)
+                    manifest_path = os.path.join(self.resources_path, "tables", "manifest.pdf")
+                    task_archive.write(manifest_path, os.path.join(task_directory, os.path.basename(manifest_path)))
                     self.__add_images(files=files, archive=task_archive, image_directory=image_directory)
                 yield archive_path
 

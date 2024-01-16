@@ -49,6 +49,7 @@ class _ArchiveHandler(Thread):
             return task
         except Exception as e:
             self.progress[uid] = f"Fail with\n{e}"
+            self.results[uid] = f"Fail with\n{e}"
             raise e
 
     def __handle_one_file(self, archive: zipfile.ZipFile, file: str, parameters: dict) -> None:

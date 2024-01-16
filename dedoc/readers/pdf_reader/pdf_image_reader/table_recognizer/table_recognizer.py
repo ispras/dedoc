@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import time
 from typing import List, Optional, Tuple
 
 import cv2
@@ -141,9 +142,9 @@ class TableRecognizer(object):
         image = Image.fromarray(image)
         os.makedirs(table_path, exist_ok=True)
         for table in tables:
-            images_cnt = len(os.listdir(table_path))
-            image_path = os.path.join(table_path, f"{images_cnt:06d}.png")
-            jsons_path = os.path.join(table_path, f"{images_cnt:06d}.json")
+            file_name = str(int(time.time()))
+            image_path = os.path.join(table_path, f"{file_name}.png")
+            jsons_path = os.path.join(table_path, f"{file_name}.json")
             image.save(image_path)
             with open(jsons_path, "w") as out:
                 json.dump(obj=table.to_dict(), fp=out, indent=4, ensure_ascii=False)

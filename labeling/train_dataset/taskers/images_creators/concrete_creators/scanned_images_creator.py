@@ -22,9 +22,11 @@ class ScannedImagesCreator(AbstractImagesCreator):
     def __init__(self, path2docs: str) -> None:
         self.path2docs = path2docs
 
-    def __draw_one_bbox(self, image: np.ndarray, line: dict) -> np.ndarray:
+    def __draw_one_bbox(self, image: PIL.Image, line: dict, pdf_image: bool = False) -> np.ndarray:
         bbox_annotation = self.__get_bbox_annotations(line)[0]
         bbox = json.loads(bbox_annotation["value"])
+        if pdf_image:
+            image = image.resize(size=(bbox["page_width"], bbox["page_height"]), resample=PIL.Image.BICUBIC)
         image_bbox = draw_rectangle(
             image=image,
             x_top_left=int(bbox["x_top_left"] * bbox["page_width"]),
@@ -74,7 +76,7 @@ class ScannedImagesCreator(AbstractImagesCreator):
                 current_page = page_id
                 current_image = convert_from_path(path, first_page=current_page, last_page=current_page + 1)[0]
             image = deepcopy(current_image)
-            image_bbox = self.__draw_one_bbox(image, line)
+            image_bbox = self.__draw_one_bbox(image, line, pdf_image=True)
             image_bbox = PIL.Image.fromarray(image_bbox)
             image_bbox = image_bbox.convert("RGB")
             yield image_bbox
