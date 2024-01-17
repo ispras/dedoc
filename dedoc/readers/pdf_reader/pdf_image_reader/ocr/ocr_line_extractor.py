@@ -4,6 +4,7 @@ import numpy as np
 
 from dedoc.readers.pdf_reader.data_classes.page_with_bboxes import PageWithBBox
 from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
+from dedoc.readers.pdf_reader.data_classes.word_with_bbox import WordWithBBox
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_utils import get_text_with_bbox_from_document_page, get_text_with_bbox_from_document_page_one_column
 
 
@@ -30,12 +31,14 @@ class OCRLineExtractor:
         height, width = image.shape[:2]
         extract_line_bbox = self.config.get("labeling_mode", False)
 
-        line_boxes = [
-            TextWithBBox(text=line.text, page_num=page_num, bbox=line.bbox, line_num=line_num,
-                         annotations=line.get_annotations(width, height, extract_line_bbox)) for line_num, line in enumerate(output_dict.lines)
-        ]
+        lines_with_bbox = []
+        for line_num, line in enumerate(output_dict.lines):
+            words = [WordWithBBox(text=word.text, bbox=word.bbox) for word in line.words]
+            annotations = line.get_annotations(width, height, extract_line_bbox)
+            line_with_bbox = TextWithBBox(words=words, page_num=page_num, bbox=line.bbox, line_num=line_num, annotations=annotations)
+            lines_with_bbox.append(line_with_bbox)
 
-        return line_boxes
+        return lines_with_bbox
 
     def _filtered_bboxes(self, bboxes: List[TextWithBBox]) -> Iterable[TextWithBBox]:
         for text_with_bbox in bboxes:

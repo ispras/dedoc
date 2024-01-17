@@ -1,4 +1,3 @@
-import re
 from typing import IO, List, Match, Optional, Tuple
 
 import cv2
@@ -55,15 +54,6 @@ def create_bbox(height: int, k_h: float, k_w: float, lobj: LTContainer) -> BBox:
     curr_box_line = convert_coordinates_pdf_to_image(lobj, k_w, k_h, height)
     bbox = BBox.from_two_points((curr_box_line.x_top_left, curr_box_line.y_top_left), (curr_box_line.x_bottom_right, curr_box_line.y_bottom_right))
     return bbox
-
-
-def cleaning_text_from_hieroglyphics(text_str: str) -> str:
-    """
-    replace all cid-codecs into ascii symbols. cid-encoding - hieroglyphic fonts
-    :param text_str: text
-    :return: text wo cids-chars
-    """
-    return re.sub(r"\(cid:(\d)*\)", cid_to_ascii_text, text_str)
 
 
 def cid_to_ascii_text(m: Match) -> str:

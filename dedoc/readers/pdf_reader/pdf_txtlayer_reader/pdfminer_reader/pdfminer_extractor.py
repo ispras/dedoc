@@ -27,7 +27,8 @@ from dedoc.readers.pdf_reader.data_classes.page_with_bboxes import PageWithBBox
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_utils import cleaning_text_from_hieroglyphics, create_bbox, draw_annotation
+from dedoc.readers.pdf_reader.data_classes.word_with_bbox import WordWithBBox
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_utils import create_bbox, draw_annotation
 from dedoc.utils.parameter_utils import get_path_param
 from dedoc.utils.pdf_utils import get_page_image
 
@@ -151,18 +152,17 @@ class PdfminerExtractor(object):
     def get_info_layout_object(self, lobj: LTContainer, page_num: int, line_num: int, k_w: float, k_h: float, height: int, width: int) -> TextWithBBox:
         # 1 - converting coordinate from pdf format into image
         bbox = create_bbox(height, k_h, k_w, lobj)
+
         # 2 - extract text and text annotations from current object
-        text = ""
         annotations = []
+        words = []
         if isinstance(lobj, LTTextLineHorizontal):
-            # cleaning text from (cid: *)
-            text = cleaning_text_from_hieroglyphics(lobj.get_text())
             # get line's annotations
-            annotations = self.__get_line_annotations(lobj, k_w, k_h, height, width)
+            annotations, words = self.__get_line_annotations(lobj, height, width)
 
-        return TextWithBBox(bbox=bbox, page_num=page_num, text=text, line_num=line_num, annotations=annotations)
+        return TextWithBBox(bbox=bbox, page_num=page_num, words=words, line_num=line_num, annotations=annotations)
 
-    def __get_line_annotations(self, lobj: LTTextLineHorizontal, k_w: float, k_h: float, height: int, width: int) -> List[Annotation]:
+    def __get_line_annotations(self, lobj: LTTextLineHorizontal, height: int, width: int) -> Tuple[List[Annotation], List[WordWithBBox]]:
         # 1 - prepare data for group by name
         chars_with_style = []
         rand_weight = self._get_new_weight()
@@ -187,7 +187,7 @@ class PdfminerExtractor(object):
                     # duplicated previous style
                     chars_with_style.append(chars_with_style[-1])
 
-        annotations = self.__extract_words_bbox_annotation(lobj, height, width)
+        annotations, words = self.__extract_words_bbox_annotation(lobj, height, width)
         # 3 - extract range from chars_with_style array
         char_pointer = 0
 
@@ -196,9 +196,9 @@ class PdfminerExtractor(object):
             annotations.extend(self.__parse_style_string(key, char_pointer, char_pointer + count_chars - 1))
             char_pointer += count_chars
 
-        return annotations
+        return annotations, words
 
-    def __extract_words_bbox_annotation(self, lobj: LTTextContainer, height: int, width: int) -> List[Annotation]:
+    def __extract_words_bbox_annotation(self, lobj: LTTextContainer, height: int, width: int) -> Tuple[List[Annotation], List[WordWithBBox]]:
         words: List[WordObj] = []
         word: WordObj = WordObj(start=0, end=0, value=LTTextContainer())
         if isinstance(lobj, LTTextLineHorizontal):
@@ -214,14 +214,13 @@ class PdfminerExtractor(object):
                         words.append(word)
                     word = WordObj(start=item + 1, end=item + 1, value=LTTextContainer())
 
-        annotations = [
-            BBoxAnnotation(start=word.start,
-                           end=word.end,
-                           value=create_bbox(height=height, k_h=1.0, k_w=1.0, lobj=word.value),
-                           page_width=width,
-                           page_height=height) for word in words
-        ]
-        return annotations
+        annotations, words_with_bbox = [], []
+        for word in words:
+            word_bbox = create_bbox(height=height, k_h=1.0, k_w=1.0, lobj=word.value)
+            annotations.append(BBoxAnnotation(start=word.start, end=word.end, value=word_bbox, page_width=width, page_height=height))
+            words_with_bbox.append(WordWithBBox(text=word.value.get_text(), bbox=word_bbox))
+
+        return annotations, words_with_bbox
 
     def _get_new_weight(self) -> str:
         return binascii.hexlify(os.urandom(8)).decode("ascii")

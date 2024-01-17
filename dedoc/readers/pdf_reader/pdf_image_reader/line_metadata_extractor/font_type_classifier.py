@@ -12,11 +12,19 @@ class FontTypeClassifier:
         if len(page.bboxes) == 0:
             return page
 
-        bboxes = [bbox.bbox for bbox in page.bboxes]
+        bboxes = [word.bbox for line in page.bboxes for word in line.words]
         bold_probabilities = self.bold_classifier.classify(page.image, bboxes)
 
-        for bbox, bold_probability in zip(page.bboxes, bold_probabilities):
-            if bold_probability > 0.5:
-                bbox.annotations.append(BoldAnnotation(start=0, end=len(bbox.text), value="True"))
+        bbox_id = 0
+        for line in page.bboxes:
+            current_text = ""
+
+            for word in line.words:
+                current_text = current_text + " " if current_text else current_text
+                extended_text = current_text + word.text
+                if bold_probabilities[bbox_id] > 0.5:
+                    line.annotations.append(BoldAnnotation(start=len(current_text), end=len(extended_text), value="True"))
+                current_text = extended_text
+                bbox_id += 1
 
         return page
