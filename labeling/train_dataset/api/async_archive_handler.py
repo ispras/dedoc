@@ -45,7 +45,12 @@ class _ArchiveHandler(Thread):
                     self.__handle_one_file(archive, file, parameters)
                     self.progress[uid] = f"files done\t= {i + 1} \n files_in_progress\t= {0}\n total\t= {len(archive.namelist())}"
 
-            task, _ = self.tasker.create_tasks(type_of_task=parameters["type_of_task"], task_size=int(parameters["task_size"]), task_uid=uid)
+            task, _ = self.tasker.create_tasks(
+                type_of_task=parameters["type_of_task"],
+                task_size=int(parameters["task_size"]),
+                task_uid=uid,
+                parameters=parameters
+            )
             return task
         except Exception as e:
             self.progress[uid] = f"Fail with\n{e}"

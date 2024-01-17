@@ -103,7 +103,7 @@ class AbstractLineLabelTasker(AbstractTasker):
         task_items = OrderedDict()
         item_id = 0
         with zipfile.ZipFile(path, "w") as task_archive:
-            for page_id, page in enumerate(task):
+            for page in task:
                 # add original files
                 document_name = get_original_document_path(self.path2docs, page)
                 archive_name = os.path.join(task_directory, "original_document", os.path.basename(document_name))
@@ -117,8 +117,6 @@ class AbstractLineLabelTasker(AbstractTasker):
                     item.task_id = item_id
                     item_id += 1
                     task_items[item.task_id] = item.to_dict()
-                    self.progress_bar[job_uid] = self.progress_bar.get(job_uid, "").split("\n")[0]
-                    self.progress_bar[job_uid] += f"\n done = {page_id} total = {len(task)}"
             task_archive.writestr(f"{task_directory}/tasks.json", json.dumps(task_items, ensure_ascii=False, indent=4).encode("utf-8"))
             task_archive.write(self.manifest_path, os.path.join(task_directory, os.path.basename(self.manifest_path)))
             self._add_config(task_archive, task_name=task_name, task_directory=task_directory, config_path=self.config_path, tmp_dir=self.tmp_dir)

@@ -1,5 +1,5 @@
+import json
 import logging
-import math
 import os
 import random
 import uuid
@@ -41,24 +41,17 @@ class Tasker(object):
         resources_path = os.path.join(os.path.dirname(__file__), "..", "..", "resources")
         self.resources = os.path.abspath(resources_path)
 
-    def create_tasks(self, type_of_task: str, count_tasks: int = None, task_size: int = None, task_uid: Optional[str] = None) -> Tuple[str, int]:
+    def create_tasks(self, type_of_task: str, task_size: int, parameters: dict, task_uid: Optional[str] = None) -> Tuple[str, int]:
         """
-        creates subtasks with help of ConcreteTaskers and return common archive of tasks
+        Creates subtasks with help of ConcreteTaskers and return common archive of tasks
         :param type_of_task: task type for calling concrete tasker (for example type_of_task='line_classifier')
         :param task_size: size of one task, task should not be larger than this. For example number of page.
-        :param count_tasks: number of tasks
+        :param parameters: all parameters for files parsing and task creation
         :param task_uid: unique id of task
         :return: archive of tasks, task size
         """
         task_uid = str(uuid.uuid1()) if task_uid is None else task_uid
         self.progress_bar[task_uid] = "Form task (in progress)"
-        if task_size is None and count_tasks is None:
-            raise Exception("Task size undefined")
-        elif count_tasks is not None and task_size is None:
-            self.logger.warning("count_tasks is deprecated, use task_size")
-            task_size = math.ceil(len(os.listdir(self.images_path)) / count_tasks)
-        elif count_tasks is not None and task_size is not None:
-            self.logger.warning("count_tasks is deprecated, ignore its value and use task_size")
 
         if type_of_task not in self.concrete_taskers:
             raise UnknownTaskError(type_of_task)
@@ -66,8 +59,7 @@ class Tasker(object):
         path_to_common_zip = os.path.join(self.save_path, f"{type_of_task}_{random.randint(0, 1000000):06d}.zip")
 
         with ZipFile(path_to_common_zip, "w") as tasks_archive:
-            for task_path in tasker.create_tasks(task_size=task_size,
-                                                 tasks_uid=task_uid):
+            for task_path in tasker.create_tasks(task_size=task_size, tasks_uid=task_uid):
                 task_name = os.path.basename(task_path)
                 tasks_archive.write(filename=task_path, arcname=task_name)
                 self.logger.info(self.progress_bar)
@@ -75,6 +67,7 @@ class Tasker(object):
             tasks_archive.write(original_documents, os.path.basename(original_documents))
             os.remove(original_documents)
             self._add_special(tasks_archive)
+            tasks_archive.writestr("parameters.json", json.dumps(parameters, indent=4, ensure_ascii=False).encode("utf-8"))
 
         self.progress_bar.pop(task_uid)
         return path_to_common_zip, task_size

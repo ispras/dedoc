@@ -105,7 +105,7 @@ taskers = {
         config_path=os.path.join(train_resources_path, "paragraph", "config.json"),
         tmp_dir=UPLOAD_FOLDER,
         progress_bar=progress_bar,
-        item2label=lambda t: "not_paragraph",
+        item2label=lambda t: "not_paragraph" if t["_metadata"]["tag_hierarchy_level"]["can_be_multiline"] else "paragraph",
         config=config),
     "tz_classifier": LineLabelTasker(
         path2lines=path2lines,
