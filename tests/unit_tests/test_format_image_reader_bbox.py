@@ -17,7 +17,8 @@ class TestImageReaderWithBBox(unittest.TestCase):
         page = self.reader.split_image2lines(image=image, page_num=1, is_one_column_document=True)
         bboxes = [bbox for bbox in page.bboxes if bbox.text.strip() != ""]
         for bbox in bboxes:
-            bbox.text = re.sub(r"\s+", " ", bbox.text)
+            for word in bbox.words:
+                word.text = re.sub(r"\s+", "", word.text)
         self.assertEqual("Утвержден", bboxes[0].text.strip())
         self.assertEqual("приказом ФСТЭК России", bboxes[1].text.strip())
         self.assertEqual("Утвержден", bboxes[0].text.strip())
