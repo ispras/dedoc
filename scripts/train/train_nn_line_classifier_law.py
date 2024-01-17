@@ -28,7 +28,7 @@ def transform_labels(label: str) -> Optional[str]:
 
 
 txt_classifier = True
-resources_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../dedoc", "..", "resources"))
+resources_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources"))
 assert os.path.isdir(resources_path)
 classifier_name = "law_txt_classifier" if txt_classifier else "law_classifier"
 path_out = os.path.join(resources_path, "{}_nn.pkl.gz".format(classifier_name))

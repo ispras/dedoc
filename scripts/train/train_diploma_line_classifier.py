@@ -19,7 +19,7 @@ classifier_name = "diploma_classifier"
 
 clf_resources_path = os.path.join(os.path.expanduser('~'), ".cache", "dedoc", "resources", "line_type_classifiers")
 os.makedirs(clf_resources_path, exist_ok=True)
-resources_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "resources"))
+resources_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources"))
 assert os.path.isdir(resources_path)
 
 path_out = os.path.join(clf_resources_path, "{}.pkl.gz".format(classifier_name))

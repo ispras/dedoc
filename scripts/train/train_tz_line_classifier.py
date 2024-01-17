@@ -16,7 +16,7 @@ def skip_labels(label: str) -> Optional[str]:
 txt_classifier = True
 classifier_name = "tz_txt_classifier" if txt_classifier else "tz_classifier"
 
-resources_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../dedoc", "..", "resources"))
+resources_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources"))
 assert os.path.isdir(resources_path)
 path_out = os.path.join(resources_path, "{}.pkl.gz".format(classifier_name))
 path_scores = os.path.join(resources_path, "benchmarks", "{}_scores.json".format(classifier_name))

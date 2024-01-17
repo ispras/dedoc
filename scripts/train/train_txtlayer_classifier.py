@@ -95,7 +95,7 @@ if __name__ == "__main__":
     score = f1_score(stages_data["test"]["labels"], test_preds)
     print(f"F1 score = {score}")
 
-    resources_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "..", "..", "resources")
+    resources_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "..", "resources")
     with gzip.open(os.path.join(resources_dir, 'txtlayer_classifier.pkl.gz'), 'wb') as file:
         pickle.dump(clf, file)
 
