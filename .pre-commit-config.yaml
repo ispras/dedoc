@@ -3,7 +3,7 @@ repos:
     rev: 5.0.4
     hooks:
     -   id: flake8
-        exclude: \.github|.*__init__\.py|resources|dedoc/scripts|examples|docs|venv|build|dedoc\.egg-info
+        exclude: \.github|.*__init__\.py|resources|scripts|examples|docs|venv|build|dedoc\.egg-info
         args:
             - "--config=.flake8"
         additional_dependencies: [

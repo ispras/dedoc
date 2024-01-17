@@ -24,6 +24,9 @@ class OcrLine:
         return " ".join(word.text for word in self.words if word.text != "") + "\n"
 
     def get_annotations(self, page_width: int, page_height: int, extract_line_bbox: bool) -> List[Annotation]:
+        if extract_line_bbox:
+            return [BBoxAnnotation(0, len(" ".join([w.text for w in self.words])), self.bbox, page_width, page_height)]
+
         start = 0
         annotations = []
 
@@ -35,8 +38,7 @@ class OcrLine:
             annotations.append(ConfidenceAnnotation(start, end, str(word.confidence / 100)))
             annotations.append(BBoxAnnotation(start, end, word.bbox, page_width, page_height))
             start += len(word.text) + 1
-        if extract_line_bbox:
-            annotations.append(BBoxAnnotation(0, start, self.bbox, page_width, page_height))
+
         return annotations
 
     @staticmethod

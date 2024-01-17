@@ -19,8 +19,8 @@ services:
     depends_on:
       - dedoc
     build:
-          context: ..
-          dockerfile: docker_gpu/Dockerfile
+      context: ..
+      dockerfile: docker_gpu/Dockerfile
     tty: true
     environment:
       DOC_READER_HOST: "dedoc"

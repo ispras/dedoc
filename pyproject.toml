@@ -34,7 +34,6 @@ dependencies = {file = ["requirements.txt"]}
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["dedoc*"]
-exclude = ["dedoc.scripts*"]
 
 [project.optional-dependencies]
 torch = ["torch~=1.11.0", "torchvision~=0.12.0"]

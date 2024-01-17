@@ -1,8 +1,6 @@
-import importlib.util
 import logging
 import os
 import sys
-from typing import Any, Optional
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(asctime)s - %(pathname)s - %(levelname)s - %(message)s")
 
@@ -13,6 +11,7 @@ _config = dict(
     # -----------------------------------------RESOURCES PATH SETTINGS----------------------------------------------------
     resources_path=RESOURCES_PATH,
     intermediate_data_path=os.path.join(RESOURCES_PATH, "datasets"),
+    table_path="/tmp/tables",
 
     # -----------------------------------------COMMON DEBUG SETTINGS----------------------------------------------------
     debug_mode=DEBUG_MODE,
@@ -66,20 +65,11 @@ class Configuration(object):
 
         return cls.__instance
 
-    def __init_config(self, args: Optional[Any] = None) -> None:
-        if args is not None and args.config_path is not None:
-            spec = importlib.util.spec_from_file_location("config_module", args.config_path)
-            config_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(config_module)
-            self.__config = config_module._config
-        else:
+    def get_config(self) -> dict:
+        if self.__config is None:
             self.__config = _config
-
-    def get_config(self, args: Optional[Any] = None) -> dict:
-        if self.__config is None or args is not None:
-            self.__init_config(args)
         return self.__config
 
 
-def get_config(args: Optional[Any] = None) -> dict:
-    return Configuration.get_instance().get_config(args)
+def get_config() -> dict:
+    return Configuration.get_instance().get_config()

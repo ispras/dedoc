@@ -1,4 +1,3 @@
-import os
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -10,7 +9,6 @@ from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageA
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_extractor import PdfminerExtractor
-from dedoc.train_dataset.train_dataset_utils import save_page_with_bbox
 from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
 from dedoc.utils.utils import get_mime_extension
 
@@ -65,9 +63,6 @@ class PdfTxtlayerReader(PdfBaseReader):
         page.bboxes = [bbox for bbox in page.bboxes if not self._inside_any_unreadable_block(bbox.bbox, unreadable_blocks)]
         lines = self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page, call_classifier=False)
         self.__change_table_boxes_page_width_heigth(pdf_width=page.pdf_page_width, pdf_height=page.pdf_page_height, tables=tables)
-
-        if self.config.get("labeling_mode"):
-            save_page_with_bbox(page=page, config=self.config, document_name=os.path.basename(path))
 
         return lines, tables, page.attachments, []
 

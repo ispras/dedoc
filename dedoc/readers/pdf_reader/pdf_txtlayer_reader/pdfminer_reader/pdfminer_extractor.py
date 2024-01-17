@@ -37,7 +37,7 @@ WordObj = namedtuple("Word", ["start", "end", "value"])
 
 class PdfminerExtractor(object):
     """
-    Class extarcts text with style from pdf with help pdfminer.six
+    Class extracts text with style from pdf with help pdfminer.six
     """
 
     def __init__(self, *, config: dict) -> None:

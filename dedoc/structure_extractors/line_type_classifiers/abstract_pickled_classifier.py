@@ -7,7 +7,6 @@ from typing import Tuple
 
 from xgboost import XGBClassifier
 
-
 from dedoc.download_models import download_from_hub
 from dedoc.structure_extractors.line_type_classifiers.abstract_line_type_classifier import AbstractLineTypeClassifier
 from dedoc.utils.parameter_utils import get_param_gpu_available

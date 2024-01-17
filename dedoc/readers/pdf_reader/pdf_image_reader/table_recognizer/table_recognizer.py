@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import time
 from typing import List, Optional, Tuple
 
 import cv2
@@ -13,7 +14,6 @@ from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdditionalOptions
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.multipage_table_extractor import MultiPageTableExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.onepage_table_extractor import OnePageTableExtractor
-from dedoc.train_dataset.data_path_config import table_path as save_path
 
 """-------------------------------------entry class of Table Recognizer Module---------------------------------------"""
 
@@ -73,7 +73,7 @@ class TableRecognizer(object):
             orient_cell_angle=orient_cell_angle,
             table_type=table_type)
         if self.config.get("labeling_mode", False):
-            self.__save_tables(tables=single_page_tables, image=src_image, table_path=save_path)
+            self.__save_tables(tables=single_page_tables, image=src_image, table_path=self.config.get("table_path", "/tmp/tables"))
         if self.table_type.detect_one_cell_table in table_type:
             filtered_tables = single_page_tables
         else:
@@ -142,9 +142,9 @@ class TableRecognizer(object):
         image = Image.fromarray(image)
         os.makedirs(table_path, exist_ok=True)
         for table in tables:
-            images_cnt = len(os.listdir(table_path))
-            image_path = os.path.join(table_path, f"{images_cnt:06d}.png")
-            jsons_path = os.path.join(table_path, f"{images_cnt:06d}.json")
+            file_name = str(int(time.time()))
+            image_path = os.path.join(table_path, f"{file_name}.png")
+            jsons_path = os.path.join(table_path, f"{file_name}.json")
             image.save(image_path)
             with open(jsons_path, "w") as out:
                 json.dump(obj=table.to_dict(), fp=out, indent=4, ensure_ascii=False)
