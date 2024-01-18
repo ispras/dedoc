@@ -17,14 +17,14 @@ class FontTypeClassifier:
 
         bbox_id = 0
         for line in page.bboxes:
-            current_text = ""
+            current_text_len = 0
 
             for word in line.words:
-                current_text = current_text + " " if current_text else current_text
-                extended_text = current_text + word.text
+                current_text_len = current_text_len + 1 if current_text_len > 0 else current_text_len  # add len of " " (space between words)
+                extended_text_len = current_text_len + len(word.text)
                 if bold_probabilities[bbox_id] > 0.5:
-                    line.annotations.append(BoldAnnotation(start=len(current_text), end=len(extended_text), value="True"))
-                current_text = extended_text
+                    line.annotations.append(BoldAnnotation(start=current_text_len, end=extended_text_len, value="True"))
+                current_text_len = extended_text_len
                 bbox_id += 1
 
         return page
