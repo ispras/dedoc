@@ -14,6 +14,7 @@ from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.readers.html_reader.html_reader import HtmlReader
 from dedoc.readers.pdf_reader.data_classes.page_with_bboxes import PageWithBBox
 from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
+from dedoc.readers.pdf_reader.data_classes.word_with_bbox import WordWithBBox
 from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from train_dataset.data_structures.images_archive import ImagesArchive
@@ -97,7 +98,7 @@ class LineWithMetaExtractor:
         return TextWithBBox(
             bbox=bbox,
             page_num=data["data"]["bbox"]["page_num"],
-            text=data["data"]["bbox"]["text"],
+            words=[WordWithBBox(text=data["data"]["bbox"]["text"], bbox=bbox)],
             line_num=data["data"]["bbox"]["line_num"],
             uid=data["data"]["bbox"]["uid"]
         )

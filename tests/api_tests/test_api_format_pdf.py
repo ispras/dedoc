@@ -170,3 +170,24 @@ class TestApiPdfReader(AbstractTestApiDocReader):
                                                                  "0729.12.2014 № 168\n"
                                                                  '"БУРЫЙ МЕДВЕДЬ\n'
                                                                  "{вид охотничьих ресурсов)\n")
+
+    def test_bold_annotation(self) -> None:
+        file_name = "bold_font.png"
+        result = self._send_request(file_name)
+        tree = result["content"]["structure"]
+
+        node = tree["subparagraphs"][0]
+        bold_annotations = [annotation for annotation in node["annotations"] if annotation["name"] == "bold" and annotation["value"] == "True"]
+        self.assertEqual(len(bold_annotations), 2)
+        bold_annotations = sorted(bold_annotations, key=lambda x: x["start"])
+        self.assertEqual((bold_annotations[0]["start"], bold_annotations[0]["end"]), (8, 12))
+        self.assertEqual((bold_annotations[1]["start"], bold_annotations[1]["end"]), (29, 33))
+
+        node = tree["subparagraphs"][1]
+        bold_annotations = [annotation for annotation in node["annotations"] if annotation["name"] == "bold" and annotation["value"] == "True"]
+        self.assertEqual(len(bold_annotations), 0)
+
+        node = tree["subparagraphs"][2]
+        bold_annotations = [annotation for annotation in node["annotations"] if annotation["name"] == "bold" and annotation["value"] == "True"]
+        self.assertEqual(len(bold_annotations), 1)
+        self.assertEqual((bold_annotations[0]["start"], bold_annotations[0]["end"]), (0, len(node["text"].strip())))
