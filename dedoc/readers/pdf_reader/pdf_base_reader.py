@@ -92,18 +92,19 @@ class PdfBaseReader(BaseReader):
         )
 
         lines, scan_tables, attachments, warnings, other_fields = self._parse_document(file_path, params_for_parse)
-        tables = []
-        for scan_table in scan_tables:
-            metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name, rotated_angle=scan_table.location.rotated_angle)
-            cells_with_meta = [[CellWithMeta.create_from_cell(cell) for cell in row] for row in scan_table.matrix_cells]
-            table = Table(metadata=metadata, cells=cells_with_meta)
-            tables.append(table)
+        tables = [self.scantable2table(scan_table) for scan_table in scan_tables]
 
         if self._can_contain_attachements(file_path) and self.attachment_extractor.with_attachments(parameters):
             attachments += self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
 
         result = UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=warnings, metadata=other_fields)
         return self._postprocess(result)
+
+    @staticmethod
+    def scantable2table(table: ScanTable) -> Table:
+        metadata = TableMetadata(page_id=table.page_number, uid=table.name, rotated_angle=table.location.rotated_angle)
+        cells_with_meta = [[CellWithMeta.create_from_cell(cell) for cell in row] for row in table.matrix_cells]
+        return Table(metadata=metadata, cells=cells_with_meta)
 
     def _can_contain_attachements(self, path: str) -> bool:
         can_contain_attachments = False
