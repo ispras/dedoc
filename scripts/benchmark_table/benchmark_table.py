@@ -1,9 +1,7 @@
-import os
 import zipfile
 from pathlib import Path
 import json
 import pprint
-
 import numpy as np
 import wget
 
@@ -12,17 +10,14 @@ from dedoc.config import get_config
 from dedoc.readers import PdfImageReader
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import TableRecognizer
 from scripts.benchmark_table.metric import TEDS
-from tests.test_utils import get_test_config
 
-path_result = os.path.join(os.path.dirname(__file__), "..", "..", "resources", "benchmarks")
-path_result = os.path.abspath(path_result)
-os.makedirs(path_result, exist_ok=True)
-path_result = os.path.join(path_result, "table_benchmark.json")
+path_result = Path(__file__).parent / ".." / "resources" / "benchmarks"
+path_result.absolute().mkdir(parents=True, exist_ok=True)
 
 URL = "https://at.ispras.ru/owncloud/index.php/s/Xaf4OyHj6xN2RHH/download"
 
-table_recognizer = TableRecognizer(config=get_test_config())
-image_reader = PdfImageReader(config=get_test_config())
+table_recognizer = TableRecognizer(config=get_config())
+image_reader = PdfImageReader(config=get_config())
 teds = TEDS()
 
 
@@ -34,8 +29,8 @@ def call_metric(pred_json: dict, true_json: dict) -> dict:
     return scores
 
 
-def get_tables(image_path: str) -> str:
-    document = image_reader.read(image_path)
+def get_tables(image_path: Path) -> str:
+    document = image_reader.read(str(image_path))
 
     for table in document.tables:
         table.metadata.uid = "test_id"
@@ -48,35 +43,35 @@ def get_tables(image_path: str) -> str:
 
 def make_predict_json(data_path: Path) -> dict:
     predict_json = {}
-    for filename in os.listdir(data_path):
-        print(filename)
-        file_path = str(data_path / filename)
+    for pathname in Path.iterdir(data_path):
+        print(pathname)
 
-        predict_json[filename] = {"html": "<html><body>" + get_tables(file_path) + "</body></html>"}
+        predict_json[pathname.name] = {"html": "<html><body>" + get_tables(pathname) + "</body></html>"}
 
     return predict_json
 
 
 def download_dataset(data_dir: Path) -> None:
 
-    if not os.path.isdir(data_dir):
-        data_dir.mkdir(parents=True)
-        pdfs_zip_path = str(data_dir / "benchmark_table_data.zip")
-        wget.download(URL, pdfs_zip_path)
-
-        with zipfile.ZipFile(pdfs_zip_path, 'r') as zip_ref:
-            zip_ref.extractall(data_dir)
-        os.remove(pdfs_zip_path)
-
-        print(f"Benchmark data downloaded to {data_dir}")
-    else:
+    if Path.exists(data_dir):
         print(f"Use cached benchmark data from {data_dir}")
+        return
+
+    data_dir.mkdir(parents=True, exist_ok=True)
+    pdfs_zip_path = data_dir / "benchmark_table_data.zip"
+    wget.download(URL, str(data_dir))
+
+    with zipfile.ZipFile(pdfs_zip_path, 'r') as zip_ref:
+        zip_ref.extractall(data_dir)
+    pdfs_zip_path.unlink()
+
+    print(f"Benchmark data downloaded to {data_dir}")
 
 
 def prediction(path_pred: Path, path_images: Path) -> dict:
     pred_json = make_predict_json(path_images)
-    with open(path_pred, "w") as fd:
-        json.dump(pred_json, fd, indent=2, ensure_ascii=False)
+    with path_pred.open("w") as fd:
+        json.dump(str(pred_json), fd, indent=2, ensure_ascii=False)
 
     return pred_json
 
@@ -103,12 +98,6 @@ if __name__ == "__main__":
     result["images"] = scores
 
     # save benchmarks
-    with open(path_result, "w") as fd:
-        json.dump(result, fd, indent=2, ensure_ascii=False)
-
-
-
-
-
-
-
+    file_result = path_result / "table_benchmark.json"
+    with file_result.open("w") as fd:
+        json.dump(str(file_result), fd, indent=2, ensure_ascii=False)
