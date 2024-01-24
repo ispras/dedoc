@@ -11,17 +11,17 @@ from dedoc.readers import PdfImageReader
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import TableRecognizer
 from scripts.benchmark_table.metric import TEDS
 
-path_result = Path(__file__).parent / ".." / "resources" / "benchmarks"
+path_result = Path(__file__).parent / ".." / ".." / "resources" / "benchmarks"
 path_result.absolute().mkdir(parents=True, exist_ok=True)
 
 URL = "https://at.ispras.ru/owncloud/index.php/s/Xaf4OyHj6xN2RHH/download"
 
 table_recognizer = TableRecognizer(config=get_config())
 image_reader = PdfImageReader(config=get_config())
-teds = TEDS()
 
 
-def call_metric(pred_json: dict, true_json: dict) -> dict:
+def call_metric(pred_json: dict, true_json: dict, structure_only: bool = False) -> dict:
+    teds = TEDS(structure_only=structure_only)
     scores = teds.batch_evaluate(pred_json, true_json)
     pp = pprint.PrettyPrinter()
     pp.pprint(scores)
@@ -83,6 +83,8 @@ if __name__ == "__main__":
     path_pred = data_dir / "pred.json"
     download_dataset(data_dir)
 
+    mode_metric_structure_only = False
+
     with open(path_gt, "r") as fp:
         gt_json = json.load(fp)
     '''
@@ -90,14 +92,15 @@ if __name__ == "__main__":
     path_images = data_dir / "images_tmp"
     pred_json = prediction("gt_tmp.json", path_images)
     '''
-    pred_json = prediction(path_pred, path_images)   
-    scores = call_metric(pred_json=pred_json, true_json=gt_json)
+    pred_json = prediction(path_pred, path_images)
+    scores = call_metric(pred_json=pred_json, true_json=gt_json, structure_only=mode_metric_structure_only)
 
     result = dict()
+    result["mode_metric_structure_only"] = mode_metric_structure_only
     result["mean"] = np.mean([score for score in scores.values()])
     result["images"] = scores
 
     # save benchmarks
     file_result = path_result / "table_benchmark.json"
     with file_result.open("w") as fd:
-        json.dump(str(file_result), fd, indent=2, ensure_ascii=False)
+        json.dump(result, fd, indent=2, ensure_ascii=False)
