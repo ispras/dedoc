@@ -42,7 +42,6 @@ class PdfminerExtractor(object):
     """
 
     def __init__(self, *, config: dict) -> None:
-        super().__init__()
         self.config = config
         self.logger = self.config.get("logger", logging.getLogger())
 
@@ -160,7 +159,13 @@ class PdfminerExtractor(object):
             # get line's annotations
             annotations, words = self.__get_line_annotations(lobj, height, width)
 
-        return TextWithBBox(bbox=bbox, page_num=page_num, words=words, line_num=line_num, annotations=annotations)
+        text_with_bbox = TextWithBBox(bbox=bbox, page_num=page_num, words=words, line_num=line_num, annotations=annotations)
+
+        if self.config.get("labeling_mode", False):  # add bbox for a textual line
+            bbox = create_bbox(height=height, k_h=1.0, k_w=1.0, lobj=lobj)
+            text_with_bbox.annotations.append(BBoxAnnotation(start=0, end=len(text_with_bbox.text), value=bbox, page_width=width, page_height=height))
+
+        return text_with_bbox
 
     def __get_line_annotations(self, lobj: LTTextLineHorizontal, height: int, width: int) -> Tuple[List[Annotation], List[WordWithBBox]]:
         # 1 - prepare data for group by name
@@ -188,9 +193,11 @@ class PdfminerExtractor(object):
                     chars_with_style.append(chars_with_style[-1])
 
         annotations, words = self.__extract_words_bbox_annotation(lobj, height, width)
+        if self.config.get("labeling_mode", False):
+            annotations = []  # ignore bboxes of words
+
         # 3 - extract range from chars_with_style array
         char_pointer = 0
-
         for key, group in itertools.groupby(chars_with_style, lambda x: x):
             count_chars = len(list(group))
             annotations.extend(self.__parse_style_string(key, char_pointer, char_pointer + count_chars - 1))
@@ -268,10 +275,12 @@ class PdfminerExtractor(object):
 
         for lobj in lobjs:
             if isinstance(lobj, LTTextBoxHorizontal):
-                annotations.extend(self.__extract_words_bbox_annotation(lobj, height, width))
+                lobj_annotations, _ = self.__extract_words_bbox_annotation(lobj, height, width)
+                annotations.extend(lobj_annotations)
                 lobjs_textline.extend(lobj)
             elif isinstance(lobj, LTTextLineHorizontal):
-                annotations.extend(self.__extract_words_bbox_annotation(lobj, height, width))
+                lobj_annotations, _ = self.__extract_words_bbox_annotation(lobj, height, width)
+                annotations.extend(lobj_annotations)
                 lobjs_textline.append(lobj)
             elif isinstance(lobj, LTRect):
                 lobjs_box.append(lobj)

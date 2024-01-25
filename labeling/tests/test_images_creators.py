@@ -4,6 +4,7 @@ import shutil
 import tempfile
 import unittest
 import zipfile
+from typing import Optional
 
 from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
 from dedoc.config import get_config
@@ -11,7 +12,7 @@ from dedoc.converters.converter_composition import ConverterComposition
 from dedoc.dedoc_manager import DedocManager
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
-from dedoc.readers import PdfImageReader, PdfTxtlayerReader
+from dedoc.readers import PdfImageReader, PdfTabbyReader, PdfTxtlayerReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
@@ -55,16 +56,28 @@ class TestImagesCreators(unittest.TestCase):
 
     def test_scanned_images_creator(self) -> None:
         scanned_images_creator = ScannedImagesCreator(self.path2docs)
-        self.__test_images_creator(images_creator=scanned_images_creator, doc_name="english_doc.pdf", num_images=3)
+        self.__test_images_creator(
+            images_creator=scanned_images_creator,
+            doc_name="english_doc.pdf",
+            num_images=3,
+            parameters=dict(document_type="law", pdf_with_text_layer="true")
+        )
+        self.__test_images_creator(
+            images_creator=scanned_images_creator,
+            doc_name="english_doc.pdf",
+            num_images=3,
+            parameters=dict(document_type="law", pdf_with_text_layer="tabby")
+        )
         self.__test_images_creator(images_creator=scanned_images_creator, doc_name="law_image.png", num_images=34)
 
-    def __test_images_creator(self, images_creator: AbstractImagesCreator, doc_name: str, num_images: int) -> None:
+    def __test_images_creator(self, images_creator: AbstractImagesCreator, doc_name: str, num_images: int, parameters: Optional[dict] = None) -> None:
+        parameters = dict(document_type="law") if parameters is None else parameters
         files_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "data", "images_creators"))
         test_manager = DedocManager(manager_config=self.__create_test_manager_config(self.config), config=self.config)
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             with zipfile.ZipFile(os.path.join(tmp_dir, "archive.zip"), "w") as archive:
-                _ = test_manager.parse(file_path=os.path.join(files_dir, doc_name), parameters=dict(document_type="law"))
+                _ = test_manager.parse(file_path=os.path.join(files_dir, doc_name), parameters=parameters)
                 lines_path = os.path.join(self.config["intermediate_data_path"], "lines.jsonlines")
                 self.assertTrue(os.path.isfile(lines_path))
                 with open(lines_path, "r") as f:
@@ -79,7 +92,13 @@ class TestImagesCreators(unittest.TestCase):
         os.remove(path)
 
     def __create_test_manager_config(self, config: dict) -> dict:
-        readers = [DocxReader(config=config), RawTextReader(config=config), PdfTxtlayerReader(config=config), PdfImageReader(config=config)]
+        readers = [
+            DocxReader(config=config),
+            RawTextReader(config=config),
+            PdfTxtlayerReader(config=config),
+            PdfTabbyReader(config=config),
+            PdfImageReader(config=config)
+        ]
         metadata_extractors = [BaseMetadataExtractor()]
         law_extractors = {
             FoivLawStructureExtractor.document_type: FoivLawStructureExtractor(config=config),
