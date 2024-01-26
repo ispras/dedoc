@@ -32,7 +32,7 @@ class TableTree(Tree):
     def bracket(self):
         """Show tree using brackets notation
         """
-        if self.tag == "td":
+        if self.tag == "td" or self.tag == 'th':
             result = f'"tag": {self.tag}, "colspan": {self.colspan}, "rowspan": {self.rowspan}, "text": {self.content}'
         else:
             result = f'"tag": {self.tag}'
@@ -89,6 +89,10 @@ class TEDS(object):
         if node.tag != "td" and node.tail is not None:
             self.__tokens__ += list(node.tail)
 
+    def get_span(self, node, name_span: str) -> int:
+        value = int(node.attrib.get(name_span, "1"))
+        return 1 if value <= 0 else value
+
     def load_html_tree(self, node, parent=None):
         """ Converts HTML tree to the format required by apted
         """
@@ -102,8 +106,8 @@ class TEDS(object):
 
             try:
                 new_node = TableTree(tag=node.tag,
-                                     colspan=int(node.attrib.get("colspan", "1")),
-                                     rowspan=int(node.attrib.get("rowspan", "1")),
+                                     colspan=self.get_span(node, "colspan"),
+                                     rowspan=self.get_span(node, "rowspan"),
                                      content=cell,
                                      visible=False if node.attrib.get("style") == "display: none" else True, *deque())
             except Exception as ex:
