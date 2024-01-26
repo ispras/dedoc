@@ -2,7 +2,6 @@ import os
 import re
 import time
 import zipfile
-from tempfile import TemporaryDirectory
 from typing import Dict, List, Tuple
 
 import cv2
@@ -12,8 +11,8 @@ import wget
 from texttable import Texttable
 
 from dedoc.config import get_config
-from dedoc.scripts.text_blob_correction import TextBlobCorrector
 from scripts.ocr_correction import correction, init_correction_step
+from scripts.text_blob_correction import TextBlobCorrector
 
 WITHOUT_CORRECTION = ""
 SAGE_CORRECTION = "_sage-correction"
