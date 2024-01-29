@@ -1,0 +1,16 @@
+{
+  "mode_metric_structure_only": false,
+  "mean": 0.9468374367023571,
+  "images": {
+    "example_with_table0_0.png": 0.9525583036909738,
+    "example_with_table0_1.png": 0.9264351862896008,
+    "example_with_table6.png": 0.989010989010989,
+    "example_with_table4.jpg": 0.908436211832951,
+    "example_with_table17.jpg": 0.8078952936402488,
+    "example_with_table_hor_vert_union.png": 0.9896091617933723,
+    "example_with_table1.png": 0.9781560283687943,
+    "example_with_table_horizontal_union.jpg": 0.9925757575757576,
+    "example_with_table3.png": 0.9778008866078716,
+    "example_with_table5.png": 0.9458965482130129
+  }
+}

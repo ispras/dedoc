@@ -133,7 +133,7 @@ def json2html(text: str, paragraph: TreeNode, tables: Optional[List[Table]], tab
     if tables is not None and len(tables) > 0:
         text += "<h3> Tables: </h3>"
         for table in tables:
-            text += __table2html(table, table2id)
+            text += table2html(table, table2id)
             text += "<p>&nbsp;</p>"
     return text
 
@@ -201,7 +201,7 @@ def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int]) -> str:
     return text.replace("\n", "<br>")
 
 
-def __table2html(table: Table, table2id: Dict[str, int]) -> str:
+def table2html(table: Table, table2id: Dict[str, int]) -> str:
     uid = table.metadata.uid
     text = f"<h4> table {table2id[uid]}:</h4>"
     text += f'<table border="1" id={uid} style="border-collapse: collapse; width: 100%;">\n<tbody>\n'
