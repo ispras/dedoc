@@ -3,7 +3,6 @@ from pathlib import Path
 import json
 import pprint
 from typing import Optional, List
-
 import numpy as np
 import wget
 
@@ -18,6 +17,10 @@ path_result.absolute().mkdir(parents=True, exist_ok=True)
 
 table_recognizer = TableRecognizer(config=get_config())
 image_reader = PdfImageReader(config=get_config())
+
+GENERATED_BENCHMARK = "on_generated_data"
+OURDATA_BENCHMARK = "on_our_data"
+TYPE_BENCHMARK = OURDATA_BENCHMARK
 
 
 def call_metric(pred_json: dict, true_json: dict, structure_only: bool = False, ignore_nodes: Optional[List] = None) -> dict:
@@ -75,7 +78,7 @@ def prediction(path_pred: Path, path_images: Path) -> dict:
     return pred_json
 
 
-def benchmark_on_our_data():
+def benchmark_on_our_data() -> dict:
     data_dir = Path(get_config()["intermediate_data_path"]) / "benchmark_table_data"
     path_images = data_dir / "images"
     path_gt = data_dir / "gt.json"
@@ -101,13 +104,10 @@ def benchmark_on_our_data():
     result["mean"] = np.mean([score for score in scores.values()])
     result["images"] = scores
 
-    # save benchmarks
-    file_result = path_result / "table_benchmark.json"
-    with file_result.open("w") as fd:
-        json.dump(result, fd, indent=2, ensure_ascii=False)
+    return result
 
 
-def benchmark_on_generated_table():
+def benchmark_on_generated_table() -> dict:
     """
     Generated data from https://github.com/hassan-mahmood/TIES_DataGeneration
     Article generation information https://arxiv.org/pdf/1905.13391.pdf
@@ -155,12 +155,13 @@ def benchmark_on_generated_table():
     result["mean"] = np.mean([score for score in scores.values()])
     result["images"] = scores
 
-    # save benchmarks
-    file_result = path_result / "table_benchmark_on_generated_data.json"
-    with file_result.open("w") as fd:
-        json.dump(result, fd, indent=2, ensure_ascii=False)
+    return result
 
 
 if __name__ == "__main__":
-    # benchmark_on_our_data()
-    benchmark_on_generated_table()
+    result = benchmark_on_our_data() if TYPE_BENCHMARK == OURDATA_BENCHMARK else benchmark_on_generated_table()
+
+    # save benchmarks
+    file_result = path_result / f"table_benchmark_{TYPE_BENCHMARK}.json"
+    with file_result.open("w") as fd:
+        json.dump(result, fd, indent=2, ensure_ascii=False)
