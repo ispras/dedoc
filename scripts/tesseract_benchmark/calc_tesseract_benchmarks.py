@@ -11,8 +11,8 @@ import wget
 from texttable import Texttable
 
 from dedoc.config import get_config
-from scripts.ocr_correction import correction, init_correction_step
-from scripts.text_blob_correction import TextBlobCorrector
+from scripts.tesseract_benchmark.ocr_correction import correction, init_correction_step
+from scripts.tesseract_benchmark.text_blob_correction import TextBlobCorrector
 
 WITHOUT_CORRECTION = ""
 SAGE_CORRECTION = "_sage-correction"
@@ -117,7 +117,7 @@ def __parse_ocr_errors(lines: List[str]) -> List:
 
 def __get_summary_symbol_error(path_reports: str) -> Texttable:
     # 1 - call accsum for get summary of all reports
-    accuracy_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "accsum"))
+    accuracy_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "./../accsum"))
 
     if os.path.exists(f"{path_reports}/../accsum_report.txt"):
         os.remove(f"{path_reports}/../accsum_report.txt")
@@ -179,7 +179,7 @@ def __create_statistic_tables(statistics: dict, accuracy_values: List) -> Tuple[
 
 def calculate_accuracy_script(tmp_gt_path: str, tmp_prediction_path: str, accuracy_path: str) -> None:
     # calculation accuracy build for Ubuntu from source https://github.com/eddieantonio/ocreval
-    accuracy_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "accuracy"))
+    accuracy_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "./../accuracy"))
     command = f"{accuracy_script_path} {tmp_gt_path} {tmp_prediction_path} >> {accuracy_path}"
     os.system(command)
 
@@ -244,27 +244,23 @@ def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str, c
 
                         # call correction step
                         time_b = time.time()
-                        if USE_CORRECTION_OCR == SAGE_CORRECTION:
-                            tmp_corrected_path = os.path.join(corrected_path, f"{img_name}_ocr.txt")
-                            corrected_text = correction(corrector, text)
-                            correction_times.append(time.time() - time_b)
+                        tmp_corrected_path = os.path.join(corrected_path, f"{img_name}_ocr.txt")
+                        if USE_CORRECTION_OCR == SAGE_CORRECTION or USE_CORRECTION_OCR == TEXT_BLOB_CORRECTION:
+
                             with open(tmp_corrected_path, "w") as tmp_corrected_file:
+                                if USE_CORRECTION_OCR == SAGE_CORRECTION:
+                                    corrected_text = correction(corrector, text)
+                                elif USE_CORRECTION_OCR == TEXT_BLOB_CORRECTION:
+                                    corrected_text = corrector.correct(text)
+
                                 tmp_corrected_file.write(corrected_text)
                                 tmp_corrected_file.close()
+                                calculate_accuracy_script(tmp_gt_path, tmp_corrected_path, accuracy_path)
 
-                            calculate_accuracy_script(tmp_gt_path, tmp_corrected_path, accuracy_path)
-                        elif USE_CORRECTION_OCR == TEXT_BLOB_CORRECTION:
-                            tmp_corrected_path = os.path.join(corrected_path, f"{img_name}_ocr.txt")
-                            corrected_text = corrector.correct(text)
-                            correction_times.append(time.time() - time_b)
-                            with open(tmp_corrected_path, "w") as tmp_corrected_file:
-                                tmp_corrected_file.write(corrected_text)
-                                tmp_corrected_file.close()
-
-                            calculate_accuracy_script(tmp_gt_path, tmp_corrected_path, accuracy_path)
                         else:
                             calculate_accuracy_script(tmp_gt_path, tmp_ocr_path, accuracy_path)
 
+                        correction_times.append(time.time() - time_b)
                         statistics = _update_statistics_by_dataset(statistics, dataset_name, accuracy_path, word_cnt)
                         accuracy_values.append([dataset_name, base_name, psm, word_cnt, statistics[dataset_name]["Accuracy"][-1]])
 
@@ -279,7 +275,7 @@ def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str, c
 
 if __name__ == "__main__":
     base_zip = "data_tesseract_benchmarks"
-    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "resources", "benchmarks"))
+    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "./../../", "resources", "benchmarks"))
     cache_dir = os.path.join(get_config()["intermediate_data_path"], "tesseract_data")
     os.makedirs(cache_dir, exist_ok=True)
     cache_dir_accuracy = os.path.join(cache_dir, "accuracy")
