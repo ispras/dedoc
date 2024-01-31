@@ -1,7 +1,7 @@
 import os
 import re
+import time
 import zipfile
-from tempfile import TemporaryDirectory
 from typing import Dict, List, Tuple
 
 import cv2
@@ -11,6 +11,14 @@ import wget
 from texttable import Texttable
 
 from dedoc.config import get_config
+from scripts.tesseract_benchmark.ocr_correction import correction, init_correction_step
+from scripts.tesseract_benchmark.text_blob_correction import TextBlobCorrector
+
+WITHOUT_CORRECTION = ""
+SAGE_CORRECTION = "_sage-correction"
+TEXT_BLOB_CORRECTION = "_textblob-correction"
+
+USE_CORRECTION_OCR = TEXT_BLOB_CORRECTION
 
 
 def _call_tesseract(image: np.ndarray, language: str, psm: int = 3) -> str:
@@ -109,7 +117,7 @@ def __parse_ocr_errors(lines: List[str]) -> List:
 
 def __get_summary_symbol_error(path_reports: str) -> Texttable:
     # 1 - call accsum for get summary of all reports
-    accuracy_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "accsum"))
+    accuracy_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "accsum"))
 
     if os.path.exists(f"{path_reports}/../accsum_report.txt"):
         os.remove(f"{path_reports}/../accsum_report.txt")
@@ -118,7 +126,7 @@ def __get_summary_symbol_error(path_reports: str) -> Texttable:
 
     command = f"{accuracy_script_path} {file_reports} >> {path_reports}/../accsum_report.txt"
     os.system(command)
-    accsum_report_path = os.path.join(path_reports, "../accsum_report.txt")
+    accsum_report_path = os.path.join(path_reports, "..", "accsum_report.txt")
 
     # 2 - parse report info
     with open(accsum_report_path, "r") as f:
@@ -169,9 +177,28 @@ def __create_statistic_tables(statistics: dict, accuracy_values: List) -> Tuple[
     return table_common, table_accuracy_per_image
 
 
-def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str) -> Tuple[Texttable, Texttable]:
+def calculate_accuracy_script(tmp_gt_path: str, tmp_prediction_path: str, accuracy_path: str) -> None:
+    # calculation accuracy build for Ubuntu from source https://github.com/eddieantonio/ocreval
+    accuracy_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "accuracy"))
+    command = f"{accuracy_script_path} {tmp_gt_path} {tmp_prediction_path} >> {accuracy_path}"
+    os.system(command)
+
+
+def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str, cache_dir: str) -> Tuple[Texttable, Texttable]:
     statistics = {}
     accuracy_values = []
+    correction_times = []
+
+    result_dir = os.path.join(cache_dir, "result_ocr")
+    os.makedirs(result_dir, exist_ok=True)
+
+    corrector, corrected_path = None, None
+    if USE_CORRECTION_OCR == SAGE_CORRECTION:
+        corrector, corrected_path = init_correction_step(cache_dir)
+    elif USE_CORRECTION_OCR == TEXT_BLOB_CORRECTION:
+        corrector = TextBlobCorrector()
+        corrected_path = os.path.join(cache_dir, "result_corrected")
+        os.makedirs(corrected_path, exist_ok=True)
 
     with zipfile.ZipFile(benchmark_data_path, "r") as arch_file:
         names_dirs = [member.filename for member in arch_file.infolist() if member.file_size > 0]
@@ -191,48 +218,57 @@ def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str) -
                 gt_path = os.path.join(base_zip, dataset_name, "gts", f"{base_name}.txt")
                 imgs_path = os.path.join(base_zip, dataset_name, "imgs", img_name)
                 accuracy_path = os.path.join(cache_dir_accuracy, f"{dataset_name}_{base_name}_accuracy.txt")
+                if os.path.exists(accuracy_path):
+                    os.remove(accuracy_path)
 
-                with TemporaryDirectory() as tmpdir:
-                    tmp_gt_path = os.path.join(tmpdir, "tmp_gt.txt")
-                    tmp_ocr_path = os.path.join(tmpdir, "tmp_ocr.txt")
+                tmp_gt_path = os.path.join(result_dir, f"{img_name}_gt.txt")
+                tmp_ocr_path = os.path.join(result_dir, f"{img_name}_ocr.txt")
 
-                    try:
-                        with arch_file.open(gt_path) as gt_file, open(tmp_gt_path, "wb") as tmp_gt_file, open(tmp_ocr_path, "w") as tmp_ocr_file:
+                try:
+                    with arch_file.open(gt_path) as gt_file, open(tmp_gt_path, "wb") as tmp_gt_file, open(tmp_ocr_path, "w") as tmp_ocr_file:
 
-                            gt_text = gt_file.read().decode("utf-8")
-                            word_cnt = len(gt_text.split())
+                        gt_text = gt_file.read().decode("utf-8")
+                        word_cnt = len(gt_text.split())
 
-                            tmp_gt_file.write(gt_text.encode())  # extraction gt from zip
-                            tmp_gt_file.flush()
+                        tmp_gt_file.write(gt_text.encode())  # extraction gt from zip
+                        tmp_gt_file.close()
 
-                            arch_file.extract(imgs_path, tmpdir)
-                            image = cv2.imread(tmpdir + "/" + imgs_path)
+                        arch_file.extract(imgs_path, result_dir)
+                        image = cv2.imread(result_dir + "/" + imgs_path)
 
-                            # call ocr
-                            psm = 6 if dataset_name == "english-words" else 4
-                            text = _call_tesseract(image, "rus+eng", psm=psm)
-                            tmp_ocr_file.write(text)
-                            tmp_ocr_file.flush()
+                        # call ocr
+                        psm = 6 if dataset_name == "english-words" else 4
+                        text = _call_tesseract(image, "rus+eng", psm=psm)
+                        tmp_ocr_file.write(text)
+                        tmp_ocr_file.close()
 
-                            # calculation accuracy build for Ubuntu from source https://github.com/eddieantonio/ocreval
-                            accuracy_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "accuracy"))
-                            command = f"{accuracy_script_path} {tmp_gt_path} {tmp_ocr_path} >> {accuracy_path}"
-                            os.system(command)
+                        # call correction step
+                        time_b = time.time()
+                        if USE_CORRECTION_OCR in (SAGE_CORRECTION, TEXT_BLOB_CORRECTION):
+                            corrected_text = correction(corrector, text) if USE_CORRECTION_OCR == SAGE_CORRECTION else corrector.correct(text)
+                            tmp_corrected_path = os.path.join(corrected_path, f"{img_name}_ocr.txt")
+                            with open(tmp_corrected_path, "w") as tmp_corrected_file:
+                                tmp_corrected_file.write(corrected_text)
+                            calculate_accuracy_script(tmp_gt_path, tmp_corrected_path, accuracy_path)
+                        else:
+                            calculate_accuracy_script(tmp_gt_path, tmp_ocr_path, accuracy_path)
 
-                            statistics = _update_statistics_by_dataset(statistics, dataset_name, accuracy_path, word_cnt)
-                            accuracy_values.append([dataset_name, base_name, psm, word_cnt, statistics[dataset_name]["Accuracy"][-1]])
+                        correction_times.append(time.time() - time_b)
+                        statistics = _update_statistics_by_dataset(statistics, dataset_name, accuracy_path, word_cnt)
+                        accuracy_values.append([dataset_name, base_name, psm, word_cnt, statistics[dataset_name]["Accuracy"][-1]])
 
-                    except Exception as ex:
-                        print(ex)
-                        print("If you have problems with libutf8proc.so.2, try the command: `apt install -y libutf8proc-dev`")
+                except Exception as ex:
+                    print(ex)
+                    print("If you have problems with libutf8proc.so.2, try the command: `apt install -y libutf8proc-dev`")
 
+    print(f"Time mean correction ocr = {np.array(correction_times).mean()}")
     table_common, table_accuracy_per_image = __create_statistic_tables(statistics, accuracy_values)
     return table_common, table_accuracy_per_image
 
 
 if __name__ == "__main__":
     base_zip = "data_tesseract_benchmarks"
-    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "resources", "benchmarks"))
+    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "benchmarks"))
     cache_dir = os.path.join(get_config()["intermediate_data_path"], "tesseract_data")
     os.makedirs(cache_dir, exist_ok=True)
     cache_dir_accuracy = os.path.join(cache_dir, "accuracy")
@@ -240,18 +276,20 @@ if __name__ == "__main__":
 
     benchmark_data_path = os.path.join(cache_dir, f"{base_zip}.zip")
     if not os.path.isfile(benchmark_data_path):
-        wget.download("https://at.ispras.ru/owncloud/index.php/s/HqKt53BWmR8nCVG/download", benchmark_data_path)
+        wget.download("https://at.ispras.ru/owncloud/index.php/s/wMyKioKInYITpYT/download", benchmark_data_path)
         print(f"Benchmark data downloaded to {benchmark_data_path}")
     else:
         print(f"Use cached benchmark data from {benchmark_data_path}")
     assert os.path.isfile(benchmark_data_path)
 
-    table_common, table_accuracy_per_image = __calculate_ocr_reports(cache_dir_accuracy, benchmark_data_path)
+    table_common, table_accuracy_per_image = __calculate_ocr_reports(cache_dir_accuracy, benchmark_data_path, cache_dir)
 
     table_errors = __get_summary_symbol_error(path_reports=cache_dir_accuracy)
 
-    with open(os.path.join(output_dir, "tesseract_benchmark.txt"), "w") as res_file:
-        res_file.write(f"Tesseract version is {pytesseract.get_tesseract_version()}\nTable 1 - Accuracy for each file\n")
+    with open(os.path.join(output_dir, f"tesseract_benchmark{USE_CORRECTION_OCR}.txt"), "w") as res_file:
+        res_file.write(f"Tesseract version is {pytesseract.get_tesseract_version()}\n")
+        res_file.write(f"Correction step: {USE_CORRECTION_OCR}\n")
+        res_file.write(f"\nTable 1 - Accuracy for each file\n")
         res_file.write(table_accuracy_per_image.draw())
         res_file.write(f"\n\nTable 2 - AVG by each type of symbols:\n")
         res_file.write(table_common.draw())
