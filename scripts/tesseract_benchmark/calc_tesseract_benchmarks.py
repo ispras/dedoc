@@ -117,7 +117,7 @@ def __parse_ocr_errors(lines: List[str]) -> List:
 
 def __get_summary_symbol_error(path_reports: str) -> Texttable:
     # 1 - call accsum for get summary of all reports
-    accuracy_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "./../accsum"))
+    accuracy_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "accsum"))
 
     if os.path.exists(f"{path_reports}/../accsum_report.txt"):
         os.remove(f"{path_reports}/../accsum_report.txt")
@@ -126,7 +126,7 @@ def __get_summary_symbol_error(path_reports: str) -> Texttable:
 
     command = f"{accuracy_script_path} {file_reports} >> {path_reports}/../accsum_report.txt"
     os.system(command)
-    accsum_report_path = os.path.join(path_reports, "../accsum_report.txt")
+    accsum_report_path = os.path.join(path_reports, "..", "accsum_report.txt")
 
     # 2 - parse report info
     with open(accsum_report_path, "r") as f:
@@ -179,7 +179,7 @@ def __create_statistic_tables(statistics: dict, accuracy_values: List) -> Tuple[
 
 def calculate_accuracy_script(tmp_gt_path: str, tmp_prediction_path: str, accuracy_path: str) -> None:
     # calculation accuracy build for Ubuntu from source https://github.com/eddieantonio/ocreval
-    accuracy_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "./../accuracy"))
+    accuracy_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "accuracy"))
     command = f"{accuracy_script_path} {tmp_gt_path} {tmp_prediction_path} >> {accuracy_path}"
     os.system(command)
 
@@ -244,19 +244,12 @@ def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str, c
 
                         # call correction step
                         time_b = time.time()
-                        tmp_corrected_path = os.path.join(corrected_path, f"{img_name}_ocr.txt")
-                        if USE_CORRECTION_OCR == SAGE_CORRECTION or USE_CORRECTION_OCR == TEXT_BLOB_CORRECTION:
-
+                        if USE_CORRECTION_OCR in (SAGE_CORRECTION, TEXT_BLOB_CORRECTION):
+                            corrected_text = correction(corrector, text) if USE_CORRECTION_OCR == SAGE_CORRECTION else corrector.correct(text)
+                            tmp_corrected_path = os.path.join(corrected_path, f"{img_name}_ocr.txt")
                             with open(tmp_corrected_path, "w") as tmp_corrected_file:
-                                if USE_CORRECTION_OCR == SAGE_CORRECTION:
-                                    corrected_text = correction(corrector, text)
-                                elif USE_CORRECTION_OCR == TEXT_BLOB_CORRECTION:
-                                    corrected_text = corrector.correct(text)
-
                                 tmp_corrected_file.write(corrected_text)
-                                tmp_corrected_file.close()
-                                calculate_accuracy_script(tmp_gt_path, tmp_corrected_path, accuracy_path)
-
+                            calculate_accuracy_script(tmp_gt_path, tmp_corrected_path, accuracy_path)
                         else:
                             calculate_accuracy_script(tmp_gt_path, tmp_ocr_path, accuracy_path)
 
@@ -275,7 +268,7 @@ def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str, c
 
 if __name__ == "__main__":
     base_zip = "data_tesseract_benchmarks"
-    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "./../../", "resources", "benchmarks"))
+    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "benchmarks"))
     cache_dir = os.path.join(get_config()["intermediate_data_path"], "tesseract_data")
     os.makedirs(cache_dir, exist_ok=True)
     cache_dir_accuracy = os.path.join(cache_dir, "accuracy")
@@ -283,7 +276,7 @@ if __name__ == "__main__":
 
     benchmark_data_path = os.path.join(cache_dir, f"{base_zip}.zip")
     if not os.path.isfile(benchmark_data_path):
-        wget.download("https://at.ispras.ru/owncloud/index.php/s/wMyKioKInYITpYT", benchmark_data_path)
+        wget.download("https://at.ispras.ru/owncloud/index.php/s/wMyKioKInYITpYT/download", benchmark_data_path)
         print(f"Benchmark data downloaded to {benchmark_data_path}")
     else:
         print(f"Use cached benchmark data from {benchmark_data_path}")
