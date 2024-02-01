@@ -24,16 +24,16 @@ if __name__ == "__main__":
         wget.download(URL, pdfs_zip_path)
         wget.download(URL_GT, pdfs_zip_gt_path)
 
-        with zipfile.ZipFile(pdfs_zip_path, 'r') as zip_ref:
+        with zipfile.ZipFile(pdfs_zip_path, "r") as zip_ref:
             zip_ref.extractall(data_dir)
         os.remove(pdfs_zip_path)
-        with zipfile.ZipFile(pdfs_zip_gt_path, 'r') as zip_ref:
+        with zipfile.ZipFile(pdfs_zip_gt_path, "r") as zip_ref:
             zip_ref.extractall(data_dir)
         os.remove(pdfs_zip_gt_path)
 
-        print(f"Benchmark data downloaded to {data_dir}")
+        print(f"Benchmark data downloaded to {data_dir}")  # noqa
     else:
-        print(f"Use cached benchmark data from {data_dir}")
+        print(f"Use cached benchmark data from {data_dir}")  # noqa
 
     pdfs_path = data_dir / "PdfMiner Params"
     pdfs_gt_path = data_dir / "PdfMiner Params GT"
@@ -53,7 +53,7 @@ if __name__ == "__main__":
             accuracy_path = Path(tmpdir) / "accuracy.txt"
             if accuracy_path.exists():
                 accuracy_path.unlink()
-            command = f"{accuracy_script_path} \"{gt_path}\" {tmp_ocr_path} >> {accuracy_path}"
+            command = f'{accuracy_script_path} "{gt_path}" {tmp_ocr_path} >> {accuracy_path}'
             os.system(command)
 
             with open(accuracy_path, "r") as f:
@@ -68,4 +68,4 @@ if __name__ == "__main__":
     with (Path(output_dir) / "benchmark_pdf_miner.json").open("w") as f:
         json.dump(info, f, ensure_ascii=False, indent=2)
 
-    print(f"save result in {output_dir}")
+    print(f"save result in {output_dir}")  # noqa

@@ -39,7 +39,7 @@ def get_reader_attachments(reader: BaseReader, input_dir: str, attachments_dir: 
                     shutil.copy(attachment.tmp_file_path, os.path.join(file_attachments_dir, attachment_name))
                     attachment_names.append(attachment_name)
 
-        print(f"{file_name}: {len(attachment_names)} attachments, {len(document.attachments)} in result")
+        print(f"{file_name}: {len(attachment_names)} attachments, {len(document.attachments)} in result")  # noqa
         result_dict[file_name] = sorted(attachment_names)
 
     return result_dict
@@ -70,7 +70,7 @@ def get_attachments(attachments_extractor: AbstractAttachmentsExtractor, input_d
                     shutil.copy(attachment.tmp_file_path, os.path.join(file_attachments_dir, attachment_name))
                     attachment_names.append(attachment_name)
 
-        print(f"{file_name}: {len(attachment_names)} attachments, {len(attachments)} in result")
+        print(f"{file_name}: {len(attachment_names)} attachments, {len(attachments)} in result")  # noqa
         result_dict[file_name] = sorted(attachment_names)
 
     return result_dict
@@ -99,9 +99,9 @@ if __name__ == "__main__":
             zip_ref.extractall(data_dir)
         os.remove(archive_path)
 
-        print(f"Benchmark data downloaded to {data_dir}")
+        print(f"Benchmark data downloaded to {data_dir}")  # noqa
     else:
-        print(f"Use cached benchmark data from {data_dir}")
+        print(f"Use cached benchmark data from {data_dir}")  # noqa
 
     in_dir = os.path.join(data_dir, "with_attachments")
     out_dir = os.path.join(in_dir, "extracted_attachments")
@@ -112,17 +112,17 @@ if __name__ == "__main__":
 
     benchmarks_dict = {}
 
-    print("Get tabby attachments")
+    print("Get tabby attachments")  # noqa
     tabby_reader = PdfTabbyReader(config={})
     tabby_out_dir = os.path.join(out_dir, "tabby")
     benchmarks_dict["tabby"] = get_reader_attachments(reader=tabby_reader, input_dir=in_dir, attachments_dir=tabby_out_dir)
 
-    print("Get pdfminer attachments")
+    print("Get pdfminer attachments")  # noqa
     pdfminer_reader = PdfTxtlayerReader(config={})
     pdfminer_out_dir = os.path.join(out_dir, "pdfminer")
     benchmarks_dict["pdfminer"] = get_reader_attachments(reader=pdfminer_reader, input_dir=in_dir, attachments_dir=pdfminer_out_dir)
 
-    print("Get common attachments")
+    print("Get common attachments")  # noqa
     common_out_dir = os.path.join(out_dir, "common")
     pdf_attachments_extractor = PDFAttachmentsExtractor(config={})
     benchmarks_dict["common"] = get_attachments(attachments_extractor=pdf_attachments_extractor, input_dir=in_dir, attachments_dir=common_out_dir)
@@ -131,4 +131,4 @@ if __name__ == "__main__":
     with open(os.path.join(json_out_dir, "benchmark_pdf_attachments.json"), "w") as f:
         json.dump(benchmarks_dict, f, ensure_ascii=False, indent=2)
 
-    print(f"Attachments were extracted to {out_dir}")
+    print(f"Attachments were extracted to {out_dir}")  # noqa

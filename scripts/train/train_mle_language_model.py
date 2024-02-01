@@ -16,11 +16,11 @@ def tokenize_doc(text_layer: str) -> str:
     # converting to lowercase
     text_layer = text_layer.lower()
     # remove all the special characters
-    document = re.sub(r'\W', ' ', text_layer)
+    document = re.sub(r"\W", " ", text_layer)
     # remove all single characters
-    document = re.sub(r'\^[a-zA-Z]\s+', ' ', document)
+    document = re.sub(r"\^[a-zA-Z]\s+", " ", document)
     # substituting multiple spaces with single space
-    document = re.sub(r'\s+', ' ', document, flags=re.I)
+    document = re.sub(r"\s+", " ", document, flags=re.I)
     return document
 
 
@@ -39,27 +39,27 @@ def main() -> None:
     documents = []
     for files in files_path_big_data:
         file = os.listdir(path_big_data + files)
-        print(files)
+        print(files)  # noqa
         for writer in file:
             try:
-                with open(path_big_data + files + '/' + writer) as f:
+                with open(path_big_data + files + "/" + writer) as f:
                     text = f.read()
                     document = tokenize_doc(text)
                     documents.append(document)
-                print(writer)
+                print(writer)  # noqa
                 break
             except Exception:
-                print(Exception)
+                print(Exception)  # noqa
                 pass
     documents = " ".join(documents)
     bigram_list = create_ngramm_list(documents, 2)
     train, vocab = padded_everygram_pipeline(2, [bigram_list])
-    print(bigram_list)
+    print(bigram_list)  # noqa
     language_model_mle = MLE(2)
     language_model_mle.fit(train, vocab)
     with open("n-gram_lang_model.pkl", "wb") as f:
         pickle.dump(language_model_mle, f)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

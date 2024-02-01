@@ -2,7 +2,7 @@ from textblob import TextBlob
 
 
 class TextBlobCorrector:
-    def __init__(self):
+    def __init__(self) -> None:
         return
 
     def correct(self, text: str) -> str:
