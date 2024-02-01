@@ -35,7 +35,7 @@ def init_correction_step(cache_dir: str) -> Tuple[Corrector, str]:
     corrector = RuM2M100ModelForSpellingCorrection.from_pretrained(AvailableCorrectors.m2m100_1B.value)  # 4.49 Gb model (pytorch_model.bin)
     if torch.cuda.is_available() and USE_GPU:
         corrector.model.to(torch.device("cuda:0"))
-        print("use CUDA")  # noqa
+        print("use CUDA")
     else:
-        print("use CPU")  # noqa
+        print("use CPU")
     return corrector, corrected_path

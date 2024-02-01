@@ -46,4 +46,4 @@ trainer = XGBoostLineClassifierTrainer(
 )
 
 trainer.fit(cross_val_only=False, save_errors_images=False)
-print(f"successfully train {classifier_name} classifier")  # noqa
+print(f"successfully train {classifier_name} classifier")

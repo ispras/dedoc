@@ -48,7 +48,7 @@ def get_tables(image_path: Path) -> str:
 def make_predict_json(data_path: Path) -> dict:
     predict_json = {}
     for pathname in Path.iterdir(data_path):
-        print(pathname)  # noqa
+        print(pathname)
 
         predict_json[pathname.name] = {"html": "<html><body>" + get_tables(pathname) + "</body></html>"}
 
@@ -57,7 +57,7 @@ def make_predict_json(data_path: Path) -> dict:
 
 def download_dataset(data_dir: Path, name_zip: str, url: str) -> None:
     if Path.exists(data_dir):
-        print(f"Use cached benchmark data from {data_dir}")  # noqa
+        print(f"Use cached benchmark data from {data_dir}")
         return
 
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -68,7 +68,7 @@ def download_dataset(data_dir: Path, name_zip: str, url: str) -> None:
         zip_ref.extractall(data_dir)
     pdfs_zip_path.unlink()
 
-    print(f"Benchmark data downloaded to {data_dir}")  # noqa
+    print(f"Benchmark data downloaded to {data_dir}")
 
 
 def prediction(path_pred: Path, path_images: Path) -> dict:

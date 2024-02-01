@@ -73,4 +73,4 @@ trainer = XGBoostLineClassifierTrainer(
 )
 
 trainer.fit(cross_val_only=False, save_errors_images=False)
-print("successfully train law classifier")  # noqa
+print("successfully train law classifier")

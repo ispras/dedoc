@@ -264,10 +264,10 @@ def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str, c
                         accuracy_values.append([dataset_name, base_name, psm, word_cnt, statistics[dataset_name]["Accuracy"][-1]])
 
                 except Exception as ex:
-                    print(ex)  # noqa
-                    print("If you have problems with libutf8proc.so.2, try the command: `apt install -y libutf8proc-dev`")  # noqa
+                    print(ex)
+                    print("If you have problems with libutf8proc.so.2, try the command: `apt install -y libutf8proc-dev`")
 
-    print(f"Time mean correction ocr = {np.array(correction_times).mean()}")  # noqa
+    print(f"Time mean correction ocr = {np.array(correction_times).mean()}")
     table_common, table_accuracy_per_image = __create_statistic_tables(statistics, accuracy_values)
     return table_common, table_accuracy_per_image
 
@@ -283,9 +283,9 @@ if __name__ == "__main__":
     benchmark_data_path = os.path.join(cache_dir, f"{base_zip}.zip")
     if not os.path.isfile(benchmark_data_path):
         wget.download("https://at.ispras.ru/owncloud/index.php/s/wMyKioKInYITpYT/download", benchmark_data_path)
-        print(f"Benchmark data downloaded to {benchmark_data_path}")  # noqa
+        print(f"Benchmark data downloaded to {benchmark_data_path}")
     else:
-        print(f"Use cached benchmark data from {benchmark_data_path}")  # noqa
+        print(f"Use cached benchmark data from {benchmark_data_path}")
     assert os.path.isfile(benchmark_data_path)
 
     table_common, table_accuracy_per_image = __calculate_ocr_reports(cache_dir_accuracy, benchmark_data_path, cache_dir)
@@ -302,7 +302,7 @@ if __name__ == "__main__":
         res_file.write("\n\nTable 3 -OCR error by symbol:\n")
         res_file.write(table_errors.draw())
 
-    print(f"Tesseract version is {pytesseract.get_tesseract_version()}")  # noqa
-    print(table_accuracy_per_image.draw())  # noqa
-    print(table_common.draw())  # noqa
-    print(table_errors.draw())  # noqa
+    print(f"Tesseract version is {pytesseract.get_tesseract_version()}")
+    print(table_accuracy_per_image.draw())
+    print(table_common.draw())
+    print(table_errors.draw())

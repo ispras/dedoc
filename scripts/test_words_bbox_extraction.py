@@ -37,7 +37,7 @@ class TestWordExtraction(AbstractTestApiDocReader):
                 )
 
         if DETAILED_DEBUG:
-            print(debug)  # noqa
+            print(debug)
 
         return confs
 
@@ -57,7 +57,7 @@ class TestWordExtraction(AbstractTestApiDocReader):
                     }
                 )
         if DETAILED_DEBUG:
-            print(debug)  # noqa
+            print(debug)
 
         return text_type
 

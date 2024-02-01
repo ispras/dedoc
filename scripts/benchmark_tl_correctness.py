@@ -24,7 +24,7 @@ def errors_param_for_text_layer(path_base: str, tl_type: str, tl_path: str, para
     directory = os.path.join(path_base, tl_path)
     files_list = [file_name for file_name in os.listdir(directory) if file_name.endswith(".pdf")]
     total_file_size = len(files_list)
-    print(f"Files: {files_list}\nFiles number: {total_file_size}")  # noqa
+    print(f"Files: {files_list}\nFiles number: {total_file_size}")
     for file in tqdm(files_list):
         file_path = os.path.join(directory, file)
         r = send_file(host=host, file_name=file, file_path=file_path, parameters=parameters)
@@ -52,9 +52,9 @@ if __name__ == "__main__":
         with zipfile.ZipFile(path_out, "r") as zip_ref:
             zip_ref.extractall(data_dir)
         os.remove(path_out)
-        print(f"Benchmark data downloaded to {benchmark_data_dir}")  # noqa
+        print(f"Benchmark data downloaded to {benchmark_data_dir}")
     else:
-        print(f"Use cached benchmark data from {benchmark_data_dir}")  # noqa
+        print(f"Use cached benchmark data from {benchmark_data_dir}")
 
     assert os.path.isdir(benchmark_data_dir)
 
@@ -74,4 +74,4 @@ if __name__ == "__main__":
 
     with open(path_result, "w") as file_out:
         json.dump(obj=result, fp=file_out, indent=4, ensure_ascii=False)
-    print(f"Save result in {path_result}")  # noqa
+    print(f"Save result in {path_result}")

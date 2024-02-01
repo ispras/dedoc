@@ -45,11 +45,11 @@ class GetTextAndTarget:
                 with open(path, mode="r") as f:
                     text = f.read()
             except Exception as e:
-                print(f"Bad file {str(e)}: {path}")  # noqa
+                print(f"Bad file {str(e)}: {path}")
                 continue
 
             if len(text.strip()) == 0:
-                print(f"Empty file: {path}")  # noqa
+                print(f"Empty file: {path}")
                 continue
 
             texts.append(text)
@@ -69,9 +69,9 @@ if __name__ == "__main__":
         with zipfile.ZipFile(path_out, "r") as zip_ref:
             zip_ref.extractall(data_dir)
         os.remove(path_out)
-        print(f"Dataset downloaded to {txtlayer_classifier_dataset_dir}")  # noqa
+        print(f"Dataset downloaded to {txtlayer_classifier_dataset_dir}")
     else:
-        print(f"Use cached dataset from {txtlayer_classifier_dataset_dir}")  # noqa
+        print(f"Use cached dataset from {txtlayer_classifier_dataset_dir}")
 
     assert os.path.isdir(txtlayer_classifier_dataset_dir)
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     test_preds = clf.predict(stages_data["test"]["features"])
 
     score = f1_score(stages_data["test"]["labels"], test_preds)
-    print(f"F1 score = {score}")  # noqa
+    print(f"F1 score = {score}")
 
     resources_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "..", "resources")
     with gzip.open(os.path.join(resources_dir, "txtlayer_classifier.pkl.gz"), "wb") as file:

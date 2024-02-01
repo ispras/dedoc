@@ -36,7 +36,7 @@ class DataLoader:
         if os.path.isfile(pkl_path) and not no_cache:
             with gzip.open(pkl_path) as input_file:
                 result = pickle.load(input_file)
-            print("func get_data(): Data were loaded from the local disk")  # noqa
+            print("func get_data(): Data were loaded from the local disk")
             return self.__sort_data(result)
         os.makedirs(self.dataset_dir, exist_ok=True)
         path_out = os.path.join(self.dataset_dir, "dataset.zip")

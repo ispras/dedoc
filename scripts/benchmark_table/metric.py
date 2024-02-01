@@ -119,7 +119,7 @@ class TEDS(object):
                                      content=cell,
                                      visible=False if node.attrib.get("style") == "display: none" else True, *deque())  # noqa
             except Exception as ex:
-                print(f"Bad html file. HTML parse exception. Exception's msg: {ex}")  # noqa
+                print(f"Bad html file. HTML parse exception. Exception's msg: {ex}")
                 raise ex
         else:
             new_node = TableTree(node.tag, None, None, None, True, *deque())

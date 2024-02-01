@@ -39,22 +39,22 @@ def main() -> None:
     documents = []
     for files in files_path_big_data:
         file = os.listdir(path_big_data + files)
-        print(files)  # noqa
+        print(files)
         for writer in file:
             try:
                 with open(path_big_data + files + "/" + writer) as f:
                     text = f.read()
                     document = tokenize_doc(text)
                     documents.append(document)
-                print(writer)  # noqa
+                print(writer)
                 break
             except Exception:
-                print(Exception)  # noqa
+                print(Exception)
                 pass
     documents = " ".join(documents)
     bigram_list = create_ngramm_list(documents, 2)
     train, vocab = padded_everygram_pipeline(2, [bigram_list])
-    print(bigram_list)  # noqa
+    print(bigram_list)
     language_model_mle = MLE(2)
     language_model_mle.fit(train, vocab)
     with open("n-gram_lang_model.pkl", "wb") as f:

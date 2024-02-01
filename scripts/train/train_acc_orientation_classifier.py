@@ -45,7 +45,7 @@ def accuracy_step(data_executor: DataLoaderImageOrient, net_executor: ColumnsOri
     sample = dataiter.__next__()
     _, orientation, columns = sample["image"], sample["orientation"], sample["columns"]
 
-    print(f"GroundTruth: orientation {orientation}, columns {columns}")  # noqa
+    print(f"GroundTruth: orientation {orientation}, columns {columns}")
 
     calc_accuracy_by_classes(testloader, data_executor.classes, net_executor, batch_size=1)
 
@@ -95,8 +95,8 @@ def calc_accuracy_by_classes(testloader: DataLoader, classes: List, classifier: 
                     )
 
     for i in range(len(classes)):
-        print(f"Accuracy of {classes[i]:5s} : {100 * class_correct[i] / class_total[i] if class_total[i] != 0 else 0:2d} %")  # noqa
-    print(f"=== AVG Time predict {time_predict / cnt_predict}")  # noqa
+        print(f"Accuracy of {classes[i]:5s} : {100 * class_correct[i] / class_total[i] if class_total[i] != 0 else 0:2d} %")
+    print(f"=== AVG Time predict {time_predict / cnt_predict}")
 
 
 def train_model(trainloader: DataLoader, checkpoint_path_save: str, classifier: ColumnsOrientationClassifier, epoch_cnt: int = 7, save_step: int = 500) -> None:
@@ -131,7 +131,7 @@ def train_model(trainloader: DataLoader, checkpoint_path_save: str, classifier: 
 
             # print statistics
             if i % 100 == 99:
-                print(f"[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 100:.3f}")  # noqa
+                print(f"[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 100:.3f}")
                 running_loss = 0.0
 
             # save checkpoint
@@ -139,7 +139,7 @@ def train_model(trainloader: DataLoader, checkpoint_path_save: str, classifier: 
                 classifier.save_weights(checkpoint_path_save)
 
     classifier.save_weights(checkpoint_path_save)
-    print("Finished Training")  # noqa
+    print("Finished Training")
 
 
 def train_step(data_executor: DataLoaderImageOrient, classifier: ColumnsOrientationClassifier) -> None:
@@ -157,8 +157,8 @@ def train_step(data_executor: DataLoaderImageOrient, classifier: ColumnsOrientat
     _, orientation, columns = sample["image"], sample["orientation"], sample["columns"]
 
     # print labels
-    print(" ".join(f"{data_executor.classes[orientation[j]]:5s}" for j in range(BATCH_SIZE)))  # noqa
-    print(" ".join(f"{data_executor.classes[columns[j]]:5s}" for j in range(BATCH_SIZE)))  # noqa
+    print(" ".join(f"{data_executor.classes[orientation[j]]:5s}" for j in range(BATCH_SIZE)))
+    print(" ".join(f"{data_executor.classes[columns[j]]:5s}" for j in range(BATCH_SIZE)))
 
     # Part 2 - train model
     train_model(trainloader, args.checkpoint_save, classifier)

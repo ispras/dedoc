@@ -33,14 +33,14 @@ def get_cpu_performance() -> float:
 
 
 cpu_performance = get_cpu_performance()
-print(f'"cpu_performance" = {cpu_performance}')  # noqa
+print(f'"cpu_performance" = {cpu_performance}')
 
 with TemporaryDirectory() as path_base:
     path_out = os.path.join(path_base, "dataset.zip")
     wget.download(data_url, path_out)
     with zipfile.ZipFile(path_out, "r") as zip_ref:
         zip_ref.extractall(path_base)
-    print(path_base)  # noqa
+    print(path_base)
 
     failed = []
     result = OrderedDict()
@@ -60,7 +60,7 @@ with TemporaryDirectory() as path_base:
         Task("pdf", "pdf", {"pdf_with_text_layer": "false"}),
         Task("pdf_tables", "pdf_tables", {})
     ]
-    print(tasks)  # noqa
+    print(tasks)
     for directory, name, parameters in tasks:
         total_size = 0
         total_time = 0
@@ -90,5 +90,5 @@ with TemporaryDirectory() as path_base:
 
     with open(path_result, "w") as file_out:
         json.dump(obj=result, fp=file_out, indent=4, ensure_ascii=False)
-    print(f"save result in {path_result}")  # noqa
-    print(failed)  # noqa
+    print(f"save result in {path_result}")
+    print(failed)

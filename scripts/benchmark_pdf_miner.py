@@ -31,9 +31,9 @@ if __name__ == "__main__":
             zip_ref.extractall(data_dir)
         os.remove(pdfs_zip_gt_path)
 
-        print(f"Benchmark data downloaded to {data_dir}")  # noqa
+        print(f"Benchmark data downloaded to {data_dir}")
     else:
-        print(f"Use cached benchmark data from {data_dir}")  # noqa
+        print(f"Use cached benchmark data from {data_dir}")
 
     pdfs_path = data_dir / "PdfMiner Params"
     pdfs_gt_path = data_dir / "PdfMiner Params GT"
@@ -68,4 +68,4 @@ if __name__ == "__main__":
     with (Path(output_dir) / "benchmark_pdf_miner.json").open("w") as f:
         json.dump(info, f, ensure_ascii=False, indent=2)
 
-    print(f"save result in {output_dir}")  # noqa
+    print(f"save result in {output_dir}")

@@ -97,7 +97,7 @@ class BaseSklearnLineClassifierTrainer:
 
             predicted = cls.predict(features_test)
             accuracy = accuracy_score(labels_test, predicted, sample_weight=sample_weight[-n:])
-            print("Final Accuracy = {}".format(accuracy))  # noqa
+            print(f"Final Accuracy = {accuracy}")
             scores["final_accuracy"] = accuracy
 
             if not os.path.isdir(os.path.dirname(self.path_out)):

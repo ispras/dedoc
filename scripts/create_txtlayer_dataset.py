@@ -200,7 +200,7 @@ if __name__ == "__main__":
     os.makedirs(os.path.join(args.out_dir, args.incorrect_dir), exist_ok=True)
 
     i = args.start_number
-    print("Generating incorrect texts")  # noqa
+    print("Generating incorrect texts")
     for _ in tqdm(range(args.dataset_size)):
         for language in ("ru", "en"):
             text = ""
@@ -211,7 +211,7 @@ if __name__ == "__main__":
                     corruptor = random.choice(corruptor_list)
                     text = corruptor.corrupt(text, lang=language)
                 except Exception as e:
-                    print(e)  # noqa
+                    print(e)
                     text = ""
 
             with open(os.path.join(args.out_dir, args.incorrect_dir, f"{i:08d}_{language}.txt"), "w") as f:
@@ -219,7 +219,7 @@ if __name__ == "__main__":
             i += 1
 
     i = args.start_number
-    print("Generating correct texts")  # noqa
+    print("Generating correct texts")
     for _ in tqdm(range(args.dataset_size)):
         for language in ("ru", "en"):
 
