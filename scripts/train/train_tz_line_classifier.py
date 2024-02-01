@@ -18,11 +18,9 @@ classifier_name = "tz_txt_classifier" if txt_classifier else "tz_classifier"
 
 resources_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources"))
 assert os.path.isdir(resources_path)
-path_out = os.path.join(resources_path, "{}.pkl.gz".format(classifier_name))
-path_scores = os.path.join(resources_path, "benchmarks", "{}_scores.json".format(classifier_name))
-path_feature_importances = os.path.join(resources_path,
-                                        "feature_importances",
-                                        "{}_feature_importances.xlsx".format(classifier_name))
+path_out = os.path.join(resources_path, f"{classifier_name}.pkl.gz")
+path_scores = os.path.join(resources_path, "benchmarks", f"{classifier_name}_scores.json")
+path_feature_importances = os.path.join(resources_path, "feature_importances", f"{classifier_name}_feature_importances.xlsx")
 
 feature_extractor = TzTextFeatures(text_features_only=txt_classifier)
 classifier_parameters = dict(learning_rate=0.5,

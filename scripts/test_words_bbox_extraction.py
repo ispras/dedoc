@@ -28,8 +28,13 @@ class TestWordExtraction(AbstractTestApiDocReader):
             interval = e - b
             if interval > 0:
                 confs.append(ann_conf["value"])
-                debug.append({f"{ann_conf['value']}[{b}:{e}]": [
-                    interval, f"bbox:[{ann_bbox['start']}:{ann_bbox['end']}], {text[ann_bbox['start']:ann_bbox['end']]}"]})
+                debug.append(
+                    {
+                        f"{ann_conf['value']}[{b}:{e}]": [
+                            interval, f"bbox:[{ann_bbox['start']}:{ann_bbox['end']}], {text[ann_bbox['start']:ann_bbox['end']]}"
+                        ]
+                    }
+                )
 
         if DETAILED_DEBUG:
             print(debug)
@@ -44,8 +49,13 @@ class TestWordExtraction(AbstractTestApiDocReader):
             interval = e - b
             if interval > 0:
                 text_type = ann_type["value"]
-                debug.append({f"{ann_type['value']}:{b}:{e}": [
-                    interval, f"bbox:[{ann_bbox['start']}:{ann_bbox['end']}], {text[ann_bbox['start']:ann_bbox['end']]}"]})
+                debug.append(
+                    {
+                        f"{ann_type['value']}:{b}:{e}": [
+                            interval, f"bbox:[{ann_bbox['start']}:{ann_bbox['end']}], {text[ann_bbox['start']:ann_bbox['end']]}"
+                        ]
+                    }
+                )
         if DETAILED_DEBUG:
             print(debug)
 
@@ -67,8 +77,9 @@ class TestWordExtraction(AbstractTestApiDocReader):
                 confs = self.__extract_conf_annotation(anns_conf, ann_bbox, node["text"])
                 text_type = self.__extract_texttype_annotation(anns_type, ann_bbox, node["text"])
 
-                words_annotation.append(BboxWithConfsType(start=ann_bbox["start"], end=ann_bbox["end"], bbox=ann_bbox["value"], confs=confs,
-                                                          text_type=text_type))
+                words_annotation.append(
+                    BboxWithConfsType(start=ann_bbox["start"], end=ann_bbox["end"], bbox=ann_bbox["value"], confs=confs, text_type=text_type)
+                )
 
             stack.extend(node["subparagraphs"])
 
@@ -91,13 +102,13 @@ class TestWordExtraction(AbstractTestApiDocReader):
         return words_annotation
 
     def __normalize_font_thickness(self, image: np.ndarray) -> Tuple[float, int]:
-        FONT_SCALE = 6e-4
-        THICKNESS_SCALE = 1e-3
+        font_scale = 6e-4
+        thickness_scale = 1e-3
         height, width, _ = image.shape
-        font_scale = min(width, height) * FONT_SCALE
-        thickness = math.ceil(min(width, height) * THICKNESS_SCALE)
+        font = min(width, height) * font_scale
+        thickness = math.ceil(min(width, height) * thickness_scale)
 
-        return font_scale, thickness
+        return font, thickness
 
     def __rotate_coordinate(self, x: int, y: int, xc: float, yc: float, angle: float) -> Tuple[int, int]:
         rad = angle * math.pi / 180
@@ -123,8 +134,10 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
             cv2.rectangle(image, p1, p2, (0, 255, 0) if ann.text_type == "typewritten" else (255, 0, 0))
             text = ",".join(ann.confs) if ann.confs != [] else "None"
-            cv2.putText(image, text, (int(bbox["x_top_left"] * bbox["page_width"]), int(bbox["y_top_left"] * bbox["page_height"])),
-                        cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), thickness)
+            cv2.putText(
+                image, text, (int(bbox["x_top_left"] * bbox["page_width"]), int(bbox["y_top_left"] * bbox["page_height"])), cv2.FONT_HERSHEY_SIMPLEX,
+                font_scale, (0, 0, 255), thickness
+            )
         return image
 
     def __draw_tables_words(self, tables: List[dict], image: np.ndarray) -> np.ndarray:
@@ -135,9 +148,9 @@ class TestWordExtraction(AbstractTestApiDocReader):
             image = self.__draw_word_annotations(image, word_annotations, angle=table_angle)
         return image
 
-    def test_pdf_documents(self):
+    def test_pdf_documents(self) -> None:
         filename_parameters_outputdir = [
-            ["pdf_with_text_layer/english_doc.pdf", dict(pdf_with_text_layer="true"),  "pdfminer_reader"],
+            ["pdf_with_text_layer/english_doc.pdf", dict(pdf_with_text_layer="true"), "pdfminer_reader"],
             ["pdf_with_text_layer/english_doc.pdf", dict(pdf_with_text_layer="tabby"), "tabby_reader"]
         ]
 
@@ -158,12 +171,13 @@ class TestWordExtraction(AbstractTestApiDocReader):
                 image = self.__draw_tables_words(tables, image)
             cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}.png"), image)
 
-    def test_table_word_extraction(self):
-        output_path = os.path.join(self.output_path, 'tables')
+    def test_table_word_extraction(self) -> None:
+        output_path = os.path.join(self.output_path, "tables")
         os.makedirs(output_path, exist_ok=True)
-        file_names = ["tables/example_with_table5.png", "tables/example_with_table3.png", "tables/example_with_table4.jpg",
-                      "tables/example_with_table6.png", "tables/example_with_table_horizontal_union.jpg",
-                      "scanned/orient_1.png", "tables/rotated_table.png"]
+        file_names = [
+            "tables/example_with_table5.png", "tables/example_with_table3.png", "tables/example_with_table4.jpg", "tables/example_with_table6.png",
+            "tables/example_with_table_horizontal_union.jpg", "scanned/orient_1.png", "tables/rotated_table.png"
+        ]
 
         for file_name in file_names:
             result = self._send_request(file_name, data=dict())
@@ -182,7 +196,7 @@ class TestWordExtraction(AbstractTestApiDocReader):
             if len(tables) > 0:
                 image = self.__draw_tables_words(tables, image)
 
-            cv2.imwrite(os.path.join(output_path, file_name.split('/')[-1]), image)
+            cv2.imwrite(os.path.join(output_path, file_name.split("/")[-1]), image)
 
     def test_document_table_split_last_column(self) -> None:
         filename_to_parameters = {

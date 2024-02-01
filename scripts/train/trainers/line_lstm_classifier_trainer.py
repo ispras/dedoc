@@ -151,10 +151,10 @@ class LSTMTrainer:
         self.class_dict = class_dict
         self.num_classes = len(class_dict)
         if torch.cuda.is_available() and on_gpu:
-            print("Device is cuda")  # noqa
+            print("Device is cuda")
             self.device = torch.device("cuda:0")
         else:
-            print("Device is cpu")  # noqa
+            print("Device is cpu")
             self.device = torch.device("cpu")
 
     def __get_labels(self, data: List[List[LineWithLabel]]) -> List[str]:
@@ -189,14 +189,14 @@ class LSTMTrainer:
         time_epoch = 0.0
 
         for epoch in range(self.num_epochs):
-            print("\n\t Epoch: {}".format(epoch))  # noqa
+            print(f"\n\t Epoch: {epoch}")
             # The Dataloader class handles all the shuffles for you
 
             loader_iter = iter(LineEpsDataSet(features_train, labels_train, self.class_dict))
             time_begin = time.time()
             train_loss, train_acc = self.train(lstm_model, loader_iter, len(labels_train), optimizer, criteria, batch_size=self.batch_size)
             time_epoch += time.time() - time_begin
-            print(f"\n\t \x1b\33[33mTrain: epoch: {epoch}| Train loss: {train_loss} | Train acc: {train_acc}\x1b[0m")  # noqa
+            print(f"\n\t \x1b\33[33mTrain: epoch: {epoch}| Train loss: {train_loss} | Train acc: {train_acc}\x1b[0m")
             if file_log:
                 file_log.write(f"\t Train: epoch: {epoch}| Train loss: {epoch} | Train acc: {train_loss}\n")
 
@@ -204,7 +204,7 @@ class LSTMTrainer:
             if with_eval:
                 loader_iter = iter(LineEpsDataSet(features_test, labels_test, self.class_dict))
                 test_loss, test_acc = self.evaluate(lstm_model, loader_iter, len(labels_test), criteria, batch_size=self.batch_size)
-                print(f"\n\t \x1b\33[92mEvaluation: Test loss: {test_loss} | Test acc: {test_acc}\x1b[0m")  # noqa
+                print(f"\n\t \x1b\33[92mEvaluation: Test loss: {test_loss} | Test acc: {test_acc}\x1b[0m")
                 if file_log:
                     file_log.write(f"\t Eval: epoch: {epoch}| Test loss: {test_loss} | Test acc: {test_acc}\n")
                 curr_loss = test_loss
@@ -219,7 +219,7 @@ class LSTMTrainer:
             if with_save and curr_loss < best_loss:
                 best_loss = curr_loss
                 torch.save(lstm_model.state_dict(), self.path_out)
-                print(f"Model has been saved into {self.path_out}")  # noqa
+                print(f"Model has been saved into {self.path_out}")
 
         return res_loss / self.num_epochs, res_acc / self.num_epochs, time_epoch / self.num_epochs
 
@@ -237,7 +237,7 @@ class LSTMTrainer:
         data = np.array(data, dtype=object)
 
         if with_cross_val:
-            print("\n\x1b\33[95m---------Evaluation process (cross-validation) starts-------\x1b[0m\n")  # noqa
+            print("\n\x1b\33[95m---------Evaluation process (cross-validation) starts-------\x1b[0m\n")
             kf = KFold(n_splits=self.n_splits)
             scores = []
             epoch_time = []
@@ -267,7 +267,7 @@ class LSTMTrainer:
             scores_dict["scores"] = scores
             logfile_kfold_tmp.close()
 
-        print("\n\x1b\33[95m-------------------Train process starts------------------\x1b[0m\n")  # noqa
+        print("\n\x1b\33[95m-------------------Train process starts------------------\x1b[0m\n")
         features_train, labels_train = self.get_features(data)
         lstm_model = LSTM(input_dim=features_train.shape[1], hidden_dim=features_train.shape[1],
                           hidden_dim_2=lstm_hidden_dim, num_classes=self.num_classes, lstm_layers=lstm_layers,
@@ -278,7 +278,7 @@ class LSTMTrainer:
                                                             labels_test=None,
                                                             file_log=None,
                                                             with_save=True, with_eval=False)
-        print("\x1b\33[92mFinal Accuracy from training = {}\x1b[0m".format(acc))  # noqa
+        print(f"\x1b\33[92mFinal Accuracy from training = {acc}\x1b[0m")
         scores_dict["final_accuracy"] = acc
 
         if self.path_scores is not None:
@@ -338,7 +338,7 @@ class LSTMTrainer:
             epoch_acc += accuracy
             cnt += 1
             if log_per_cnt != 0 and batch_num % log_per_cnt == 0:
-                print(f"\t\tbatch_num: {batch_num}, loss={epoch_loss / cnt}, acc={epoch_acc / cnt}")  # noqa
+                print(f"\t\tbatch_num: {batch_num}, loss={epoch_loss / cnt}, acc={epoch_acc / cnt}")
 
         return epoch_loss / cnt, epoch_acc / cnt
 

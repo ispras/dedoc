@@ -14,7 +14,6 @@ exclude =
     .github,
     *__init__.py,
     resources,
-    scripts,
     venv,
     build,
     dedoc.egg-info
@@ -23,3 +22,5 @@ exclude =
 # ANN101 - type annotations for self
 ignore =
     ANN101
+per-file-ignores =
+    scripts/*:T201

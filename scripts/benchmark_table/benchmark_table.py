@@ -1,8 +1,9 @@
-import zipfile
-from pathlib import Path
 import json
 import pprint
-from typing import Optional, List
+import zipfile
+from pathlib import Path
+from typing import List, Optional
+
 import numpy as np
 import wget
 
@@ -63,7 +64,7 @@ def download_dataset(data_dir: Path, name_zip: str, url: str) -> None:
     pdfs_zip_path = data_dir / name_zip
     wget.download(url, str(data_dir))
 
-    with zipfile.ZipFile(pdfs_zip_path, 'r') as zip_ref:
+    with zipfile.ZipFile(pdfs_zip_path, "r") as zip_ref:
         zip_ref.extractall(data_dir)
     pdfs_zip_path.unlink()
 
@@ -83,19 +84,17 @@ def benchmark_on_our_data() -> dict:
     path_images = data_dir / "images"
     path_gt = data_dir / "gt.json"
     path_pred = data_dir / "pred.json"
-    download_dataset(data_dir,
-                     name_zip="benchmark_table_data.zip",
-                     url="https://at.ispras.ru/owncloud/index.php/s/Xaf4OyHj6xN2RHH/download")
+    download_dataset(data_dir, name_zip="benchmark_table_data.zip", url="https://at.ispras.ru/owncloud/index.php/s/Xaf4OyHj6xN2RHH/download")
 
     mode_metric_structure_only = False
 
     with open(path_gt, "r") as fp:
         gt_json = json.load(fp)
-    '''
+    """
     Creating base html (based on method predictions for future labeling)
     path_images = data_dir / "images_tmp"
     pred_json = prediction("gt_tmp.json", path_images)
-    '''
+    """
     pred_json = prediction(path_pred, path_images)
     scores = call_metric(pred_json=pred_json, true_json=gt_json, structure_only=mode_metric_structure_only)
 
@@ -113,7 +112,7 @@ def benchmark_on_generated_table() -> dict:
     Article generation information https://arxiv.org/pdf/1905.13391.pdf
     Note: generate the 1st table tape category
     Note: don't use header table tag <th>, replacing on <td> tag
-    Note: all generated data (four categories) you can download from 
+    Note: all generated data (four categories) you can download from
     TODO: some tables have a low quality. Should to trace the reason.
     All generated data (all categories) we can download from https://at.ispras.ru/owncloud/index.php/s/cjpCIR7I0G4JzZU
     """
@@ -129,7 +128,7 @@ def benchmark_on_generated_table() -> dict:
     # make common ground-truth file
     common_gt_json = {}
     for pathname in Path.iterdir(path_gt):
-        image_name = pathname.name.split(".")[0] + '.png'
+        image_name = pathname.name.split(".")[0] + ".png"
         with open(pathname, "r") as fp:
             table_html = fp.read()
             # exclude header tags
@@ -146,9 +145,7 @@ def benchmark_on_generated_table() -> dict:
     path_pred = data_dir / "pred.json"
 
     pred_json = prediction(path_pred, path_images)
-    scores = call_metric(pred_json=pred_json, true_json=common_gt_json,
-                         structure_only=mode_metric_structure_only,
-                         ignore_nodes=['span', 'style', 'head', 'h4'])
+    scores = call_metric(pred_json=pred_json, true_json=common_gt_json, structure_only=mode_metric_structure_only, ignore_nodes=["span", "style", "head", "h4"])
 
     result = dict()
     result["mode_metric_structure_only"] = mode_metric_structure_only

@@ -17,16 +17,14 @@ def skip_labels(label: str) -> Optional[str]:
 
 classifier_name = "diploma_classifier"
 
-clf_resources_path = os.path.join(os.path.expanduser('~'), ".cache", "dedoc", "resources", "line_type_classifiers")
+clf_resources_path = os.path.join(os.path.expanduser("~"), ".cache", "dedoc", "resources", "line_type_classifiers")
 os.makedirs(clf_resources_path, exist_ok=True)
 resources_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources"))
 assert os.path.isdir(resources_path)
 
-path_out = os.path.join(clf_resources_path, "{}.pkl.gz".format(classifier_name))
-path_scores = os.path.join(resources_path, "benchmarks", "{}_scores.json".format(classifier_name))
-path_feature_importances = os.path.join(resources_path,
-                                        "feature_importances",
-                                        "{}_feature_importances.xlsx".format(classifier_name))
+path_out = os.path.join(clf_resources_path, f"{classifier_name}.pkl.gz")
+path_scores = os.path.join(resources_path, "benchmarks", f"{classifier_name}_scores.json")
+path_feature_importances = os.path.join(resources_path, "feature_importances", f"{classifier_name}_feature_importances.xlsx")
 
 feature_extractor = DiplomaFeatureExtractor()
 classifier_parameters = dict(learning_rate=0.5,

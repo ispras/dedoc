@@ -77,14 +77,16 @@ def _get_avg(array: List) -> float:
 
 
 def _get_avg_by_dataset(statistics: Dict, dataset: str) -> List:
-    return [_get_avg(statistics[dataset]["ASCII_Spacing_Characters"]),
-            _get_avg(statistics[dataset]["ASCII_Special_Symbols"]),
-            _get_avg(statistics[dataset]["ASCII_Digits"]),
-            _get_avg(statistics[dataset]["ASCII_Uppercase_Letters"]),
-            _get_avg(statistics[dataset]["Latin1_Special_Symbols"]),
-            _get_avg(statistics[dataset]["Cyrillic"]),
-            sum(statistics[dataset]["Amount of words"]),
-            _get_avg(statistics[dataset]["Accuracy"])]
+    return [
+        _get_avg(statistics[dataset]["ASCII_Spacing_Characters"]),
+        _get_avg(statistics[dataset]["ASCII_Special_Symbols"]),
+        _get_avg(statistics[dataset]["ASCII_Digits"]),
+        _get_avg(statistics[dataset]["ASCII_Uppercase_Letters"]),
+        _get_avg(statistics[dataset]["Latin1_Special_Symbols"]),
+        _get_avg(statistics[dataset]["Cyrillic"]),
+        sum(statistics[dataset]["Amount of words"]),
+        _get_avg(statistics[dataset]["Accuracy"])
+    ]
 
 
 def __parse_symbol_info(lines: List[str]) -> Tuple[List, int]:
@@ -106,7 +108,7 @@ def __parse_symbol_info(lines: List[str]) -> Tuple[List, int]:
 def __parse_ocr_errors(lines: List[str]) -> List:
     ocr_errors = []
     matched_errors = [(line_num, line) for line_num, line in enumerate(lines) if "Errors   Marked   Correct-Generated" in line][0]
-    for num, line in enumerate(lines[matched_errors[0] + 1:]):
+    for line in lines[matched_errors[0] + 1:]:
         # example line: " 2        0   { 6}-{б}"
         errors = re.findall(r"(\d+)", line)[0]
         chars = re.findall(r"{(.*)}-{(.*)}", line)[0]
@@ -158,8 +160,12 @@ def __get_summary_symbol_error(path_reports: str) -> Texttable:
 
 def __create_statistic_tables(statistics: dict, accuracy_values: List) -> Tuple[Texttable, Texttable]:
     accs = [["Dataset", "Image name", "--psm", "Amount of words", "Accuracy OCR"]]
-    accs_common = [["Dataset", "ASCII_Spacing_Chars", "ASCII_Special_Symbols", "ASCII_Digits",
-                    "ASCII_Uppercase_Chars", "Latin1_Special_Symbols", "Cyrillic", "Amount of words", "AVG Accuracy"]]
+    accs_common = [
+        [
+            "Dataset", "ASCII_Spacing_Chars", "ASCII_Special_Symbols", "ASCII_Digits", "ASCII_Uppercase_Chars", "Latin1_Special_Symbols", "Cyrillic",
+            "Amount of words", "AVG Accuracy"
+        ]
+    ]
 
     table_accuracy_per_image = Texttable()
     accs.extend(accuracy_values)
@@ -289,11 +295,11 @@ if __name__ == "__main__":
     with open(os.path.join(output_dir, f"tesseract_benchmark{USE_CORRECTION_OCR}.txt"), "w") as res_file:
         res_file.write(f"Tesseract version is {pytesseract.get_tesseract_version()}\n")
         res_file.write(f"Correction step: {USE_CORRECTION_OCR}\n")
-        res_file.write(f"\nTable 1 - Accuracy for each file\n")
+        res_file.write("\nTable 1 - Accuracy for each file\n")
         res_file.write(table_accuracy_per_image.draw())
-        res_file.write(f"\n\nTable 2 - AVG by each type of symbols:\n")
+        res_file.write("\n\nTable 2 - AVG by each type of symbols:\n")
         res_file.write(table_common.draw())
-        res_file.write(f"\n\nTable 3 -OCR error by symbol:\n")
+        res_file.write("\n\nTable 3 -OCR error by symbol:\n")
         res_file.write(table_errors.draw())
 
     print(f"Tesseract version is {pytesseract.get_tesseract_version()}")

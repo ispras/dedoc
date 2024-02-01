@@ -2,11 +2,11 @@ import os
 from typing import Tuple
 
 import torch
-from sage.spelling_correction.corrector import Corrector
 from sage.spelling_correction import AvailableCorrectors
 from sage.spelling_correction import RuM2M100ModelForSpellingCorrection
+from sage.spelling_correction.corrector import Corrector
 
-'''
+"""
 Install sage library (for ocr correction step):
 git clone https://github.com/ai-forever/sage.git
 cd sage
@@ -14,7 +14,7 @@ pip install .
 pip install -r requirements.txt
 
 Note: sage use 5.2 Gb GPU ......
-'''
+"""
 USE_GPU = True
 
 
@@ -39,5 +39,3 @@ def init_correction_step(cache_dir: str) -> Tuple[Corrector, str]:
     else:
         print("use CPU")
     return corrector, corrected_path
-
-

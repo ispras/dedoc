@@ -32,10 +32,10 @@ class ErrorsSaver:
         assert len(set(errors_uids)) == len(errors_uids)
         self.logger.info(f"save errors in {self.errors_path}")
         errors_total_num = sum(error_cnt.values())
-        print(f"{'true':16s} -> {'predicted':16s} {'cnt':6s} {'(percent)':16s}")  # noqa
+        print(f"{'true':16s} -> {'predicted':16s} {'cnt':6s} {'(percent)':16s}")
         for error, cnt in error_cnt.most_common():
             y_true, y_pred = error
-            print(f"{y_true:16s} -> {y_pred:16s} {cnt:06,} ({100 * cnt / errors_total_num:02.2f}%)")  # noqa
+            print(f"{y_true:16s} -> {y_pred:16s} {cnt:06,} ({100 * cnt / errors_total_num:02.2f}%)")
 
         if save_errors_images:
             self.__save_images(errors_uids, csv_path)

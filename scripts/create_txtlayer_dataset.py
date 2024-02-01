@@ -17,9 +17,9 @@ from dedoc.readers import PdfImageReader
 
 class CorrectTextGenerator:
     def __init__(self) -> None:
-        self.citation = re.compile(r'\[\d+]')
-        self.meta = re.compile(r'\[править \| править код]')
-        self.symbols = re.compile(r'[→←↑]')
+        self.citation = re.compile(r"\[\d+]")
+        self.meta = re.compile(r"\[править \| править код]")
+        self.symbols = re.compile(r"[→←↑]")
 
         self.title_url = "https://{lang}.wikipedia.org/w/api.php?origin=*&action=query&format=json&list=random&rnlimit=1&rnnamespace=0"
         self.article_url = "https://{lang}.wikipedia.org/w/api.php?origin=*&action=parse&format=json&page={title}&prop=text"
@@ -37,15 +37,15 @@ class CorrectTextGenerator:
                 # 2 - Get text the article
                 article_result = requests.post(self.article_url.format(lang=lang, title=title))
                 article_result_dict = article_result.json()
-                article = article_result_dict["parse"]["text"]['*']
-                bs = BeautifulSoup(article, 'html.parser')
+                article = article_result_dict["parse"]["text"]["*"]
+                bs = BeautifulSoup(article, "html.parser")
                 article_text = bs.get_text()
 
                 # 3 - Clear text of the article from unused symbols
-                article_text_fixed = re.sub(self.citation, '', article_text)
+                article_text_fixed = re.sub(self.citation, "", article_text)
                 article_text_fixed = re.sub(self.meta, "", article_text_fixed)
                 article_text_fixed = re.sub(self.symbols, "", article_text_fixed)
-                article_text_fixed = re.sub(r'\n+', "\n", article_text_fixed)
+                article_text_fixed = re.sub(r"\n+", "\n", article_text_fixed)
             except:  # noqa
                 article_text_fixed = ""
 
@@ -62,18 +62,22 @@ class EncodingCorruptor(Corruptor):
     def __init__(self) -> None:
         self.encodings = {
             "en": {
-                "input": ['cp1026'],
-                "output": ['cp1256', 'cp437', 'cp775', 'cp852', 'cp855', 'cp857', 'cp860', 'cp861', 'cp862', 'cp863', 'cp866', 'gb18030', 'hp_roman8',
-                           'iso8859_10', 'iso8859_11', 'iso8859_13', 'iso8859_14', 'iso8859_16', 'iso8859_2', 'iso8859_4', 'iso8859_5', 'koi8_r',
-                           'mac_cyrillic', 'mac_greek', 'mac_latin2', 'mac_roman']
+                "input": ["cp1026"],
+                "output": [
+                    "cp1256", "cp437", "cp775", "cp852", "cp855", "cp857", "cp860", "cp861", "cp862", "cp863", "cp866", "gb18030", "hp_roman8",
+                    "iso8859_10", "iso8859_11", "iso8859_13", "iso8859_14", "iso8859_16", "iso8859_2", "iso8859_4", "iso8859_5", "koi8_r",
+                    "mac_cyrillic", "mac_greek", "mac_latin2", "mac_roman"
+                ]
 
             },
             "ru": {
-                "input": ['cp855', 'cp866', 'gb18030', 'iso8859_5', 'koi8_r', 'mac_cyrillic', 'utf_8'],
-                "output": ['cp1026', 'cp1256', 'cp437', 'cp775', 'cp850', 'cp852', 'cp863', 'cp866', 'hp_roman8', 'iso8859_10', 'iso8859_11',
-                           'iso8859_13', 'iso8859_14', 'iso8859_15', 'iso8859_16', 'iso8859_2', 'iso8859_4', 'iso8859_5', 'iso8859_9', 'koi8_r',
-                           'mac_cyrillic', 'mac_greek', 'mac_latin2', 'mac_roman', 'cp1140', 'cp273', 'cp855', 'cp860', 'cp861', 'cp857', 'cp500',
-                           'cp862', 'gb18030']
+                "input": ["cp855", "cp866", "gb18030", "iso8859_5", "koi8_r", "mac_cyrillic", "utf_8"],
+                "output": [
+                    "cp1026", "cp1256", "cp437", "cp775", "cp850", "cp852", "cp863", "cp866", "hp_roman8", "iso8859_10", "iso8859_11",
+                    "iso8859_13", "iso8859_14", "iso8859_15", "iso8859_16", "iso8859_2", "iso8859_4", "iso8859_5", "iso8859_9", "koi8_r",
+                    "mac_cyrillic", "mac_greek", "mac_latin2", "mac_roman", "cp1140", "cp273", "cp855", "cp860", "cp861", "cp857", "cp500",
+                    "cp862", "gb18030"
+                ]
 
             }
         }

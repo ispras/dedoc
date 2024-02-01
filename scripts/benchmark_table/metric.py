@@ -11,17 +11,18 @@
 
 # Source: https://github.com/ibm-aur-nlp/PubTabNet
 
+from collections import deque
+from typing import Optional
+
 import distance
 from apted import APTED, Config
 from apted.helpers import Tree
 from lxml import etree, html
-from collections import deque
-
 from tqdm import tqdm
 
 
 class TableTree(Tree):
-    def __init__(self, tag, colspan=None, rowspan=None, content=None, visible=None, *children):
+    def __init__(self, tag: str, colspan=None, rowspan=None, content=None, visible=None, *children):  # noqa
         self.tag = tag
         self.colspan = colspan
         self.rowspan = rowspan
@@ -29,10 +30,11 @@ class TableTree(Tree):
         self.visible = visible
         self.children = list(children)
 
-    def bracket(self):
-        """Show tree using brackets notation
+    def bracket(self) -> str:
         """
-        if self.tag == "td" or self.tag == 'th':
+        Show tree using brackets notation
+        """
+        if self.tag == "td" or self.tag == "th":
             result = f'"tag": {self.tag}, "colspan": {self.colspan}, "rowspan": {self.rowspan}, "text": {self.content}'
         else:
             result = f'"tag": {self.tag}'
@@ -43,18 +45,22 @@ class TableTree(Tree):
 
 class CustomConfig(Config):
     @staticmethod
-    def maximum(*sequences):
-        """Get maximum possible value
+    def maximum(*sequences):  # noqa
+        """
+        Get maximum possible value
         """
         return max(map(len, sequences))
 
-    def normalized_distance(self, *sequences) -> float:
-        """Get distance from 0 to 1
+    def normalized_distance(self, *sequences) -> float:  # noqa
+        """
+        Get distance from 0 to 1
         """
         return float(distance.levenshtein(*sequences)) / self.maximum(*sequences)
 
     def rename(self, node1: TableTree, node2: TableTree) -> float:
-        """Compares attributes of trees"""
+        """
+        Compares attributes of trees
+        """
         if (node1.tag != node2.tag) or (node1.colspan != node2.colspan) or (node1.rowspan != node2.rowspan):
             return 1.
         if node1.tag == "td":
@@ -66,18 +72,20 @@ class CustomConfig(Config):
 
 
 class TEDS(object):
-    """ Tree Edit Distance based Similarity
+    """
+    Tree Edit Distance based Similarity
     """
 
-    def __init__(self, structure_only=False, n_jobs=1, ignore_nodes=None):
+    def __init__(self, structure_only: bool = False, n_jobs: int = 1, ignore_nodes: Optional[list] = None) -> None:
         assert isinstance(n_jobs, int) and (n_jobs >= 1), "n_jobs must be an integer greather than 1"
         self.structure_only = structure_only
         self.n_jobs = n_jobs
         self.ignore_nodes = ignore_nodes
         self.__tokens__ = []
 
-    def tokenize(self, node):
-        """ Tokenizes table cells
+    def tokenize(self, node: TableTree) -> None:
+        """
+        Tokenizes table cells
         """
         self.__tokens__.append(f"<{node.tag}>")
         if node.text is not None:
@@ -89,11 +97,11 @@ class TEDS(object):
         if node.tag != "td" and node.tail is not None:
             self.__tokens__ += list(node.tail)
 
-    def get_span(self, node, name_span: str) -> int:
+    def get_span(self, node: TableTree, name_span: str) -> int:
         value = int(node.attrib.get(name_span, "1"))
         return 1 if value <= 0 else value
 
-    def load_html_tree(self, node, parent=None):
+    def load_html_tree(self, node: TableTree, parent: Optional[TableTree] = None) -> TableTree:
         """ Converts HTML tree to the format required by apted
         """
         if node.tag == "td":
@@ -109,7 +117,7 @@ class TEDS(object):
                                      colspan=self.get_span(node, "colspan"),
                                      rowspan=self.get_span(node, "rowspan"),
                                      content=cell,
-                                     visible=False if node.attrib.get("style") == "display: none" else True, *deque())
+                                     visible=node.attrib.get("style") != "display: none", *deque())  # noqa
             except Exception as ex:
                 print(f"Bad html file. HTML parse exception. Exception's msg: {ex}")
                 raise ex
@@ -148,12 +156,13 @@ class TEDS(object):
         else:
             return 0.0
 
-    def batch_evaluate(self, pred_json, true_json):
-        """ Computes TEDS score between the prediction and the ground truth of
-            a batch of samples
-            @params pred_json: {'FILENAME': 'HTML CODE', ...}
-            @params true_json: {'FILENAME': {'html': 'HTML CODE'}, ...}
-            @output: {'FILENAME': 'TEDS SCORE', ...}
+    def batch_evaluate(self, pred_json: dict, true_json: dict) -> dict:
+        """
+        Computes TEDS score between the prediction and the ground truth of a batch of samples
+
+        :param pred_json: {'FILENAME': 'HTML CODE', ...}
+        :param true_json: {'FILENAME': {'html': 'HTML CODE'}, ...}
+        :return: {'FILENAME': 'TEDS SCORE', ...}
         """
         samples = true_json.keys()
         scores = [self.evaluate(pred_json.get(filename, "")["html"], true_json[filename]["html"]) for filename in tqdm(samples)]

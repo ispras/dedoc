@@ -24,10 +24,10 @@ if __name__ == "__main__":
         wget.download(URL, pdfs_zip_path)
         wget.download(URL_GT, pdfs_zip_gt_path)
 
-        with zipfile.ZipFile(pdfs_zip_path, 'r') as zip_ref:
+        with zipfile.ZipFile(pdfs_zip_path, "r") as zip_ref:
             zip_ref.extractall(data_dir)
         os.remove(pdfs_zip_path)
-        with zipfile.ZipFile(pdfs_zip_gt_path, 'r') as zip_ref:
+        with zipfile.ZipFile(pdfs_zip_gt_path, "r") as zip_ref:
             zip_ref.extractall(data_dir)
         os.remove(pdfs_zip_gt_path)
 
@@ -53,7 +53,7 @@ if __name__ == "__main__":
             accuracy_path = Path(tmpdir) / "accuracy.txt"
             if accuracy_path.exists():
                 accuracy_path.unlink()
-            command = f"{accuracy_script_path} \"{gt_path}\" {tmp_ocr_path} >> {accuracy_path}"
+            command = f'{accuracy_script_path} "{gt_path}" {tmp_ocr_path} >> {accuracy_path}'
             os.system(command)
 
             with open(accuracy_path, "r") as f:

@@ -8,24 +8,20 @@ from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader
 
+from dedoc.config import get_config
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.dataset_executor import DataLoaderImageOrient
 
 parser = argparse.ArgumentParser()
-checkpoint_path_save = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                    "../../resources/efficient_net_b0_fixed.pth"))
-checkpoint_path_load = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                    "../../resources/efficient_net_b0_fixed.pth"))
+checkpoint_path_save = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "efficient_net_b0_fixed.pth"))
+checkpoint_path_load = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "efficient_net_b0_fixed.pth"))
 checkpoint_path = "../../resources"
 
 parser.add_argument("-t", "--train", type=bool, help="run for train model", default=False)
-parser.add_argument("-s", "--checkpoint_save", help="Path to checkpoint for save or load",
-                    default=checkpoint_path_save)
-parser.add_argument("-l", "--checkpoint_load", help="Path to checkpoint for load",
-                    default=checkpoint_path_load)
+parser.add_argument("-s", "--checkpoint_save", help="Path to checkpoint for save or load", default=checkpoint_path_save)
+parser.add_argument("-l", "--checkpoint_load", help="Path to checkpoint for load", default=checkpoint_path_load)
 parser.add_argument("-f", "--from_checkpoint", type=bool, help="run for train model", default=True)
-parser.add_argument("-d", "--input_data_folder", help="Path to data with folders train or test",
-                    default="/home/nasty/data/columns_orientation")
+parser.add_argument("-d", "--input_data_folder", help="Path to data with folders train or test")
 
 args = parser.parse_args()
 BATCH_SIZE = 1
@@ -41,23 +37,20 @@ def accuracy_step(data_executor: DataLoaderImageOrient, net_executor: ColumnsOri
     """
     net_executor.net.eval()
     testloader = data_executor.load_dataset(
-        csv_path=os.path.join(args.input_data_folder, 'test/labels.csv'),
+        csv_path=os.path.join(args.input_data_folder, "test/labels.csv"),
         image_path=args.input_data_folder,
         batch_size=BATCH_SIZE
     )
     dataiter = iter(testloader)
     sample = dataiter.__next__()
-    _, orientation, columns = sample['image'], sample['orientation'], sample['columns']
+    _, orientation, columns = sample["image"], sample["orientation"], sample["columns"]
 
-    print('GroundTruth: orientation {}, columns {}'.format(orientation, columns))
+    print(f"GroundTruth: orientation {orientation}, columns {columns}")
 
     calc_accuracy_by_classes(testloader, data_executor.classes, net_executor, batch_size=1)
 
 
-def calc_accuracy_by_classes(testloader: DataLoader,
-                             classes: List,
-                             classifier: ColumnsOrientationClassifier,
-                             batch_size: int = 1) -> None:
+def calc_accuracy_by_classes(testloader: DataLoader, classes: List, classifier: ColumnsOrientationClassifier, batch_size: int = 1) -> None:
     """
     Function calculates accuracy ba each class
     :param testloader: DataLoader
@@ -66,13 +59,13 @@ def calc_accuracy_by_classes(testloader: DataLoader,
     :param batch_size: size of batch
     :return:
     """
-    class_correct = list(0. for i in range(len(classes)))
-    class_total = list(0. for i in range(len(classes)))
+    class_correct = list(0. for _ in range(len(classes)))
+    class_total = list(0. for _ in range(len(classes)))
     time_predict = 0
     cnt_predict = 0
     with torch.no_grad():
         for data in testloader:
-            images, orientation, columns = data['image'], data['orientation'], data['columns']
+            images, orientation, columns = data["image"], data["orientation"], data["columns"]
             time_begin = time()
 
             outputs = classifier.net(images.float().to(classifier.device))
@@ -97,21 +90,16 @@ def calc_accuracy_by_classes(testloader: DataLoader,
                 class_correct[columns_i] += orientation_bool_predict
                 class_total[columns_i] += 1
                 if not orientation_bool_predict or not columns_bool_predict:
-                    print('{} predict as \norientation: {} \ncolumns: {}'.format(data['image_name'][i],
-                                                                                 classes[2 + orientation_predicted[i]],
-                                                                                 classes[columns_predicted[i]]))
+                    print( # noqa
+                        f'{data["image_name"][i]} predict as \norientation: {classes[2 + orientation_predicted[i]]} \ncolumns: {classes[columns_predicted[i]]}'
+                    )
 
     for i in range(len(classes)):
-        print('Accuracy of %5s : %2d %%' % (
-            classes[i], 100 * class_correct[i] / class_total[i] if class_total[i] != 0 else 0))
-    print('=== AVG Time predict {}'.format(time_predict / cnt_predict))
+        print(f"Accuracy of {classes[i]:5s} : {100 * class_correct[i] / class_total[i] if class_total[i] != 0 else 0:2d} %")
+    print(f"=== AVG Time predict {time_predict / cnt_predict}")
 
 
-def train_model(trainloader: DataLoader,
-                checkpoint_path_save: str,
-                classifier: ColumnsOrientationClassifier,
-                epoch_cnt: int = 7,
-                save_step: int = 500) -> None:
+def train_model(trainloader: DataLoader, checkpoint_path_save: str, classifier: ColumnsOrientationClassifier, epoch_cnt: int = 7, save_step: int = 500) -> None:
     """
     Function for train orientation classifier
     :param trainloader: DataLoader
@@ -128,7 +116,7 @@ def train_model(trainloader: DataLoader,
         running_loss = 0.0
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
-            inputs, orientation, columns = data['image'], data['orientation'], data['columns']
+            inputs, orientation, columns = data["image"], data["orientation"], data["columns"]
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -136,17 +124,14 @@ def train_model(trainloader: DataLoader,
             # forward + backward + optimize
             outputs = classifier.net(inputs.float().to(classifier.device))
 
-            loss = criterion(outputs[:, :2],
-                             columns.to(classifier.device)) + criterion(outputs[:, 2:],
-                                                                        orientation.to(classifier.device))
+            loss = criterion(outputs[:, :2], columns.to(classifier.device)) + criterion(outputs[:, 2:], orientation.to(classifier.device))
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
 
             # print statistics
             if i % 100 == 99:
-                print('[%d, %5d] loss: %.3f' %
-                      (epoch + 1, i + 1, running_loss / 100))
+                print(f"[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 100:.3f}")
                 running_loss = 0.0
 
             # save checkpoint
@@ -154,14 +139,14 @@ def train_model(trainloader: DataLoader,
                 classifier.save_weights(checkpoint_path_save)
 
     classifier.save_weights(checkpoint_path_save)
-    print('Finished Training')
+    print("Finished Training")
 
 
 def train_step(data_executor: DataLoaderImageOrient, classifier: ColumnsOrientationClassifier) -> None:
     classifier.net.train()
     # Part 1 - load datas
     trainloader = data_executor.load_dataset(
-        csv_path=os.path.join(args.input_data_folder, 'train/labels.csv'),
+        csv_path=os.path.join(args.input_data_folder, "train/labels.csv"),
         image_path=args.input_data_folder,
         batch_size=BATCH_SIZE
     )
@@ -169,22 +154,20 @@ def train_step(data_executor: DataLoaderImageOrient, classifier: ColumnsOrientat
     # get some random training images
     dataiter = iter(trainloader)
     sample = dataiter.__next__()
-    _, orientation, columns = sample['image'], sample['orientation'], sample['columns']
+    _, orientation, columns = sample["image"], sample["orientation"], sample["columns"]
 
     # print labels
-    print(' '.join('%5s' % data_executor.classes[orientation[j]] for j in range(BATCH_SIZE)))
-    print(' '.join('%5s' % data_executor.classes[columns[j]] for j in range(BATCH_SIZE)))
+    print(" ".join(f"{data_executor.classes[orientation[j]]:5s}" for j in range(BATCH_SIZE)))
+    print(" ".join(f"{data_executor.classes[columns[j]]:5s}" for j in range(BATCH_SIZE)))
 
     # Part 2 - train model
     train_model(trainloader, args.checkpoint_save, classifier)
 
 
 if __name__ == "__main__":
-    from dedoc.config import _config as config
+    config = get_config()
     data_executor = DataLoaderImageOrient()
-    net = ColumnsOrientationClassifier(on_gpu=True,
-                                       checkpoint_path=checkpoint_path if not args.train else '',
-                                       config=config)
+    net = ColumnsOrientationClassifier(on_gpu=True, checkpoint_path=checkpoint_path if not args.train else "", config=config)
     if args.train:
         train_step(data_executor, net)
     else:

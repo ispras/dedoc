@@ -33,18 +33,18 @@ def get_cpu_performance() -> float:
 
 
 cpu_performance = get_cpu_performance()
-print('"cpu_performance" = {}'.format(cpu_performance))
+print(f'"cpu_performance" = {cpu_performance}')
 
 with TemporaryDirectory() as path_base:
     path_out = os.path.join(path_base, "dataset.zip")
     wget.download(data_url, path_out)
-    with zipfile.ZipFile(path_out, 'r') as zip_ref:
+    with zipfile.ZipFile(path_out, "r") as zip_ref:
         zip_ref.extractall(path_base)
     print(path_base)
 
     failed = []
     result = OrderedDict()
-    result["version"] = requests.get("{}/version".format(host)).text
+    result["version"] = requests.get(f"{host}/version").text
     result["cpu_performance"] = cpu_performance
     tasks = [
         Task("images", "images", {}),
@@ -90,5 +90,5 @@ with TemporaryDirectory() as path_base:
 
     with open(path_result, "w") as file_out:
         json.dump(obj=result, fp=file_out, indent=4, ensure_ascii=False)
-    print("save result in" + path_result)
+    print(f"save result in {path_result}")
     print(failed)

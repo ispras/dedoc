@@ -17,11 +17,9 @@ classifier_name = "paragraph_classifier"
 
 resources_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources"))
 assert os.path.isdir(resources_path)
-path_out = os.path.join(resources_path, "{}.pkl.gz".format(classifier_name))
-path_scores = os.path.join(resources_path, "benchmarks", "{}_scores.json".format(classifier_name))
-path_feature_importances = os.path.join(resources_path,
-                                        "feature_importances",
-                                        "{}_feature_importances.xlsx".format(classifier_name))
+path_out = os.path.join(resources_path, f"{classifier_name}.pkl.gz")
+path_scores = os.path.join(resources_path, "benchmarks", f"{classifier_name}_scores.json")
+path_feature_importances = os.path.join(resources_path, "feature_importances", f"{classifier_name}_feature_importances.xlsx")
 
 feature_extractor = ParagraphFeatureExtractor(config=config)
 
@@ -48,4 +46,4 @@ trainer = XGBoostLineClassifierTrainer(
 )
 
 trainer.fit(cross_val_only=False, save_errors_images=False)
-print("successfully train {} classifier".format(classifier_name))
+print(f"successfully train {classifier_name} classifier")

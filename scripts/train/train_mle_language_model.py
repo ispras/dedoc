@@ -16,11 +16,11 @@ def tokenize_doc(text_layer: str) -> str:
     # converting to lowercase
     text_layer = text_layer.lower()
     # remove all the special characters
-    document = re.sub(r'\W', ' ', text_layer)
+    document = re.sub(r"\W", " ", text_layer)
     # remove all single characters
-    document = re.sub(r'\^[a-zA-Z]\s+', ' ', document)
+    document = re.sub(r"\^[a-zA-Z]\s+", " ", document)
     # substituting multiple spaces with single space
-    document = re.sub(r'\s+', ' ', document, flags=re.I)
+    document = re.sub(r"\s+", " ", document, flags=re.I)
     return document
 
 
@@ -42,7 +42,7 @@ def main() -> None:
         print(files)
         for writer in file:
             try:
-                with open(path_big_data + files + '/' + writer) as f:
+                with open(path_big_data + files + "/" + writer) as f:
                     text = f.read()
                     document = tokenize_doc(text)
                     documents.append(document)
@@ -61,5 +61,5 @@ def main() -> None:
         pickle.dump(language_model_mle, f)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

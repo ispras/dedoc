@@ -45,11 +45,11 @@ class GetTextAndTarget:
                 with open(path, mode="r") as f:
                     text = f.read()
             except Exception as e:
-                print(f'Bad file {str(e)}: {path}')
+                print(f"Bad file {str(e)}: {path}")
                 continue
 
             if len(text.strip()) == 0:
-                print(f'Empty file: {path}')
+                print(f"Empty file: {path}")
                 continue
 
             texts.append(text)
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     if not os.path.isdir(txtlayer_classifier_dataset_dir):
         path_out = os.path.join(data_dir, "data.zip")
         wget.download("https://at.ispras.ru/owncloud/index.php/s/z9WLFiKKFo2WMgW/download", path_out)
-        with zipfile.ZipFile(path_out, 'r') as zip_ref:
+        with zipfile.ZipFile(path_out, "r") as zip_ref:
             zip_ref.extractall(data_dir)
         os.remove(path_out)
         print(f"Dataset downloaded to {txtlayer_classifier_dataset_dir}")
@@ -85,20 +85,16 @@ if __name__ == "__main__":
         stages_data[stage] = dict(features=features, labels=labels)
 
     clf = XGBClassifier(random_state=42, learning_rate=0.5, n_estimators=600, booster="gbtree", tree_method="hist", max_depth=3)
-    clf.fit(
-        X=stages_data["train"]["features"],
-        y=stages_data["train"]["labels"],
-        eval_set=[(stages_data["val"]["features"], stages_data["val"]["labels"])],
-    )
+    clf.fit(X=stages_data["train"]["features"], y=stages_data["train"]["labels"], eval_set=[(stages_data["val"]["features"], stages_data["val"]["labels"])])
     test_preds = clf.predict(stages_data["test"]["features"])
 
     score = f1_score(stages_data["test"]["labels"], test_preds)
     print(f"F1 score = {score}")
 
     resources_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "..", "resources")
-    with gzip.open(os.path.join(resources_dir, 'txtlayer_classifier.pkl.gz'), 'wb') as file:
+    with gzip.open(os.path.join(resources_dir, "txtlayer_classifier.pkl.gz"), "wb") as file:
         pickle.dump(clf, file)
 
     xgbfir.saveXgbFI(clf,
                      feature_names=features.columns,
-                     OutputXlsxFile=os.path.join(resources_dir, "feature_importances", 'txtlayer_classifier_feature_importances.xlsx'))
+                     OutputXlsxFile=os.path.join(resources_dir, "feature_importances", "txtlayer_classifier_feature_importances.xlsx"))
