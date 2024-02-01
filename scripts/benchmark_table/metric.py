@@ -117,7 +117,7 @@ class TEDS(object):
                                      colspan=self.get_span(node, "colspan"),
                                      rowspan=self.get_span(node, "rowspan"),
                                      content=cell,
-                                     visible=False if node.attrib.get("style") == "display: none" else True, *deque())  # noqa
+                                     visible=node.attrib.get("style") != "display: none", *deque())  # noqa
             except Exception as ex:
                 print(f"Bad html file. HTML parse exception. Exception's msg: {ex}")
                 raise ex
