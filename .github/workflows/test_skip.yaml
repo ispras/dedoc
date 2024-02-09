@@ -1,0 +1,17 @@
+name: Skip CI
+
+on:
+  push:
+    branches:
+      - new_version
+    paths:
+      - 'VERSION'
+      - 'docs/source/changelog.rst'
+  workflow_dispatch:
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip tests (only VERSION and changelog have been changed)
+        run: echo "This is used to meet the requirements of pull-request to the develop branch (pipeline should pass)"
