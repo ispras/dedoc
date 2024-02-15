@@ -20,7 +20,7 @@ class QueryParameters:
     attachments_dir: Optional[str] = Form(None, description="Path to the directory where to save files' attachments")
 
     # tables handling
-    need_pdf_table_analysis: str = Form("true", enum=["true", "false"], description="Enable table recognition for pdf")
+    need_pdf_table_analysis: str = Form("false", enum=["true", "false"], description="Enable table recognition for pdf")
     table_type: str = Form("", description="Pipeline mode for table recognition")
     orient_analysis_cells: str = Form("false", enum=["true", "false"], description="Enable analysis of rotated cells in table headers")
     orient_cell_angle: str = Form("90", enum=["90", "270"],
