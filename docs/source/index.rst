@@ -222,7 +222,8 @@ For a document of unknown or unsupported domain there is an option to use defaul
    :maxdepth: 1
    :caption: Tutorials
 
-   tutorials/add_new_doc_type
+   tutorials/add_new_doc_format
+   tutorials/add_new_structure_type
    tutorials/creating_document_classes
 
 

@@ -12,7 +12,7 @@ class HierarchyLevel:
         - level_1 defines primary importance (e.g. root - level_1=0, header - level_1=1, etc.);
         - level_2 defines the level inside lines of equal type (e.g. for list items - "1." - level_2=1, "1.1." - level_2=2, etc.).
 
-    For the least important lines like raw_text both levels are None.
+    For the least important lines (line_type=raw_text) both levels are None.
     """
     root = "root"
     toc = "toc"

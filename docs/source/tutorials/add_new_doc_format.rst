@@ -1,7 +1,7 @@
-Adding support for a new document type to Dedoc
-===============================================
+Adding support for a new document format to Dedoc
+=================================================
 
-Suppose you need to add support for a new type "newtype".
+Suppose you need to add support for a new format "newtype".
 Several ways of document processing exist:
 
 * **Converter** - you can write a converter from one document format to another;
