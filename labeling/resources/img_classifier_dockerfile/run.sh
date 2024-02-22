@@ -1,21 +1,20 @@
-#Предполагается что:
+# Suppose that:
 #
-#* Вы только что распаковали архив с заданием (где и лежит этот файл)
+# * You unpacked the archive with the task (where this file is located)
 #
-#* Вы перешли в директорию, образовавшуюся после распаковки архива (все действия надо запускать из неё)
+# * You are in the task directory (that appeared after the task unpacking)
 #
-#* У вас установлен докер и вы знаете что это такое
+# * You have Docker installed on your computer
 #
-#* Есть подключение к интернету
+# * You have the Internet connection
 #
-#Прочитайте манифест (manifest.pdf или manifest.md)
+# Read the manifest file (manifest.pdf)
 #
-#Соберите контейнер для разметки и запустите его
-#
-#
+# Build the container for labeling and run it
+
 docker build -t labeling .
 
 docker run -ti --rm -p 5555:5555 labeling
-#```
+
 #
-#Откройте localhost:5555 в браузере.
+# Open localhost:5555 in your browser.

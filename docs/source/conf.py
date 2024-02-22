@@ -23,6 +23,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx_rtd_theme",
+    "sphinx_copybutton",
     "linuxdoc.rstFlatTable"
 ]
 exclude_patterns = []

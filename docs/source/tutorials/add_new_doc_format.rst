@@ -1,3 +1,5 @@
+.. _add_document_format:
+
 Adding support for a new document format to Dedoc
 =================================================
 

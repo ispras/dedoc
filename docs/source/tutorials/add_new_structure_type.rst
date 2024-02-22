@@ -1,3 +1,5 @@
+.. _add_structure_type:
+
 Adding support for a new structure type to Dedoc
 ================================================
 
@@ -11,10 +13,11 @@ There are two main ways of creating a structure extractor that are used in Dedoc
     * Usage of domain-specific rules and some heuristics to detect lines types and their hierarchy (see :ref:`heuristic_structure_extractor`).
     * Document lines classification with machine learning and post-processing using domain-specific rules (see :ref:`classification_structure_extractor`).
 
-Note, that a custom structure extractor should fill ``hierarchy_level`` (:class:`~dedoc.data_structures.HierarchyLevel`)
-field of :class:`~dedoc.data_structures.LineMetadata` for each document line (:class:`~dedoc.data_structures.LineWithMeta`).
-See :ref:`add_structure_type_hierarchy_level` and documentation of the :class:`~dedoc.data_structures.HierarchyLevel` class
-to get more information about lines hierarchy levels.
+.. note::
+    A custom structure extractor should fill ``hierarchy_level`` (:class:`~dedoc.data_structures.HierarchyLevel`)
+    field of :class:`~dedoc.data_structures.LineMetadata` for each document line (:class:`~dedoc.data_structures.LineWithMeta`).
+    See :ref:`add_structure_type_hierarchy_level` and documentation of the :class:`~dedoc.data_structures.HierarchyLevel` class
+    to get more information about lines hierarchy levels.
 
 While implementing a custom structure extractor, there are no limits about its architecture and used methods.
 The two aforesaid methods are only examples how the document structure can be parsed.
@@ -57,12 +60,16 @@ There are some useful tips for creation of a heuristic structure extractor:
 Implementing structure extractor using lines classification
 -----------------------------------------------------------
 
+.. warning::
+    We plan to change structure extraction pipeline in future to make in more user-friendly and easy-to-use.
+    Still, this process isn't fast, therefore here we give actual information about implementing new structure extractors.
+
 In Dedoc, several structure extractors use a typical pipeline for retrieving line types and levels.
 This pipeline is visualized and its main parts are described below.
 
 .. _structure_pipeline_image:
 
-.. figure:: ../_static/structure_pipeline.png
+.. figure:: ../_static/add_new_structure_type/structure_pipeline.png
     :width: 500
 
     Pipeline for a structure extractor with lines classification
@@ -75,7 +82,7 @@ After implementing features extraction step, a classifier is trained on the gath
 As any ML model, the classifier can make mistakes -- they may be fixed afterwards along with hierarchy level determination.
 All these nuances form following steps for adding a new structure extractor:
 
-    1. **Dataset creation.** The step includes data gathering, their preparation for labeling and the labeling itself.
+    1. **Dataset creation.** The step includes data gathering, their preparation for annotating (labeling) and the labeling itself.
        We propose an `external labeling system <https://github.com/dronperminov/ImageClassifier>`_ for document lines labeling.
        The detailed description of this step is given in :ref:`add_structure_type_dataset_creation`.
 
