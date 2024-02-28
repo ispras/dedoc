@@ -202,7 +202,7 @@ You can use the reader in your code:
 Adding the implemented handlers to the manager config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-All implemented document handlers are linked to dedoc in `dedoc/manager_config.py <https://github.com/ispras/dedoc/blob/develop/dedoc/manager_config.py>`_
+All implemented document handlers are linked to dedoc in `dedoc/manager_config.py <https://github.com/ispras/dedoc/blob/master/dedoc/manager_config.py>`_
 
 
 You do not have to edit this file. Create your own ``manager_config`` with dedoc handlers you need and

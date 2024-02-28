@@ -36,6 +36,9 @@ A code example of such a structure extractor can be found
 `here <https://github.com/ispras/dedoc/blob/master/dedoc/structure_extractors/concrete_structure_extractors/default_structure_extractor.py>`_
 -- this is a structure extractor for the :ref:`default structure type <other_structure>` in Dedoc.
 
+.. seealso::
+    The description of details related to the ``hierarchy_level`` can be found :ref:`here <add_structure_type_hierarchy_level>`.
+
 There are some useful tips for creation of a heuristic structure extractor:
 
     * Some readers can extract annotations about visual formatting that can be useful if some structure has a strict formatting rules.

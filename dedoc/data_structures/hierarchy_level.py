@@ -1,6 +1,8 @@
 from functools import total_ordering
 from typing import Optional
 
+import numpy as np
+
 
 @total_ordering
 class HierarchyLevel:
@@ -13,6 +15,8 @@ class HierarchyLevel:
         - level_2 defines the level inside lines of equal type (e.g. for list items - "1." - level_2=1, "1.1." - level_2=2, etc.).
 
     For the least important lines (line_type=raw_text) both levels are None.
+
+    Look to the :ref:`hierarchy level description <add_structure_type_hierarchy_level>` to get more details.
     """
     root = "root"
     toc = "toc"
@@ -46,42 +50,46 @@ class HierarchyLevel:
     def __eq__(self, other: "HierarchyLevel") -> bool:
         """
         Defines the equality of two hierarchy levels:
-            - two raw text lines or lines with unknown type are equal;
             - two lines with equal level_1, level_2 are equal.
+            - if some of the levels is None, its value is considered as +inf (infinities have equal value)
+
+        :param other: other hierarchy level
+        :return: whether current hierarchy level == other hierarchy level
         """
         if not isinstance(other, HierarchyLevel):
             return False
 
-        if self.__is_defined(other) and (self.level_1, self.level_2) == (other.level_1, other.level_2):
-            return True
-        if self.line_type == HierarchyLevel.raw_text and other.line_type == HierarchyLevel.raw_text:
-            return True
-        if self.line_type == HierarchyLevel.unknown and other.line_type == HierarchyLevel.unknown:
-            return True
-        return False
+        level_1, level_2 = self.__to_number(self.level_1), self.__to_number(self.level_2)
+        other_level_1, other_level_2 = self.__to_number(other.level_1), self.__to_number(other.level_2)
+        return (level_1, level_2) == (other_level_1, other_level_2)
 
     def __lt__(self, other: "HierarchyLevel") -> bool:
         """
         Defines the comparison of hierarchy levels:
-            - line1 < line2 if (level_1, level_2) of line1 <= (level_1, level_2) of line2;
-            - line1 < line2 if line2 is raw text or unknown, and line1 has another type.
+            - current level < other level if (level_1, level_2) < other (level_1, level_2);
+            - if some of the levels is None, its value is considered as +inf (infinities have equal value)
 
-        Else line1 >= line2.
-
-        :param other: hierarchy level of the line2
+        :param other: other hierarchy level
+        :return: whether current hierarchy level < other hierarchy level
         """
+        # all not None
         if self.__is_defined(other):
             return (self.level_1, self.level_2) < (other.level_1, other.level_2)
+
+        # all None
         if self.level_1 is None and self.level_2 is None and other.level_1 is None and other.level_2 is None:
             return False
-        if (self.level_1 is None or self.level_2 is None) and (other.level_1 is not None or other.level_2 is not None):
-            return False
-        if (self.level_1 is not None or self.level_2 is not None) and (other.level_1 is None or other.level_2 is None):
-            return True
-        return (self.level_1, self.level_2) < (other.level_1, other.level_2)
+
+        level_1, level_2 = self.__to_number(self.level_1), self.__to_number(self.level_2)
+        other_level_1, other_level_2 = self.__to_number(other.level_1), self.__to_number(other.level_2)
+
+        return (level_1, level_2) < (other_level_1, other_level_2)
 
     def __str__(self) -> str:
         return f"HierarchyLevel(level_1={self.level_1}, level_2={self.level_2}, can_be_multiline={self.can_be_multiline}, line_type={self.line_type})"
+
+    def __to_number(self, x: Optional[int]) -> int:
+        return np.inf if x is None else x
 
     def is_raw_text(self) -> bool:
         """
