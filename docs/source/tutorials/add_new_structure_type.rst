@@ -112,3 +112,4 @@ All these nuances form following steps for adding a new structure extractor:
    add_new_structure_type/post_processing
    add_new_structure_type/conclusion
    add_new_structure_type/hierarchy_level
+   add_new_structure_type/classes

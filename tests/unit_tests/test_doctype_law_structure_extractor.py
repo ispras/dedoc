@@ -8,8 +8,8 @@ from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
-from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.body_law_hierarchy_level_builder import BodyLawHierarchyLevelBuilder
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number
 from tests.test_utils import TestTimeout, get_test_config
 
 
@@ -73,7 +73,7 @@ class TestLawStructureExtractor(unittest.TestCase):
         without_ends = ["1.2.2)", "1.4.5", "1.5.6.", "1.2.4.6}"]
 
         for num, number in enumerate(numbers):
-            res = AbstractFeatureExtractor.ends_of_number.search(number)
+            res = regexps_ends_of_number.search(number)
             self.assertEqual(number[:res.start()], without_ends[num])
 
     def __get_line_with_meta(self, hierarchy_level: HierarchyLevel, text: str) -> LineWithMeta:

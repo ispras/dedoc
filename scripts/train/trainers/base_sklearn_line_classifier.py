@@ -24,12 +24,20 @@ from train_dataset.data_structures.line_with_label import LineWithLabel
 
 
 class BaseClassifier(XGBClassifier):
+    """
+    Base class for a classifier.
+    See documentation of `XGBClassifier <https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.XGBClassifier>`_ to get more details.
+    """
     def __init__(self, **kwargs: Any) -> None:  # noqa
         super().__init__(**kwargs)
 
 
 class BaseSklearnLineClassifierTrainer:
-
+    """
+    Base class for training :class:`~scripts.train.trainers.base_sklearn_line_classifier.BaseClassifier`.
+    It provides data loading and saving, classifier training and cross-validation.
+    During cross-validation, classifier errors are saved into `errors` directory inside `tmp_dir`.
+    """
     def __init__(self,
                  data_url: str,
                  logger: logging.Logger,
@@ -46,7 +54,23 @@ class BaseSklearnLineClassifierTrainer:
                  n_splits: int = 10,
                  *,
                  config: dict) -> None:
-
+        """
+        :param data_url: url to download training data for :class:`~scripts.train.trainers.data_loader.DataLoader`
+        :param logger: logger for logging details of classifier training
+        :param feature_extractor: feature extractor for making feature matrix from document lines
+        :param path_out: full path (with filename) to save a trained model
+        :param path_scores: full path to the JSON file to save the scores (accuracy) of a trained classifier (won't be saved if None)
+        :param path_features_importances: full path to the XLSX file to save information about most important features for classifier (won't be saved if None)
+        :param tmp_dir: path to the directory where to save downloaded training data and the classifier's errors, "/tmp" if None is provided
+        :param train_size: proportion of the training data, value can be in the diapason (0;1) or (0;100)
+        :param classifier_parameters: parameters for the classifier initialization
+        :param label_transformer: function for mapping initial data labels into the labels for classifier training, labels identity if None is provided
+        :param random_seed: seed for the classifier initialization
+        :param get_sample_weight: function for `sample_weight` calculating: LineWithLabel->weight [0,1] for setting line importance during classifier training,
+            LineWithLabel->1 if None is provided
+        :param n_splits: number of data splits for cross-validation
+        :param config: any custom configuration
+        """
         self.data_url = data_url
         self.logger = logger
         self.feature_extractor = feature_extractor
@@ -63,24 +87,29 @@ class BaseSklearnLineClassifierTrainer:
         self.classifier_parameters = {} if classifier_parameters is None else classifier_parameters
         self.path_scores = path_scores
         self.path_errors = os.path.join(self.tmp_dir, "errors")
-        self.errors_saver = ErrorsSaver(self.path_errors, self.dataset_dir, logger, config=config)
+        self.errors_saver = ErrorsSaver(self.path_errors, os.path.join(self.dataset_dir, "dataset.zip"), logger, config=config)
         self.path_features_importances = path_features_importances
         self.label_transformer = identity if label_transformer is None else label_transformer
 
-        if path_out.endswith(".pkl"):
-            path_out += ".gz"
-        elif path_out.endswith("pkl.gz"):
-            pass
-        else:
-            path_out += ".pkl.gz"
+        if not path_out.endswith(".pkl.gz"):
+            path_out = path_out + ".gz" if path_out.endswith(".pkl") else path_out + ".pkl.gz"
+
         self.path_out = path_out
         self.config = config
         self.n_splits = n_splits
 
-    def fit(self, no_cache: bool = False, cross_val_only: bool = False, save: bool = False, save_errors_images: bool = False) -> None:
+    def fit(self, no_cache: bool = False, cross_val_only: bool = False, save_dataset: bool = False, save_errors_images: bool = False) -> None:
+        """
+        Fit the line classifier with cross-validation and errors statistics saving.
+
+        :param no_cache: whether to use cached training data (:class:`~scripts.train.trainers.data_loader.DataLoader`)
+        :param cross_val_only: whether to execute only cross-validation, without training and saving a resulting classifier
+        :param save_dataset: whether to save training dataset in form of a feature matrix (:class:`~scripts.train.trainers.dataset.LineClassifierDataset`)
+        :param save_errors_images: whether to visualize errors line classification (:class:`~scripts.train.trainers.errors_saver.ErrorsSaver`)
+        """
         data = self.data_loader.get_data(no_cache=no_cache)
-        if save:
-            self.__save(data=data, path=self.tmp_dir)
+        if save_dataset:
+            self.__save_dataset_lines(data=data, path=self.tmp_dir)
         scores = self._cross_val(data, save_errors_images)
         logging.info(json.dumps(scores, indent=4))
         if not cross_val_only:
@@ -114,10 +143,24 @@ class BaseSklearnLineClassifierTrainer:
                 os.makedirs(os.path.dirname(self.path_features_importances), exist_ok=True)
                 self._save_features_importances(cls, features_train.columns)
 
-    def _save_features_importances(self, cls: Any, feature_names: List[str]) -> None:  # noqa
+    def _save_features_importances(self, cls: BaseClassifier, feature_names: List[str]) -> None:
+        """
+        Save information about most important features for classifier during training into a file with path `self.path_features_importances`.
+
+        :param cls: classifier trained on the features with names `feature_names`
+        :param feature_names: column names of the feature matrix, that was used for classifier training
+        """
         pass
 
-    def __save(self, data: List[List[LineWithLabel]], path: str = "/tmp", csv_only: bool = False) -> str:
+    def __save_dataset_lines(self, data: List[List[LineWithLabel]], path: str = "/tmp", csv_only: bool = False) -> str:
+        """
+        Save training dataset in form of a feature matrix (:class:`~scripts.train.trainers.dataset.LineClassifierDataset`).
+
+        :param data: list of documents, which are lists of lines with labels of the training dataset
+        :param path: path to the directory where the dataset will be saved
+        :param csv_only: whether to save only csv-file instead of saving dataset as a directory with csv, pkl and json files
+        :return: path to the directory where the dataset is saved
+        """
         features_train = self.feature_extractor.fit_transform(data)
         features_list = sorted(features_train.columns)
         features_train = features_train[features_list]
@@ -136,9 +179,21 @@ class BaseSklearnLineClassifierTrainer:
 
     @abc.abstractmethod
     def _get_classifier(self) -> BaseClassifier:
+        """
+        Initialize the classifier.
+
+        :return: classifier instance for training
+        """
         pass
 
     def _cross_val(self, data: List[List[LineWithLabel]], save_errors_images: bool) -> dict:
+        """
+        Cross-validate the classifier and save its errors on validation data
+
+        :param data: list of documents, which are lists of lines with labels of the training dataset
+        :param save_errors_images: whether to visualize errors line classification (:class:`~scripts.train.trainers.errors_saver.ErrorsSaver`)
+        :return: dictionary with classifier scores during cross-validation
+        """
         error_cnt = Counter()
         errors_uids = []
         os.system(f"rm -rf {self.path_errors}/*")
@@ -147,6 +202,7 @@ class BaseSklearnLineClassifierTrainer:
 
         data = np.array(data, dtype=object)
         kf = KFold(n_splits=self.n_splits)
+
         for train_index, val_index in tqdm(kf.split(data), total=self.n_splits):
             data_train, data_val = data[train_index].tolist(), data[val_index].tolist()
             labels_train = self.__get_labels(data_train)
@@ -156,12 +212,14 @@ class BaseSklearnLineClassifierTrainer:
             if features_train.shape[1] != features_val.shape[1]:
                 val_minus_train = set(features_val.columns) - set(features_train.columns)
                 train_minus_val = set(features_val.columns) - set(features_train.columns)
-                msg = f"some features in train, but not in val {val_minus_train}\nsome features in val, but not in train {train_minus_val}"
+                msg = f"Some features in train, but not in val {val_minus_train}\nsome features in val, but not in train {train_minus_val}"
                 raise ValueError(msg)
             cls = self._get_classifier()
             sample_weight = [self.get_sample_weight(line) for line in flatten(data_train)]
             cls.fit(features_train, labels_train, sample_weight=sample_weight)
             labels_predict = cls.predict(features_val)
+
+            # save classifier's errors on val set
             for y_pred, y_true, line in zip(labels_predict, labels_val, flatten(data_val)):
                 if y_true != y_pred:
                     error_cnt[(y_true, y_pred)] += 1
@@ -178,10 +236,14 @@ class BaseSklearnLineClassifierTrainer:
         scores_dict = OrderedDict()
         scores_dict["mean"] = mean(scores)
         scores_dict["scores"] = scores
-        csv_path = self.__save(data=data.tolist(), path=self.dataset_dir, csv_only=True)
+        csv_path = self.__save_dataset_lines(data=data.tolist(), path=self.dataset_dir, csv_only=True)
         self.errors_saver.save_errors(error_cnt=error_cnt, errors_uids=list(set(errors_uids)), save_errors_images=save_errors_images, csv_path=csv_path)
         return scores_dict
 
     def __get_labels(self, data: List[List[LineWithLabel]]) -> List[str]:
+        """
+        :param data: list of documents, which are lists of lines with labels of the training dataset
+        :return: a flattened list of lines' labels
+        """
         result = [line.label for line in flatten(data)]
         return result

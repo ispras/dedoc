@@ -56,7 +56,7 @@ class LinePrefix(abc.ABC):
         >>> this_one.predecessor(other_one)
         True
 
-        :param other: other prefix
+        :param other: prefix of other line
         :return: true if other is valid predecessor for this one, false otherwise
         """
         pass
@@ -68,10 +68,8 @@ class LinePrefix(abc.ABC):
     @abc.abstractmethod
     def is_valid(prefix_str: str) -> bool:
         """
-        returns true if prefix_str is valid for this type of prefix, false otherwise.
-        :param prefix_str: the string representation of the prefix
-        For example "1." is valid for DottedPrefix
-        :return:
+        :param prefix_str: the string representation of the prefix. For example "1." is valid for DottedPrefix
+        :return: true if prefix_str is valid for this type of prefix, false otherwise.
         """
         pass
 

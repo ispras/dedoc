@@ -27,7 +27,7 @@ We consider documents that have some common template:
 
 In the dedoc library two law types are separated and for each type specific structure is extracted:
 
-* **Siple law**. The structure type for all Russian law types except order (приказ), state (положение) and instruction (инструкция) we will call simple law.
+* **Simple law**. The structure type for all Russian law types except order (приказ), state (положение) and instruction (инструкция) we will call simple law.
 * **Foiv law**. The structure type for law types order (приказ), state (положение) and instruction (инструкция) we will call foiv law.
 
 The dedoc library allows to determine law type (simple law, foiv law) automatically during document analysis.

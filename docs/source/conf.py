@@ -4,6 +4,7 @@ from datetime import datetime
 
 # -- Path setup --------------------------------------------------------------
 
+sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "labeling")))
 sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
 
 
@@ -24,6 +25,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_rtd_theme",
     "sphinx_copybutton",
+    "sphinx_togglebutton",
     "linuxdoc.rstFlatTable"
 ]
 exclude_patterns = []

@@ -28,6 +28,7 @@ class RomanPrefix(LinePrefix):
 
     @staticmethod
     def is_valid(prefix_str: str) -> bool:
+        prefix_str = prefix_str.lower()
         if len(prefix_str) <= 1 or not prefix_str.endswith("."):
             return False
         prefix_set = set(prefix_str[:-1])

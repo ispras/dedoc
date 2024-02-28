@@ -41,6 +41,8 @@ docs = [
     "docutils==0.18.1",
     "Sphinx==6.2.1",
     "sphinx_rtd_theme==1.2.0",  # for using sphinx_rtd_theme
+    "sphinx_copybutton==0.5.2",  # for using copy button in code examples
+    "sphinx-togglebutton==0.3.2",  # for using toggle button
     "linuxdoc==20230506",  # for using flat-table
     "tabula-py==2.8.1",  # for adding new doc type tutorial
 ]

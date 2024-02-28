@@ -6,10 +6,10 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
-from dedoc.structure_extractors.feature_extractors.tz_feature_extractor import TzTextFeatures
 from dedoc.structure_extractors.hierarchy_level_builders.header_builder.header_hierarchy_level_builder import HeaderHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.toc_builder.toc_builder import TocBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.tz_builder.body_builder import TzBodyBuilder
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_number, regexps_subitem
 from dedoc.structure_extractors.line_type_classifiers.tz_classifier import TzLineTypeClassifier
 
 
@@ -70,6 +70,6 @@ class TzStructureExtractor(AbstractStructureExtractor):
 
         document.lines = self._postprocess(lines=header_lines + toc_lines + body_lines,
                                            paragraph_type=["item"],
-                                           regexps=[BulletPrefix.regexp, TzTextFeatures.number_regexp, TzTextFeatures.item_regexp],
-                                           excluding_regexps=[None, TzTextFeatures.ends_of_number, TzTextFeatures.ends_of_number])
+                                           regexps=[BulletPrefix.regexp, regexps_number, regexps_subitem],
+                                           excluding_regexps=[None, regexps_ends_of_number, regexps_ends_of_number])
         return document
