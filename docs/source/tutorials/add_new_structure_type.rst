@@ -105,9 +105,10 @@ All these nuances form following steps for adding a new structure extractor:
     5. **Adding a new structure extractor to the main pipeline.**
        :ref:`Here <add_structure_type_conclusion>` we give an example how to use the implemented custom extractor in Dedoc.
 
+**The following pages may be useful for further reading:**
+
 .. toctree::
    :maxdepth: 1
-   :hidden:
 
    add_new_structure_type/dataset_creation
    add_new_structure_type/features_extraction
