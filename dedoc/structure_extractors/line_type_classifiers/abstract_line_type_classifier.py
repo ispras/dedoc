@@ -1,29 +1,23 @@
 import abc
-from typing import List
+from typing import List, Optional
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 
 
 class AbstractLineTypeClassifier(abc.ABC):
-
-    document_type = None
-
-    def __init__(self, *, config: dict) -> None:
-        self.config = config
-        self.chunk_start_tags = ["header", "body"]
-        self.hl_type = ""
-        self._chunk_hl_builders = []
+    """
+    Abstract class for lines classification with predict method.
+    """
+    def __init__(self, *, config: Optional[dict] = None) -> None:
+        self.config = {} if config is None else config
 
     @abc.abstractmethod
     def predict(self, lines: List[LineWithMeta]) -> List[str]:
         """
-        :param lines: image and bboxes with text, it is useful for feature extraction and label predictions
-        :return: lines with metadata and predicted labels and hierarchy levels
+        Predict the line type according to some domain.
+        For this purpose, some pretrained classifier may be used.
+
+        :param lines: list of document lines
+        :return: list predicted labels for each line
         """
         pass
-
-    def get_chunk_start_tags(self) -> List[str]:
-        return self.chunk_start_tags
-
-    def get_hl_type(self) -> str:
-        return self.hl_type

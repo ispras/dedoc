@@ -26,16 +26,16 @@ def get_info() -> str:
     if len(tasks) > 0:
         return form_input.format(tasks_left=len(tasks))
     else:
-        return """<h1 style="color: #5e9ca0;">Размечать нечего</h1>
-        <h2> <a href="get_results">Получить результаты</a> </h2>"""
+        return """<h1 style="color: #5e9ca0;">There is nothing to annotate</h1>
+        <h2> <a href="get_results">Get results</a> </h2>"""
 
 
 @app.route("/upload", methods=["POST"])
 def upload() -> Union[str, Response]:
     parameters = {k: v for k, v in request.values.items()}
-    name = parameters.get("name", "Инкогнито")
+    name = parameters.get("name", "Unknown")
     if len(tasks) == 0:
-        return '<h1 style="color: #5e9ca0;">Размечать нечего</h1>'
+        return '<h1 style="color: #5e9ca0;">There is nothing to annotate</h1>'
     else:
         task = tasks.pop()
         with open("task_manager.log", "a") as file_log:
@@ -62,7 +62,7 @@ def upload_results() -> Response:
                         path_out = os.path.join(tmp_dir, file_name)
                         archive.extract(member=file_name, path=tmp_dir)
                         _save_result_file(path_out, file_name)
-        return f"<h1> Результат получен {cnt} </h1>"
+        return f"<h1> The result has been sent {cnt} </h1>"
     if request.method == "GET":
         return form_results
 

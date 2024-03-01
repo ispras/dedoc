@@ -1,17 +1,16 @@
 from typing import Optional, Tuple
 
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.structure_unit.abstract_structure_unit import AbstractStructureUnit
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_foiv_item, regexps_item_with_bracket, regexps_subitem
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_foiv_item, regexps_item_with_bracket, regexps_subitem
 
 
 class LawStructureUnitBuilder(AbstractStructureUnit):
     document_types = ["law"]
     regexps_item_with_bracket = regexps_item_with_bracket
     regexps_part = regexps_foiv_item
-    ends_of_number = AbstractFeatureExtractor.ends_of_number
+    ends_of_number = regexps_ends_of_number
     regexps_subitem = regexps_subitem
 
     def structure_unit(self, text: str, init_hl_depth: int, previous_hl: Optional[HierarchyLevel]) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:

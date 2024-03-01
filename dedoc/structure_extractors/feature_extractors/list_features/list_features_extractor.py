@@ -22,6 +22,13 @@ class Window:
 
 
 class ListFeaturesExtractor(AbstractFeatureExtractor):
+    """
+    Extracts features for list items:
+        - indentation of items is analysed (same/different)
+        - prefixes of items are analysed, if items can be predecessors of others
+
+    The analysis is executed in a window of a fixed size (size of window = number of neighbor lines)
+    """
 
     def __init__(self, window_size: int = 25, prefix_list: Optional[List[LinePrefix]] = None) -> None:
         super().__init__()
@@ -43,9 +50,9 @@ class ListFeaturesExtractor(AbstractFeatureExtractor):
         indents = np.array([prefix.indent for prefix in prefixes])
         res = []
         doc_size = len(prefixes)
-        for line_id, (line, prefix) in enumerate(zip(doc, prefixes)):
+        for line_id, (_line, prefix) in enumerate(zip(doc, prefixes)):
             window = self._get_window(indents=indents, prefixes=prefixes, line_id=line_id, doc_size=doc_size)
-            features = self._one_line_features(line=line, line_id=line_id, window=window, prefix=prefix)
+            features = self._one_line_features(window=window, prefix=prefix)
             res.append(features)
         features_dict = defaultdict(list)
         for features in res:
@@ -53,7 +60,7 @@ class ListFeaturesExtractor(AbstractFeatureExtractor):
                 features_dict[feature_name].append(feature_value)
         return prefixes, pd.DataFrame(features_dict)
 
-    def _one_line_features(self, line: LineWithMeta, prefix: LinePrefix, line_id: int, window: Window) -> Dict[str, float]:
+    def _one_line_features(self, prefix: LinePrefix, window: Window) -> Dict[str, float]:
         predecessor_num = 0
         predecessor_num_same_indent = 0
         same_indent = 0

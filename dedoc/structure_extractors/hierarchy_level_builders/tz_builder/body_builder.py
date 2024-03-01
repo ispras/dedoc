@@ -7,6 +7,7 @@ from dedoc.structure_extractors.feature_extractors.tz_feature_extractor import T
 from dedoc.structure_extractors.hierarchy_level_builders.abstract_hierarchy_level_builder import AbstractHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.abstract_body_hierarchy_level_builder import \
     AbstractBodyHierarchyLevelBuilder
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_number, regexps_subitem
 
 
 class TzBodyBuilder(AbstractHierarchyLevelBuilder):
@@ -46,14 +47,14 @@ class TzBodyBuilder(AbstractHierarchyLevelBuilder):
                 hierarchy_level = HierarchyLevel(item_min_depth + 2, 1, False, prediction)
             else:
                 hierarchy_level = HierarchyLevel(item_min_depth + 2, 0, False, prediction)
-        elif TzTextFeatures.number_regexp.match(text):
-            match = TzTextFeatures.number_regexp.match(text)
+        elif regexps_number.match(text):
+            match = regexps_number.match(text)
             number = text[match.start(): match.end()]
             number_splitted = [n for n in number.strip().split(".") if n.isnumeric()]
             hierarchy_level = HierarchyLevel(item_min_depth + 3, len(number_splitted), False, prediction)
         elif BulletPrefix.regexp.match(text):
             hierarchy_level = HierarchyLevel(item_min_depth + 4, 0, False, prediction)
-        elif TzTextFeatures.item_regexp.match(text):
+        elif regexps_subitem.match(text):
             hierarchy_level = HierarchyLevel(item_min_depth + 4, 0, False, prediction)
         else:
             hierarchy_level = HierarchyLevel.create_raw_text()

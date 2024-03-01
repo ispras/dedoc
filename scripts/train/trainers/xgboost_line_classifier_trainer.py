@@ -1,38 +1,30 @@
-import logging
-from typing import Callable, List, Optional
+from typing import List
 
 import xgbfir
 from xgboost import XGBClassifier
 
-from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from scripts.train.trainers.base_sklearn_line_classifier import BaseSklearnLineClassifierTrainer
-from train_dataset.data_structures.line_with_label import LineWithLabel
 
 
 class XGBoostLineClassifierTrainer(BaseSklearnLineClassifierTrainer):
-
-    def __init__(self,
-                 data_url: str,
-                 logger: logging.Logger,
-                 feature_extractor: AbstractFeatureExtractor,
-                 path_out: str,
-                 path_scores: Optional[str] = None,
-                 path_features_importances: Optional[str] = None,
-                 tmp_dir: Optional[str] = None,
-                 train_size: float = 0.75,
-                 classifier_parameters: dict = None,
-                 label_transformer: Callable[[str], str] = None,
-                 random_seed: int = 42,
-                 get_sample_weight: Callable[[LineWithLabel], float] = None,
-                 n_splits: int = 10,
-                 *, config: dict) -> None:
-
-        super().__init__(data_url, logger, feature_extractor, path_out, path_scores, path_features_importances, tmp_dir,
-                         train_size, classifier_parameters, label_transformer, random_seed, get_sample_weight, n_splits,
-                         config=config)
+    """
+    Trainer of XGBoost line classifier.
+    See documentation of `XGBClassifier <https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.XGBClassifier>`_ to get more details.
+    """
 
     def _get_classifier(self) -> XGBClassifier:
+        """
+        Initialize the XGBClassifier.
+
+        :return: XGBClassifier instance for training
+        """
         return XGBClassifier(random_state=self.random_seed, **self.classifier_parameters)
 
     def _save_features_importances(self, cls: XGBClassifier, feature_names: List[str]) -> None:
+        """
+        Save information about most important features for XGBClassifier using `xgbfir <https://github.com/limexp/xgbfir>`_ library.
+
+        :param cls: XGBClassifier trained on the features with names `feature_names`
+        :param feature_names: column names of the feature matrix, that was used for classifier training
+        """
         xgbfir.saveXgbFI(cls, feature_names=feature_names, OutputXlsxFile=self.path_features_importances)

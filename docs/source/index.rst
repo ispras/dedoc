@@ -53,6 +53,10 @@ The resulting output of any reader is a class :class:`~dedoc.data_structures.Uns
 See :ref:`readers' annotations <readers_annotations>` and :ref:`readers' line types <readers_line_types>`
 to get more details about information that can be extracted by each available reader.
 
+.. seealso::
+    Dedoc supports handling of a fixed list of document formats, but the list can be expanded by new handlers.
+    A tutorial how to add a new document format to Dedoc is :ref:`here <add_document_format>`.
+
 .. _table_formats:
 
 .. list-table:: Supported documents formats and the reader's output
@@ -195,7 +199,10 @@ Dedoc allows to extract structure from the documents of some specific domains.
 For this purpose classifiers are used to predict the type of each document line/paragraph.
 Then some rules (mostly based on regular expressions) are used to find a hierarchy level of each line for the document tree representation.
 
-It's possible to define a new structure extractor in order to handle documents of new domains.
+.. seealso::
+    It's possible to define a new structure extractor in order to handle documents of new domains.
+    A tutorial how to add a new structure type to Dedoc is :ref:`here <add_structure_type>`.
+
 Currently the following domains can be handled:
 
     * Russian laws (:ref:`structure description <law_structure>`).
@@ -212,17 +219,14 @@ For a document of unknown or unsupported domain there is an option to use defaul
 
    getting_started/installation
    getting_started/usage
-
-.. toctree::
-   :maxdepth: 1
-
    parameters/parameters
 
 .. toctree::
    :maxdepth: 1
    :caption: Tutorials
 
-   tutorials/add_new_doc_type
+   tutorials/add_new_doc_format
+   tutorials/add_new_structure_type
    tutorials/creating_document_classes
 
 

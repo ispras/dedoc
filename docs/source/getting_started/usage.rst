@@ -3,7 +3,8 @@ Dedoc usage tutorial
 
 Suppose you've already have dedoc library installed. Otherwise :ref:`dedoc_installation` may be useful.
 
-You can use dedoc as an application, see :ref:`dedoc_api` for more information.
+.. seealso::
+    You can use dedoc as an application, see :ref:`dedoc_api` for more information.
 
 If you have installed dedoc using pip, you can use different parts of :ref:`dedoc workflow<dedoc_workflow>` separately.
 
@@ -37,16 +38,18 @@ we can convert it using :meth:`~dedoc.converters.DocxConverter.convert` method:
     :language: python
     :lines: 14
 
-To get the information about available converters, their methods and parameters see :ref:`dedoc_converters`.
-The supported document formats that can be converted to another formats (which can be parsed by readers) are enlisted in the table :ref:`table_formats`.
+.. seealso::
+    To get the information about available converters, their methods and parameters see :ref:`dedoc_converters`.
+    The supported document formats that can be converted to another formats (which can be parsed by readers) are enlisted in the table :ref:`table_formats`.
 
 .. _using_readers:
 
 Using readers
 -------------
 
-To get the information about available readers, their methods and parameters see :ref:`dedoc_readers`.
-The supported document formats that can be handled by readers are enlisted in the table :ref:`table_formats`.
+.. seealso::
+    To get the information about available readers, their methods and parameters see :ref:`dedoc_readers`.
+    The supported document formats that can be handled by readers are enlisted in the table :ref:`table_formats`.
 
 Let's consider an example of using readers.
 Assume we need to parse file :download:`example.docx <../_static/code_examples/test_dir/example.docx>`, which looks like follows:
@@ -207,8 +210,10 @@ To extract metadata, one can add them to the document using :meth:`~dedoc.metada
     :lines: 66-70
 
 As we see, the attribute ``metadata`` has been filled with some metadata fields.
-The list of common fields for any metadata extractor along with the specific fields
-for different document formats are enlisted in :ref:`dedoc_metadata_extractors`.
+
+.. seealso::
+    The list of common fields for any metadata extractor along with the specific fields
+    for different document formats are enlisted in :ref:`dedoc_metadata_extractors`.
 
 Using attachments extractors
 ----------------------------
@@ -240,7 +245,8 @@ As we see, attachment extractors return the same list of :class:`~dedoc.data_str
 as in the attribute ``attachments`` of the :class:`~dedoc.data_structures.UnstructuredDocument`,
 that we can get via readers (see :ref:`using_readers`).
 
-See :ref:`dedoc_attachments_extractors` to get more information about available extractors, their methods and parameters.
+.. seealso::
+    :ref:`dedoc_attachments_extractors` contains more information about available extractors, their methods and parameters.
 
 
 .. _using_structure_extractors:
@@ -260,8 +266,9 @@ Let's extract the default structure based on the document styles:
 
 As we see, the ``hierarchy_level`` has been filled.
 
-See :ref:`other_structure` for more details about the default document structure.
-Use :ref:`dedoc_structure_extractors` to get the information about available structure extractors, their methods and parameters.
+.. seealso::
+    See :ref:`other_structure` for more details about the default document structure.
+    Use :ref:`dedoc_structure_extractors` to get the information about available structure extractors, their methods and parameters.
 
 
 Using structure constructors
@@ -286,8 +293,9 @@ The main difference is in the ``content`` attribute, that contains hierarchical 
 To get more information about :class:`~dedoc.data_structures.ParsedDocument`, :class:`~dedoc.data_structures.DocumentContent`
 and other classes, that form the output format, see :ref:`dedoc_data_structures`.
 
-See :ref:`dedoc_structure_constructors` for the description of available structure constructors and structure types.
-The description of :ref:`API output JSON format <json_format>` also may be useful.
+.. seealso::
+    See :ref:`dedoc_structure_constructors` for the description of available structure constructors and structure types.
+    The description of :ref:`API output JSON format <json_format>` also may be useful.
 
 
 Run the whole pipeline
