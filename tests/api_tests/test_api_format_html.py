@@ -153,7 +153,8 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         table = result["content"]["tables"][0]
         self.assertEqual(table["cells"][1][0]["lines"][0]["annotations"][0], {"start": 0, "end": 6, "name": "bold", "value": "True"})
         self.assertEqual(table["cells"][1][1]["lines"][0]["annotations"][0], {"start": 0, "end": 10, "name": "italic", "value": "True"})
-        self.assertEqual(table["cells"][2][0]["lines"][0]["annotations"][0], {"start": 0, "end": 10, "name": "linked_text", "value": "https://github.com/ispras/dedoc"})
+        self.assertEqual(table["cells"][2][0]["lines"][0]["annotations"][0], {"start": 0, "end": 10, "name": "linked_text",
+                                                                              "value": "https://github.com/ispras/dedoc"})
         self.assertEqual(table["cells"][2][1]["lines"][0]["annotations"][0], {"start": 0, "end": 16, "name": "strike", "value": "True"})
 
     def test_html_font_style_attribute(self) -> None:

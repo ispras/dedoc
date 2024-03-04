@@ -221,7 +221,8 @@ class HtmlReader(BaseReader):
             row_lines = []
             for cell in row.find_all(HtmlTags.table_cells):
                 cell_with_meta = CellWithMeta(
-                    lines=self.__read_blocks(block=cell, path_hash=path_hash, handle_invisible_table=False, table=True),  # read as blocks in order to extract styles
+                    lines=self.__read_blocks(block=cell, path_hash=path_hash, handle_invisible_table=False,
+                                             table=True),  # read each table cell as block in order to extract styles
                     colspan=cell.colspan if cell.colspan else 1,
                     rowspan=cell.rowspan if cell.rowspan else 1,
                     invisible=cell.invisible if cell.invisible else True
