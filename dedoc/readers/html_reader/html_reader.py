@@ -65,9 +65,9 @@ class HtmlReader(BaseReader):
         elif tag.name == "table" and not self._visible_table(tag, handle_invisible_table=handle_invisible_table):
             # if table is invisible and we don't parse invisible tables (handle_invisible_table == False)
             # then we parse table as raw text
-            block_lines = self.__handle_invisible_table(block=tag, path_hash=tag_uid)
+            block_lines = self.__handle_invisible_table(block=tag, path_hash=uid)
         elif isinstance(tag, str):
-            block_lines = self._handle_text_line(block=tag, path_hash=tag_uid)
+            block_lines = self._handle_text_line(block=tag, path_hash=uid)
         elif tag.name not in HtmlTags.available_tags:
             self.logger.debug(f"skip tag {tag.name.encode()}")
             block_lines = []
@@ -75,11 +75,11 @@ class HtmlReader(BaseReader):
             tag_value = HtmlTags.special_symbol_tags[tag.name]
             block_lines = self._handle_text_line(block=tag_value, path_hash=uid, ignore_space=False)
         elif tag.name in HtmlTags.block_tags:
-            block_lines = self.__read_blocks(block=tag, path_hash=tag_uid)
+            block_lines = self.__read_blocks(block=tag, path_hash=uid)
         elif tag.name in HtmlTags.list_tags:
             block_lines = self.__read_list(lst=tag, uid=tag_uid, path_hash=uid, handle_invisible_table=handle_invisible_table)
         else:
-            block_lines = self.__handle_single_tag(tag, tag_uid, table)
+            block_lines = self.__handle_single_tag(tag, uid, table)
         for line in block_lines:
             if not getattr(line.metadata, "html_tag", None):
                 line.metadata.extend_other_fields({"html_tag": tag.name})
