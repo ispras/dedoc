@@ -57,7 +57,7 @@ class HtmlReader(BaseReader):
         document_postprocess = self.postprocessor.postprocess(document)
         return document_postprocess
 
-    def __handle_block(self, tag: Union[Tag], uid: str, handle_invisible_table: bool) -> List[LineWithMeta]:
+    def __handle_block(self, tag: Union[Tag], uid: str, handle_invisible_table: bool, table: Optional[bool] = False) -> List[LineWithMeta]:
         tag_uid = hashlib.md5((uid + str(tag.name)).encode()).hexdigest()
         assert isinstance(tag, (Tag, str))
         if not self.__is_content_tag(tag, handle_invisible_table=handle_invisible_table):
@@ -65,9 +65,9 @@ class HtmlReader(BaseReader):
         elif tag.name == "table" and not self._visible_table(tag, handle_invisible_table=handle_invisible_table):
             # if table is invisible and we don't parse invisible tables (handle_invisible_table == False)
             # then we parse table as raw text
-            block_lines = self.__handle_invisible_table(block=tag, path_hash=uid)
+            block_lines = self.__handle_invisible_table(block=tag, path_hash=tag_uid)
         elif isinstance(tag, str):
-            block_lines = self._handle_text_line(block=tag, path_hash=uid)
+            block_lines = self._handle_text_line(block=tag, path_hash=tag_uid)
         elif tag.name not in HtmlTags.available_tags:
             self.logger.debug(f"skip tag {tag.name.encode()}")
             block_lines = []
@@ -75,18 +75,18 @@ class HtmlReader(BaseReader):
             tag_value = HtmlTags.special_symbol_tags[tag.name]
             block_lines = self._handle_text_line(block=tag_value, path_hash=uid, ignore_space=False)
         elif tag.name in HtmlTags.block_tags:
-            block_lines = self.__read_blocks(block=tag, path_hash=uid)
+            block_lines = self.__read_blocks(block=tag, path_hash=tag_uid)
         elif tag.name in HtmlTags.list_tags:
             block_lines = self.__read_list(lst=tag, uid=tag_uid, path_hash=uid, handle_invisible_table=handle_invisible_table)
         else:
-            block_lines = self.__handle_single_tag(tag, uid)
+            block_lines = self.__handle_single_tag(tag, tag_uid, table)
         for line in block_lines:
             if not getattr(line.metadata, "html_tag", None):
                 line.metadata.extend_other_fields({"html_tag": tag.name})
         return block_lines
 
-    def __handle_single_tag(self, tag: Tag, uid: str) -> List[LineWithMeta]:
-        text = self.__get_text(tag)
+    def __handle_single_tag(self, tag: Tag, uid: str, table: Optional[bool] = False) -> List[LineWithMeta]:
+        text = self.__get_text(tag, table)
 
         if not text or text.isspace():
             return []
@@ -99,7 +99,7 @@ class HtmlReader(BaseReader):
         line.metadata.extend_other_fields({"html_tag": tag.name})
         return [line]
 
-    def __read_blocks(self, block: Tag, path_hash: str = "", handle_invisible_table: bool = False) -> List[LineWithMeta]:
+    def __read_blocks(self, block: Tag, path_hash: str = "", handle_invisible_table: bool = False, table: Optional[bool] = False) -> List[LineWithMeta]:
         uid = hashlib.md5((path_hash + str(block.name)).encode()).hexdigest()
         if not self.__is_content_tag(block, handle_invisible_table=handle_invisible_table):
             return []
@@ -108,7 +108,7 @@ class HtmlReader(BaseReader):
 
         for tag in block:
             assert isinstance(tag, (Tag, str))
-            block_lines = self.__handle_block(tag=tag, uid=uid, handle_invisible_table=handle_invisible_table)
+            block_lines = self.__handle_block(tag=tag, uid=uid, handle_invisible_table=handle_invisible_table, table=table)
             lines.extend(block_lines)
         return lines
 
@@ -182,8 +182,10 @@ class HtmlReader(BaseReader):
         return lines
 
     # not currently used, but may be useful in the future
-    def __get_text(self, tag: Tag) -> [str, int, int]:
-        text = tag.getText() + "\n" if tag.name == "p" else tag.getText()
+    def __get_text(self, tag: Tag, table: Optional[bool] = False) -> [str, int, int]:
+        for br in tag.find_all("br"):
+            br.replace_with("\n")
+        text = tag.getText() + "\n" if tag.name == "p" and not table else tag.getText()
         text = "" if text is None else text
         return text
 
@@ -218,11 +220,8 @@ class HtmlReader(BaseReader):
         for row in table.find_all(HtmlTags.table_rows):
             row_lines = []
             for cell in row.find_all(HtmlTags.table_cells):
-                uid = hashlib.md5(cell.name.encode()).hexdigest()
-                tag_uid = hashlib.md5((uid + cell.getText()).encode()).hexdigest()
-
                 cell_with_meta = CellWithMeta(
-                    lines=[self.__make_line(line=cell.getText(), line_type=HierarchyLevel.unknown, uid=tag_uid, path_hash=path_hash)],
+                    lines=self.__read_blocks(block=cell, path_hash=path_hash, handle_invisible_table=False, table=True),  # read cells as blocks in order to extract styles
                     colspan=cell.colspan if cell.colspan else 1,
                     rowspan=cell.rowspan if cell.rowspan else 1,
                     invisible=cell.invisible if cell.invisible else True
