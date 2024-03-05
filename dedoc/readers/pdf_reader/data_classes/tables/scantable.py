@@ -5,6 +5,7 @@ from typing import Any, List
 import numpy as np
 from dedocutils.data_structures import BBox
 
+from dedoc.data_structures import CellWithMeta, Table, TableMetadata
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 
@@ -26,6 +27,11 @@ class ScanTable:
         self.matrix_cells.extend(table.matrix_cells)
         # extend order
         self.order = max(self.order, table.order)
+
+    def to_table(self) -> Table:
+        metadata = TableMetadata(page_id=self.page_number, uid=self.name, rotated_angle=self.location.rotated_angle)
+        cells_with_meta = [[CellWithMeta.create_from_cell(cell) for cell in row] for row in self.matrix_cells]
+        return Table(metadata=metadata, cells=cells_with_meta)
 
     @staticmethod
     def get_cells_text(attr_cells: List[List[Cell]]) -> List[List[str]]:

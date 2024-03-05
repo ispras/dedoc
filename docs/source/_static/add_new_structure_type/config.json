@@ -1,0 +1,26 @@
+{
+  "title": "Labeling",
+  "port": 5555,
+  "debug": false,
+  "labels": [
+    { "label": "title", "color": "#f00" },
+    { "label": "author", "color": "#ffa500" },
+    { "label": "affiliation", "color": "#055" },
+    { "label": "named_item", "color": "#5f5" },
+    { "label": "raw_text", "color": "#00f"},
+    { "label": "caption", "color": "#f0f" },
+    { "label": "reference", "color": "#00f080" },
+    { "label": "other", "color": "#0ff" }
+  ],
+  "multiclass": false,
+  "input_path": "tasks.json",
+  "image_key": ["task_path"],
+  "default_label_key": ["default_label"],
+  "task_instruction_key": ["additional_info"],
+  "result_key": "labeled",
+  "output_path": "article_classifier_TASK_ID.json",
+  "instruction": "Press the button with the type or number for labeling.\nTo go to the next image with saving the result press Enter or a button «Save»",
+  "templates_dir": "examples",
+  "confirm_required": false,
+  "sampling": "sequential"
+}

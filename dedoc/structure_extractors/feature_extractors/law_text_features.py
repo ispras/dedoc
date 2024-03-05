@@ -8,6 +8,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_features_extractor import ListFeaturesExtractor
 from dedoc.structure_extractors.feature_extractors.utils_feature_extractor import normalization_by_min_max
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_year
 
 
 class LawTextFeatures(AbstractFeatureExtractor):
@@ -124,7 +125,7 @@ class LawTextFeatures(AbstractFeatureExtractor):
             yield "font_size", self._get_size(line)
 
         yield "line_id", normalization_by_min_max(line.metadata.line_id, min_v=0, max_v=total_lines)
-        yield "num_year_regexp", len(self.year_regexp.findall(line.line))
+        yield "num_year_regexp", len(regexps_year.findall(line.line))
         yield "endswith_dot", float(line.line.strip().endswith("."))
         yield "endswith_semicolon", float(line.line.strip().endswith(";"))
         yield "endswith_colon", float(line.line.strip().endswith(":"))

@@ -1,0 +1,30 @@
+version: '2.4'
+
+services:
+  labeling:
+    mem_limit: 16G
+    build:
+      context: ..
+      dockerfile: labeling/Dockerfile
+    restart: always
+    tty: true
+    ports:
+      - 1232:1232
+    environment:
+      PORT: 1232
+
+
+  test:
+    depends_on:
+      - labeling
+    build:
+      context: ..
+      dockerfile: labeling/Dockerfile
+    tty: true
+    environment:
+      HOST: "labeling"
+      PORT: 1232
+      is_test: $test
+      PYTHONPATH: $PYTHONPATH:/labeling_root/labeling/tests:/labeling_root/labeling:/labeling_root
+    command:
+        bash labeling_root/labeling/tests/run_tests_in_docker.sh

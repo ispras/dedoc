@@ -13,10 +13,7 @@ from pdf2image.exceptions import PDFPageCountError, PDFSyntaxError
 import dedoc.utils.parameter_utils as param_utils
 from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
-from dedoc.data_structures.cell_with_meta import CellWithMeta
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.table import Table
-from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
@@ -92,12 +89,7 @@ class PdfBaseReader(BaseReader):
         )
 
         lines, scan_tables, attachments, warnings, other_fields = self._parse_document(file_path, params_for_parse)
-        tables = []
-        for scan_table in scan_tables:
-            metadata = TableMetadata(page_id=scan_table.page_number, uid=scan_table.name, rotated_angle=scan_table.location.rotated_angle)
-            cells_with_meta = [[CellWithMeta.create_from_cell(cell) for cell in row] for row in scan_table.matrix_cells]
-            table = Table(metadata=metadata, cells=cells_with_meta)
-            tables.append(table)
+        tables = [scan_table.to_table() for scan_table in scan_tables]
 
         if self._can_contain_attachements(file_path) and self.attachment_extractor.with_attachments(parameters):
             attachments += self.attachment_extractor.extract(file_path=file_path, parameters=parameters)

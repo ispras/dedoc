@@ -10,6 +10,7 @@ from dedoc.structure_extractors.feature_extractors.list_features.list_features_e
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
 from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.utils_feature_extractor import normalization_by_min_max
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_number, regexps_subitem_extended, regexps_year
 from dedoc.utils.utils import flatten
 
 
@@ -21,7 +22,7 @@ class TzTextFeatures(AbstractFeatureExtractor):
     def __init__(self, text_features_only: bool = False) -> None:
         super().__init__()
         self.list_item_regexp = [
-            self.item_extended_regexp,
+            regexps_subitem_extended,
             re.compile(r"^\s*[IVX]+"),  # roman numerals
             # https://stackoverflow.com/questions/267399/how-do-you-match-only-valid-
             # roman-numerals-with-a-regular-expression
@@ -85,9 +86,9 @@ class TzTextFeatures(AbstractFeatureExtractor):
         yield ("is_upper", 1) if line.line.strip().isupper() else ("is_upper", 0)
         yield ("is_lower", 1) if line.line.strip().islower() else ("is_lower", 0)
         yield "day_month_regexp", int("дней" in text) + int("месяцев" in text)
-        yield "year_regexp", len(self.year_regexp.findall(text))
+        yield "year_regexp", len(regexps_year.findall(text))
 
-        number = self.number_regexp.match(text)
+        number = regexps_number.match(text)
         number = number.group().strip() if number else ""
         if number.endswith((")", "}")):
             number = number[:-1]

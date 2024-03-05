@@ -10,7 +10,9 @@
     <style>
         .parameters {padding: 5px; box-shadow: 1px 1px 2px #bbbbbb; width: 70%}
         .body {margin-left: 20%}
-        details > summary {font-style: italic; cursor: pointer}
+        details > summary {font-style: italic; cursor: pointer; display: list-item;}
+        .child.max {padding-left: 5px; flex: 1}
+        .parent {display: flex}
     </style>
 </head>
 
@@ -92,11 +94,13 @@
 
 
         <div class="parameters">
-            <h4>Tables handling</h4>
+            <h4>Tables handling </h4>
             <details><summary>need_pdf_table_analysis, orient_analysis_cells, orient_cell_angle</summary>
                 <br>
                 <p>
-                    <label><input name="need_pdf_table_analysis" type="checkbox" value="true" checked> need_pdf_table_analysis</label>
+                    <label>
+                        <input type="hidden" name="need_pdf_table_analysis" value="false">
+                        <input type="checkbox" name="need_pdf_table_analysis" value="true" checked> need_pdf_table_analysis</label>
                 </p>
 
                 <p>
@@ -188,9 +192,9 @@
         </div>
 
         <br>
-        <div class="row">
-            <div class="col-md-3"><input type=file name=file class="btn btn-default" data-buttonText="Choose file"></div>
-            <div class="col-md-2"><input type=submit value=Upload class="btn btn-default"></div>
+        <div class="parent">
+            <div class="child"><input type=file name=file class="btn btn-default" data-buttonText="Choose file"></div>
+            <div class="child max"><input type=submit value=Upload class="btn btn-default"></div>
         </div>
 
     </form>

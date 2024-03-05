@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> Dedoc | info page </title>
+    <meta name="viewport" content="width=device-width">
+</head>
+
+<body>
+    <div class="content">
+
+        <h1> The process of making datasets and training classifiers </h1>
+
+            <h3> Step 1 - Making tasks for a labeling system </h3>
+                <ol>
+                    <li>
+                        Run dedoc labeling service: <b>docker-compose -f labeling/docker-compose.yml up --build</b>
+                    </li>
+                    <li>
+                        Prepare the ZIP archive with documents for labeling. The following document formats are supported: TXT, DOCX, PDF, images.
+                    </li>
+                    <li>
+                        For making tasks for a labeling system go <a href="/handle_archive" target="_blank" rel="noopener">here</a>, configure parameters and upload the archive.
+                    </li>
+                </ol>
+
+            <h3> Step 2 - Data labeling </h3>
+                <p>
+                    Labeling of the prepared tasks is executed via <a href=https://github.com/dronperminov/ImageClassifier>external labeling system</a>.
+                </p>
+
+            <h3> Step 3 - Clearing data for labeling </h3>
+                <p>
+                    <a href="/clear" target="_blank" rel="noopener">Here</a> one may clear the data used while making tasks for labeling.
+                </p>
+    </div>
+</body>
+</html>

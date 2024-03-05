@@ -10,7 +10,7 @@ from dedoc.config import get_config
 from dedoc.data_structures import ParsedDocument, UnstructuredDocument
 from dedoc.manager_config import get_manager_config
 from dedoc.metadata_extractors import BaseMetadataExtractor
-from dedoc.train_dataset.train_dataset_utils import get_path_original_documents, save_line_with_meta
+from dedoc.utils.train_dataset_utils import get_path_original_documents, save_line_with_meta
 from dedoc.utils.utils import get_unique_name
 
 
@@ -114,7 +114,7 @@ class DedocManager:
             self.logger.info(f"Extract structure from file {file_name}")
 
             if self.config.get("labeling_mode", False):
-                self.__save(os.path.join(tmp_dir, unique_filename), unstructured_document)
+                self.__save(converted_file_path, unstructured_document)
 
             # Step 5 - Form the output structure
             parsed_document = self.structure_constructor.construct(document=unstructured_document, parameters=parameters)
@@ -141,5 +141,6 @@ class DedocManager:
         return result_parameters
 
     def __save(self, file_path: str, classified_document: UnstructuredDocument) -> None:
+        self.logger.info(f'Save document lines to {self.config["intermediate_data_path"]}')
         save_line_with_meta(lines=classified_document.lines, config=self.config, original_document=os.path.basename(file_path))
         shutil.copy(file_path, os.path.join(get_path_original_documents(self.config), os.path.basename(file_path)))

@@ -54,6 +54,8 @@ etc.
 Some parts of the document (for example title) may take more than one line. To union them set ``can_be_multiline``
 to `True` and then copy ``level_1``, ``level_2`` and ``line_type`` from the first line to others.
 
+Look to the :ref:`hierarchy level description <add_structure_type_hierarchy_level>` to get more details.
+
 Define metadata with :class:`~dedoc.data_structures.LineMetadata`:
 
 .. literalinclude:: ../_static/code_examples/dedoc_creating_dedoc_document.py

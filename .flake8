@@ -4,7 +4,7 @@ max-line-length = 160
 max-complexity = 13
 inline-quotes = "
 
-application-import-names = dedoc, tests
+application-import-names = dedoc, tests, scripts, train_dataset
 import-order-style = pycharm
 
 exclude =
@@ -14,8 +14,6 @@ exclude =
     .github,
     *__init__.py,
     resources,
-    dedoc/scripts,
-    examples,
     venv,
     build,
     dedoc.egg-info
@@ -24,3 +22,5 @@ exclude =
 # ANN101 - type annotations for self
 ignore =
     ANN101
+per-file-ignores =
+    scripts/*:T201

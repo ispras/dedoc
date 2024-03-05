@@ -31,7 +31,8 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
         previous_line = None
 
         for line in document.lines:
-            assert line.metadata.tag_hierarchy_level is not None
+            if line.metadata.tag_hierarchy_level is None:
+                line.metadata.tag_hierarchy_level = HierarchyLevel.create_unknown()
 
             if line.metadata.tag_hierarchy_level.line_type == HierarchyLevel.unknown:
                 line.metadata.hierarchy_level = self.get_list_hl_with_regexp(line, previous_line)

@@ -6,18 +6,17 @@ from uuid import uuid1
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
 from dedoc.structure_extractors.hierarchy_level_builders.abstract_hierarchy_level_builder import AbstractHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.structure_unit.abstract_structure_unit import AbstractStructureUnit
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_item_with_bracket, regexps_subitem
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_item_with_bracket, regexps_number, regexps_subitem
 
 
 class AbstractBodyHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
     starting_line_types = ["body"]
     regexps_item = regexps_item_with_bracket
-    regexps_part = AbstractFeatureExtractor.number_regexp
-    ends_of_number = AbstractFeatureExtractor.ends_of_number
+    regexps_part = regexps_number
+    ends_of_number = regexps_ends_of_number
     regexps_subitem = regexps_subitem
 
     @property

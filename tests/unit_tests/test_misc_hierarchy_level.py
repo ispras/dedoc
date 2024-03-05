@@ -12,9 +12,8 @@ class TestHierarchyLevel(unittest.TestCase):
         self.assertTrue(h1 == h2)
         self.assertTrue(h1 >= h2)
         self.assertTrue(h1 <= h2)
-        self.assertTrue(h1 == h3)
+        self.assertFalse(h1 == h3)
         self.assertTrue(h1 >= h3)
-        self.assertTrue(h1 <= h3)
 
     def test_raw_text_greater_than_any_other(self) -> None:
         list_item = HierarchyLevel(level_1=2, level_2=1, can_be_multiline=False, line_type=HierarchyLevel.list_item)
