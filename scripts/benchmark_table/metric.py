@@ -8,7 +8,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # Apache 2.0 License for more details.
-
 # Source: https://github.com/ibm-aur-nlp/PubTabNet
 
 from collections import deque
@@ -55,6 +54,8 @@ class CustomConfig(Config):
         """
         Get distance from 0 to 1
         """
+        if self.maximum(*sequences) == 0:
+            return 0
         return float(distance.levenshtein(*sequences)) / self.maximum(*sequences)
 
     def rename(self, node1: TableTree, node2: TableTree) -> float:
@@ -67,7 +68,7 @@ class CustomConfig(Config):
             if not node1.visible or not node2.visible:
                 return 0.
             if node1.content or node2.content:
-                return self.normalized_distance(node1.content, node2.content)
+                return self.normalized_distance("".join(node1.content).strip(), "".join(node2.content).strip())
         return 0.
 
 
