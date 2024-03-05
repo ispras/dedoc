@@ -1,16 +1,31 @@
 Changelog
 =========
 
+v2.1 (2024-03-05)
+-----------------
+Release note: `v2.1 <https://github.com/ispras/dedoc/releases/tag/v2.1>`_
+
+* Custom loggers deleted (the common logger is used for all dedoc classes).
+* Do not change the document image if it has a correct orientation (orientation correction function changed).
+* Use only `PdfTabbyReader` during detection of a textual layer in PDF files.
+* Code related to the labeling mode refactored and removed from the library package (it is located in the separate directory).
+* Added `BoldAnnotation` for words in `PdfImageReader`.
+* More benchmarks are added: images of tables parsing, postprocessing of Tesseract OCR.
+* Some fixes are made in a web-form of Dedoc.
+* Tutorial how to add a new structure type to Dedoc added.
+* Parsing of EML and HTML files fixed.
+
+
 v2.0 (2023-12-25)
 -----------------
 Release note: `v2.0 <https://github.com/ispras/dedoc/releases/tag/v2.0>`_
 
-* Fix table extraction from PDF using empty config (see `issue <https://github.com/ispras/dedoc/issues/373>`_)
-* Add more benchmarks for Tesseract
-* Fix extension extraction for file names with several dots
+* Fix table extraction from PDF using empty config (see `issue <https://github.com/ispras/dedoc/issues/373>`_).
+* Add more benchmarks for Tesseract.
+* Fix extension extraction for file names with several dots.
 * Change names of some methods and their parameters for all main classes (attachments extractors, converters, readers, metadata extractors, structure extractors, structure constructors).
-  Please look to the `Package reference` of `documentation <https://dedoc.readthedocs.io>`_ for more details
-* Add `AttachAnnotation` and `TableAnnotation` to `PPTX` (see `discussion <https://github.com/ispras/dedoc/discussions/386>`_)
+  Please look to the `Package reference` of `documentation <https://dedoc.readthedocs.io>`_ for more details.
+* Add `AttachAnnotation` and `TableAnnotation` to `PPTX` (see `discussion <https://github.com/ispras/dedoc/discussions/386>`_).
 * Fix bugs in `DOCX` handling (see issues `378 <https://github.com/ispras/dedoc/issues/378>`_, `379 <https://github.com/ispras/dedoc/issues/379>`_
 
 v1.1.1 (2023-11-24)
