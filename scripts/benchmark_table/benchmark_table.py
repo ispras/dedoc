@@ -84,21 +84,22 @@ def benchmark_on_our_data() -> dict:
     path_images = data_dir / "images"
     path_gt = data_dir / "gt.json"
     path_pred = data_dir / "pred.json"
-    download_dataset(data_dir, name_zip="benchmark_table_data.zip", url="https://at.ispras.ru/owncloud/index.php/s/Xaf4OyHj6xN2RHH/download")
+    result = dict()
+    download_dataset(data_dir, name_zip="benchmark_table_data.zip", url="https://at.ispras.ru/owncloud/index.php/s/nYgwbhVk5SpvD3z/download")
 
     mode_metric_structure_only = False
 
     with open(path_gt, "r") as fp:
         gt_json = json.load(fp)
+
     """
-    Creating base html (based on method predictions for future labeling)
-    path_images = data_dir / "images_tmp"
-    pred_json = prediction("gt_tmp.json", path_images)
+    # Creating base html (based on method predictions for future labeling)
+    pred_json = prediction(data_dir / "gt_generated.json", path_images)
     """
+
     pred_json = prediction(path_pred, path_images)
     scores = call_metric(pred_json=pred_json, true_json=gt_json, structure_only=mode_metric_structure_only)
 
-    result = dict()
     result["mode_metric_structure_only"] = mode_metric_structure_only
     result["mean"] = np.mean([score for score in scores.values()])
     result["images"] = scores
@@ -123,7 +124,7 @@ def benchmark_on_generated_table() -> dict:
     download_dataset(data_dir,
                      name_zip="benchmark_table_data_generated_500_tables_category_1.zip",
                      url="https://at.ispras.ru/owncloud/index.php/s/gItWxupnF2pve6B/download")
-    mode_metric_structure_only = True
+    mode_metric_structure_only = False
 
     # make common ground-truth file
     common_gt_json = {}
@@ -143,9 +144,9 @@ def benchmark_on_generated_table() -> dict:
 
     # calculate metrics
     path_pred = data_dir / "pred.json"
-
     pred_json = prediction(path_pred, path_images)
-    scores = call_metric(pred_json=pred_json, true_json=common_gt_json, structure_only=mode_metric_structure_only, ignore_nodes=["span", "style", "head", "h4"])
+    scores = call_metric(pred_json=pred_json, true_json=common_gt_json, structure_only=mode_metric_structure_only,
+                         ignore_nodes=["span", "style", "head", "h4", "tbody"])
 
     result = dict()
     result["mode_metric_structure_only"] = mode_metric_structure_only
