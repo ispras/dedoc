@@ -22,26 +22,6 @@ class ScannedImagesCreator(AbstractImagesCreator):
     def __init__(self, path2docs: str) -> None:
         self.path2docs = path2docs
 
-    def __draw_one_bbox(self, image: PIL.Image, line: dict, pdf_image: bool = False) -> Optional[np.ndarray]:
-        try:
-            bbox_annotation = self.__get_bbox_annotations(line)[0]
-            bbox = json.loads(bbox_annotation["value"])
-            if pdf_image:
-                image = image.resize(size=(bbox["page_width"], bbox["page_height"]), resample=PIL.Image.BICUBIC)
-            image_bbox = draw_rectangle(
-                image=image,
-                x_top_left=int(bbox["x_top_left"] * bbox["page_width"]),
-                y_top_left=int(bbox["y_top_left"] * bbox["page_height"]),
-                width=bbox["width"] * bbox["page_width"],
-                height=bbox["height"] * bbox["page_height"],
-                color=line.get("color", (0, 0, 0))
-            )
-            image_bbox = cv2.resize(np.array(image_bbox), (1276, 1754))
-        except Exception as e:
-            print(e)  # noqa
-            return None
-        return image_bbox
-
     def add_images(self, page: List[dict], archive: zipfile.ZipFile) -> None:
         """
         take list of line with meta (all lines from one document) and creates images with a bbox around the line
@@ -73,7 +53,7 @@ class ScannedImagesCreator(AbstractImagesCreator):
         @return:
         """
         image_name = get_original_document_path(self.path2docs, page)
-        return image_name.endswith(("png", "jpg", "jpeg", "pdf"))
+        return image_name.lower().endswith(("png", "jpg", "jpeg", "pdf"))
 
     def _create_image_pdf(self, path: str, page: List[dict]) -> Iterator[Image]:
         current_image = None
@@ -104,6 +84,26 @@ class ScannedImagesCreator(AbstractImagesCreator):
             image_bbox = PIL.Image.fromarray(image_bbox)
             image_bbox = image_bbox.convert("RGB")
             yield image_bbox
+
+    def __draw_one_bbox(self, image: PIL.Image, line: dict, pdf_image: bool = False) -> Optional[np.ndarray]:
+        try:
+            bbox_annotation = self.__get_bbox_annotations(line)[0]
+            bbox = json.loads(bbox_annotation["value"])
+            if pdf_image:
+                image = image.resize(size=(bbox["page_width"], bbox["page_height"]), resample=PIL.Image.BICUBIC)
+            image_bbox = draw_rectangle(
+                image=image,
+                x_top_left=int(bbox["x_top_left"] * bbox["page_width"]),
+                y_top_left=int(bbox["y_top_left"] * bbox["page_height"]),
+                width=bbox["width"] * bbox["page_width"],
+                height=bbox["height"] * bbox["page_height"],
+                color=line.get("color", (0, 0, 0))
+            )
+            image_bbox = cv2.resize(np.array(image_bbox), (1276, 1754))
+        except Exception as e:
+            print(e)  # noqa
+            return None
+        return image_bbox
 
     def __get_bbox_annotations(self, line: dict) -> List[dict]:
         bbox_annotations = [annotation for annotation in line["_annotations"] if annotation["name"] == "bounding box"]

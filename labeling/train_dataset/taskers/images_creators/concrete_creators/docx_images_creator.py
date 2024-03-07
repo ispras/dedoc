@@ -42,6 +42,10 @@ class DocxImagesCreator(AbstractImagesCreator):
         self.logger = self.config.get("logger", logging.getLogger())
         self.scan_reader = PdfImageReader(config=self.config)
 
+    def can_read(self, page: List[dict]) -> bool:
+        file_name = get_original_document_path(self.path2docs, page)
+        return file_name.lower().endswith("docx")
+
     def add_images(self, page: List[dict], archive: zipfile.ZipFile) -> None:
         """
         The algorithm if as follows:
@@ -195,11 +199,6 @@ class DocxImagesCreator(AbstractImagesCreator):
             page_num += 1
             if len(images) > 0:
                 yield np.array(images[0])
-
-    def can_read(self, page: List[dict]) -> bool:
-
-        image_name = get_original_document_path(self.path2docs, page)
-        return image_name.endswith("docx")
 
     def _create_images_from_pdf(self, pdfs: PairedPdf, page: List[dict], tmp_dir: str) -> Iterable[Tuple[str, Image.Image]]:
         """
