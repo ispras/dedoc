@@ -83,9 +83,10 @@ label2label_diploma = {
     "root": "title",
     "toc": "toc",
     "toc_item": "toc",
-    "item": "raw_text",
-    "part": "named_item",
-    "raw_text": "raw_text"
+    "named_item": "named_item",
+    "raw_text": "raw_text",
+    "page_id": "page_id",
+    "footnote": "footnote"
 }
 
 taskers = {
