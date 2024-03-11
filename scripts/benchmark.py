@@ -10,6 +10,7 @@ import requests
 import wget
 from tqdm import tqdm
 
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_extractor import PdfminerExtractor
 from dedoc.utils.utils import send_file
 
 path_result = os.path.join(os.path.dirname(__file__), "..", "resources", "benchmarks")
@@ -17,10 +18,20 @@ path_result = os.path.abspath(path_result)
 os.makedirs(path_result, exist_ok=True)
 path_result = os.path.join(path_result, "time_benchmark.json")
 
-Task = namedtuple("Task", ("directory", "name", "parameters"))
+Task = namedtuple("Task", ("directory", "name", "parameters", "func_page_count"))
 
 host = "http://localhost:1231"
 data_url = "https://at.ispras.ru/owncloud/index.php/s/bEozaxZALrUyFzM/download"
+
+
+def get_pdf_page_count(path: str) -> int:
+    with open(path, "rb") as fp:
+        pages = len(list(PdfminerExtractor.get_pages(fp)))
+        return pages if pages > 0 else 1
+
+
+def get_none_page_count(path: str) -> int:
+    return 1
 
 
 def get_cpu_performance() -> float:
@@ -47,25 +58,27 @@ with TemporaryDirectory() as path_base:
     result["version"] = requests.get(f"{host}/version").text
     result["cpu_performance"] = cpu_performance
     tasks = [
-        Task("images", "images", {}),
-        Task("htmls", "law_html", {"document_type": "law"}),
-        Task("htmls", "other_html", {}),
-        Task("txt", "txt", {}),
-        Task("pdf_text_layer", "pdf_text_layer_true", {"pdf_with_text_layer": "true"}),
-        Task("pdf_text_layer", "pdf_text_layer_auto", {"pdf_with_text_layer": "auto"}),
-        Task("pdf_text_layer", "pdf_text_layer_auto_tabby", {"pdf_with_text_layer": "auto_tabby"}),
-        Task("pdf_text_layer", "pdf_text_layer_false", {"pdf_with_text_layer": "false"}),
-        Task("pdf_text_layer", "pdf_text_layer_tabby", {"pdf_with_text_layer": "tabby"}),
-        Task("docx", "docx", {}),
-        Task("pdf", "pdf", {"pdf_with_text_layer": "false"}),
-        Task("pdf_tables", "pdf_tables", {})
+        Task("images", "images", {}, get_none_page_count),
+        Task("htmls", "law_html", {"document_type": "law"}, get_none_page_count),
+        Task("htmls", "other_html", {}, get_none_page_count),
+        Task("txt", "txt", {}, get_none_page_count),
+        Task("pdf_text_layer", "pdf_text_layer_true", {"pdf_with_text_layer": "true"}, get_pdf_page_count),
+        Task("pdf_text_layer", "pdf_text_layer_auto", {"pdf_with_text_layer": "auto"}, get_pdf_page_count),
+        Task("pdf_text_layer", "pdf_text_layer_auto_tabby", {"pdf_with_text_layer": "auto_tabby"}, get_pdf_page_count),
+        Task("pdf_text_layer", "pdf_text_layer_false", {"pdf_with_text_layer": "false"}, get_pdf_page_count),
+        Task("pdf_text_layer", "pdf_text_layer_tabby", {"pdf_with_text_layer": "tabby"}, get_pdf_page_count),
+        Task("docx", "docx", {}, get_none_page_count),
+        Task("pdf", "pdf", {"pdf_with_text_layer": "false"}, get_pdf_page_count),
+        Task("pdf_tables", "pdf_tables", {}, get_pdf_page_count)
     ]
     print(tasks)
-    for directory, name, parameters in tasks:
+    for directory, name, parameters, page_func in tasks:
         total_size = 0
         total_time = 0
         total_files = 0
+        total_pages = 0
         files_info = []
+        spend_page_times = []
         directory = os.path.join(path_base, directory)
         for file in tqdm(os.listdir(directory), desc=name):
             file_path = os.path.join(directory, file)
@@ -74,21 +87,28 @@ with TemporaryDirectory() as path_base:
             time_start = time.time()
             send_file(host=host, file_name=file, file_path=file_path, parameters=parameters)
             time_finish = time.time()
-            spend_time = time_finish - time_start
-            total_time += spend_time
-            files_info.append({"file": file, "size": file_size, "time": spend_time})
+            spend_file_time = time_finish - time_start
+            pages = page_func(file_path)
+            spend_page_times.append(spend_file_time / pages)
+            total_time += spend_file_time
+            total_pages += pages
+            files_info.append({"file": file, "size": file_size, "time_per_file": spend_file_time, "time_per_page": spend_page_times[-1]})
             total_files += 0
         result_item = OrderedDict()
         result_item["raw_time"] = total_time
-        total_time *= cpu_performance
-        result_item["total_time"] = total_time
-        result_item["total_size"] = total_size
+        result_item["total_time_independent_cpu"] = total_time * cpu_performance
+        result_item["total_file_size"] = total_size
         result_item["throughput"] = total_size / total_time
-        result_item["mean_time"] = total_time / len(files_info)
+        result_item["mean_time_independent_cpu_on_file"] = total_time / len(files_info) * cpu_performance
+        result_item["mean_time_cpu_on_file"] = total_time / len(files_info)
+        result_item["mean_time_independent_cpu_on_page"] = sum(spend_page_times) / len(spend_page_times) * cpu_performance
+        result_item["mean_time_cpu_on_page"] = sum(spend_page_times) / len(spend_page_times)
         result_item["total_files"] = len(files_info)
+        result_item["total_pages"] = total_pages
         result[name] = result_item
 
-    with open(path_result, "w") as file_out:
-        json.dump(obj=result, fp=file_out, indent=4, ensure_ascii=False)
-    print(f"save result in {path_result}")
+        with open(path_result, "w") as file_out:
+            json.dump(obj=result, fp=file_out, indent=4, ensure_ascii=False)
+        print(f"save result in {path_result}")
+
     print(failed)

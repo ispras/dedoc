@@ -33,8 +33,8 @@ def call_metric(pred_json: dict, true_json: dict, structure_only: bool = False, 
     return scores
 
 
-def get_tables(image_path: Path) -> str:
-    document = image_reader.read(str(image_path))
+def get_tables(image_path: Path, language: str) -> str:
+    document = image_reader.read(str(image_path), {"language": language})
 
     for table in document.tables:
         table.metadata.uid = "test_id"
@@ -45,12 +45,12 @@ def get_tables(image_path: Path) -> str:
     return html_tables[0]
 
 
-def make_predict_json(data_path: Path) -> dict:
+def make_predict_json(data_path: Path, language: str) -> dict:
     predict_json = {}
     for pathname in Path.iterdir(data_path):
         print(pathname)
 
-        predict_json[pathname.name] = {"html": "<html><body>" + get_tables(pathname) + "</body></html>"}
+        predict_json[pathname.name] = {"html": "<html><body>" + get_tables(pathname, language) + "</body></html>"}
 
     return predict_json
 
@@ -71,8 +71,8 @@ def download_dataset(data_dir: Path, name_zip: str, url: str) -> None:
     print(f"Benchmark data downloaded to {data_dir}")
 
 
-def prediction(path_pred: Path, path_images: Path) -> dict:
-    pred_json = make_predict_json(path_images)
+def prediction(path_pred: Path, path_images: Path, language: str = "rus+eng") -> dict:
+    pred_json = make_predict_json(path_images, language)
     with path_pred.open("w") as fd:
         json.dump(pred_json, fd, indent=2, ensure_ascii=False)
 
@@ -144,7 +144,7 @@ def benchmark_on_generated_table() -> dict:
 
     # calculate metrics
     path_pred = data_dir / "pred.json"
-    pred_json = prediction(path_pred, path_images)
+    pred_json = prediction(path_pred, path_images, language="eng")
     scores = call_metric(pred_json=pred_json, true_json=common_gt_json, structure_only=mode_metric_structure_only,
                          ignore_nodes=["span", "style", "head", "h4", "tbody"])
 
