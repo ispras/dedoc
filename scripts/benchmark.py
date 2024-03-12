@@ -1,14 +1,14 @@
 import os
 import time
 import zipfile
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 from tempfile import TemporaryDirectory
 from typing import List
 
 import numpy as np
+import pandas as pd
 import requests
 import wget
-from texttable import Texttable
 from tqdm import tqdm
 
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_extractor import PdfminerExtractor
@@ -17,7 +17,7 @@ from dedoc.utils.utils import send_file
 path_result = os.path.join(os.path.dirname(__file__), "..", "resources", "benchmarks")
 path_result = os.path.abspath(path_result)
 os.makedirs(path_result, exist_ok=True)
-path_result = os.path.join(path_result, "time_benchmark.txt")
+path_result = os.path.join(path_result, "time_benchmark.csv")
 
 Task = namedtuple("Task", ("directory", "name", "parameters", "func_page_count"))
 
@@ -64,9 +64,7 @@ with TemporaryDirectory() as path_base:
     print(path_base)
 
     failed = []
-    result = OrderedDict()
-    result["version"] = requests.get(f"{host}/version").text
-    result["cpu_performance"] = cpu_performance
+    version = requests.get(f"{host}/version").text
     tasks = [
         Task("images", "images", {}, get_none_page_count),
         Task("htmls", "law_html", {"document_type": "law"}, get_none_page_count),
@@ -82,16 +80,11 @@ with TemporaryDirectory() as path_base:
         Task("pdf_tables", "pdf_tables", {}, get_pdf_page_count)
     ]
     print(tasks)
-    table_benchmark = Texttable()
-    header = [
-        ["Dataset", "total_file_size", "total_files", "total_pages", # noqa
-         "|||||||||||||||||||||||||", "|||||||||raw_time||||||", "|||||||||||||||||||||||||", "|||||||||||||||||||||||||",  # noqa
-         "=========================", "====independent_cpu====", "=========================", "========================="],  # noqa
-        ["", "", "", "", "total_time", "throughput", "mean_time_on_file ", "mean_time_cpu_on_page",  # noqa
-         "total_time", "throughput", "mean_time_on_file", "mean_time_cpu_on_page"]]  # noqa
-    table_benchmark.header(header[0])
-    table_benchmark.add_row(header[1])
-    table_benchmark.set_cols_width([25 for _ in header[0]])
+    header = ["Dataset", "total_file_size", "total_files", "total_pages", # noqa
+         "total_time_raw", "throughput_raw", "mean_time_on_file_raw", "mean_time_cpu_on_page_raw",  # noqa
+         "total_time_indp_cpu", "throughput_indp_cpu", "mean_time_on_file_indp_cpu", "mean_time_cpu_on_page_indp_cpu"]  # noqa
+
+    df = pd.DataFrame(columns=header)
     for directory, name, parameters, page_func in tasks:
         total_size = 0
         total_time = 0
@@ -119,12 +112,11 @@ with TemporaryDirectory() as path_base:
         result_item = [name, total_size, len(files_info), total_pages]
         result_item.extend(get_times(spend_page_times, total_size, total_time, len(files_info)))
         result_item.extend(get_times(spend_page_times, total_size, total_time, len(files_info), cpu_performance))
-
-        table_benchmark.add_row(result_item)
-        with open(path_result, "w") as file_out:
-            file_out.write(f"cpu_performance={cpu_performance}")
-            file_out.write("\nTable 1 - benchmarks\n")
-            file_out.write(table_benchmark.draw())
+        df_item = pd.DataFrame(data=[result_item], columns=header)
+        df = pd.concat([df, df_item]) if not df.empty else df_item
+        df_meta = pd.DataFrame(data=[[cpu_performance, version]], columns=["cpu_performance", "version"])
+        df_result = pd.concat([df, df_meta], axis=1)
+        df_result.to_csv(path_result)
         print(f"save result in {path_result}")
 
     print(failed)
