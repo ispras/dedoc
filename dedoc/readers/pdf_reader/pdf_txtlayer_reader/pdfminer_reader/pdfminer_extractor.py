@@ -4,7 +4,7 @@ import logging
 import os
 import uuid
 from collections import namedtuple
-from typing import List, Optional, Tuple
+from typing import BinaryIO, Iterator, List, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -36,7 +36,7 @@ logging.getLogger("pdfminer").setLevel(logging.ERROR)
 WordObj = namedtuple("Word", ["start", "end", "value"])
 
 
-class PdfminerExtractor(object):
+class PdfminerExtractor:
     """
     Class extracts text with style from pdf with help pdfminer.six
     """
@@ -44,6 +44,10 @@ class PdfminerExtractor(object):
     def __init__(self, *, config: dict) -> None:
         self.config = config
         self.logger = self.config.get("logger", logging.getLogger())
+
+    @staticmethod
+    def get_pages(fp: BinaryIO) -> Iterator[PDFPage]:
+        return PDFPage.get_pages(fp)
 
     def extract_text_layer(self, path: str, page_number: int, attachments_dir: str) -> Optional[PageWithBBox]:
         """
@@ -54,7 +58,7 @@ class PdfminerExtractor(object):
         :return: pages_with_bbox - page with extracted text
         """
         with open(path, "rb") as fp:
-            pages = PDFPage.get_pages(fp)
+            pages = PdfminerExtractor.get_pages(fp)
             for page_num, page in enumerate(pages):
                 if page_num != page_number:
                     continue
