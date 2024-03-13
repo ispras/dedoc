@@ -1,4 +1,4 @@
-name: CI
+name: CI labeling
 
 # Controls when the action will run. 
 on:

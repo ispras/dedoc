@@ -45,7 +45,7 @@ class TestApiTaskers(unittest.TestCase):
 
             with zipfile.ZipFile(result_archive_path) as archive:
                 name_list = archive.namelist()
-                for file_name in ["original_documents.zip", "formInput.html", "formResult.html", "task_manager.py"]:
+                for file_name in ["original_documents.zip", "formInput.html", "formResult.html", "task_manager.py", "parameters.json"]:
                     self.assertIn(file_name, name_list)
                 archive.extractall(tmp_dir)
 

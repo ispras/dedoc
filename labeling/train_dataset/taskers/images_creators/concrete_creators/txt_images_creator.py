@@ -3,7 +3,7 @@ import logging
 import os
 import tempfile
 import zipfile
-from typing import Dict, List, Tuple
+from typing import List, Optional, Tuple
 
 import PIL
 import numpy as np
@@ -26,18 +26,19 @@ class TxtImagesCreator(AbstractImagesCreator):
         self.path2docs = path2docs
 
         # text drawing settings
-        self.font_size = 50
-        self.page_size = (2480, 3508)
+        self.font_size = 25
+        self.page_size = (1240, 1750)
         self.page_color = (255, 255, 255)
         self.text_color = (0, 0, 0)
         self.word_space = 0.5
-        self.line_gap = 20
-        self.margin = 70
+        self.line_gap = 10
+        self.margin = 35
 
         font_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "resources", "Arial_Narrow.ttf"))
         self.font = ImageFont.truetype(font_path, self.font_size)
 
         self.logger = config.get("logger", logging.getLogger())
+        self.logging_step = 50
 
     def can_read(self, page: List[dict]) -> bool:
         file_name = get_original_document_path(self.path2docs, page)
@@ -48,12 +49,18 @@ class TxtImagesCreator(AbstractImagesCreator):
         1 - draw text for all document lines (create several pages)
         2 - for each line get a page with one line highlighted by bounding box
         """
-        with tempfile.TemporaryDirectory() as tmpdir:
-            uid2location = self.__draw_pages(page, tmpdir)
+        len_page = len(page)
 
-            for line_dict in page:
-                line_uid = line_dict["_uid"]
-                line_location = uid2location.get(line_uid)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self.logger.info("Draw images with text")
+            location_list = self.__draw_pages(page, tmpdir)
+
+            self.logger.info("Draw bounding boxes on images")
+            for line_num, line_dict in enumerate(page, start=1):
+                if line_num % self.logging_step == 0:
+                    self.logger.info(f"{line_num}/{len_page} bboxes")
+
+                line_location = location_list[line_num - 1]
                 if line_location is None:
                     continue
 
@@ -68,20 +75,24 @@ class TxtImagesCreator(AbstractImagesCreator):
                 )
                 image_with_bbox = PIL.Image.fromarray(image_with_bbox).convert("RGB")
 
-                img_name = f"{line_uid}.jpg"
+                img_name = f'{line_dict["_uid"]}.jpg'
                 with tempfile.TemporaryDirectory() as tmpfile:
                     img_path = os.path.join(tmpfile, img_name)
                     image_with_bbox.save(os.path.join(tmpfile, img_name), format="jpeg")
                     archive.write(img_path, img_name)
 
-    def __draw_pages(self, page: List[dict], tmpdir: str) -> Dict[str, LineLocation]:
-        uid2location = dict()
+    def __draw_pages(self, page: List[dict], tmpdir: str) -> List[Optional[LineLocation]]:
+        location_list = [None for _ in page]
+        len_page = len(page)
         page_number = 0
 
         x, y = self.margin, self.margin
         img, draw = self.__create_page()
 
-        for line_dict in page:
+        for line_num, line_dict in enumerate(page, start=1):
+            if line_num % self.logging_step == 0:
+                self.logger.info(f"{line_num}/{len_page} lines")
+
             words = line_dict["_line"].strip().split()
             if len(words) == 0:
                 continue
@@ -103,7 +114,7 @@ class TxtImagesCreator(AbstractImagesCreator):
                     y_top_left = y
 
                     if line_bbox is not None:
-                        uid2location[line_dict["_uid"]] = LineLocation(image_name=f"{page_number - 1}.jpg", bbox=line_bbox)
+                        location_list[line_num - 1] = LineLocation(image_name=f"{page_number - 1}.jpg", bbox=line_bbox)
                         line_ended = True
                         break
 
@@ -115,12 +126,12 @@ class TxtImagesCreator(AbstractImagesCreator):
             if line_ended:
                 continue
 
-            uid2location[line_dict["_uid"]] = LineLocation(image_name=f"{page_number}.jpg", bbox=line_bbox)
+            location_list[line_num - 1] = LineLocation(image_name=f"{page_number}.jpg", bbox=line_bbox)
             y += self.font_size + self.line_gap
             x = self.margin
 
         img.save(os.path.join(tmpdir, f"{page_number}.jpg"), format="jpeg")
-        return uid2location
+        return location_list
 
     def __create_page(self) -> Tuple[Image.Image, ImageDraw.ImageDraw]:
         img_arr = np.zeros((self.page_size[1], self.page_size[0], 3), dtype=np.uint8)

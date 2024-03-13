@@ -188,7 +188,7 @@ def get_result_archive(request: Request, uid: str) -> Response:
         logger.info(f"md5sum {hash_sum}")
         return templates.TemplateResponse("download.html", dict(request=request, value=file, cnt_per_one=1, hash_sum=hash_sum, filename=file))
     else:
-        response = "<h2>Ещё не готово</h2>"
+        response = "<h2>The tasks aren't ready yet</h2>"
         for line in handler.get_progress(uid).split("\n"):
             response += f"<p> {line} </p>"
         return HTMLResponse(response, status_code=202)
