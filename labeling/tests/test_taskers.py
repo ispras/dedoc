@@ -53,11 +53,12 @@ class TestTaskers(unittest.TestCase):
                 )
             }
             tasker = Tasker(line_info_path=self.path2lines, images_path=self.path2docs, save_path=tmpdir, concrete_taskers=taskers, config=self.config)
-            tasks_path, task_size = tasker.create_tasks(type_of_task="law_classifier", task_size=1)
+            tasks_path, task_size = tasker.create_tasks(type_of_task="law_classifier", task_size=1, parameters={})
             self.assertTrue(os.path.isfile(tasks_path))
             self.assertEqual(1, task_size)
             with ZipFile(tasks_path) as archive:
                 self.assertIn("original_documents.zip", archive.namelist())
+                self.assertIn("parameters.json", archive.namelist())
 
     def _get_line_label_classifier(self) -> LineLabelTasker:
         tasker = LineLabelTasker(

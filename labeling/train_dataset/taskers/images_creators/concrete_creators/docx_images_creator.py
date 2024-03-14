@@ -40,6 +40,11 @@ class DocxImagesCreator(AbstractImagesCreator):
         self.two_colors_file_name = "two_colors_doc"
         self.config = config
         self.logger = self.config.get("logger", logging.getLogger())
+        self.scan_reader = PdfImageReader(config=self.config)
+
+    def can_read(self, page: List[dict]) -> bool:
+        file_name = get_original_document_path(self.path2docs, page)
+        return file_name.lower().endswith("docx")
 
     def add_images(self, page: List[dict], archive: zipfile.ZipFile) -> None:
         """
@@ -195,11 +200,6 @@ class DocxImagesCreator(AbstractImagesCreator):
             if len(images) > 0:
                 yield np.array(images[0])
 
-    def can_read(self, page: List[dict]) -> bool:
-
-        image_name = get_original_document_path(self.path2docs, page)
-        return image_name.endswith("docx")
-
     def _create_images_from_pdf(self, pdfs: PairedPdf, page: List[dict], tmp_dir: str) -> Iterable[Tuple[str, Image.Image]]:
         """
         we take two paired pdfs with bboxes and create images from them. Then we return images according to
@@ -209,9 +209,8 @@ class DocxImagesCreator(AbstractImagesCreator):
         @param tmp_dir: path where we save intermediate images
         @return:
         """
-        scan_reader = PdfImageReader(config=self.config)
-        many_color_images = scan_reader._get_images(pdfs.many_color_pdf, 0, math.inf)
-        two_color_images = scan_reader._get_images(pdfs.two_color_pdf, 0, math.inf)
+        many_color_images = self.scan_reader._get_images(pdfs.many_color_pdf, 0, math.inf)
+        two_color_images = self.scan_reader._get_images(pdfs.two_color_pdf, 0, math.inf)
         uid2path = defaultdict(list)
         n = 0
         for two_color, many_color in zip(two_color_images, many_color_images):

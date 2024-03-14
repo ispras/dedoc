@@ -83,9 +83,10 @@ label2label_diploma = {
     "root": "title",
     "toc": "toc",
     "toc_item": "toc",
-    "item": "raw_text",
-    "part": "named_item",
-    "raw_text": "raw_text"
+    "named_item": "named_item",
+    "raw_text": "raw_text",
+    "page_id": "page_id",
+    "footnote": "footnote"
 }
 
 taskers = {
@@ -105,7 +106,7 @@ taskers = {
         config_path=os.path.join(train_resources_path, "paragraph", "config.json"),
         tmp_dir=UPLOAD_FOLDER,
         progress_bar=progress_bar,
-        item2label=lambda t: "not_paragraph",
+        item2label=lambda t: "not_paragraph" if t["_metadata"]["tag_hierarchy_level"]["can_be_multiline"] else "paragraph",
         config=config),
     "tz_classifier": LineLabelTasker(
         path2lines=path2lines,
@@ -187,7 +188,7 @@ def get_result_archive(request: Request, uid: str) -> Response:
         logger.info(f"md5sum {hash_sum}")
         return templates.TemplateResponse("download.html", dict(request=request, value=file, cnt_per_one=1, hash_sum=hash_sum, filename=file))
     else:
-        response = "<h2>Ещё не готово</h2>"
+        response = "<h2>The tasks aren't ready yet</h2>"
         for line in handler.get_progress(uid).split("\n"):
             response += f"<p> {line} </p>"
         return HTMLResponse(response, status_code=202)
