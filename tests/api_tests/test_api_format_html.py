@@ -155,6 +155,15 @@ class TestApiHtmlReader(AbstractTestApiDocReader):
         self.assertIn({"start": 0, "end": 10, "name": "italic", "value": "True"}, table["cells"][1][1]["lines"][0]["annotations"])
         self.assertIn({"start": 0, "end": 10, "name": "linked_text", "value": "some_text"}, table["cells"][2][0]["lines"][0]["annotations"])
         self.assertIn({"start": 0, "end": 16, "name": "strike", "value": "True"}, table["cells"][2][1]["lines"][0]["annotations"])
+        self.assertEqual(table["cells"][3][0]["rowspan"], 2)
+        self.assertEqual(table["cells"][3][0]["colspan"], 2)
+        self.assertEqual(table["cells"][3][0]["invisible"], False)
+        self.assertEqual(table["cells"][3][1]["rowspan"], 1)
+        self.assertEqual(table["cells"][3][1]["colspan"], 1)
+        self.assertEqual(table["cells"][3][1]["invisible"], True)
+        self.assertEqual(table["cells"][4][0]["rowspan"], 1)
+        self.assertEqual(table["cells"][4][0]["colspan"], 1)
+        self.assertEqual(table["cells"][4][0]["invisible"], True)
 
     def test_html_font_style_attribute(self) -> None:
         file_name = "210.html"
