@@ -2,8 +2,7 @@ import hashlib
 import string
 from typing import List, Optional, Tuple, Union
 
-from bs4 import BeautifulSoup
-from bs4 import Comment, Doctype, NavigableString, Tag
+from bs4 import BeautifulSoup, Comment, Doctype, NavigableString, Tag
 
 from dedoc.data_structures.cell_with_meta import CellWithMeta
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
