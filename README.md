@@ -36,6 +36,25 @@ In 2022, the system won a grant to support the development of promising AI proje
   * Using Tesseract, an actively developed OCR engine from Google, together with image preprocessing methods. 
   * Utilizing modern machine learning approaches for detecting a document orientation, detecting single/multicolumn document page, detecting bold text and extracting hierarchical structure based on the classification of features extracted from document images.
 
+## Document format description
+The system processes different document formats. The main formats are listed below:
+
+| Format group          | Description                                                                                                                                                                                                                                                                                                                                                                     |
+|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Office formats        | DOCX, XLSX, PPTX and formats that canbe converted to them. Handling of these for-mats is held by analysis of format inner rep-resentation and using specialized libraries ([python-docx](https://python-docx.readthedocs.io/en/latest/), [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/))                                                               |
+| HTML, EML, MHTML      | HTML  documents  are  parsed  using  tagsanalysis,  HTML  handler  is  used  for  han-dling  documents  of  other  formats  in  thisgroup                                                                                                                                                                                                                                       |
+| TXT                   | Only raw textual content is analyzed                                                                                                                                                                                                                                                                                                                                            |
+| Archives              | Attachments of the archive are analyzed                                                                                                                                                                                                                                                                                                                                         |                                                                                                                                                                                                                                                                                                                  |
+| PDF,document images   | Copyable PDF documents (with a textual layer) can be handled using [pdfminer-six](https://pdfminersix.readthedocs.io/en/latest/) library or [tabby](https://github.com/sunveil/ispras_tbl_extr) software. Non-copyable PDF documents or imagesare handled using [Tesseract-OCR](https://github.com/tesseract-ocr/tesseract), machine learning methods (including neural network methods) and [image processing methods](https://opencv.org/) |
+
+## Examples of processed scanned documents
+* Dedoc can only process scanned black and white documents, such as technical specifications, regulations, articles, etc.
+![Document examples](https://github.com/ispras/dedoc/raw/master/docs/source/_static/doc_examples.png)
+* In particular, dedoc recognizes tabular information only from tables with explicit boundaries. Here are examples of documents that can be processed by an dedoc's image handler:
+![Table Example](https://github.com/ispras/dedoc/raw/master/docs/source/_static/example_table.jpg)
+* The system also automatically detects and corrects the orientation of scanned documents
+
+
 ## Impact
 This project may be useful as a first step of automatic document analysis pipeline (e.g. before the NLP part).
 Dedoc is in demand for information analytic systems, information leak monitoring systems, as well as for natural language processing systems.
@@ -43,6 +62,20 @@ The library is intended for application use by developers of systems for automat
 
 # Online-Documentation
 Relevant documentation of the dedoc is available [here](https://dedoc.readthedocs.io/en/latest/)
+
+# Demo
+You can try dedoc's demo: https://dedoc-readme.hf.space.
+
+We have a video to demonstrate how to use the system: https://www.youtube.com/watch?v=ZUnPYV8rd9A.
+
+![Web_interface](https://github.com/ispras/dedoc/raw/master/docs/source/_static/web_interface.png)
+
+![dedoc_demo](https://github.com/ispras/dedoc/raw/master/docs/source/_static/dedoc_short.gif)
+
+# Some our publications
+
+* Article on [Habr](https://habr.com/ru/companies/isp_ras/articles/779390/), where we describe our system in detail
+* [Our article](https://aclanthology.org/2022.fnp-1.13.pdf) from the FINTOC 2022 competition. We are the winners :smiley: :trophy:!
 
 # Installation instructions
 ****************************************
@@ -105,113 +138,8 @@ If you don't want to use docker for running the application, it's possible to ru
 However, it isn't suitable for any operating system (`Ubuntu 20+` is recommended) and
 there may be not enough machine's resources for its work.
 You should have `python` (`python3.8`, `python3.9` are recommended) and `pip` installed.
-
-### 1. Install necessary packages:
-```shell
-sudo apt-get install -y libreoffice djvulibre-bin unzip unrar
-```
-
-`libreoffice` and `djvulibre-bin` packages are used by converters (doc, odt to docx; xls, ods to xlsx; ppt, odp to pptx; djvu to pdf).
-If you don't need converters, you can skip this step.
-`unzip` and `unrar` packages are used in the process of extracting archives.
-
-### 2. Install `Tesseract OCR 5` framework:
-You can try any tutorial for this purpose or look [`here`](https://github.com/ispras/dedockerfiles/blob/master/dedoc_p3.9_base.Dockerfile)
-to get the example of Tesseract installing for dedoc container or use next commands for building Tesseract OCR 5 from sources:
-
-#### 2.1. Install compilers and libraries required by the Tesseract OCR:
-```shell
-sudo apt-get update
-sudo apt-get install -y automake binutils-dev build-essential ca-certificates clang g++ g++-multilib gcc-multilib libcairo2 libffi-dev \
-libgdk-pixbuf2.0-0 libglib2.0-dev libjpeg-dev libleptonica-dev libpango-1.0-0 libpango1.0-dev libpangocairo-1.0-0 libpng-dev libsm6 \
-libtesseract-dev libtool libxext6 make pkg-config poppler-utils pstotext shared-mime-info software-properties-common swig zlib1g-dev
-```
-#### 2.2. Build Tesseract from sources:
-```shell
-sudo add-apt-repository -y ppa:alex-p/tesseract-ocr-devel
-sudo apt-get update --allow-releaseinfo-change
-sudo apt-get install -y tesseract-ocr tesseract-ocr-rus
-git clone --depth 1 --branch 5.0.0-beta-20210916 https://github.com/tesseract-ocr/tesseract/
-cd tesseract && ./autogen.sh && sudo ./configure && sudo make && sudo make install && sudo ldconfig && cd ..
-export TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata/
-```
-
-## Install the dedoc library via pip.
-
-You need `torch~=1.11.0` and `torchvision~=0.12.0` installed. If you already have torch and torchvision in your environment:
-
-```shell
-pip install dedoc
-```
-
-Or you can install dedoc with torch and torchvision included:
-
-```shell
-pip install "dedoc[torch]"
-```
+Installation instructions via pip are available [here](https://dedoc.readthedocs.io/en/latest/getting_started/installation.html#install-dedoc-using-pip).
 
 ## Install and run dedoc from sources
+You can also install and run dedoc locally from sources using [this](https://dedoc.readthedocs.io/en/latest/getting_started/installation.html#install-and-run-dedoc-from-sources) instruction.
 
-If you want to run dedoc as a service from sources, it's possible to run dedoc locally.
-However, it is suitable not for all operating systems (`Ubuntu 20+` is recommended) and
-there may be not enough machine's resources for its work.
-You should have `python` (`python3.8`, `python3.9` are recommended) and `pip` installed.
-
-### 1. Install necessary packages: according to instructions [install necessary packages](#1-Install-necessary-packages)
-
-### 2. Build Tesseract from sources according to instructions [Install Tesseract OCR-5 framework](#2-Install-Tesseract-OCR-5-framework)
-
-### 3. We recommend to install python's virtual environment (for example, via `virtualenvwrapper`)
-
-Below are the instructions for installing the package `virtualenvwrapper`:
-
-```shell
-sudo pip3 install virtualenv virtualenvwrapper
-mkdir ~/.virtualenvs
-export WORKON_HOME=~/.virtualenvs
-echo "export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3.8" >> ~/.bashrc
-echo ". /usr/local/bin/virtualenvwrapper.sh" >> ~/.bashrc
-source ~/.bashrc
-mkvirtualenv dedoc_env
-```
-
-### 4. Install python's requirements and launch dedoc service on default port `1231`:
-
-```shell
-# clone dedoc project
-git clone https://github.com/ispras/dedoc.git
-cd dedoc
-# check on your's python environment
-workon dedoc_env
-export PYTHONPATH=$PYTHONPATH:$(pwd)
-pip install -r requirements.txt
-pip install torch=1.11.0 torchvision==0.12.0 -f https://download.pytorch.org/whl/torch_stable.html
-python dedoc/main.py -c ./dedoc/config.py
-```
-Now you can go to the `localhost:1231` and look at the docs and examples.
-
-## Option: You can change the port of service:
-You need to change environment `DOCREADER_PORT`
-
-1. For local service launching on `your_port` (e.g. `1166`). Install ([installation instruction](#Install-and-run-dedoc-from-sources)) and launch with environment: 
-```shell
-DOCREADER_PORT=1166 python dedoc/main.py -c ./dedoc/config.py
-```
-
-2. For service launching in docker-container you need to change port value in `DOCREADER_PORT` env and field `ports` in `docker-compose.yml` file:
-```yaml
-    ...
-    dedoc:
-    ...
-    ports:
-      - your_port_number:your_port_number
-    environment:
-      DOCREADER_PORT: your_port_number
-    ... 
-    test:
-    ...
-    environment: 
-      DOCREADER_PORT: your_port_number
-``` 
-
-Go [here](https://dedoc.readthedocs.io/en/latest/getting_started/installation.html) to get more details about dedoc installation.
