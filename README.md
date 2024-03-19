@@ -49,9 +49,11 @@ The system processes different document formats. The main formats are listed bel
 
 ## Examples of processed scanned documents
 * Dedoc can only process scanned black and white documents, such as technical specifications, regulations, articles, etc.
-![Document examples](https://github.com/ispras/dedoc/raw/master/docs/source/_static/doc_examples.png)
+<img src="docs/source/_static/doc_examples.png" alt="Document examples" style="width:800px;"/>
+<!--![Document examples](docs/source/_static/doc_examples.png){:height="150px"}-->
 * In particular, dedoc recognizes tabular information only from tables with explicit boundaries. Here are examples of documents that can be processed by an dedoc's image handler:
-![Table Example](https://github.com/ispras/dedoc/raw/master/docs/source/_static/example_table.jpg)
+<img src="docs/source/_static/example_table.jpg" alt="Table parsing example" style="width:600px;"/>
+<!--![Table Example](docs/source/_static/example_table.jpg)-->
 * The system also automatically detects and corrects the orientation of scanned documents
 
 
@@ -68,9 +70,9 @@ You can try dedoc's demo: https://dedoc-readme.hf.space.
 
 We have a video to demonstrate how to use the system: https://www.youtube.com/watch?v=ZUnPYV8rd9A.
 
-![Web_interface](https://github.com/ispras/dedoc/raw/master/docs/source/_static/web_interface.png)
+![Web_interface](docs/source/_static/web_interface.png)
 
-![dedoc_demo](https://github.com/ispras/dedoc/raw/master/docs/source/_static/dedoc_short.gif)
+![dedoc_demo](docs/source/_static/dedoc_short.gif)
 
 # Some our publications
 
