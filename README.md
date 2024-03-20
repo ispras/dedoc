@@ -57,8 +57,8 @@ The system processes different document formats. The main formats are listed bel
 * The system also automatically detects and corrects the orientation of scanned documents
 
 ## Example of structure extractor
-<img src="docs/source/_static/str_ext_example_law.svg" alt="Law structure example"/>
-<img src="docs/source/_static/str_ext_example_tz.svg" alt="Law structure example"/>
+<img src="docs/source/_static/str_ext_example_law.png" alt="Law structure example"/>
+<img src="docs/source/_static/str_ext_example_tz.png" alt="Tz structure example"/>
 
 
 ## Impact
