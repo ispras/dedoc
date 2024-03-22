@@ -54,6 +54,9 @@ class AbstractStructureExtractor(ABC):
         :param excluding_regexps: list of filtering garbage regular pattern according to list of paragraph types
         :return: new post-processed list of LineWithMeta
         """
+        if self.config.get("labeling_mode", False):
+            return lines
+
         result = []
         for line in lines:
             if line.metadata.hierarchy_level.is_raw_text() and len(line.line) == 0:  # skip empty raw text

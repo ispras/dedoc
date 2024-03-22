@@ -69,9 +69,7 @@ class LineWithMetaExtractor:
             return self.__add_labels(document_name, labels, lines)
 
     def __add_labels(self, document_name: str, labels: List[dict], lines: List[LineWithMeta]) -> List[LineWithLabel]:
-        label_dict = {
-            data["data"]["_uid"]: data["labeled"][0] for data in labels
-        }
+        label_dict = {data["data"]["_uid"]: data["labeled"][0] for data in labels}
         result = []
         for line in lines:
             if line.uid in label_dict:

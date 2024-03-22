@@ -91,6 +91,7 @@ def get_results() -> Response:
                         archive.writestr(f"original_documents/{file}", f_in.read())
 
             archive.write("task_manager.log")
+            archive.write("parameters.json")
         return send_file(archive_path, as_attachment=True, attachment_filename=archive_name)
 
 

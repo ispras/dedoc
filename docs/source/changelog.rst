@@ -1,5 +1,13 @@
 Changelog
 =========
+v2.1.1 (2024-03-21)
+Release note: `v2.1.1 <https://github.com/ispras/dedoc/releases/tag/v2.1.1>`_
+
+* Update README.md.
+* Update table and time benchmarks.
+* Re-label line-classifier datasets (law, diploma, paragraphs datasets).
+* Update tasker creators (for the labeling system).
+* Fix HTML table parsing.
 
 v2.1 (2024-03-05)
 -----------------

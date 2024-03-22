@@ -18,7 +18,7 @@ class TestLineWithMetaExtractor(unittest.TestCase):
         lines = extractor.create_task()
         with open(path) as file:
             labels = json.load(file)
-            labels = {key: value for key, value in labels.items() if not value["data"]["_uid"].endswith("_split")}
+            labels = {key: value for key, value in labels.items()}
 
         uids_set_real = {line.uid for line in lines}
         uids2label = {item["data"]["_uid"]: item["labeled"][0] for item in labels.values()}
