@@ -34,7 +34,7 @@ from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
 from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
-from dedoc.utils.parameter_utils import get_param_page_slice, get_param_pdf_with_txt_layer
+from dedoc.utils.parameter_utils import get_param_page_slice, get_param_pdf_with_txt_layer, get_param_with_attachments
 from dedoc.utils.pdf_utils import get_pdf_page_count
 from dedoc.utils.utils import calculate_file_hash, get_mime_extension, get_unique_name
 
@@ -80,11 +80,10 @@ class PdfTabbyReader(PdfBaseReader):
         """
         parameters = {} if parameters is None else parameters
         warnings = []
-        lines, tables, tables_on_images, image_attachments, document_metadata = self.__extract(path=file_path, parameters=parameters, warnings=warnings)
-        lines = self.linker.link_objects(lines=lines, tables=tables_on_images, images=image_attachments)
+        lines, tables, tables_on_images, attachments, document_metadata = self.__extract(path=file_path, parameters=parameters, warnings=warnings)
+        lines = self.linker.link_objects(lines=lines, tables=tables_on_images, images=attachments)
 
-        attachments = image_attachments
-        if self._can_contain_attachements(file_path) and self.attachment_extractor.with_attachments(parameters):
+        if get_param_with_attachments(parameters) and self.attachment_extractor.can_extract(file_path):
             attachments += self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
 
         lines = [line for line_group in lines for line in line_group.split("\n")]

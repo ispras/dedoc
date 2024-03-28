@@ -91,18 +91,11 @@ class PdfBaseReader(BaseReader):
         lines, scan_tables, attachments, warnings, other_fields = self._parse_document(file_path, params_for_parse)
         tables = [scan_table.to_table() for scan_table in scan_tables]
 
-        if self._can_contain_attachements(file_path) and self.attachment_extractor.with_attachments(parameters):
+        if param_utils.get_param_with_attachments(parameters) and self.attachment_extractor.can_extract(file_path):
             attachments += self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
 
         result = UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=warnings, metadata=other_fields)
         return self._postprocess(result)
-
-    def _can_contain_attachements(self, path: str) -> bool:
-        can_contain_attachments = False
-        mime = get_file_mime_type(path)
-        if mime in recognized_mimes.pdf_like_format:
-            can_contain_attachments = True
-        return can_contain_attachments
 
     def _parse_document(self, path: str, parameters: ParametersForParseDoc) -> (
             Tuple)[List[LineWithMeta], List[ScanTable], List[PdfImageAttachment], List[str], Optional[dict]]:

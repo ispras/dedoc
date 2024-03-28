@@ -26,6 +26,12 @@ def get_param_orient_analysis_cells(parameters: Optional[dict]) -> bool:
     return orient_analysis_cells
 
 
+def get_param_with_attachments(parameters: Optional[dict]) -> bool:
+    if parameters is None:
+        return False
+    return str(parameters.get("with_attachments", "false")).lower() == "true"
+
+
 def get_param_need_header_footers_analysis(parameters: Optional[dict]) -> bool:
     if parameters is None:
         return False

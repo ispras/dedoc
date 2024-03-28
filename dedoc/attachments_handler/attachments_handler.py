@@ -4,10 +4,10 @@ import os
 import time
 from typing import List, Optional
 
-from dedoc.attachments_extractors import AbstractAttachmentsExtractor
 from dedoc.common.exceptions.dedoc_error import DedocError
 from dedoc.data_structures import AttachedFile, DocumentMetadata, ParsedDocument
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.utils.parameter_utils import get_param_with_attachments
 from dedoc.utils.utils import get_empty_content
 
 
@@ -39,11 +39,11 @@ class AttachmentsHandler:
             are important, look to the API parameters documentation for more details).
         :return: list of parsed document attachments
         """
-        parsed_attachment_files = []
+        attachments = []
         recursion_deep_attachments = int(parameters.get("recursion_deep_attachments", 10)) - 1
 
-        if not AbstractAttachmentsExtractor.with_attachments(parameters) or recursion_deep_attachments < 0:
-            return parsed_attachment_files
+        if not get_param_with_attachments(parameters) or recursion_deep_attachments < 0:
+            return attachments
 
         previous_log_time = time.time()
 
@@ -73,8 +73,8 @@ class AttachmentsHandler:
                 parsed_file = self.__get_empty_document(document_parser=document_parser, attachment=attachment, parameters=parameters_copy)
 
             parsed_file.metadata.set_uid(attachment.uid)
-            parsed_attachment_files.append(parsed_file)
-        return parsed_attachment_files
+            attachments.append(parsed_file)
+        return attachments
 
     def __get_empty_document(self, document_parser: "DedocManager", attachment: AttachedFile, parameters: dict) -> ParsedDocument:  # noqa
         metadata = document_parser.document_metadata_extractor.extract(
