@@ -4,6 +4,22 @@ import numpy as np
 
 
 class PerformanceResult:
+    """
+        This class is used for storing multiple results of measuring some metric (for example, elapsed time)
+        with support for calculating mean and std statistics and pretty printing of stored values
+
+        >>> result = PerformanceResult()
+        >>> f"result: {result}"  # result: -
+        >>> result.add(5.0)
+        >>> f"result: {result}"  # result: 5.00
+        >>> result.add(8.0)
+        >>> f"result: {result}"  # result: 6.50±1.50
+        >>> result.mean  # 6.5
+        >>> result.std  # 1.5
+        >>> partial_result = result / 4
+        >>> f"partial_result: {partial_result}"  # partial_result: 1.62±0.38
+    """
+
     def __init__(self, results: Optional[Iterable["PerformanceResult"]] = None) -> None:
         self.values = []
 

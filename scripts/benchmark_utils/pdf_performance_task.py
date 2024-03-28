@@ -6,11 +6,25 @@ from pdfminer.pdfpage import PDFPage
 
 from dedoc.utils.pdf_utils import get_pdf_page_count
 from dedoc.utils.utils import send_file
-from scripts.benchmark_utils.performance_time import PerformanceResult
+from scripts.benchmark_utils.performance_result import PerformanceResult
 
 
 class PDFPerformanceTask:
+    """
+        This class is used to estimate the elapsed time of different PDF pipelines
+        in different PDF files and save the information into an html table.
+    """
+
     def __init__(self, dedoc_host: str, title: str, input_dir: str, pdf_reader_options: List[str], config: dict) -> None:
+        """
+            Initialization of task
+
+            :param dedoc_host: URL to launch the dedoc API instance, for example http://localhost:1231
+            :param title: title of the task to display in the html report
+            :param input_dir: path to the directory containing the PDF files.
+            :param pdf_reader_options: list of options available for the "pdf_with_text_layer" API parameter
+            :param config: additional file processing parameters
+        """
         self.dedoc_host = dedoc_host
         self.title = title
         self.config = config

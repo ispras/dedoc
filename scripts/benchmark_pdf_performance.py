@@ -90,5 +90,42 @@ def main() -> None:
                 make_report(tasks, args.output, configs)
 
 
+"""
+How to run?
+
+1. Prepare folder with tasks. The task is a directory with pdf files. Directories starting with an underscore (_) will be ignored.
+Example of a folder "pdf_data" with 3 tasks:
+    pdf_data
+    +--+--+ task1
+       |  +--- file1.pdf
+       |  +--- file2.pdf
+       |
+       +--+ Some second task name
+       |  +--- f.pdf
+       |
+       +--+ And last task name
+       |  +--- file_.pdf
+       |  +--- file2.pdf
+       |  +--- not_pdf_file.docx
+       |
+       +--+ _ignored folder
+          +--- some_image.png
+          +--- some_pdf.pdf
+
+2. Run script with next command:
+    python3 benchmark_pdf_performance.py --pdf-options tabby true auto auto_tabby -i pdf_data
+
+2*. To evaluate with different parameters, you can prepare a json file with a list of dictionaries and specify the “parameters” option:
+    parameters.json:
+    [
+        { "need_pdf_table_analysis": "false" },
+        { "need_pdf_table_analysis": "true", "return_format": "plain_text" }
+    ]
+
+Run with next command:
+    python3 benchmark_pdf_performance.py --pdf-options tabby true auto auto_tabby -i pdf_data --parameters parameters.json
+
+3. Look your results in the pdf_performance.html file
+"""
 if __name__ == "__main__":
     main()
