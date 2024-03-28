@@ -9,7 +9,7 @@ from PyPDF2.utils import PdfReadError
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.extensions import recognized_mimes
 from dedoc.utils.utils import convert_datetime, get_mime_extension, get_unique_name
 
 
@@ -28,8 +28,8 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
         """
         Checks if this extractor can get attachments from the document (it should have .pdf extension)
         """
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return extension.lower() in recognized_extensions.docx_like_format or mime in recognized_mimes.docx_like_format
+        mime, _ = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        return mime in recognized_mimes.pdf_like_format
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
         """

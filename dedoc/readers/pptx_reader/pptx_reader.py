@@ -15,6 +15,7 @@ from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
+from dedoc.utils.parameter_utils import get_param_with_attachments
 from dedoc.utils.utils import get_mime_extension
 
 
@@ -41,9 +42,7 @@ class PptxReader(BaseReader):
         The method return document content with all document's lines, tables and attachments.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
-        parameters = {} if parameters is None else parameters
-
-        with_attachments = self.attachments_extractor.with_attachments(parameters=parameters)
+        with_attachments = get_param_with_attachments(parameters)
         attachments = self.attachments_extractor.extract(file_path=file_path, parameters=parameters) if with_attachments else []
         attachment_name2uid = {attachment.original_name: attachment.uid for attachment in attachments}
 
