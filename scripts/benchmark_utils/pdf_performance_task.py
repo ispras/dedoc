@@ -4,6 +4,7 @@ from typing import List
 
 from pdfminer.pdfpage import PDFPage
 
+from dedoc.utils.pdf_utils import get_pdf_page_count
 from dedoc.utils.utils import send_file
 from scripts.benchmark_utils.performance_time import PerformanceResult
 
@@ -17,7 +18,7 @@ class PDFPerformanceTask:
 
         filenames = [os.path.join(input_dir, filename) for filename in os.listdir(input_dir) if filename.endswith(".pdf")]
         self.times = {pdf_option: {filename: PerformanceResult() for filename in filenames} for pdf_option in self.pdf_reader_options}
-        self.pages = {filename: self.__get_page_count(filename) for filename in filenames}
+        self.pages = {filename: get_pdf_page_count(filename) for filename in filenames}
         self.filenames = sorted(filenames, key=lambda filename: self.pages[filename])
 
     def run(self) -> None:

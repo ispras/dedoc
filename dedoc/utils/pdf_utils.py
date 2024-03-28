@@ -1,15 +1,14 @@
 from typing import Optional
 
 from PIL.Image import Image
-from PyPDF2 import PdfFileReader
 from pdf2image import convert_from_path
+from pypdf import PdfReader
 
 
 def get_pdf_page_count(path: str) -> Optional[int]:
     try:
-        with open(path, "rb") as fl:
-            reader = PdfFileReader(fl)
-            return reader.getNumPages()
+        reader = PdfReader(path)
+        return len(reader.pages)
     except Exception:
         return None
 
