@@ -24,3 +24,4 @@ ignore =
     ANN101
 per-file-ignores =
     scripts/*:T201
+    scripts/benchmark_pdf_performance*:JS101,T201
