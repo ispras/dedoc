@@ -28,3 +28,8 @@ services:
       PYTHONPATH: $PYTHONPATH:/dedoc_root/tests:/dedoc_root
     command:
         bash dedoc_root/tests/run_tests_in_docker.sh
+
+  grobid:
+      image: "lfoppiano/grobid:0.8.0"
+      ports:
+        - 8080:8070

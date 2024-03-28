@@ -1,5 +1,7 @@
 from typing import Optional
 
+from dedoc.readers.article_reader.article_reader import ArticleReader
+
 
 def _get_manager_config(config: dict) -> dict:
     """
@@ -57,6 +59,7 @@ def _get_manager_config(config: dict) -> dict:
         BinaryConverter(config=config)
     ]
     readers = [
+        ArticleReader(config=config, grobid_url="http://grobid:8070/api/processFulltextDocument"),  # https://grobid.readthedocs.io/en/latest/Grobid-service/
         DocxReader(config=config),
         ExcelReader(config=config),
         PptxReader(config=config),
