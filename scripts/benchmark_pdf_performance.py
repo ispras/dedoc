@@ -1,12 +1,29 @@
 import argparse
 import json
 import os.path
+import zipfile
 from typing import List
+
+import wget
 
 from scripts.benchmark_utils.pdf_performance_task import PDFPerformanceTask
 
 
+def download_data(data_path: str) -> None:
+    data_archive_path = f"{data_path}.zip"
+
+    wget.download("https://at.ispras.ru/owncloud/index.php/s/lp4wEVyZTd9lA0u/download", data_archive_path)
+    with zipfile.ZipFile(data_archive_path, "r") as archive:
+        archive.extractall(data_path)
+
+    os.remove(data_archive_path)
+
+
 def get_tasks(configs: List[dict], input_path: str, dedoc_host: str, pdf_options: List[str]) -> List[List[PDFPerformanceTask]]:
+    if input_path == "":
+        input_path = "pdf_performance_benchmark_data"
+        download_data(input_path)
+
     tasks = []
 
     for config in configs:
@@ -60,18 +77,22 @@ def make_report(tasks: List[List[PDFPerformanceTask]], output_path: str, configs
 
 
 def main() -> None:
+    default_output_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "resources", "benchmarks", "benchmark_pdf_performance.html"))
     pdf_options = ["true", "false", "auto", "auto_tabby", "tabby"]
+
     parser = argparse.ArgumentParser(description="Script for evaluate different PDF readers performance.", formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("-i", "--input", help="path to the directory with pdfs (default: %(default)s)", type=str, default="pdf_data")
-    parser.add_argument("-o", "--output", help="path to the report filename (default: %(default)s)", type=str, default="pdf_performance.html")
+    parser.add_argument("-i", "--input", help="path to the directory with pdfs (default: %(default)s)", type=str, default="")
+    parser.add_argument("-o", "--output", help="path to the report filename (default: %(default)s)", type=str, default=default_output_path)
     parser.add_argument("-n", "--loops", help="number of repetitions of testing one file (default: %(default)d)", type=int, default=1)
     parser.add_argument("--dedoc-host", help="url to DEDOC instance for sending files (default: %(default)s", type=str, default="http://localhost:1231")
-    parser.add_argument("--pdf-options", help="values of pdf_with_text_layer argument", choices=pdf_options, nargs="+", required=True)
+    parser.add_argument("--pdf-options", help="values of pdf_with_text_layer argument", choices=pdf_options, nargs="+", default=pdf_options)
     parser.add_argument("--parameters", help="path to json file with alternative parameters dictionaries")
     args = parser.parse_args()
 
-    assert os.path.exists(args.input), f'Directory "{args.input}" does not exists'
-    assert os.path.isdir(args.input), f'Path "{args.input}" is not a directory'
+    if args.input != "":
+        assert os.path.exists(args.input), f'Directory "{args.input}" does not exists'
+        assert os.path.isdir(args.input), f'Path "{args.input}" is not a directory'
+
     assert args.loops > 0, "The number of repetitions of testing one file must be positive"
 
     print(f'Run pdf performance benchmark with next pdf options: {", ".join(args.pdf_options)}')
@@ -91,8 +112,11 @@ def main() -> None:
 
 
 """
-How to run?
+How to run on default benchmark data?
+Simple run next command:
+    python3 benchmark_pdf_performance.py
 
+Running on custom data:
 1. Prepare folder with tasks. The task is a directory with pdf files. Directories starting with an underscore (_) will be ignored.
 Example of a folder "pdf_data" with 3 tasks:
     pdf_data
