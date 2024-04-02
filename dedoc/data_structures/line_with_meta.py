@@ -136,7 +136,8 @@ class LineWithMeta(Sized, Serializable):
         self._line = line
 
     def __repr__(self) -> str:
-        return f"LineWithMeta({self.line[:65]})"
+        return (f"LineWithMeta({self.line[:65]}, "
+                f"tagHL={self.metadata.tag_hierarchy_level.level_1, self.metadata.tag_hierarchy_level.level_2, self.metadata.tag_hierarchy_level.line_type})")
 
     def __add__(self, other: Union["LineWithMeta", str]) -> "LineWithMeta":
         assert isinstance(other, (LineWithMeta, str))
