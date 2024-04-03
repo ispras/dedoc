@@ -7,7 +7,6 @@ class TestArticleApi(AbstractTestApiDocReader):
         file_name = "pdf_with_text_layer/article.pdf"
         result = self._send_request(file_name, dict(document_type="article"))
 
-        self.assertEqual([], result["content"]["tables"])
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
 
@@ -57,3 +56,12 @@ class TestArticleApi(AbstractTestApiDocReader):
         # We must found two refs [58] in Introduction section
         self.assertEqual(len(bibliography_refs_in_text), 2)
         self.assertEqual(["58,", "58,"], [section["text"][bibliography_refs_in_text[n]["start"]:bibliography_refs_in_text[n]["end"]] for n in range(2)])
+
+        # check tables
+        self.assertEqual(len(result["content"]["tables"]), 2)
+        table = result["content"]["tables"][0]
+        self.assertEqual(table["metadata"]["title"], "Table 1 .Performance of some illustrative AES implementations.")
+        self.assertEqual(self._get_text_of_row(table["cells"][0]), ["Software (8-bit)", "code size", "cycle", "cost", "physical"])
+
+        table = result["content"]["tables"][1]  # Grobid can't recognize vertical orientation tables
+        self.assertEqual(table["metadata"]["title"], "Table 2 .List of our target implementations.")

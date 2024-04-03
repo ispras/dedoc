@@ -36,7 +36,7 @@ class ArticleReader(BaseReader):
         assert text is not None
         assert isinstance(text, str)
 
-        if not hierarchy_level_id or not paragraph_type:
+        if hierarchy_level_id is None or paragraph_type is None:
             hierarchy_level = HierarchyLevel.create_raw_text()
         else:
             hierarchy_level = HierarchyLevel(level_1=hierarchy_level_id, level_2=0, can_be_multiline=False, line_type=paragraph_type)
@@ -149,7 +149,7 @@ class ArticleReader(BaseReader):
 
     def __parse_tables(self, soup: Tag) -> Tuple[List[Table], dict]:
         """
-        Example Table:
+        Example Table with table's ref:
          -----------------------------------------------
             Table Reference Example:
             <ref type="table" target="#tab_0">1</ref>
@@ -173,7 +173,8 @@ class ArticleReader(BaseReader):
         tag_tables = soup.find_all("figure", {"type": "table"})
         for table in tag_tables:
             row_cells = []
-            title = self.__tag2text(table.head) + self.__tag2text(table.label)
+            head = table.contents[0] if len(table.contents) > 0 and isinstance(table.contents[0], str) else self.__tag2text(table.head)
+            title = head + self.__tag2text(table.figdesc)
             for row in table.table.find_all("row"):
                 row_cells.append([CellWithMeta(lines=[self.__create_line(self.__tag2text(cell))]) for cell in row.find_all("cell")])
             tables.append(Table(cells=row_cells, metadata=TableMetadata(page_id=0, title=title)))
