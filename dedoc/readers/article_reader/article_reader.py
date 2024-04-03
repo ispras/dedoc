@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple
 import requests
 from bs4 import BeautifulSoup, Tag
 
-from dedoc.data_structures import Annotation, HierarchyLevel, LineMetadata
+from dedoc.data_structures import Annotation, CellWithMeta, HierarchyLevel, LineMetadata, Table, TableAnnotation, TableMetadata
 from dedoc.data_structures.concrete_annotations.bibliography_annotation import BibliographyAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
@@ -28,25 +28,20 @@ class ArticleReader(BaseReader):
                 # tag not found
                 return ""
 
-        return cur_tag.string if cur_tag.string is not None else ""
-
-    def __get_all_tags(self, source: Tag, tag: str) -> List[Tag]:
-        return source.find_all(tag)
+        return ArticleReader.__tag2text(cur_tag)
 
     @staticmethod  # TODO check on improve
-    def __create_line(text: str, hierarchy_level_id: Optional[int], paragraph_type: Optional[str],
+    def __create_line(text: str, hierarchy_level_id: Optional[int] = None, paragraph_type: Optional[str] = None,
                       annotations: Optional[List[Annotation]] = None) -> LineWithMeta:
         assert text is not None
         assert isinstance(text, str)
 
-        if hierarchy_level_id is None:
+        if not hierarchy_level_id or not paragraph_type:
             hierarchy_level = HierarchyLevel.create_raw_text()
-            metadata = LineMetadata(page_id=0, line_id=0, tag_hierarchy_level=hierarchy_level)
         else:
             hierarchy_level = HierarchyLevel(level_1=hierarchy_level_id, level_2=0, can_be_multiline=False, line_type=paragraph_type)
-            metadata = LineMetadata(page_id=0, line_id=0, tag_hierarchy_level=hierarchy_level)
 
-        return LineWithMeta(line=text, metadata=metadata, annotations=annotations)
+        return LineWithMeta(line=text, metadata=LineMetadata(page_id=0, line_id=0, tag_hierarchy_level=hierarchy_level), annotations=annotations)
 
     def __parse_affiliation(self, affiliation_tag: Tag) -> List[LineWithMeta]:
         lines = [self.__create_line(text=affiliation_tag.get("key"), hierarchy_level_id=2, paragraph_type="author_affiliation")]
@@ -87,6 +82,7 @@ class ArticleReader(BaseReader):
         </author>
         """
         lines = [self.__create_line(text="", hierarchy_level_id=1, paragraph_type="author")]
+
         first_name = ArticleReader.__get_tag_by_hierarchy_path(author_tag, ["persname", "forename"])
         if first_name:
             lines.append(self.__create_line(text=first_name, hierarchy_level_id=2, paragraph_type="author_first_name"))
@@ -95,36 +91,38 @@ class ArticleReader(BaseReader):
         if surname:
             lines.append(self.__create_line(text=surname, hierarchy_level_id=2, paragraph_type="author_surname"))
 
-        email = ArticleReader.__get_tag_by_hierarchy_path(author_tag, ["email"])
-        if len(email) > 0:
-            lines.append(self.__create_line(text=email, hierarchy_level_id=2, paragraph_type="author_email"))
+        lines += [
+            self.__create_line(text=email.get_text(), hierarchy_level_id=3, paragraph_type="author")
+            for email in author_tag.find_all("email") if email
+        ]
 
         affiliations = author_tag.find_all("affiliation")
         lines += [line for affiliation in affiliations for line in self.__parse_affiliation(affiliation)]
 
         return lines
 
-    def __create_line_with_text_links(self, subparts: List[Tuple[str, Tag]], bib_cites: dict) -> LineWithMeta:
-        subpart_text = ""
+    def __create_line_with_refs(self, content: List[Tuple[str, Tag]], bib2uid: dict, table2uid: dict) -> LineWithMeta:
+        text = ""
         start = 0
-        text_link_annotations = []
+        annotations = []
 
-        for subsubpart in subparts:
-            if isinstance(subsubpart, str):
-                subpart_text += subsubpart
-                start += len(subsubpart)
-            elif isinstance(subsubpart, Tag):
-                if subsubpart.name == "ref" and subsubpart.get("type") == "bibr":
-                    target = subsubpart.get("target")
-                    value = subsubpart.string
-                    if target in bib_cites:
-                        text_link_annotations.append(BibliographyAnnotation(bib_cites[target], start, start + len(value)))
-                    subpart_text += value
-                    start += len(value)
+        for subpart in content:
+            if isinstance(subpart, Tag) and subpart.name == "ref":
+                target = subpart.get("target")
+                sub_text = subpart.string
+                if subpart.get("type") == "bibr" and target in bib2uid:
+                    annotations.append(BibliographyAnnotation(name=bib2uid[target], start=start, end=start + len(sub_text)))
+                if subpart.get("type") == "table" and target in table2uid:
+                    annotations.append(TableAnnotation(name=table2uid[target], start=start, end=start + len(sub_text)))
+            else:
+                sub_text = subpart if isinstance(subpart, str) else ""
 
-        return self.__create_line(text=subpart_text, hierarchy_level_id=None, paragraph_type=None, annotations=text_link_annotations)
+            text += sub_text
+            start += len(sub_text)
 
-    def __parse_text(self, soup: Tag, bib_cites: dict) -> List[LineWithMeta]:
+        return self.__create_line(text=text, hierarchy_level_id=None, paragraph_type=None, annotations=annotations)
+
+    def __parse_text(self, soup: Tag, bib2uid: dict, table2uid: dict) -> List[LineWithMeta]:
         lines = []
 
         abstract = soup.find("abstract").p
@@ -138,15 +136,50 @@ class ArticleReader(BaseReader):
                     lines.append(self.__create_line(text=line_text, hierarchy_level_id=1, paragraph_type="section"))
                 for subpart in part.find_all("p"):
                     if subpart.string is not None:
-                        lines.append(self.__create_line_with_text_links(subpart.string, bib_cites))
+                        lines.append(self.__create_line_with_refs(subpart.string, bib2uid, table2uid))
                     else:
                         if subpart.contents and len(subpart.contents) > 0:
-                            lines.append(self.__create_line_with_text_links(subpart.contents, bib_cites))
+                            lines.append(self.__create_line_with_refs(subpart.contents, bib2uid, table2uid))
 
         return lines
 
-    def __tag_2_text(self, tag: Tag) -> str:
+    @staticmethod
+    def __tag2text(tag: Tag) -> str:
         return "" if not tag or not tag.string else tag.string
+
+    def __parse_tables(self, soup: Tag) -> Tuple[List[Table], dict]:
+        """
+        Example Table:
+         -----------------------------------------------
+            Table Reference Example:
+            <ref type="table" target="#tab_0">1</ref>
+            ...
+            Table Example:
+            '<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0">' \
+            '<head>Table 1 .</head>'
+            '<label>1</label>'
+            '<figDesc>Performance of some illustrative AES implementations.</figDesc>'
+            '<table>'
+            '<row><cell>Software (8-bit)</cell><cell>code size</cell><cell>cycle</cell><cell>cost</cell><cell>physical</cell></row>'
+            '<row><cell>Implementations</cell><cell>(bytes)</cell><cell>count</cell><cell>function</cell><cell>assumptions</cell></row>'
+            '<row><cell>Unprotected [13]</cell><cell>1659</cell><cell>4557</cell><cell>7.560</cell><cell>-</cell></row>'
+            ...
+            </table>
+            </figure>
+        """
+        tables = []
+        table2uid = {}
+
+        tag_tables = soup.find_all("figure", {"type": "table"})
+        for table in tag_tables:
+            row_cells = []
+            title = self.__tag2text(table.head) + self.__tag2text(table.label)
+            for row in table.table.find_all("row"):
+                row_cells.append([CellWithMeta(lines=[self.__create_line(self.__tag2text(cell))]) for cell in row.find_all("cell")])
+            tables.append(Table(cells=row_cells, metadata=TableMetadata(page_id=0, title=title)))
+            table2uid["#" + table.get("xml:id")] = tables[-1].metadata.uid
+
+        return tables, table2uid
 
     def __parse_bibliography(self, soup: Tag) -> Tuple[List[LineWithMeta], dict]:
         lines = []
@@ -172,7 +205,7 @@ class ArticleReader(BaseReader):
             # parse bib title
             for title in bib_item.find_all("title", recursive=True):
                 paragraph_type = level_2_paragraph_type[title.get("level")]
-                lines.append(self.__create_line(text=self.__tag_2_text(title), hierarchy_level_id=3, paragraph_type=paragraph_type))
+                lines.append(self.__create_line(text=self.__tag2text(title), hierarchy_level_id=3, paragraph_type=paragraph_type))
 
             lines += [  # parse bib authors
                 self.__create_line(text=author.get_text(), hierarchy_level_id=3, paragraph_type="author")
@@ -180,7 +213,7 @@ class ArticleReader(BaseReader):
             ]
 
             lines += [  # parse biblScope <biblScope unit="volume">
-                self.__create_line(text=self.__tag_2_text(bibl_scope), hierarchy_level_id=3, paragraph_type="biblScope_volume")
+                self.__create_line(text=self.__tag2text(bibl_scope), hierarchy_level_id=3, paragraph_type="biblScope_volume")
                 for bibl_scope in bib_item.find_all("biblscope", {"unit": "volume"}, recursive=True) if bibl_scope
             ]
 
@@ -193,23 +226,20 @@ class ArticleReader(BaseReader):
                 self.logger.warning("Grobid parsing warning: <biblScope unit='page' ... /> was non-standard format")
 
             lines += [  # parse DOI (maybe more one)
-                self.__create_line(text=self.__tag_2_text(idno), hierarchy_level_id=3, paragraph_type="DOI")
+                self.__create_line(text=self.__tag2text(idno), hierarchy_level_id=3, paragraph_type="DOI")
                 for idno in bib_item.find_all("idno", recursive=True) if idno
             ]
 
-            publisher = bib_item.find("publisher")
-            if publisher:
-                lines.append(self.__create_line(text=self.__tag_2_text(publisher), hierarchy_level_id=3, paragraph_type="publisher"))
+            if bib_item.publisher:
+                lines.append(self.__create_line(text=self.__tag2text(bib_item.publisher), hierarchy_level_id=3, paragraph_type="publisher"))
 
-            date = bib_item.find("date")
-            if date:
-                lines.append(self.__create_line(text=self.__tag_2_text(date), hierarchy_level_id=3, paragraph_type="date"))
+            if bib_item.date:
+                lines.append(self.__create_line(text=self.__tag2text(bib_item.date), hierarchy_level_id=3, paragraph_type="date"))
 
         return lines, cites
 
     def __parse_title(self, soup: Tag) -> List[LineWithMeta]:
-        title = soup.title.string if soup.title is not None and soup.title.string is not None else ""
-        return [self.__create_line(text=title, hierarchy_level_id=0, paragraph_type="root")]
+        return [self.__create_line(text=self.__tag2text(soup.title), hierarchy_level_id=0, paragraph_type="root")]
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         with open(file_path, "rb") as file:
@@ -223,12 +253,13 @@ class ArticleReader(BaseReader):
                 authors = soup.biblstruct.find_all("author")
                 lines += [line for author in authors for line in self.__parse_author(author)]
 
-            bib_lines, bib_cites = self.__parse_bibliography(soup)
+            bib_lines, bib2uid = self.__parse_bibliography(soup)
+            tables, table2uid = self.__parse_tables(soup)
 
-            lines += self.__parse_text(soup, bib_cites)
+            lines += self.__parse_text(soup, bib2uid, table2uid)
             lines.extend(bib_lines)
 
-            return UnstructuredDocument(tables=[], lines=lines, attachments=[])
+            return UnstructuredDocument(tables=tables, lines=lines, attachments=[])
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
 
@@ -241,29 +272,7 @@ class ArticleReader(BaseReader):
 
 
 """
-LinkedTextAnnotation:
-    -----------------------------------------------
-    Table Reference Example:
-    <ref type="table" target="#tab_0">1</ref>
-    ...
-    Table Example:
-    '<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0">' \
-    '<head>Table 1 .</head>'
-    '<label>1</label>'
-    '<figDesc>Performance of some illustrative AES implementations.</figDesc>'
-    '<table>'
-    '<row><cell>Software (8-bit)</cell><cell>code size</cell><cell>cycle</cell><cell>cost</cell><cell>physical</cell></row>'
-    '<row><cell>Implementations</cell><cell>(bytes)</cell><cell>count</cell><cell>function</cell><cell>assumptions</cell></row>'
-    '<row><cell>Unprotected [13]</cell><cell>1659</cell><cell>4557</cell><cell>7.560</cell><cell>-</cell></row>'
-    '<row><cell>1-mask Boolean [53]</cell><cell>3153</cell><cell>129 • 10 3</cell><cell>406.7</cell><cell>glitch-sensitive</cell></row>'
-    '<row><cell>1-mask polynomial [20, 45]</cell><cell>20 682</cell><cell>1064 • 10 3</cell><cell>22 000</cell><cell>glitch-resistant</cell></row>'
-    '<row><cell>2-mask Boolean [53]</cell><cell>3845</cell><cell>271 • 10 3</cell><cell>1042</cell><cell>glitch-sensitive</cell></row>'
-    '<row><cell>FPGA (Virtex-5)</cell><cell>area</cell><cell>throughput</cell><cell>cost</cell><cell>physical</cell></row>'
-    '<row><cell>Implementations</cell><cell>(slices)</cell><cell>(enc/sec)</cell><cell>function</cell><cell>assumptions</cell></row>'
-    '<row><cell>Unprotected (128-bit) [48] 1-mask Boolean (128-bit) [48] Threshold (8-bit) [36]</cell><cell>478 1462 958</cell>
-          <cell>245•10 6 11 100•10 6 11 170•10 6 266</cell><cell>21.46 160.8 1499</cell><cell>-glitch-sensitive glitch-resistant</cell></row>'
-    </table>
-    </figure>
+    LinkedTextAnnotation:
     -----------------------------------------------
     Figure Reference Example:
     <ref type="figure" target="#fig_12">13</ref>
