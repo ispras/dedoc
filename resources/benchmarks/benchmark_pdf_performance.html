@@ -1,0 +1,236 @@
+<html>
+        <head>
+            <title>PDF performance benchmark</title>
+            <style>
+                p { margin-bottom: 5px; }
+                pre { background: #f0f0f0; padding: 5px; margin: 0; }
+                summary { font-weight: bold; font-size: 1.2em; margin-bottom: 5px; margin-top: 20px; }
+                table { border-collapse: collapse; }
+                td, th { padding: 5px 10px; border: 1px solid #000; text-align: center; }
+                td:first-child { text-align: left; max-width: 600px; word-break: break-word; }
+                td:last-child, tr:last-child td:not(:first-child) { background: #f0f0f0; }
+                tr:last-child td:first-child { font-weight: bold; text-align: right; cursor: pointer; }
+                .hidden-files tr:nth-child(n+3) { display: none; }
+                .hidden-files tr:last-child { display: table-row; }
+            </style>
+
+            <script>
+                function HideFiles(cell) {
+                    cell.parentNode.parentNode.classList.toggle("hidden-files")
+                }
+            </script>
+        </head>
+        <body><p>Running parameters:</p><pre>{}</pre>
+
+<details open>
+<summary>1 Common (1-19 pages) (37 files)</summary>
+<table>
+<tr><th rowspan="2">Filename</th><th rowspan="2">Pages</th><th colspan="5">pdf_with_text_layer</th></tr>
+<tr><th>tabby</th><th>true</th><th>auto</th><th>auto_tabby</th><th>average</th></tr>
+<tr><td>big_table_with_merged_cells.pdf</td><td>1</td><td>0.69±0.03 (0.69±0.03 / page)</td><td>0.54±0.01 (0.54±0.01 / page)</td><td>2.70±0.05 (2.70±0.05 / page)</td><td>2.63±0.02 (2.63±0.02 / page)</td><td>1.64±1.03 (1.64±1.03 / page)</td></tr>
+<tr><td>VVP_global_table.pdf</td><td>1</td><td>0.78±0.06 (0.78±0.06 / page)</td><td>1.00±0.03 (1.00±0.03 / page)</td><td>3.23±0.06 (3.23±0.06 / page)</td><td>3.20±0.05 (3.20±0.05 / page)</td><td>2.05±1.17 (2.05±1.17 / page)</td></tr>
+<tr><td>пример.pdf</td><td>1</td><td>0.79±0.01 (0.79±0.01 / page)</td><td>0.92±0.00 (0.92±0.00 / page)</td><td>1.75±0.02 (1.75±0.02 / page)</td><td>1.59±0.02 (1.59±0.02 / page)</td><td>1.26±0.41 (1.26±0.41 / page)</td></tr>
+<tr><td>not_table.pdf</td><td>1</td><td>1.33±0.02 (1.33±0.02 / page)</td><td>1.63±0.01 (1.63±0.01 / page)</td><td>5.60±0.03 (5.60±0.03 / page)</td><td>5.62±0.06 (5.62±0.06 / page)</td><td>3.55±2.07 (3.55±2.07 / page)</td></tr>
+<tr><td>english_doc.pdf</td><td>1</td><td>0.61±0.02 (0.61±0.02 / page)</td><td>0.57±0.01 (0.57±0.01 / page)</td><td>1.18±0.03 (1.18±0.03 / page)</td><td>1.21±0.03 (1.21±0.03 / page)</td><td>0.89±0.31 (0.89±0.31 / page)</td></tr>
+<tr><td>liters_state.pdf</td><td>1</td><td>1.03±0.04 (1.03±0.04 / page)</td><td>0.63±0.01 (0.63±0.01 / page)</td><td>1.65±0.06 (1.65±0.06 / page)</td><td>2.03±0.04 (2.03±0.04 / page)</td><td>1.33±0.54 (1.33±0.54 / page)</td></tr>
+<tr><td>doc_with_long_list.pdf</td><td>1</td><td>0.59±0.01 (0.59±0.01 / page)</td><td>0.27±0.01 (0.27±0.01 / page)</td><td>0.85±0.02 (0.85±0.02 / page)</td><td>1.18±0.03 (1.18±0.03 / page)</td><td>0.72±0.34 (0.72±0.34 / page)</td></tr>
+<tr><td>example.pdf</td><td>1</td><td>0.88±0.06 (0.88±0.06 / page)</td><td>1.06±0.03 (1.06±0.03 / page)</td><td>1.92±0.04 (1.92±0.04 / page)</td><td>1.74±0.03 (1.74±0.03 / page)</td><td>1.40±0.44 (1.40±0.44 / page)</td></tr>
+<tr><td>2-column-state.pdf</td><td>1</td><td>1.01±0.04 (1.01±0.04 / page)</td><td>0.59±0.01 (0.59±0.01 / page)</td><td>1.57±0.03 (1.57±0.03 / page)</td><td>1.99±0.03 (1.99±0.03 / page)</td><td>1.29±0.53 (1.29±0.53 / page)</td></tr>
+<tr><td>14_dev_direct.pdf</td><td>1</td><td>0.67±0.02 (0.67±0.02 / page)</td><td>0.37±0.01 (0.37±0.01 / page)</td><td>1.04±0.02 (1.04±0.02 / page)</td><td>1.36±0.03 (1.36±0.03 / page)</td><td>0.86±0.37 (0.86±0.37 / page)</td></tr>
+<tr><td>example_table_with_90_orient_cells.pdf</td><td>1</td><td>1.05±0.05 (1.05±0.05 / page)</td><td>2.35±0.02 (2.35±0.02 / page)</td><td>4.61±0.04 (4.61±0.04 / page)</td><td>4.67±0.04 (4.67±0.04 / page)</td><td>3.17±1.54 (3.17±1.54 / page)</td></tr>
+<tr><td>two_column_document.pdf</td><td>2</td><td>0.98±0.06 (0.49±0.03 / page)</td><td>1.07±0.02 (0.54±0.01 / page)</td><td>2.00±0.04 (1.00±0.02 / page)</td><td>1.98±0.07 (0.99±0.03 / page)</td><td>1.51±0.48 (0.75±0.24 / page)</td></tr>
+<tr><td>example_mp_table_wo_repeate_header.pdf</td><td>2</td><td>0.92±0.07 (0.46±0.04 / page)</td><td>1.52±0.02 (0.76±0.01 / page)</td><td>2.51±0.06 (1.25±0.03 / page)</td><td>1.87±0.07 (0.94±0.04 / page)</td><td>1.70±0.58 (0.85±0.29 / page)</td></tr>
+<tr><td>mixed_pdf.pdf</td><td>2</td><td>0.82±0.02 (0.41±0.01 / page)</td><td>0.95±0.01 (0.48±0.01 / page)</td><td>4.05±0.03 (2.03±0.01 / page)</td><td>3.94±0.05 (1.97±0.02 / page)</td><td>2.44±1.56 (1.22±0.78 / page)</td></tr>
+<tr><td>example_mp_table_with_repeate_header_2.pdf</td><td>2</td><td>0.95±0.05 (0.48±0.03 / page)</td><td>1.61±0.03 (0.81±0.01 / page)</td><td>2.54±0.08 (1.27±0.04 / page)</td><td>1.95±0.08 (0.97±0.04 / page)</td><td>1.76±0.58 (0.88±0.29 / page)</td></tr>
+<tr><td>0004057v1.pdf</td><td>2</td><td>1.00±0.03 (0.50±0.02 / page)</td><td>0.87±0.01 (0.44±0.00 / page)</td><td>1.92±0.03 (0.96±0.02 / page)</td><td>2.03±0.07 (1.01±0.03 / page)</td><td>1.45±0.52 (0.73±0.26 / page)</td></tr>
+<tr><td>Document635.pdf</td><td>2</td><td>1.67±0.04 (0.83±0.02 / page)</td><td>3.13±0.08 (1.57±0.04 / page)</td><td>4.82±0.07 (2.41±0.04 / page)</td><td>3.37±0.08 (1.68±0.04 / page)</td><td>3.25±1.12 (1.62±0.56 / page)</td></tr>
+<tr><td>example_table_with_270_orient_cells.pdf</td><td>2</td><td>1.14±0.02 (0.57±0.01 / page)</td><td>2.67±0.07 (1.33±0.03 / page)</td><td>6.54±0.07 (3.27±0.03 / page)</td><td>6.50±0.03 (3.25±0.02 / page)</td><td>4.21±2.37 (2.11±1.19 / page)</td></tr>
+<tr><td>VVP_6_tables.pdf</td><td>3</td><td>1.20±0.01 (0.40±0.00 / page)</td><td>2.75±0.04 (0.92±0.01 / page)</td><td>4.01±0.08 (1.34±0.03 / page)</td><td>2.42±0.04 (0.81±0.01 / page)</td><td>2.60±1.00 (0.87±0.33 / page)</td></tr>
+<tr><td>example_with_table9.pdf</td><td>3</td><td>1.26±0.04 (0.42±0.01 / page)</td><td>5.32±0.05 (1.77±0.02 / page)</td><td>12.47±0.06 (4.16±0.02 / page)</td><td>12.38±0.01 (4.13±0.00 / page)</td><td>7.86±4.79 (2.62±1.60 / page)</td></tr>
+<tr><td>multipage_table.pdf</td><td>3</td><td>1.10±0.06 (0.37±0.02 / page)</td><td>3.56±0.03 (1.19±0.01 / page)</td><td>9.10±0.10 (3.03±0.03 / page)</td><td>9.05±0.07 (3.02±0.02 / page)</td><td>5.70±3.48 (1.90±1.16 / page)</td></tr>
+<tr><td>liao2020_merged_organized.pdf</td><td>4</td><td>1.79±0.05 (0.45±0.01 / page)</td><td>2.25±0.04 (0.56±0.01 / page)</td><td>3.96±0.05 (0.99±0.01 / page)</td><td>3.61±0.05 (0.90±0.01 / page)</td><td>2.90±0.91 (0.73±0.23 / page)</td></tr>
+<tr><td>with_header_footer_2.pdf</td><td>5</td><td>1.46±0.01 (0.29±0.00 / page)</td><td>1.98±0.01 (0.40±0.00 / page)</td><td>3.44±0.04 (0.69±0.01 / page)</td><td>2.87±0.03 (0.57±0.01 / page)</td><td>2.44±0.77 (0.49±0.15 / page)</td></tr>
+<tr><td>short_lines.pdf</td><td>5</td><td>0.91±0.01 (0.18±0.00 / page)</td><td>1.09±0.01 (0.22±0.00 / page)</td><td>2.04±0.02 (0.41±0.00 / page)</td><td>1.81±0.01 (0.36±0.00 / page)</td><td>1.46±0.48 (0.29±0.10 / page)</td></tr>
+<tr><td>prospectus.pdf</td><td>6</td><td>9.00±0.14 (1.50±0.02 / page)</td><td>12.49±0.13 (2.08±0.02 / page)</td><td>21.28±0.06 (3.55±0.01 / page)</td><td>17.96±0.09 (2.99±0.02 / page)</td><td>15.18±4.76 (2.53±0.79 / page)</td></tr>
+<tr><td>dogovor-oferty.pdf</td><td>7</td><td>1.62±0.03 (0.23±0.00 / page)</td><td>3.34±0.02 (0.48±0.00 / page)</td><td>4.94±0.09 (0.71±0.01 / page)</td><td>3.25±0.11 (0.46±0.02 / page)</td><td>3.29±1.18 (0.47±0.17 / page)</td></tr>
+<tr><td>Алан Тьюринг.pdf</td><td>8</td><td>2.18±0.04 (0.27±0.01 / page)</td><td>3.89±0.07 (0.49±0.01 / page)</td><td>5.99±0.03 (0.75±0.00 / page)</td><td>4.38±0.06 (0.55±0.01 / page)</td><td>4.11±1.36 (0.51±0.17 / page)</td></tr>
+<tr><td>multipage.pdf</td><td>9</td><td>0.95±0.02 (0.11±0.00 / page)</td><td>1.73±0.01 (0.19±0.00 / page)</td><td>2.61±0.04 (0.29±0.00 / page)</td><td>1.86±0.03 (0.21±0.00 / page)</td><td>1.79±0.59 (0.20±0.07 / page)</td></tr>
+<tr><td>with_changed_header_footer.pdf</td><td>10</td><td>3.00±0.13 (0.30±0.01 / page)</td><td>8.88±0.09 (0.89±0.01 / page)</td><td>11.12±0.17 (1.11±0.02 / page)</td><td>5.09±0.14 (0.51±0.01 / page)</td><td>7.02±3.17 (0.70±0.32 / page)</td></tr>
+<tr><td>2212.14834.pdf</td><td>12</td><td>6.57±0.11 (0.55±0.01 / page)</td><td>17.99±0.19 (1.50±0.02 / page)</td><td>22.99±0.20 (1.92±0.02 / page)</td><td>11.70±0.12 (0.98±0.01 / page)</td><td>14.82±6.22 (1.23±0.52 / page)</td></tr>
+<tr><td>s00371-018-1491-0.pdf</td><td>13</td><td>5.53±0.07 (0.43±0.01 / page)</td><td>12.59±0.13 (0.97±0.01 / page)</td><td>16.19±0.14 (1.25±0.01 / page)</td><td>9.11±0.09 (0.70±0.01 / page)</td><td>10.86±3.97 (0.84±0.31 / page)</td></tr>
+<tr><td>Successful_SAT_Encoding_Techniques.pdf</td><td>13</td><td>2.74±0.05 (0.21±0.00 / page)</td><td>7.72±0.14 (0.59±0.01 / page)</td><td>9.68±0.13 (0.74±0.01 / page)</td><td>4.87±0.08 (0.37±0.01 / page)</td><td>6.25±2.66 (0.48±0.20 / page)</td></tr>
+<tr><td>WAIT23_paper_1.pdf</td><td>14</td><td>3.74±0.14 (0.27±0.01 / page)</td><td>9.96±0.12 (0.71±0.01 / page)</td><td>12.64±0.12 (0.90±0.01 / page)</td><td>6.30±0.06 (0.45±0.00 / page)</td><td>8.16±3.40 (0.58±0.24 / page)</td></tr>
+<tr><td>S0965542513120129.pdf</td><td>15</td><td>3.36±0.04 (0.22±0.00 / page)</td><td>17.96±0.26 (1.20±0.02 / page)</td><td>20.22±0.22 (1.35±0.01 / page)</td><td>5.81±0.09 (0.39±0.01 / page)</td><td>11.84±7.35 (0.79±0.49 / page)</td></tr>
+<tr><td>INFORSID_2017_paper_34.pdf</td><td>16</td><td>3.42±0.11 (0.21±0.01 / page)</td><td>9.83±0.07 (0.61±0.00 / page)</td><td>11.98±0.05 (0.75±0.00 / page)</td><td>5.47±0.01 (0.34±0.00 / page)</td><td>7.68±3.40 (0.48±0.21 / page)</td></tr>
+<tr><td>1901.10861.pdf</td><td>19</td><td>4.24±0.12 (0.22±0.01 / page)</td><td>15.54±0.18 (0.82±0.01 / page)</td><td>17.95±0.20 (0.94±0.01 / page)</td><td>6.74±0.12 (0.35±0.01 / page)</td><td>11.11±5.76 (0.58±0.30 / page)</td></tr>
+<tr><td>applsci-12-04943.pdf</td><td>19</td><td>6.10±0.13 (0.32±0.01 / page)</td><td>29.97±0.20 (1.58±0.01 / page)</td><td>33.14±0.35 (1.74±0.02 / page)</td><td>9.48±0.07 (0.50±0.00 / page)</td><td>19.67±12.00 (1.04±0.63 / page)</td></tr>
+<tr><td colspan="2" onclick="HideFiles(this)">average (per page)</td><td>0.54±0.33</td><td>0.89±0.52</td><td>1.75±1.22</td><td>1.53±1.31</td><td>1.18±1.06</td></tr>
+</table>
+</details>
+<details open>
+<summary>2 Common (20-99 pages) (19 files)</summary>
+<table>
+<tr><th rowspan="2">Filename</th><th rowspan="2">Pages</th><th colspan="5">pdf_with_text_layer</th></tr>
+<tr><th>tabby</th><th>true</th><th>auto</th><th>auto_tabby</th><th>average</th></tr>
+<tr><td>IVMEM2022_paper_2.pdf</td><td>20</td><td>5.17±0.13 (0.26±0.01 / page)</td><td>30.96±0.27 (1.55±0.01 / page)</td><td>34.55±0.25 (1.73±0.01 / page)</td><td>8.59±0.12 (0.43±0.01 / page)</td><td>19.82±13.06 (0.99±0.65 / page)</td></tr>
+<tr><td>4d9f_7b15_A-Worldwide-Survey-of-Encryption-Products.pdf</td><td>22</td><td>4.72±0.08 (0.21±0.00 / page)</td><td>14.66±0.26 (0.67±0.01 / page)</td><td>16.53±0.23 (0.75±0.01 / page)</td><td>6.56±0.08 (0.30±0.00 / page)</td><td>10.62±5.07 (0.48±0.23 / page)</td></tr>
+<tr><td>4-МГУ-Тулин-Д-И.pdf</td><td>24</td><td>3.91±0.04 (0.16±0.00 / page)</td><td>14.74±0.15 (0.61±0.01 / page)</td><td>16.76±0.17 (0.70±0.01 / page)</td><td>6.02±0.03 (0.25±0.00 / page)</td><td>10.36±5.49 (0.43±0.23 / page)</td></tr>
+<tr><td>4-МГУ-Попов-М-С.pdf</td><td>24</td><td>3.73±0.10 (0.16±0.00 / page)</td><td>16.46±0.16 (0.69±0.01 / page)</td><td>18.62±0.13 (0.78±0.01 / page)</td><td>5.85±0.05 (0.24±0.00 / page)</td><td>11.17±6.47 (0.47±0.27 / page)</td></tr>
+<tr><td>EtatArtRecSys15fev2021.pdf</td><td>24</td><td>5.38±0.04 (0.22±0.00 / page)</td><td>22.15±0.20 (0.92±0.01 / page)</td><td>24.75±0.21 (1.03±0.01 / page)</td><td>8.02±0.06 (0.33±0.00 / page)</td><td>15.08±8.48 (0.63±0.35 / page)</td></tr>
+<tr><td>US_DHS AS_2021.pdf</td><td>25</td><td>4.42±0.08 (0.18±0.00 / page)</td><td>21.16±0.21 (0.85±0.01 / page)</td><td>23.72±0.15 (0.95±0.01 / page)</td><td>7.19±0.08 (0.29±0.00 / page)</td><td>14.12±8.43 (0.56±0.34 / page)</td></tr>
+<tr><td>pbedrin_diploma.pdf</td><td>28</td><td>5.15±0.08 (0.18±0.00 / page)</td><td>17.15±0.16 (0.61±0.01 / page)</td><td>19.00±0.21 (0.68±0.01 / page)</td><td>7.00±0.04 (0.25±0.00 / page)</td><td>12.08±6.07 (0.43±0.22 / page)</td></tr>
+<tr><td>DK_FSP_2018.pdf</td><td>28</td><td>5.40±0.07 (0.19±0.00 / page)</td><td>27.79±0.28 (0.99±0.01 / page)</td><td>30.32±0.12 (1.08±0.00 / page)</td><td>7.91±0.06 (0.28±0.00 / page)</td><td>17.86±11.27 (0.64±0.40 / page)</td></tr>
+<tr><td>2111.15664.pdf</td><td>29</td><td>12.72±0.15 (0.44±0.01 / page)</td><td>47.80±0.34 (1.65±0.01 / page)</td><td>52.20±0.47 (1.80±0.02 / page)</td><td>17.21±0.10 (0.59±0.00 / page)</td><td>32.48±17.66 (1.12±0.61 / page)</td></tr>
+<tr><td>4-физтех-Шишацкий-М-Н-230301.pdf</td><td>30</td><td>6.03±0.10 (0.20±0.00 / page)</td><td>42.41±0.26 (1.41±0.01 / page)</td><td>45.24±0.13 (1.51±0.00 / page)</td><td>8.81±0.16 (0.29±0.01 / page)</td><td>25.62±18.26 (0.85±0.61 / page)</td></tr>
+<tr><td>romanov_diplom.pdf</td><td>33</td><td>5.57±0.06 (0.17±0.00 / page)</td><td>24.20±0.24 (0.73±0.01 / page)</td><td>26.96±0.17 (0.82±0.01 / page)</td><td>8.30±0.09 (0.25±0.00 / page)</td><td>16.26±9.42 (0.49±0.29 / page)</td></tr>
+<tr><td>J93-2003.pdf</td><td>50</td><td>10.75±0.13 (0.21±0.00 / page)</td><td>37.15±0.49 (0.74±0.01 / page)</td><td>40.22±0.43 (0.80±0.01 / page)</td><td>13.81±0.15 (0.28±0.00 / page)</td><td>25.48±13.30 (0.51±0.27 / page)</td></tr>
+<tr><td>diploma.pdf</td><td>55</td><td>6.48±0.06 (0.12±0.00 / page)</td><td>32.26±0.40 (0.59±0.01 / page)</td><td>34.27±0.37 (0.62±0.01 / page)</td><td>8.50±0.16 (0.15±0.00 / page)</td><td>20.38±12.93 (0.37±0.24 / page)</td></tr>
+<tr><td>s11263-020-01359-2.pdf</td><td>57</td><td>15.50±0.16 (0.27±0.00 / page)</td><td>69.17±0.59 (1.21±0.01 / page)</td><td>73.52±0.59 (1.29±0.01 / page)</td><td>20.12±0.59 (0.35±0.01 / page)</td><td>44.58±26.87 (0.78±0.47 / page)</td></tr>
+<tr><td>FI_DR_2021.pdf</td><td>65</td><td>10.28±0.13 (0.16±0.00 / page)</td><td>30.52±0.33 (0.47±0.01 / page)</td><td>34.09±0.33 (0.52±0.01 / page)</td><td>13.73±0.06 (0.21±0.00 / page)</td><td>22.15±10.31 (0.34±0.16 / page)</td></tr>
+<tr><td>FULLTEXT01.pdf</td><td>69</td><td>14.38±0.29 (0.21±0.00 / page)</td><td>108.70±0.78 (1.58±0.01 / page)</td><td>111.27±0.71 (1.61±0.01 / page)</td><td>17.10±0.20 (0.25±0.00 / page)</td><td>62.86±47.15 (0.91±0.68 / page)</td></tr>
+<tr><td>FI_AS_2021.pdf</td><td>73</td><td>13.34±0.22 (0.18±0.00 / page)</td><td>159.51±0.74 (2.19±0.01 / page)</td><td>162.66±0.59 (2.23±0.01 / page)</td><td>16.45±0.10 (0.23±0.00 / page)</td><td>87.99±73.11 (1.21±1.00 / page)</td></tr>
+<tr><td>АксеноваЕЛ_628.pdf</td><td>74</td><td>7.81±0.15 (0.11±0.00 / page)</td><td>53.75±0.35 (0.73±0.00 / page)</td><td>55.60±0.43 (0.75±0.01 / page)</td><td>9.68±0.06 (0.13±0.00 / page)</td><td>31.71±22.99 (0.43±0.31 / page)</td></tr>
+<tr><td>Научно-технический_отчет_(заключительный)_по_договору.pdf</td><td>83</td><td>17.85±3.65 (0.22±0.04 / page)</td><td>414.40±3.30 (4.99±0.04 / page)</td><td>416.25±3.49 (5.02±0.04 / page)</td><td>19.78±3.37 (0.24±0.04 / page)</td><td>217.07±198.29 (2.62±2.39 / page)</td></tr>
+<tr><td colspan="2" onclick="HideFiles(this)">average (per page)</td><td>0.20±0.07</td><td>1.22±1.00</td><td>1.30±0.99</td><td>0.28±0.10</td><td>0.75±0.87</td></tr>
+</table>
+</details>
+<details open>
+<summary>3 Common (100-500 pages) (6 files)</summary>
+<table>
+<tr><th rowspan="2">Filename</th><th rowspan="2">Pages</th><th colspan="5">pdf_with_text_layer</th></tr>
+<tr><th>tabby</th><th>true</th><th>auto</th><th>auto_tabby</th><th>average</th></tr>
+<tr><td>FI_SDP_2012.pdf</td><td>121</td><td>11.36±0.16 (0.09±0.00 / page)</td><td>91.62±0.51 (0.76±0.00 / page)</td><td>93.79±0.33 (0.78±0.00 / page)</td><td>13.73±0.23 (0.11±0.00 / page)</td><td>52.62±40.10 (0.43±0.33 / page)</td></tr>
+<tr><td>FI_SDP_2009.pdf</td><td>142</td><td>13.41±0.20 (0.09±0.00 / page)</td><td>68.36±0.56 (0.48±0.00 / page)</td><td>71.24±0.35 (0.50±0.00 / page)</td><td>15.82±0.07 (0.11±0.00 / page)</td><td>42.21±27.63 (0.30±0.19 / page)</td></tr>
+<tr><td>1_Гарри_Поттер_и_философский_камень.pdf</td><td>244</td><td>15.80±0.36 (0.06±0.00 / page)</td><td>257.90±1.86 (1.06±0.01 / page)</td><td>269.97±1.02 (1.11±0.00 / page)</td><td>28.16±0.10 (0.12±0.00 / page)</td><td>142.96±121.13 (0.59±0.50 / page)</td></tr>
+<tr><td>2.Гарри_Поттер_и_Тайная_комната.pdf</td><td>331</td><td>29.36±0.42 (0.09±0.00 / page)</td><td>333.94±0.86 (1.01±0.00 / page)</td><td>348.22±0.65 (1.05±0.00 / page)</td><td>43.24±0.26 (0.13±0.00 / page)</td><td>188.69±152.55 (0.57±0.46 / page)</td></tr>
+<tr><td>3.Гарри_Поттер_и_узник_Азкабана.pdf</td><td>402</td><td>34.64±0.48 (0.09±0.00 / page)</td><td>440.42±1.95 (1.10±0.00 / page)</td><td>453.02±0.98 (1.13±0.00 / page)</td><td>48.17±0.12 (0.12±0.00 / page)</td><td>244.06±202.77 (0.61±0.50 / page)</td></tr>
+<tr><td>dbguide.pdf</td><td>521</td><td>39.39±0.56 (0.08±0.00 / page)</td><td>2188.78±7.38 (4.20±0.01 / page)</td><td>2198.74±4.19 (4.22±0.01 / page)</td><td>47.34±0.60 (0.09±0.00 / page)</td><td>1118.56±1075.22 (2.15±2.06 / page)</td></tr>
+<tr><td colspan="2" onclick="HideFiles(this)">average (per page)</td><td>0.08±0.01</td><td>1.43±1.26</td><td>1.46±1.25</td><td>0.11±0.01</td><td>0.77±1.11</td></tr>
+</table>
+</details>
+<details open>
+<summary>4 Common (750+ pages) (4 files)</summary>
+<table>
+<tr><th rowspan="2">Filename</th><th rowspan="2">Pages</th><th colspan="5">pdf_with_text_layer</th></tr>
+<tr><th>tabby</th><th>true</th><th>auto</th><th>auto_tabby</th><th>average</th></tr>
+<tr><td>7.Гарри_Поттер_и_Дары_Смерти.pdf</td><td>768</td><td>64.41±0.68 (0.08±0.00 / page)</td><td>1227.33±3.57 (1.60±0.00 / page)</td><td>1243.04±1.88 (1.62±0.00 / page)</td><td>81.81±4.67 (0.11±0.01 / page)</td><td>654.15±581.10 (0.85±0.76 / page)</td></tr>
+<tr><td>Python-k-vershinam-masterstva_RuLit_Me_639739.pdf</td><td>769</td><td>61.92±1.44 (0.08±0.00 / page)</td><td>1934.12±1.49 (2.52±0.00 / page)</td><td>1948.38±3.14 (2.53±0.00 / page)</td><td>69.99±0.84 (0.09±0.00 / page)</td><td>1003.60±937.67 (1.31±1.22 / page)</td></tr>
+<tr><td>5.Гарри_Поттер_и_Орден_Феникса.pdf</td><td>967</td><td>81.26±1.67 (0.08±0.00 / page)</td><td>1815.83±1.87 (1.88±0.00 / page)</td><td>1838.23±2.16 (1.90±0.00 / page)</td><td>95.31±0.91 (0.10±0.00 / page)</td><td>957.66±869.43 (0.99±0.90 / page)</td></tr>
+<tr><td>NNDesign.pdf</td><td>1012</td><td>108.70±1.69 (0.11±0.00 / page)</td><td>22116.06±15.78 (21.85±0.02 / page)</td><td>22224.07±83.69 (21.96±0.08 / page)</td><td>132.00±9.06 (0.13±0.01 / page)</td><td>11145.21±11025.01 (11.01±10.89 / page)</td></tr>
+<tr><td colspan="2" onclick="HideFiles(this)">average (per page)</td><td>0.09±0.01</td><td>6.96±8.60</td><td>7.00±8.64</td><td>0.11±0.02</td><td>3.54±7.00</td></tr>
+</table>
+</details>
+<details open>
+<summary>5 FinTOC 2022 (en, 1-19 pages) (6 files)</summary>
+<table>
+<tr><th rowspan="2">Filename</th><th rowspan="2">Pages</th><th colspan="5">pdf_with_text_layer</th></tr>
+<tr><th>tabby</th><th>true</th><th>auto</th><th>auto_tabby</th><th>average</th></tr>
+<tr><td>EdR_Private_Equity_Select_Access_Fund_S.A._SICAV-SIF-Amethis_II__Sub-Fund_2018_K_X_X_X.pdf</td><td>3</td><td>2.07±0.25 (0.69±0.08 / page)</td><td>3.41±0.17 (1.14±0.06 / page)</td><td>5.35±0.26 (1.78±0.09 / page)</td><td>3.94±0.11 (1.31±0.04 / page)</td><td>3.69±1.19 (1.23±0.40 / page)</td></tr>
+<tr><td>LU0992626050-FR0011269182-FR0011269190-FR0010312660-FR0010148981-LU0992625912-LU0992625839-LU0992626134_English_2012_Carmignac.pdf</td><td>12</td><td>4.44±0.54 (0.37±0.05 / page)</td><td>12.27±0.62 (1.02±0.05 / page)</td><td>15.12±0.72 (1.26±0.06 / page)</td><td>7.01±0.16 (0.58±0.01 / page)</td><td>9.71±4.25 (0.81±0.35 / page)</td></tr>
+<tr><td>CH0002775168_English_2016_BSIMultihelvetia.pdf</td><td>16</td><td>6.06±0.41 (0.38±0.03 / page)</td><td>17.97±0.87 (1.12±0.05 / page)</td><td>21.24±0.54 (1.33±0.03 / page)</td><td>9.58±0.28 (0.60±0.02 / page)</td><td>13.72±6.16 (0.86±0.38 / page)</td></tr>
+<tr><td>LU0035346187-LU0035345882_English_2012_UBS-Lux-BondFundGBPP.pdf</td><td>17</td><td>10.76±0.80 (0.63±0.05 / page)</td><td>25.54±0.55 (1.50±0.03 / page)</td><td>31.19±0.70 (1.83±0.04 / page)</td><td>16.16±0.49 (0.95±0.03 / page)</td><td>20.91±7.98 (1.23±0.47 / page)</td></tr>
+<tr><td>LU0415166403-LU0033050237-LU0033049577_English_2012_UBS-Lux-BondFundEUR.pdf</td><td>17</td><td>11.03±0.61 (0.65±0.04 / page)</td><td>25.70±0.92 (1.51±0.05 / page)</td><td>31.17±1.06 (1.83±0.06 / page)</td><td>16.36±0.17 (0.96±0.01 / page)</td><td>21.06±7.89 (1.24±0.46 / page)</td></tr>
+<tr><td>LU0214904665-LU0214905043_English_2012_UBS-Lux-BSEmergingEuropeEURP.pdf</td><td>18</td><td>8.58±0.49 (0.48±0.03 / page)</td><td>18.57±0.75 (1.03±0.04 / page)</td><td>22.47±0.77 (1.25±0.04 / page)</td><td>12.44±0.33 (0.69±0.02 / page)</td><td>15.51±5.41 (0.86±0.30 / page)</td></tr>
+<tr><td colspan="2" onclick="HideFiles(this)">average (per page)</td><td>0.53±0.14</td><td>1.22±0.21</td><td>1.55±0.28</td><td>0.85±0.26</td><td>1.04±0.44</td></tr>
+</table>
+</details>
+<details open>
+<summary>6 FinTOC 2022 (en, 20-99 pages) (61 files)</summary>
+<table>
+<tr><th rowspan="2">Filename</th><th rowspan="2">Pages</th><th colspan="5">pdf_with_text_layer</th></tr>
+<tr><th>tabby</th><th>true</th><th>auto</th><th>auto_tabby</th><th>average</th></tr>
+<tr><td>Credit_Suisse_Portfolio_Fund_(Lux)_2011_X_P_X_X.pdf</td><td>23</td><td>6.69±0.10 (0.29±0.00 / page)</td><td>17.85±0.08 (0.78±0.00 / page)</td><td>20.77±0.08 (0.90±0.00 / page)</td><td>9.91±0.06 (0.43±0.00 / page)</td><td>13.81±5.72 (0.60±0.25 / page)</td></tr>
+<tr><td>Bantleon_AnleihenFonds_LU0524467833_2012_X_P_R_A.pdf</td><td>24</td><td>4.68±0.07 (0.19±0.00 / page)</td><td>16.83±0.04 (0.70±0.00 / page)</td><td>18.77±0.11 (0.78±0.00 / page)</td><td>6.76±0.01 (0.28±0.00 / page)</td><td>11.76±6.12 (0.49±0.26 / page)</td></tr>
+<tr><td>LU0129337548-LU0129337381_English_2009_CS-Lux-EuropeanPropertyEquityFd-.pdf</td><td>24</td><td>6.98±0.04 (0.29±0.00 / page)</td><td>25.75±0.22 (1.07±0.01 / page)</td><td>29.10±0.82 (1.21±0.03 / page)</td><td>10.13±0.06 (0.42±0.00 / page)</td><td>17.99±9.58 (0.75±0.40 / page)</td></tr>
+<tr><td>LU0118405827_English_2013_SEBConceptBiotechnology.pdf</td><td>29</td><td>4.65±0.03 (0.16±0.00 / page)</td><td>13.79±0.03 (0.48±0.00 / page)</td><td>15.55±0.56 (0.54±0.02 / page)</td><td>6.42±0.04 (0.22±0.00 / page)</td><td>10.10±4.66 (0.35±0.16 / page)</td></tr>
+<tr><td>Columbus_EM_Debt_Strategy_FR0013204161_2018_K_P_R_X.pdf</td><td>29</td><td>4.96±0.04 (0.17±0.00 / page)</td><td>18.65±0.10 (0.64±0.00 / page)</td><td>20.77±0.32 (0.72±0.01 / page)</td><td>7.28±0.03 (0.25±0.00 / page)</td><td>12.92±6.89 (0.45±0.24 / page)</td></tr>
+<tr><td>LU0337413677-LU0634998545-LU0337414568-LU0764661145-LU0764660501-LU0337413834-LU0764661574-LU0764660840-LU0371477885-LU0634998206-LU0337414139-LU0337414642-LU0634998461-LU0337414485-LU0834220419_English_2012_Bantleon.pdf</td><td>32</td><td>5.95±0.07 (0.19±0.00 / page)</td><td>23.17±0.20 (0.72±0.01 / page)</td><td>25.05±0.16 (0.78±0.01 / page)</td><td>8.25±0.05 (0.26±0.00 / page)</td><td>15.61±8.57 (0.49±0.27 / page)</td></tr>
+<tr><td>LU0116762864-LU0041228874_English_2011_Deka-Renten-Euro3-7CF.pdf</td><td>34</td><td>5.26±0.01 (0.15±0.00 / page)</td><td>21.61±0.21 (0.64±0.01 / page)</td><td>23.31±0.10 (0.69±0.00 / page)</td><td>7.52±0.11 (0.22±0.00 / page)</td><td>14.43±8.10 (0.42±0.24 / page)</td></tr>
+<tr><td>LU0097655574-LU0097654924_English_2012_Deka-EuroStocks.pdf</td><td>35</td><td>5.36±0.04 (0.15±0.00 / page)</td><td>23.66±0.24 (0.68±0.01 / page)</td><td>25.35±0.12 (0.72±0.00 / page)</td><td>7.57±0.08 (0.22±0.00 / page)</td><td>15.49±9.08 (0.44±0.26 / page)</td></tr>
+<tr><td>Credit_Suisse_Fund_I_(Lux)_2012_X_P_X_X.pdf</td><td>36</td><td>9.90±0.21 (0.28±0.01 / page)</td><td>31.38±0.32 (0.87±0.01 / page)</td><td>34.62±0.78 (0.96±0.02 / page)</td><td>13.41±0.11 (0.37±0.00 / page)</td><td>22.33±10.81 (0.62±0.30 / page)</td></tr>
+<tr><td>LU0456547701-LU0120526693_English_2013_SEBHighYield.pdf</td><td>37</td><td>5.59±0.04 (0.15±0.00 / page)</td><td>19.79±0.16 (0.53±0.00 / page)</td><td>21.37±0.13 (0.58±0.00 / page)</td><td>7.55±0.01 (0.20±0.00 / page)</td><td>13.58±7.06 (0.37±0.19 / page)</td></tr>
+<tr><td>BI_SICAV_2011_X_P_X_X.pdf</td><td>38</td><td>9.57±0.14 (0.25±0.00 / page)</td><td>53.12±0.38 (1.40±0.01 / page)</td><td>55.43±0.05 (1.46±0.00 / page)</td><td>12.80±0.06 (0.34±0.00 / page)</td><td>32.73±21.59 (0.86±0.57 / page)</td></tr>
+<tr><td>LU1009600286-LU0098995292-LU1009600955-LU0404639410_English_2012_UBS-Lux-Eq-USAMultiStrat--.pdf</td><td>40</td><td>25.72±0.93 (0.64±0.02 / page)</td><td>69.50±0.76 (1.74±0.02 / page)</td><td>75.60±0.28 (1.89±0.01 / page)</td><td>31.59±0.97 (0.79±0.02 / page)</td><td>50.60±22.17 (1.27±0.55 / page)</td></tr>
+<tr><td>OYSTER_2005_X_P_X_X.pdf</td><td>40</td><td>6.19±0.13 (0.15±0.00 / page)</td><td>29.57±0.22 (0.74±0.01 / page)</td><td>31.03±0.13 (0.78±0.00 / page)</td><td>8.41±0.07 (0.21±0.00 / page)</td><td>18.80±11.54 (0.47±0.29 / page)</td></tr>
+<tr><td>CANDRIAM_GF_LU1220230442_2015_K_P_R_A.pdf</td><td>42</td><td>7.11±0.04 (0.17±0.00 / page)</td><td>31.56±0.23 (0.75±0.01 / page)</td><td>33.32±0.10 (0.79±0.00 / page)</td><td>9.30±0.05 (0.22±0.00 / page)</td><td>20.32±12.16 (0.48±0.29 / page)</td></tr>
+<tr><td>LU0091821107_English_2013_CarnegieGlobalHealthcareFund.pdf</td><td>42</td><td>6.39±0.01 (0.15±0.00 / page)</td><td>22.07±0.19 (0.53±0.00 / page)</td><td>23.78±0.25 (0.57±0.01 / page)</td><td>8.36±0.06 (0.20±0.00 / page)</td><td>15.15±7.83 (0.36±0.19 / page)</td></tr>
+<tr><td>LU0611173930-LU0626901861-LU0611173427_English_2011_UBS-Lux-Eq-SICAVGl-HDUSDP.pdf</td><td>42</td><td>41.30±1.51 (0.98±0.04 / page)</td><td>832.00±4.68 (19.81±0.11 / page)</td><td>847.74±8.20 (20.18±0.20 / page)</td><td>52.15±0.10 (1.24±0.00 / page)</td><td>443.30±396.66 (10.55±9.44 / page)</td></tr>
+<tr><td>GB00B94CTF25-GB00B39R2V77-GB00B39R2T55-GB00BK6MCK32-GB00B46J9127-GB00B39R2S49-GB00B39R2W84-GB00BK6MC.pdf</td><td>43</td><td>9.66±0.12 (0.22±0.00 / page)</td><td>67.85±0.31 (1.58±0.01 / page)</td><td>71.24±0.59 (1.66±0.01 / page)</td><td>12.84±0.06 (0.30±0.00 / page)</td><td>40.40±29.20 (0.94±0.68 / page)</td></tr>
+<tr><td>PRO_NFOF_eng_LU.pdf</td><td>43</td><td>10.14±0.10 (0.24±0.00 / page)</td><td>45.38±0.20 (1.06±0.00 / page)</td><td>48.32±0.15 (1.12±0.00 / page)</td><td>13.28±0.14 (0.31±0.00 / page)</td><td>29.28±17.64 (0.68±0.41 / page)</td></tr>
+<tr><td>LU1150262910-LU1150255971-LU1150259296_English_2015_BNPParibasIslamicFundHilalIncome.pdf</td><td>44</td><td>8.60±0.21 (0.20±0.00 / page)</td><td>48.44±0.66 (1.10±0.01 / page)</td><td>50.73±0.04 (1.15±0.00 / page)</td><td>11.46±0.16 (0.26±0.00 / page)</td><td>29.81±19.82 (0.68±0.45 / page)</td></tr>
+<tr><td>LU0073418229-LU0280479329_English_2010_BaringRussiaFundAUSD.pdf</td><td>46</td><td>7.36±0.23 (0.16±0.01 / page)</td><td>22.81±0.40 (0.50±0.01 / page)</td><td>24.59±0.05 (0.53±0.00 / page)</td><td>9.51±0.18 (0.21±0.00 / page)</td><td>16.07±7.70 (0.35±0.17 / page)</td></tr>
+<tr><td>ALGER_SICAV_LU0070176184_2012_X_P_X_X.pdf</td><td>46</td><td>7.56±0.15 (0.16±0.00 / page)</td><td>28.77±0.08 (0.63±0.00 / page)</td><td>30.85±0.05 (0.67±0.00 / page)</td><td>9.94±0.04 (0.22±0.00 / page)</td><td>19.28±10.59 (0.42±0.23 / page)</td></tr>
+<tr><td>LU0562934934-LU0289591256_English_2015_EastCapital-Lux-ChinaEnviron-.pdf</td><td>47</td><td>9.30±0.10 (0.20±0.00 / page)</td><td>29.55±0.50 (0.63±0.01 / page)</td><td>31.71±0.14 (0.67±0.00 / page)</td><td>12.00±0.04 (0.26±0.00 / page)</td><td>20.64±10.07 (0.44±0.21 / page)</td></tr>
+<tr><td>LU0346062424_English_2015_QuestCleantechBAcc.pdf</td><td>48</td><td>6.73±0.04 (0.14±0.00 / page)</td><td>23.13±0.44 (0.48±0.01 / page)</td><td>24.64±0.08 (0.51±0.00 / page)</td><td>8.55±0.03 (0.18±0.00 / page)</td><td>15.76±8.17 (0.33±0.17 / page)</td></tr>
+<tr><td>LU0145217120-LU0323243989_English_2015_ShareGold.pdf</td><td>50</td><td>7.32±0.05 (0.15±0.00 / page)</td><td>24.83±0.46 (0.50±0.01 / page)</td><td>26.25±0.11 (0.53±0.00 / page)</td><td>9.11±0.03 (0.18±0.00 / page)</td><td>16.88±8.70 (0.34±0.17 / page)</td></tr>
+<tr><td>LU0230834854-LU0486541344-LU0254675159-LU0230242686-LU0230242504_English_2015_RobecoFlex-o-.pdf</td><td>50</td><td>8.27±0.12 (0.17±0.00 / page)</td><td>34.55±0.80 (0.69±0.02 / page)</td><td>35.97±0.08 (0.72±0.00 / page)</td><td>10.66±0.11 (0.21±0.00 / page)</td><td>22.36±12.94 (0.45±0.26 / page)</td></tr>
+<tr><td>LU0144591038_English_2015_TurkisfundBondsI.pdf</td><td>53</td><td>7.34±0.01 (0.14±0.00 / page)</td><td>25.25±0.69 (0.48±0.01 / page)</td><td>26.66±0.04 (0.50±0.00 / page)</td><td>9.62±0.08 (0.18±0.00 / page)</td><td>17.22±8.80 (0.32±0.17 / page)</td></tr>
+<tr><td>LU0313364811-LU0313363508_English_2016_MultiM-AccessII-.pdf</td><td>54</td><td>8.65±0.02 (0.16±0.00 / page)</td><td>52.08±0.38 (0.96±0.01 / page)</td><td>54.52±0.20 (1.01±0.00 / page)</td><td>11.37±0.02 (0.21±0.00 / page)</td><td>31.65±21.69 (0.59±0.40 / page)</td></tr>
+<tr><td>LU0273373414_English_2010_GS-PFondsSchwellenlanderG.pdf</td><td>55</td><td>7.92±0.08 (0.14±0.00 / page)</td><td>27.93±0.10 (0.51±0.00 / page)</td><td>29.55±0.06 (0.54±0.00 / page)</td><td>9.76±0.05 (0.18±0.00 / page)</td><td>18.79±9.99 (0.34±0.18 / page)</td></tr>
+<tr><td>LU0244071956-LU0301247077-LU0301246772_English_2009_LTIF-Classic.pdf</td><td>55</td><td>7.65±0.24 (0.14±0.00 / page)</td><td>25.13±0.11 (0.46±0.00 / page)</td><td>26.88±0.13 (0.49±0.00 / page)</td><td>9.62±0.10 (0.17±0.00 / page)</td><td>17.32±8.73 (0.31±0.16 / page)</td></tr>
+<tr><td>LU0415391431-LU0415391514-LU0433847679-LU0415392249-LU0437409112-LU0513479948-LU0513479864-LU0433846606-LU0453818972-LU0631859575-LU0415391605-LU0415392751-LU0494761835-LU0453818899-LU0631859229_English_2011_BB.pdf</td><td>56</td><td>11.43±0.19 (0.20±0.00 / page)</td><td>76.86±0.07 (1.37±0.00 / page)</td><td>80.39±0.23 (1.44±0.00 / page)</td><td>14.92±0.08 (0.27±0.00 / page)</td><td>45.90±32.77 (0.82±0.59 / page)</td></tr>
+<tr><td>BSI-Multinvest_2015_X_P_X_A.pdf</td><td>57</td><td>10.28±0.24 (0.18±0.00 / page)</td><td>64.32±0.07 (1.13±0.00 / page)</td><td>67.12±0.08 (1.18±0.00 / page)</td><td>13.16±0.07 (0.23±0.00 / page)</td><td>38.72±27.04 (0.68±0.47 / page)</td></tr>
+<tr><td>Universe_The_CMI_Global_Network_Fund_2007_X_P_X_X.pdf</td><td>58</td><td>8.01±0.17 (0.14±0.00 / page)</td><td>34.83±0.06 (0.60±0.00 / page)</td><td>36.58±0.07 (0.63±0.00 / page)</td><td>9.86±0.02 (0.17±0.00 / page)</td><td>22.32±13.42 (0.38±0.23 / page)</td></tr>
+<tr><td>LU0066480616-LU0208183011_English_2012_ValartisRussianMarketFund.pdf</td><td>58</td><td>7.36±0.10 (0.13±0.00 / page)</td><td>25.37±0.09 (0.44±0.00 / page)</td><td>27.10±0.03 (0.47±0.00 / page)</td><td>9.30±0.07 (0.16±0.00 / page)</td><td>17.28±9.00 (0.30±0.16 / page)</td></tr>
+<tr><td>Henderson_Euroland_Fund_2012_X_P_X_A.pdf</td><td>63</td><td>16.30±0.46 (0.26±0.01 / page)</td><td>42.19±0.20 (0.67±0.00 / page)</td><td>47.49±0.10 (0.75±0.00 / page)</td><td>21.59±0.21 (0.34±0.00 / page)</td><td>31.90±13.22 (0.51±0.21 / page)</td></tr>
+<tr><td>DNB_FUND_LU0029375739_2014_X_P_X_X.pdf</td><td>65</td><td>9.67±0.13 (0.15±0.00 / page)</td><td>36.89±0.09 (0.57±0.00 / page)</td><td>38.82±0.11 (0.60±0.00 / page)</td><td>11.67±0.11 (0.18±0.00 / page)</td><td>24.26±13.63 (0.37±0.21 / page)</td></tr>
+<tr><td>Fidelity_Active_STrategy_LU1048814831_2016_X_P_X_A.pdf</td><td>65</td><td>11.67±0.30 (0.18±0.00 / page)</td><td>72.04±0.16 (1.11±0.00 / page)</td><td>74.20±0.11 (1.14±0.00 / page)</td><td>14.06±0.02 (0.22±0.00 / page)</td><td>42.99±30.15 (0.66±0.46 / page)</td></tr>
+<tr><td>LU0447610410-LU0931136328_English_2015_HSBCPortfoliosWorldSelect-1.pdf</td><td>66</td><td>9.96±0.09 (0.15±0.00 / page)</td><td>53.60±0.09 (0.81±0.00 / page)</td><td>55.72±0.08 (0.84±0.00 / page)</td><td>12.37±0.10 (0.19±0.00 / page)</td><td>32.91±21.78 (0.50±0.33 / page)</td></tr>
+<tr><td>SEB_SICAV_2_LU0086813762_2013_X_P_X_X.pdf</td><td>67</td><td>8.51±0.03 (0.13±0.00 / page)</td><td>69.62±0.12 (1.04±0.00 / page)</td><td>71.84±0.21 (1.07±0.00 / page)</td><td>10.98±0.05 (0.16±0.00 / page)</td><td>40.24±30.51 (0.60±0.46 / page)</td></tr>
+<tr><td>MainFirst_LU0152754726_2011_X_P_X_X.pdf</td><td>67</td><td>8.37±0.06 (0.12±0.00 / page)</td><td>36.39±0.10 (0.54±0.00 / page)</td><td>38.04±0.06 (0.57±0.00 / page)</td><td>10.29±0.09 (0.15±0.00 / page)</td><td>23.27±13.97 (0.35±0.21 / page)</td></tr>
+<tr><td>JULIUS_BAER_MULTIBOND_LU0189697427_2011_X_P_X_X.pdf</td><td>69</td><td>10.97±0.12 (0.16±0.00 / page)</td><td>56.18±0.07 (0.81±0.00 / page)</td><td>58.29±0.03 (0.84±0.00 / page)</td><td>13.39±0.06 (0.19±0.00 / page)</td><td>34.71±22.56 (0.50±0.33 / page)</td></tr>
+<tr><td>LU0012197231-LU0372412295-LU0012197314-LU0261938939-LU0261938004-LU0372412022-LU0100838696-LU0261938426-LU0372411990_English_2011_JBGlobalConvertBd-.pdf</td><td>69</td><td>11.03±0.17 (0.16±0.00 / page)</td><td>56.17±0.13 (0.81±0.00 / page)</td><td>58.29±0.07 (0.84±0.00 / page)</td><td>13.29±0.19 (0.19±0.00 / page)</td><td>34.70±22.56 (0.50±0.33 / page)</td></tr>
+<tr><td>LU0030165871_English_2014_SEBNordicFund.pdf</td><td>73</td><td>8.51±0.05 (0.12±0.00 / page)</td><td>41.51±0.09 (0.57±0.00 / page)</td><td>43.29±0.06 (0.59±0.00 / page)</td><td>10.43±0.04 (0.14±0.00 / page)</td><td>25.93±16.49 (0.36±0.23 / page)</td></tr>
+<tr><td>LU0212018807_English_2013_SFPCEuropeanPropertySecurities.pdf</td><td>74</td><td>10.64±0.10 (0.14±0.00 / page)</td><td>48.30±0.08 (0.65±0.00 / page)</td><td>50.26±0.08 (0.68±0.00 / page)</td><td>13.10±0.06 (0.18±0.00 / page)</td><td>30.57±18.74 (0.41±0.25 / page)</td></tr>
+<tr><td>Prospectus AXA IM Cash en_FCP.pdf</td><td>75</td><td>9.59±0.12 (0.13±0.00 / page)</td><td>36.29±0.13 (0.48±0.00 / page)</td><td>38.12±0.07 (0.51±0.00 / page)</td><td>11.63±0.02 (0.16±0.00 / page)</td><td>23.90±13.33 (0.32±0.18 / page)</td></tr>
+<tr><td>BE0946843266-BE0947250453-BE0133741752-BE0175280016-BE0175279976-BE0946844272-BE0175717504-BE0175479.pdf</td><td>76</td><td>9.39±0.03 (0.12±0.00 / page)</td><td>91.41±0.17 (1.20±0.00 / page)</td><td>93.36±0.14 (1.23±0.00 / page)</td><td>11.83±0.01 (0.16±0.00 / page)</td><td>51.50±40.90 (0.68±0.54 / page)</td></tr>
+<tr><td>LU0026740844-LU0026740760-LU0099389313_English_2011_JBEuro-FocusEUR.pdf</td><td>77</td><td>12.95±0.04 (0.17±0.00 / page)</td><td>61.40±0.11 (0.80±0.00 / page)</td><td>64.12±0.08 (0.83±0.00 / page)</td><td>15.64±0.13 (0.20±0.00 / page)</td><td>38.53±24.27 (0.50±0.32 / page)</td></tr>
+<tr><td>LU0529497777-LU0529498072-LU0529497934-LU0529497850-LU0529497694-LU0529498239-LU0529498155-LU0529498742-LU0529497421-LU0529498825-LU0529498668_English_2011_JBAbso-ReturnEuro-Eq-.pdf</td><td>78</td><td>13.60±0.14 (0.17±0.00 / page)</td><td>62.68±0.15 (0.80±0.00 / page)</td><td>65.44±0.08 (0.84±0.00 / page)</td><td>16.33±0.04 (0.21±0.00 / page)</td><td>39.51±24.59 (0.51±0.32 / page)</td></tr>
+<tr><td>BDLCM-Funds-Prospectus-VISA-28042020.pdf</td><td>79</td><td>12.40±0.11 (0.16±0.00 / page)</td><td>118.46±0.33 (1.50±0.00 / page)</td><td>121.09±0.07 (1.53±0.00 / page)</td><td>15.45±0.06 (0.20±0.00 / page)</td><td>66.85±52.95 (0.85±0.67 / page)</td></tr>
+<tr><td>1.9.900555.pdf</td><td>82</td><td>14.74±0.17 (0.18±0.00 / page)</td><td>57.43±0.48 (0.70±0.01 / page)</td><td>60.15±0.08 (0.73±0.00 / page)</td><td>17.85±0.11 (0.22±0.00 / page)</td><td>37.54±21.30 (0.46±0.26 / page)</td></tr>
+<tr><td>LU0302081707-LU0267827326-LU0363285338-LU0494360927-LU0419264733-LU0232040708-LU0363285411-LU0363286658-LU0363286732-LU0363285767-LU0302080998-LU0232043801-LU0232043124-LU0267829611-LU0494361065_English_2013_WIOF.pdf</td><td>84</td><td>10.84±0.03 (0.13±0.00 / page)</td><td>117.39±0.63 (1.40±0.01 / page)</td><td>118.98±0.18 (1.42±0.00 / page)</td><td>13.49±0.08 (0.16±0.00 / page)</td><td>65.17±53.02 (0.78±0.63 / page)</td></tr>
+<tr><td>MARCH_INTERNATIONAL_2015_X_P_X_X.pdf</td><td>85</td><td>11.28±0.02 (0.13±0.00 / page)</td><td>49.33±0.66 (0.58±0.01 / page)</td><td>51.06±0.06 (0.60±0.00 / page)</td><td>13.58±0.03 (0.16±0.00 / page)</td><td>31.31±18.91 (0.37±0.22 / page)</td></tr>
+<tr><td>GB00BR4R5445-GB00BR4R5551-GB0033772624_English_2016_DimensionalEm.pdf</td><td>85</td><td>11.83±0.18 (0.14±0.00 / page)</td><td>123.81±1.81 (1.46±0.02 / page)</td><td>125.51±0.36 (1.48±0.00 / page)</td><td>14.69±0.07 (0.17±0.00 / page)</td><td>68.96±55.72 (0.81±0.66 / page)</td></tr>
+<tr><td>LU0028051117_English_2014_CMIUKEquityFundDC2.pdf</td><td>87</td><td>10.95±0.14 (0.13±0.00 / page)</td><td>45.25±0.36 (0.52±0.00 / page)</td><td>46.93±0.11 (0.54±0.00 / page)</td><td>12.74±0.06 (0.15±0.00 / page)</td><td>28.97±17.14 (0.33±0.20 / page)</td></tr>
+<tr><td>LU0146081418-LU0028047438-LU0129306311_English_2014_CMIUSEnhancedEquityDC.pdf</td><td>87</td><td>10.90±0.19 (0.13±0.00 / page)</td><td>45.67±0.95 (0.52±0.01 / page)</td><td>46.99±0.23 (0.54±0.00 / page)</td><td>12.81±0.10 (0.15±0.00 / page)</td><td>29.09±17.26 (0.33±0.20 / page)</td></tr>
+<tr><td>Arabesque_SICAV_LU1023698662_2016_X_P_X_A.pdf</td><td>87</td><td>11.61±0.26 (0.13±0.00 / page)</td><td>96.20±0.57 (1.11±0.01 / page)</td><td>98.38±0.17 (1.13±0.00 / page)</td><td>14.17±0.07 (0.16±0.00 / page)</td><td>55.09±42.22 (0.63±0.49 / page)</td></tr>
+<tr><td>LU1151059737-LU1151057954_English_2015_RICHELIEUB--Richelieu2020.pdf</td><td>89</td><td>13.42±0.24 (0.15±0.00 / page)</td><td>124.81±0.28 (1.40±0.00 / page)</td><td>127.68±0.09 (1.43±0.00 / page)</td><td>16.38±0.04 (0.18±0.00 / page)</td><td>70.57±55.69 (0.79±0.63 / page)</td></tr>
+<tr><td>LU0477234263-LU0466397824_English_2015_R.pdf</td><td>89</td><td>13.40±0.21 (0.15±0.00 / page)</td><td>124.77±0.32 (1.40±0.00 / page)</td><td>127.57±0.28 (1.43±0.00 / page)</td><td>16.54±0.05 (0.19±0.00 / page)</td><td>70.57±55.62 (0.79±0.62 / page)</td></tr>
+<tr><td>LU1139920265-LU1125674611-LU1125674538-LU1125674967-LU1125674454-LU1125674702_English_2015_EastCapital-Lux-FrontierM.pdf</td><td>92</td><td>14.09±0.13 (0.15±0.00 / page)</td><td>118.30±0.58 (1.29±0.01 / page)</td><td>120.39±0.18 (1.31±0.00 / page)</td><td>17.11±0.11 (0.19±0.00 / page)</td><td>67.48±51.89 (0.73±0.56 / page)</td></tr>
+<tr><td>MAGALLANES_VALUE_INVESTORS_UCITS_LU1330191542_2016_X_P_X_X.pdf</td><td>93</td><td>10.52±0.16 (0.11±0.00 / page)</td><td>51.99±0.24 (0.56±0.00 / page)</td><td>53.63±0.11 (0.58±0.00 / page)</td><td>12.49±0.11 (0.13±0.00 / page)</td><td>32.16±20.67 (0.35±0.22 / page)</td></tr>
+<tr><td>DEMOGRAPHIC_CHANGE_2018_X_P_X_X.pdf</td><td>95</td><td>11.88±0.22 (0.13±0.00 / page)</td><td>48.95±0.21 (0.52±0.00 / page)</td><td>50.97±0.16 (0.54±0.00 / page)</td><td>13.97±0.08 (0.15±0.00 / page)</td><td>31.44±18.55 (0.33±0.20 / page)</td></tr>
+<tr><td>UNK_English_UNK_LFIS-Vision-UCITS.pdf</td><td>97</td><td>11.34±0.05 (0.12±0.00 / page)</td><td>57.55±0.35 (0.59±0.00 / page)</td><td>59.22±0.10 (0.61±0.00 / page)</td><td>13.37±0.04 (0.14±0.00 / page)</td><td>35.37±23.03 (0.36±0.24 / page)</td></tr>
+<tr><td colspan="2" onclick="HideFiles(this)">average (per page)</td><td>0.19±0.13</td><td>1.14±2.43</td><td>1.19±2.48</td><td>0.24±0.16</td><td>0.69±1.80</td></tr>
+</table>
+</details>
+<details open>
+<summary>7 FinTOC 2022 (en, 100-500 pages) (21 files)</summary>
+<table>
+<tr><th rowspan="2">Filename</th><th rowspan="2">Pages</th><th colspan="5">pdf_with_text_layer</th></tr>
+<tr><th>tabby</th><th>true</th><th>auto</th><th>auto_tabby</th><th>average</th></tr>
+<tr><td>Dexia_Equities_L_2011_X_P_X_X.pdf</td><td>100</td><td>10.98±0.09 (0.11±0.00 / page)</td><td>69.44±0.06 (0.69±0.00 / page)</td><td>71.54±0.15 (0.72±0.00 / page)</td><td>13.23±0.09 (0.13±0.00 / page)</td><td>41.30±29.21 (0.41±0.29 / page)</td></tr>
+<tr><td>Lombard_Odier_Funds_2014_X_P_X_X.pdf</td><td>104</td><td>15.49±0.04 (0.15±0.00 / page)</td><td>101.54±0.07 (0.98±0.00 / page)</td><td>104.63±0.25 (1.01±0.00 / page)</td><td>18.61±0.14 (0.18±0.00 / page)</td><td>60.07±43.04 (0.58±0.41 / page)</td></tr>
+<tr><td>LU0881817786-LU0881818081-LU0881817430-LU0881817190_English_2014_OddoBondsHighYieldEurope.pdf</td><td>107</td><td>13.42±0.04 (0.13±0.00 / page)</td><td>254.76±0.21 (2.38±0.00 / page)</td><td>258.69±0.44 (2.42±0.00 / page)</td><td>16.88±0.19 (0.16±0.00 / page)</td><td>135.94±120.80 (1.27±1.13 / page)</td></tr>
+<tr><td>LU0800341645-LU0800341132-LU0800341991-LU0800341215-LU0800341058-LU0800341488-LU0800341306_English_2012_FranklinBrazilOpportunities.pdf</td><td>110</td><td>17.99±0.08 (0.16±0.00 / page)</td><td>97.31±0.10 (0.88±0.00 / page)</td><td>101.53±0.17 (0.92±0.00 / page)</td><td>21.57±0.16 (0.20±0.00 / page)</td><td>59.60±39.87 (0.54±0.36 / page)</td></tr>
+<tr><td>Prospectus-2016-02-01.pdf</td><td>110</td><td>13.12±0.13 (0.12±0.00 / page)</td><td>78.04±0.17 (0.71±0.00 / page)</td><td>80.75±0.08 (0.73±0.00 / page)</td><td>15.37±0.07 (0.14±0.00 / page)</td><td>46.82±32.60 (0.43±0.30 / page)</td></tr>
+<tr><td>LU1252823262-LU0482498846-LU0482498762-LU0955861710-LU0955867758-LU0955867915-LU0432616810-LU0607521506-LU0955867832-LU0482498176-LU0955861983-LU0955861801-LU0432616901_English_2013_InvescoBalanced-RiskAlloc-.pdf</td><td>113</td><td>18.53±0.06 (0.16±0.00 / page)</td><td>88.26±0.28 (0.78±0.00 / page)</td><td>92.13±0.34 (0.82±0.00 / page)</td><td>21.98±0.15 (0.19±0.00 / page)</td><td>55.23±35.02 (0.49±0.31 / page)</td></tr>
+<tr><td>LU0949250459-LU0645132902-LU0229041164-LU0390138864-LU0188151251-LU0543370943-LU0195951883-LU0152904719-LU0188151095-LU0543370513-LU0889566138-LU0229948244-LU0229948087-LU0122613572-LU0229949648_English_2012_Franklin.pdf</td><td>116</td><td>22.53±0.59 (0.19±0.01 / page)</td><td>306.84±0.41 (2.65±0.00 / page)</td><td>314.77±1.15 (2.71±0.01 / page)</td><td>28.40±0.08 (0.24±0.00 / page)</td><td>168.13±142.71 (1.45±1.23 / page)</td></tr>
+<tr><td>LU1057354992_English_2016_EchiquierEuropeanBondsAEUR.pdf</td><td>118</td><td>14.77±0.09 (0.13±0.00 / page)</td><td>96.58±0.11 (0.82±0.00 / page)</td><td>99.78±0.10 (0.85±0.00 / page)</td><td>17.49±0.24 (0.15±0.00 / page)</td><td>57.15±41.05 (0.48±0.35 / page)</td></tr>
+<tr><td>LU0641972152-LU0641972079_English_2015_DBPWMIGlobalAllocationTracker-.pdf</td><td>121</td><td>14.30±0.03 (0.12±0.00 / page)</td><td>485.43±0.30 (4.01±0.00 / page)</td><td>488.98±0.44 (4.04±0.00 / page)</td><td>17.63±0.10 (0.15±0.00 / page)</td><td>251.58±235.63 (2.08±1.95 / page)</td></tr>
+<tr><td>FU_BF097_EN_2019-05-13_a5585d06-b4df-4b1e-bf30-3c1b5615cf74.pdf</td><td>122</td><td>15.64±0.04 (0.13±0.00 / page)</td><td>125.95±0.16 (1.03±0.00 / page)</td><td>129.33±0.20 (1.06±0.00 / page)</td><td>18.40±0.02 (0.15±0.00 / page)</td><td>72.33±55.33 (0.59±0.45 / page)</td></tr>
+<tr><td>LU0705072691-LU0705072345-LU0705072188_English_2015_RAM-LUX-Long-Sh-EmergingMarktesEq-.pdf</td><td>125</td><td>19.43±0.11 (0.16±0.00 / page)</td><td>321.80±0.30 (2.57±0.00 / page)</td><td>328.51±0.47 (2.63±0.00 / page)</td><td>24.03±0.35 (0.19±0.00 / page)</td><td>173.44±151.74 (1.39±1.21 / page)</td></tr>
+<tr><td>LU0309082104-LU0309082799-LU0309082369_English_2015_DNCAInvest-Infrastructures.pdf</td><td>134</td><td>14.62±0.06 (0.11±0.00 / page)</td><td>219.02±0.44 (1.63±0.00 / page)</td><td>223.57±0.30 (1.67±0.00 / page)</td><td>17.44±0.10 (0.13±0.00 / page)</td><td>118.66±102.65 (0.89±0.77 / page)</td></tr>
+<tr><td>LU0462973008-LU0512124362_English_2015_DNCAInvestMiura.pdf</td><td>134</td><td>14.52±0.03 (0.11±0.00 / page)</td><td>218.86±0.45 (1.63±0.00 / page)</td><td>223.51±0.23 (1.67±0.00 / page)</td><td>17.49±0.09 (0.13±0.00 / page)</td><td>118.60±102.61 (0.89±0.77 / page)</td></tr>
+<tr><td>LU0375979613-LU0375979290_English_2015_GISDyn-ControlPFCo.pdf</td><td>136</td><td>18.45±0.02 (0.14±0.00 / page)</td><td>222.75±0.19 (1.64±0.00 / page)</td><td>227.47±0.23 (1.67±0.00 / page)</td><td>22.13±0.09 (0.16±0.00 / page)</td><td>122.70±102.43 (0.90±0.75 / page)</td></tr>
+<tr><td>LU0289452210_English_2015_DBPWMIIGISUSEquityPortfolioB.pdf</td><td>136</td><td>18.27±0.35 (0.13±0.00 / page)</td><td>83.28±0.08 (0.61±0.00 / page)</td><td>87.35±0.07 (0.64±0.00 / page)</td><td>21.63±0.12 (0.16±0.00 / page)</td><td>52.63±32.73 (0.39±0.24 / page)</td></tr>
+<tr><td>LU0424369923-LU0424369766-LU0114314536-LU0063949068-LU0686792812-LU0061927850-LU0686794354_English_2013_ManConvertibles.pdf</td><td>147</td><td>21.73±0.03 (0.15±0.00 / page)</td><td>496.84±0.96 (3.38±0.01 / page)</td><td>504.14±0.97 (3.43±0.01 / page)</td><td>26.09±0.17 (0.18±0.00 / page)</td><td>262.20±238.31 (1.78±1.62 / page)</td></tr>
+<tr><td>LU0575375588-LU0493852429-LU0261074230-LU0640453774-LU0860716223-LU0575374698-LU0493865678-LU0860715415-LU0493851454-LU0160485420-LU0493867534-LU0860716140-LU0953070868-LU0956110364-LU0688432862_English_2016_AshmoreS.pdf</td><td>181</td><td>21.72±0.16 (0.12±0.00 / page)</td><td>137.00±0.14 (0.76±0.00 / page)</td><td>140.50±0.07 (0.78±0.00 / page)</td><td>24.88±0.06 (0.14±0.00 / page)</td><td>81.02±57.75 (0.45±0.32 / page)</td></tr>
+<tr><td>HSBC_Global_Investment_Funds_2017_X_P_X_A.pdf</td><td>250</td><td>32.34±0.19 (0.13±0.00 / page)</td><td>246.00±0.49 (0.98±0.00 / page)</td><td>250.83±0.46 (1.00±0.00 / page)</td><td>36.65±0.21 (0.15±0.00 / page)</td><td>141.46±106.98 (0.57±0.43 / page)</td></tr>
+<tr><td>LU0178440839-LU0178439401-LU0178439310-LU0178439666_English_2012_AllianzBestSty-Eu-Eq-.pdf</td><td>285</td><td>34.42±0.19 (0.12±0.00 / page)</td><td>256.92±0.54 (0.90±0.00 / page)</td><td>261.52±0.22 (0.92±0.00 / page)</td><td>36.69±0.19 (0.13±0.00 / page)</td><td>147.39±111.85 (0.52±0.39 / page)</td></tr>
+<tr><td>LU0589944569-LU0348788117-LU1156968403-LU1254141333-LU0348791418_English_2011_AllianzEm-AsiaEq-.pdf</td><td>285</td><td>33.59±0.59 (0.12±0.00 / page)</td><td>256.60±0.34 (0.90±0.00 / page)</td><td>261.08±0.47 (0.92±0.00 / page)</td><td>37.69±0.27 (0.13±0.00 / page)</td><td>147.24±111.62 (0.52±0.39 / page)</td></tr>
+<tr><td>LU0734574329-LU0734574162-LU0333227550-LU0333226230-LU0571576585-LU1039626509-LU0333227394-LU0333226826-LU0734574246-LU0333227048_English_2015_ML.pdf</td><td>405</td><td>49.15±0.53 (0.12±0.00 / page)</td><td>2917.33±9.87 (7.20±0.02 / page)</td><td>2930.59±2.55 (7.24±0.01 / page)</td><td>56.62±0.52 (0.14±0.00 / page)</td><td>1488.42±1435.56 (3.68±3.54 / page)</td></tr>
+<tr><td colspan="2" onclick="HideFiles(this)">average (per page)</td><td>0.13±0.02</td><td>1.77±1.54</td><td>1.80±1.54</td><td>0.16±0.03</td><td>0.97±1.36</td></tr>
+</table>
+</details>
+</body>
+</html>
