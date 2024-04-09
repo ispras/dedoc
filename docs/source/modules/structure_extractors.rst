@@ -52,3 +52,9 @@ dedoc.structure_extractors
     :members:
 
     .. autoattribute:: document_type
+
+.. autoclass:: dedoc.structure_extractors.ArticleStructureExtractor
+    :show-inheritance:
+    :members:
+
+    .. autoattribute:: document_type
