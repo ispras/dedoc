@@ -6,6 +6,7 @@ class TestArticleApi(AbstractTestApiDocReader):
     def test_article(self) -> None:
         file_name = "pdf_with_text_layer/article.pdf"
         result = self._send_request(file_name, dict(document_type="article"))
+        self.assertEqual(result["warnings"], ["use GROBID (version: 0.8.0)"])
 
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)

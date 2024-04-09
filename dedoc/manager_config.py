@@ -59,7 +59,7 @@ def _get_manager_config(config: dict) -> dict:
         BinaryConverter(config=config)
     ]
     readers = [
-        ArticleReader(config=config, grobid_url="http://localhost:8070"),  # https://grobid.readthedocs.io/en/latest/Grobid-service/
+        ArticleReader(config=config),
         DocxReader(config=config),
         ExcelReader(config=config),
         PptxReader(config=config),

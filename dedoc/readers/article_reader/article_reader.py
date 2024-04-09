@@ -1,3 +1,5 @@
+import os
+import time
 from typing import Dict, List, Optional, Tuple
 
 import requests
@@ -18,20 +20,31 @@ class ArticleReader(BaseReader):
        This class is used for parsing article pdf documents with .pdf extension using GROBID system.
        """
 
-    def __init__(self, config: dict, grobid_url: str) -> None:
+    def __init__(self, config: dict) -> None:
         super().__init__(config=config)
-        self.url = grobid_url + "/api/processFulltextDocument"
-        self.grobid_is_alive = self.__check_grobid_alive(grobid_url, max_attempts=2)
+        self.grobid_url = f"http://{os.environ.get('GROBID_HOST', 'localhost')}:{os.environ.get('GROBID_PORT', '8070')}"
+        self.url = self.grobid_url + "/api/processFulltextDocument"
+        self.grobid_is_alive = False
+        self.__update_grobid_alive(self.grobid_url, max_attempts=3)
 
-    def __check_grobid_alive(self, grobid_url: str, max_attempts: int = 2) -> bool:
+    def __update_grobid_alive(self, grobid_url: str, max_attempts: int = 2) -> None:
+        if self.grobid_is_alive:
+            return
+
         attempt = max_attempts
         while attempt > 0:
-            response = requests.get(grobid_url + "/api/isalive")
-            if response.status_code == 200:
-                return True
+            try:
+                response = requests.get(grobid_url + "/api/isalive")
+                if response.status_code == 200:
+                    self.logger.info(f"GROBID up on {grobid_url}.")
+                    self.grobid_is_alive = True
+                    return
+            except requests.exceptions.ConnectionError as ex:
+                self.logger.warning(f"GROBID doesn't response. Check GROBID service on {self.url}. Exception' msg: {ex}")
+            time.sleep(5)
             attempt -= 1
-        self.logger.warning(f"GROBID doesn't response. Check GROBID service on {self.url}")
-        return False
+
+        self.grobid_is_alive = False
 
     @staticmethod
     def __get_tag_by_hierarchy_path(source: Tag, hierarchy_path: List[str]) -> Optional[str]:
@@ -306,7 +319,16 @@ class ArticleReader(BaseReader):
         """
         with open(file_path, "rb") as file:
             files = {"input": file}
-            response = requests.post(self.url, files=files)
+            try:
+                response = requests.post(self.url, files=files)
+                if response.status_code != 200:
+                    warning = f"GROBID returns code {response.status_code}."
+                    self.logger.warning(warning)
+                    return UnstructuredDocument(tables=[], lines=[], attachments=[], warnings=[warning])
+            except requests.exceptions.ConnectionError as ex:
+                warning = f"GROBID doesn't response. Check GROBID service on {self.url}. Exception' msg: {ex}"
+                self.logger.warning(warning)
+                return UnstructuredDocument(tables=[], lines=[], attachments=[], warnings=[warning])
 
             soup = BeautifulSoup(response.text, features="lxml")
             lines = self.__parse_title(soup)
@@ -321,7 +343,7 @@ class ArticleReader(BaseReader):
             lines += self.__parse_text(soup, bib2uid, table2uid)
             lines.extend(bib_lines)
 
-            return UnstructuredDocument(tables=tables, lines=lines, attachments=[])
+            return UnstructuredDocument(tables=tables, lines=lines, attachments=[], warnings=["use GROBID (version: 0.8.0)"])
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
@@ -331,11 +353,15 @@ class ArticleReader(BaseReader):
             * GROBID service is running on port 8070;
             Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        if get_param_document_type(parameters) != "article":
+            return False
+
+        self.__update_grobid_alive(self.grobid_url, max_attempts=1)
         if not self.grobid_is_alive:
             return False
 
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         if not (mime in recognized_mimes.pdf_like_format or extension.lower() == ".pdf"):
             return False
-
-        return get_param_document_type(parameters) == "article"
+        else:
+            return True

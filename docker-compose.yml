@@ -12,10 +12,13 @@ services:
       - 1231:1231
     environment:
       DOCREADER_PORT: 1231
+      GROBID_HOST: "grobid"
+      GROBID_PORT: 8070
 
 
   test:
     depends_on:
+      - grobid
       - dedoc
     build:
       context: .
@@ -24,6 +27,8 @@ services:
     environment:
       DOC_READER_HOST: "dedoc"
       DOCREADER_PORT: 1231
+      GROBID_HOST: "grobid"
+      GROBID_PORT: 8070
       is_test: $test
       PYTHONPATH: $PYTHONPATH:/dedoc_root/tests:/dedoc_root
     command:
