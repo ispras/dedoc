@@ -1,7 +1,7 @@
-from dedoc.data_structures.annotation import Annotation
+from dedoc.data_structures import LinkedTextAnnotation
 
 
-class BibliographyAnnotation(Annotation):
+class BibliographyAnnotation(LinkedTextAnnotation):
     """
     This annotation indicate the place of the bibliography (\\cite) in the original document.
     The line containing this annotation is placed directly before the referred bibliography.
@@ -13,9 +13,10 @@ class BibliographyAnnotation(Annotation):
         }
         ...
         node:{
-            text: 97cfac39-f0e3-11ee-b81c-b88584b4e4a1,
+            text: "",
             metadata: {
                 paragraph_type: "bibliography_item",
+                "uid": "97cfac39-f0e3-11ee-b81c-b88584b4e4a1",
                 ...
             }
             subparagraphs: [...]
@@ -29,4 +30,4 @@ class BibliographyAnnotation(Annotation):
         :param start: start of the annotated text (usually zero)
         :param end: end of the annotated text (usually end of the line)
         """
-        super().__init__(start=start, end=end, name=BibliographyAnnotation.name, value=name, is_mergeable=False)
+        super().__init__(start=start, end=end, value=name)

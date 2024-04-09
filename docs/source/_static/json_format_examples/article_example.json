@@ -1,0 +1,69 @@
+{
+  "node_id": "0.0",
+  "text": "",
+  "metadata": {
+    "paragraph_type": "author",
+     ...
+  },
+  "subparagraphs": [
+    {
+      "node_id": "0.0.0",
+      "text": "Sonia",
+      "metadata": {
+        "paragraph_type": "author_first_name",
+        ...
+      },
+      "subparagraphs": []
+    },
+    {
+      "node_id": "0.0.1",
+      "text": "Belaïd",
+      "metadata": {
+        "paragraph_type": "author_surname",
+        ...
+      },
+      "subparagraphs": []
+    },
+    {
+      "node_id": "0.0.2",
+      "text": "aff0",
+      "metadata": {
+        "paragraph_type": "author_affiliation",
+        ...
+        },
+      "subparagraphs": [
+        {
+          "node_id": "0.0.2.0",
+          "text": "École Normale Supérieure",
+          "metadata": {
+            "paragraph_type": "org_name",
+            ...
+          },
+          "subparagraphs": []
+        }
+      ]
+    },
+    {
+      "node_id": "0.0.3",
+      "text": "aff1",
+      "metadata": {
+        "paragraph_type": "author_affiliation",
+        ...
+      },
+      "subparagraphs": [
+        {
+          "node_id": "0.0.3.0",
+          "text": "Thales Communications & Security",
+          "metadata": {
+            "paragraph_type": "org_name",
+            ...
+          },
+          "subparagraphs": []
+        }
+      // ...
+    ]
+    // ...
+    }
+    // ...
+  ]
+}

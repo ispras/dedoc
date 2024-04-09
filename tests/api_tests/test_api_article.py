@@ -50,7 +50,7 @@ class TestArticleApi(AbstractTestApiDocReader):
         self.assertEqual("471-488", self._get_by_tree_path(tree, "0.20.0.6")["text"])
 
         # check cite on bib_item
-        bibliography_item_uuid = self._get_by_tree_path(tree, "0.20.57")["text"]  # checking on [58] references
+        bibliography_item_uuid = self._get_by_tree_path(tree, "0.20.57")["metadata"]["uid"]  # checking on [58] references
         section = self._get_by_tree_path(tree, "0.4.0")
         bibliography_refs_in_text = [ann for ann in section["annotations"] if ann["name"] == "bibliography_ref" and ann["value"] == bibliography_item_uuid]
         # We must found two refs [58] in Introduction section

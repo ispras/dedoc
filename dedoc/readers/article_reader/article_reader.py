@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import requests
 from bs4 import BeautifulSoup, Tag
@@ -9,15 +9,29 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes
 from dedoc.readers.base_reader import BaseReader
+from dedoc.utils.parameter_utils import get_param_document_type
 from dedoc.utils.utils import get_mime_extension
 
 
 class ArticleReader(BaseReader):
+    """
+       This class is used for parsing article pdf documents with .pdf extension using GROBID system.
+       """
 
     def __init__(self, config: dict, grobid_url: str) -> None:
-        super().__init__()
-        self.url = grobid_url
-        self.config = config
+        super().__init__(config=config)
+        self.url = grobid_url + "/api/processFulltextDocument"
+        self.grobid_is_alive = self.__check_grobid_alive(grobid_url, max_attempts=2)
+
+    def __check_grobid_alive(self, grobid_url: str, max_attempts: int = 2) -> bool:
+        attempt = max_attempts
+        while attempt > 0:
+            response = requests.get(grobid_url + "/api/isalive")
+            if response.status_code == 200:
+                return True
+            attempt -= 1
+        self.logger.warning(f"GROBID doesn't response. Check GROBID service on {self.url}")
+        return False
 
     @staticmethod
     def __get_tag_by_hierarchy_path(source: Tag, hierarchy_path: List[str]) -> Optional[str]:
@@ -32,7 +46,9 @@ class ArticleReader(BaseReader):
 
     @staticmethod  # TODO check on improve
     def __create_line(text: str, hierarchy_level_id: Optional[int] = None, paragraph_type: Optional[str] = None,
-                      annotations: Optional[List[Annotation]] = None) -> LineWithMeta:
+                      annotations: Optional[List[Annotation]] = None, other_fields: Optional[Dict] = None) -> LineWithMeta:
+        if other_fields is None:
+            other_fields = {}
         assert text is not None
         assert isinstance(text, str)
 
@@ -41,19 +57,18 @@ class ArticleReader(BaseReader):
         else:
             hierarchy_level = HierarchyLevel(level_1=hierarchy_level_id, level_2=0, can_be_multiline=False, line_type=paragraph_type)
 
-        return LineWithMeta(line=text, metadata=LineMetadata(page_id=0, line_id=0, tag_hierarchy_level=hierarchy_level), annotations=annotations)
+        return LineWithMeta(line=text,
+                            metadata=LineMetadata(page_id=0, line_id=0, tag_hierarchy_level=hierarchy_level, other_fields=other_fields),
+                            annotations=annotations)
 
     def __parse_affiliation(self, affiliation_tag: Tag) -> List[LineWithMeta]:
         lines = [self.__create_line(text=affiliation_tag.get("key"), hierarchy_level_id=2, paragraph_type="author_affiliation")]
 
-        org_name = ArticleReader.__get_tag_by_hierarchy_path(affiliation_tag, ["orgname"])
-        if org_name:
-            lines.append(self.__create_line(text=org_name, hierarchy_level_id=3, paragraph_type="org_name"))
+        if affiliation_tag.orgname:
+            lines.append(self.__create_line(text=self.__tag2text(affiliation_tag.orgname), hierarchy_level_id=3, paragraph_type="org_name"))
 
-        # TODO add org's address
-        """org_name = ArticleReader.__get_tag_by_hierarchy_path(affiliation_tag, ["address"])
-        if org_name:
-            lines.append(self.__create_line(text=org_name, hierarchy_level_id=4, paragraph_type="org_name"))"""
+        if affiliation_tag.address:
+            lines.append(self.__create_line(text=affiliation_tag.address.text, hierarchy_level_id=3, paragraph_type="address"))
 
         return lines
 
@@ -92,7 +107,7 @@ class ArticleReader(BaseReader):
             lines.append(self.__create_line(text=surname, hierarchy_level_id=2, paragraph_type="author_surname"))
 
         lines += [
-            self.__create_line(text=email.get_text(), hierarchy_level_id=3, paragraph_type="author")
+            self.__create_line(text=email.get_text(), hierarchy_level_id=3, paragraph_type="email")
             for email in author_tag.find_all("email") if email
         ]
 
@@ -123,17 +138,25 @@ class ArticleReader(BaseReader):
         return self.__create_line(text=text, hierarchy_level_id=None, paragraph_type=None, annotations=annotations)
 
     def __parse_text(self, soup: Tag, bib2uid: dict, table2uid: dict) -> List[LineWithMeta]:
+        """
+        Example of section XML tag:
+        <div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.1">Preprocessing</head><p>...</p><p>...</p></div>
+        """
         lines = []
 
         abstract = soup.find("abstract").p
-        abstract = "" if abstract is None or abstract.string is None else abstract.string
-        lines.append(self.__create_line(text=abstract, hierarchy_level_id=1, paragraph_type="abstract"))
+        lines.append(self.__create_line(text="Abstract", hierarchy_level_id=1, paragraph_type="abstract"))
+        lines.append(self.__create_line(text=self.__tag2text(abstract)))
 
         for text in soup.find_all("text"):
             for part in text.find_all("div"):
+                # TODO: Beautifulsoup don't read <head> tags from input XML file. WTF!
+                #       As a result we lose section number in text (see example above)
+                #       Need to fix this in the future.
+                number = part.head.get("n") + " " if part.head else ""
                 line_text = str(part.contents[0]) if len(part.contents) > 0 else None
                 if line_text is not None and len(line_text) > 0:
-                    lines.append(self.__create_line(text=line_text, hierarchy_level_id=1, paragraph_type="section"))
+                    lines.append(self.__create_line(text=number + line_text, hierarchy_level_id=1, paragraph_type="section"))
                 for subpart in part.find_all("p"):
                     if subpart.string is not None:
                         lines.append(self.__create_line_with_refs(subpart.string, bib2uid, table2uid))
@@ -155,17 +178,17 @@ class ArticleReader(BaseReader):
             <ref type="table" target="#tab_0">1</ref>
             ...
             Table Example:
-            '<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0">' \
-            '<head>Table 1 .</head>'
-            '<label>1</label>'
-            '<figDesc>Performance of some illustrative AES implementations.</figDesc>'
-            '<table>'
-            '<row><cell>Software (8-bit)</cell><cell>code size</cell><cell>cycle</cell><cell>cost</cell><cell>physical</cell></row>'
-            '<row><cell>Implementations</cell><cell>(bytes)</cell><cell>count</cell><cell>function</cell><cell>assumptions</cell></row>'
-            '<row><cell>Unprotected [13]</cell><cell>1659</cell><cell>4557</cell><cell>7.560</cell><cell>-</cell></row>'
-            ...
-            </table>
-            </figure>
+                <figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0">
+                <head>Table 1 .</head>
+                <label>1</label>
+                <figDesc>Performance of some illustrative AES implementations.</figDesc>
+                <table>
+                <row><cell>Software (8-bit)</cell><cell>code size</cell><cell>cycle</cell><cell>cost</cell><cell>physical</cell></row>
+                <row><cell>Implementations</cell><cell>(bytes)</cell><cell>count</cell><cell>function</cell><cell>assumptions</cell></row>
+                <row><cell>Unprotected [13]</cell><cell>1659</cell><cell>4557</cell><cell>7.560</cell><cell>-</cell></row>
+                ...
+                </table>
+                </figure>
         """
         tables = []
         table2uid = {}
@@ -183,6 +206,34 @@ class ArticleReader(BaseReader):
         return tables, table2uid
 
     def __parse_bibliography(self, soup: Tag) -> Tuple[List[LineWithMeta], dict]:
+        """
+        Reference Example:
+            <ref type="bibr" target="#b5">[6]</ref>
+            ...
+            <listBibl>
+            <biblStruct xml:id="b0">
+                <analytic>
+                    <title level="a" type="main">Leakage-resilient symmetric encryption via re-keying</title>
+                    <author>
+                        <persName><forename type="first">Michel</forename><surname>Abdalla</surname></persName>
+                    </author>
+                    <author>
+                        <persName><forename type="first">Sonia</forename><surname>Belaïd</surname></persName>
+                    </author>
+                    <author>
+                        <persName><forename type="first">Pierre-Alain</forename><surname>Fouque</surname></persName>
+                    </author>
+                </analytic>
+                <monogr>
+                    <title level="m">Bertoni and Coron</title>
+                    <imprint>
+                        <biblScope unit="volume">4</biblScope>
+                        <biblScope unit="page" from="471" to="488" />
+                    </imprint>
+                </monogr>
+            </biblStruct>
+            <biblStruct xml:id="b1">
+        """
         lines = []
         cites = {}  # bib_item_grobid_uid: line_uid
 
@@ -201,12 +252,13 @@ class ArticleReader(BaseReader):
         # parse bibliography items
         for bib_item in bib_items:
             cites["#" + bib_item.get("xml:id")] = lines[-1].uid
-            lines.append(self.__create_line(text=lines[-1].uid, hierarchy_level_id=2, paragraph_type="bibliography_item"))
+            lines.append(self.__create_line(text="", hierarchy_level_id=2, paragraph_type="bibliography_item", other_fields={"uid": lines[-1].uid}))
 
             # parse bib title
             for title in bib_item.find_all("title", recursive=True):
-                paragraph_type = level_2_paragraph_type[title.get("level")]
-                lines.append(self.__create_line(text=self.__tag2text(title), hierarchy_level_id=3, paragraph_type=paragraph_type))
+                if title.get("level"):
+                    paragraph_type = level_2_paragraph_type[title.get("level")]
+                    lines.append(self.__create_line(text=self.__tag2text(title), hierarchy_level_id=3, paragraph_type=paragraph_type))
 
             lines += [  # parse bib authors
                 self.__create_line(text=author.get_text(), hierarchy_level_id=3, paragraph_type="author")
@@ -243,6 +295,15 @@ class ArticleReader(BaseReader):
         return [self.__create_line(text=self.__tag2text(soup.title), hierarchy_level_id=0, paragraph_type="root")]
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        The method calls the service GROBID method /api/processFulltextDocument and analyzes the result (format XML/TEI) of the recognized article
+        using beautifulsoup library.
+        As a result, the method fills the class :class:`~dedoc.data_structures.UnstructuredDocument`.
+        The method puts in the result class information about authors/lists of literature/sections/tables.
+        You can find more information about the extracted information from GROBID system on the page :ref:`article_structure`.
+
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+        """
         with open(file_path, "rb") as file:
             files = {"input": file}
             response = requests.post(self.url, files=files)
@@ -263,53 +324,18 @@ class ArticleReader(BaseReader):
             return UnstructuredDocument(tables=tables, lines=lines, attachments=[])
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        """
+            Check if:
+            * the document extension is suitable for this reader (.pdf);
+            * parameter "document_type" is "article";
+            * GROBID service is running on port 8070;
+            Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        """
+        if not self.grobid_is_alive:
+            return False
 
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         if not (mime in recognized_mimes.pdf_like_format or extension.lower() == ".pdf"):
             return False
 
-        parameters = {} if parameters is None else parameters
-        return parameters.get("document_type", "") == "article"
-
-
-"""
-    LinkedTextAnnotation:
-    -----------------------------------------------
-    Figure Reference Example:
-    <ref type="figure" target="#fig_12">13</ref>
-    ...
-    Figure Example:
-    '<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12">
-    <head>Fig. 13 .</head>F
-    <label>13</label>
-    <figDesc>Fig. 13. DPA-based security graphs for KHT * 2 /f =1 (left) and repeating attacks (right).</figDesc>
-    <graphic coords="24,131.14,538.99,181.26,103.17" type="bitmap" />
-    </figure>
-     -----------------------------------------------
-    Reference Example:
-    <ref type="bibr" target="#b5">[6]</ref>
-    ...
-    <listBibl>
-    <biblStruct xml:id="b0">
-        <analytic>
-            <title level="a" type="main">Leakage-resilient symmetric encryption via re-keying</title>
-            <author>
-                <persName><forename type="first">Michel</forename><surname>Abdalla</surname></persName>
-            </author>
-            <author>
-                <persName><forename type="first">Sonia</forename><surname>Belaïd</surname></persName>
-            </author>
-            <author>
-                <persName><forename type="first">Pierre-Alain</forename><surname>Fouque</surname></persName>
-            </author>
-        </analytic>
-        <monogr>
-            <title level="m">Bertoni and Coron</title>
-            <imprint>
-                <biblScope unit="volume">4</biblScope>
-                <biblScope unit="page" from="471" to="488" />
-            </imprint>
-        </monogr>
-    </biblStruct>
-    <biblStruct xml:id="b1">
-"""
+        return get_param_document_type(parameters) == "article"
