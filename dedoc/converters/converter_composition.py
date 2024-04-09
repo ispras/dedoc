@@ -29,7 +29,7 @@ class ConverterComposition(object):
         :param parameters: parameters of converting, see :ref:`parameters_description` for more details
         :return: path of converted file if conversion was executed else path of the original file
         """
-        extension, mime = get_mime_extension(file_path=file_path)
+        mime, extension = get_mime_extension(file_path=file_path)
         converted_file_path = file_path
 
         for converter in self.converters:

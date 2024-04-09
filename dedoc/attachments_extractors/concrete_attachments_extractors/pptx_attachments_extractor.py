@@ -22,7 +22,7 @@ class PptxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
         """
         Checks if this extractor can get attachments from the document (it should have .pptx extension)
         """
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in recognized_extensions.pptx_like_format or mime in recognized_mimes.pptx_like_format
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:

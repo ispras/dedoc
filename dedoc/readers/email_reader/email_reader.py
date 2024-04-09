@@ -33,7 +33,7 @@ class EmailReader(BaseReader):
         Check if the document extension or mime is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return file_path.lower().endswith(".eml") or mime == "message/rfc822"
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:

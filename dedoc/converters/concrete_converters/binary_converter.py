@@ -23,7 +23,7 @@ class BinaryConverter(AbstractConverter):
         """
         Checks if the document is image-like (e.g. it has .bmp, .jpg, .tiff, etc. extension) and has `mime=application/octet-stream`.
         """
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return mime == "application/octet-stream" and extension in supported_image_types
 
     def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:

@@ -47,7 +47,7 @@ class PdfAutoReader(BaseReader):
         It is recommended to use `pdf_with_text_layer=auto_tabby` because it's faster and allows to get better results.
         You can look to :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         if not (mime in recognized_mimes.pdf_like_format or extension.lower() == ".pdf"):
             return False
 
