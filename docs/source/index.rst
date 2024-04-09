@@ -255,6 +255,7 @@ For a document of unknown or unsupported domain there is an option to use defaul
    structure_types/law
    structure_types/tz
    structure_types/diploma
+   structure_types/article
 
 
 .. toctree::

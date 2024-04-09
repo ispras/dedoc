@@ -73,3 +73,7 @@ dedoc.readers
 .. autoclass:: dedoc.readers.RawTextReader
     :show-inheritance:
     :members:
+
+.. autoclass:: dedoc.readers.ArticleReader
+    :show-inheritance:
+    :members:

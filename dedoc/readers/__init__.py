@@ -1,4 +1,5 @@
 from .archive_reader.archive_reader import ArchiveReader
+from .article_reader.article_reader import ArticleReader
 from .base_reader import BaseReader
 from .csv_reader.csv_reader import CSVReader
 from .docx_reader.docx_reader import DocxReader
@@ -17,6 +18,6 @@ from .pptx_reader.pptx_reader import PptxReader
 from .reader_composition import ReaderComposition
 from .txt_reader.raw_text_reader import RawTextReader
 
-__all__ = ['ArchiveReader', 'BaseReader', 'CSVReader', 'DocxReader', 'EmailReader', 'ExcelReader', 'HtmlReader', 'JsonReader', 'MhtmlReader',
+__all__ = ['ArchiveReader', 'ArticleReader', 'BaseReader', 'CSVReader', 'DocxReader', 'EmailReader', 'ExcelReader', 'HtmlReader', 'JsonReader', 'MhtmlReader',
            'NoteReader', 'PptxReader', 'ReaderComposition', 'RawTextReader',
            'PdfBaseReader', 'PdfImageReader', 'PdfTabbyReader', 'PdfTxtlayerReader', 'PdfAutoReader']
