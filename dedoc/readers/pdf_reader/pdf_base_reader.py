@@ -131,7 +131,7 @@ class PdfBaseReader(BaseReader):
 
         prev_line = None
         for line in all_lines_with_links:
-            line.metadata.tag_hierarchy_level = DefaultStructureExtractor.get_list_hl_with_regexp(line, prev_line)
+            line.metadata.tag_hierarchy_level = DefaultStructureExtractor.get_hl_list_using_regexp(line, prev_line)
             prev_line = line
 
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)

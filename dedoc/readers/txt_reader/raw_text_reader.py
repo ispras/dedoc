@@ -70,7 +70,7 @@ class RawTextReader(BaseReader):
             indent_annotation = self.__get_indent_annotation(line)
 
             line_with_meta = LineWithMeta(line=line, metadata=metadata, annotations=[spacing_annotation, indent_annotation], uid=uid)
-            line_with_meta.metadata.tag_hierarchy_level = DefaultStructureExtractor.get_list_hl_with_regexp(line_with_meta, prev_line)
+            line_with_meta.metadata.tag_hierarchy_level = DefaultStructureExtractor.get_hl_list_using_regexp(line_with_meta, prev_line)
             prev_line = line_with_meta
             lines.append(line_with_meta)
 

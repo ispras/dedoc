@@ -264,7 +264,7 @@ class PdfTabbyReader(PdfBaseReader):
             return HierarchyLevel(1, header_level, False, line_type)
 
         if line_type == "litem":  # TODO automatic list depth and merge list items from multiple lines
-            return DefaultStructureExtractor.get_list_hl_with_regexp(line, prev_line)
+            return DefaultStructureExtractor.get_hl_list_using_regexp(line, prev_line)
 
         return HierarchyLevel(None, None, True, line_type)
 

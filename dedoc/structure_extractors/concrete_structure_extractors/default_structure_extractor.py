@@ -35,7 +35,7 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
                 line.metadata.tag_hierarchy_level = HierarchyLevel.create_unknown()
 
             if line.metadata.tag_hierarchy_level.line_type == HierarchyLevel.unknown:
-                line.metadata.hierarchy_level = self.get_list_hl_with_regexp(line, previous_line)
+                line.metadata.hierarchy_level = self.get_hl_list_using_regexp(line, previous_line)
             else:
                 line.metadata.hierarchy_level = self.__get_hl_with_tag(line)
 
@@ -61,7 +61,7 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
         return line.metadata.tag_hierarchy_level
 
     @staticmethod
-    def get_list_hl_with_regexp(line: LineWithMeta, previous_line: Optional[LineWithMeta]) -> HierarchyLevel:
+    def get_hl_list_using_regexp(line: LineWithMeta, previous_line: Optional[LineWithMeta]) -> HierarchyLevel:
         prefix = get_prefix(DefaultStructureExtractor.prefix_list, line)
 
         # TODO dotted list without space after numbering, like "1.Some text"
