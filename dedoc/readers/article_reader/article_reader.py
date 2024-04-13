@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup, Tag
 
 from dedoc.data_structures import Annotation, CellWithMeta, HierarchyLevel, LineMetadata, Table, TableAnnotation, TableMetadata
-from dedoc.data_structures.concrete_annotations.bibliography_annotation import BibliographyAnnotation
+from dedoc.data_structures.concrete_annotations.reference_annotation import ReferenceAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes
@@ -17,15 +17,73 @@ from dedoc.utils.utils import get_mime_extension
 
 class ArticleReader(BaseReader):
     """
-       This class is used for parsing article pdf documents with .pdf extension using GROBID system.
-       """
+    This class is used for parsing article pdf documents with .pdf extension using `GROBID <https://grobid.readthedocs.io/en/latest/>`_ system.
+    """
 
     def __init__(self, config: dict) -> None:
         super().__init__(config=config)
         self.grobid_url = f"http://{os.environ.get('GROBID_HOST', 'localhost')}:{os.environ.get('GROBID_PORT', '8070')}"
-        self.url = self.grobid_url + "/api/processFulltextDocument"
+        self.url = f"{self.grobid_url}/api/processFulltextDocument"
         self.grobid_is_alive = False
-        self.__update_grobid_alive(self.grobid_url, max_attempts=3)
+        self.__update_grobid_alive(self.grobid_url, max_attempts=config.get("grobid_max_connection_attempts", 3))
+
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        """
+        The method calls the service GROBID method ``/api/processFulltextDocument`` and analyzes the result (format XML/TEI) of the recognized article
+        using beautifulsoup library.
+        As a result, the method fills the class :class:`~dedoc.data_structures.UnstructuredDocument`.
+        The method puts in the result class information about ``authors``/``lists of literature``/``sections``/``tables``.
+        You can find more information about the extracted information from GROBID system on the page :ref:`article_structure`.
+
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
+        """
+        with open(file_path, "rb") as file:
+            files = {"input": file}
+            try:
+                response = requests.post(self.url, files=files)
+                if response.status_code != 200:
+                    warning = f"GROBID returns code {response.status_code}."
+                    self.logger.warning(warning)
+                    return UnstructuredDocument(tables=[], lines=[], attachments=[], warnings=[warning])
+            except requests.exceptions.ConnectionError as ex:
+                warning = f"GROBID doesn't response. Check GROBID service on {self.url}. Exception' msg: {ex}"
+                self.logger.warning(warning)
+                return UnstructuredDocument(tables=[], lines=[], attachments=[], warnings=[warning])
+
+            soup = BeautifulSoup(response.text, features="lxml")
+            lines = self.__parse_title(soup)
+
+            if soup.biblstruct is not None:
+                authors = soup.biblstruct.find_all("author")
+                lines += [line for author in authors for line in self.__parse_author(author)]
+
+            bib_lines, bib2uid = self.__parse_bibliography(soup)
+            tables, table2uid = self.__parse_tables(soup)
+
+            lines += self.__parse_text(soup, bib2uid, table2uid)
+            lines.extend(bib_lines)
+
+            return UnstructuredDocument(tables=tables, lines=lines, attachments=[], warnings=["use GROBID (version: 0.8.0)"])
+
+    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
+        """
+        Check if:
+
+        * the document extension is suitable for this reader (.pdf);
+        * parameter "document_type" is "article";
+        * GROBID service is running on port 8070.
+
+        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
+        """
+        if get_param_document_type(parameters) != "article":
+            return False
+
+        self.__update_grobid_alive(self.grobid_url, max_attempts=1)
+        if not self.grobid_is_alive:
+            return False
+
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        return mime in recognized_mimes.pdf_like_format and extension.lower() == ".pdf"
 
     def __update_grobid_alive(self, grobid_url: str, max_attempts: int = 2) -> None:
         if self.grobid_is_alive:
@@ -34,20 +92,19 @@ class ArticleReader(BaseReader):
         attempt = max_attempts
         while attempt > 0:
             try:
-                response = requests.get(grobid_url + "/api/isalive")
+                response = requests.get(f"{grobid_url}/api/isalive")
                 if response.status_code == 200:
                     self.logger.info(f"GROBID up on {grobid_url}.")
                     self.grobid_is_alive = True
                     return
             except requests.exceptions.ConnectionError as ex:
-                self.logger.warning(f"GROBID doesn't response. Check GROBID service on {self.url}. Exception' msg: {ex}")
+                self.logger.warning(f"GROBID doesn't response. Check GROBID service on {self.url}. Exception's msg: {ex}")
             time.sleep(5)
             attempt -= 1
 
         self.grobid_is_alive = False
 
-    @staticmethod
-    def __get_tag_by_hierarchy_path(source: Tag, hierarchy_path: List[str]) -> Optional[str]:
+    def __get_tag_by_hierarchy_path(self, source: Tag, hierarchy_path: List[str]) -> Optional[str]:
         cur_tag = source
         for path_item in hierarchy_path:
             cur_tag = cur_tag.find(path_item)
@@ -57,9 +114,9 @@ class ArticleReader(BaseReader):
 
         return ArticleReader.__tag2text(cur_tag)
 
-    @staticmethod  # TODO check on improve
-    def __create_line(text: str, hierarchy_level_id: Optional[int] = None, paragraph_type: Optional[str] = None,
+    def __create_line(self, text: str, hierarchy_level_id: Optional[int] = None, paragraph_type: Optional[str] = None,
                       annotations: Optional[List[Annotation]] = None, other_fields: Optional[Dict] = None) -> LineWithMeta:
+        # TODO check on improve
         if other_fields is None:
             other_fields = {}
         assert text is not None
@@ -139,7 +196,7 @@ class ArticleReader(BaseReader):
                 target = subpart.get("target")
                 sub_text = subpart.string
                 if subpart.get("type") == "bibr" and target in bib2uid:
-                    annotations.append(BibliographyAnnotation(name=bib2uid[target], start=start, end=start + len(sub_text)))
+                    annotations.append(ReferenceAnnotation(value=bib2uid[target], start=start, end=start + len(sub_text)))
                 if subpart.get("type") == "table" and target in table2uid:
                     annotations.append(TableAnnotation(name=table2uid[target], start=start, end=start + len(sub_text)))
             else:
@@ -163,7 +220,7 @@ class ArticleReader(BaseReader):
 
         for text in soup.find_all("text"):
             for part in text.find_all("div"):
-                # TODO: Beautifulsoup don't read <head> tags from input XML file. WTF!
+                # TODO: Beautifulsoup doesn't read <head> tags from input XML file. WTF!
                 #       As a result we lose section number in text (see example above)
                 #       Need to fix this in the future.
                 number = part.head.get("n") + " " if part.head else ""
@@ -173,9 +230,8 @@ class ArticleReader(BaseReader):
                 for subpart in part.find_all("p"):
                     if subpart.string is not None:
                         lines.append(self.__create_line_with_refs(subpart.string, bib2uid, table2uid))
-                    else:
-                        if subpart.contents and len(subpart.contents) > 0:
-                            lines.append(self.__create_line_with_refs(subpart.contents, bib2uid, table2uid))
+                    elif subpart.contents and len(subpart.contents) > 0:
+                        lines.append(self.__create_line_with_refs(subpart.contents, bib2uid, table2uid))
 
         return lines
 
@@ -306,62 +362,3 @@ class ArticleReader(BaseReader):
 
     def __parse_title(self, soup: Tag) -> List[LineWithMeta]:
         return [self.__create_line(text=self.__tag2text(soup.title), hierarchy_level_id=0, paragraph_type="root")]
-
-    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
-        """
-        The method calls the service GROBID method /api/processFulltextDocument and analyzes the result (format XML/TEI) of the recognized article
-        using beautifulsoup library.
-        As a result, the method fills the class :class:`~dedoc.data_structures.UnstructuredDocument`.
-        The method puts in the result class information about authors/lists of literature/sections/tables.
-        You can find more information about the extracted information from GROBID system on the page :ref:`article_structure`.
-
-        Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
-        """
-        with open(file_path, "rb") as file:
-            files = {"input": file}
-            try:
-                response = requests.post(self.url, files=files)
-                if response.status_code != 200:
-                    warning = f"GROBID returns code {response.status_code}."
-                    self.logger.warning(warning)
-                    return UnstructuredDocument(tables=[], lines=[], attachments=[], warnings=[warning])
-            except requests.exceptions.ConnectionError as ex:
-                warning = f"GROBID doesn't response. Check GROBID service on {self.url}. Exception' msg: {ex}"
-                self.logger.warning(warning)
-                return UnstructuredDocument(tables=[], lines=[], attachments=[], warnings=[warning])
-
-            soup = BeautifulSoup(response.text, features="lxml")
-            lines = self.__parse_title(soup)
-
-            if soup.biblstruct is not None:
-                authors = soup.biblstruct.find_all("author")
-                lines += [line for author in authors for line in self.__parse_author(author)]
-
-            bib_lines, bib2uid = self.__parse_bibliography(soup)
-            tables, table2uid = self.__parse_tables(soup)
-
-            lines += self.__parse_text(soup, bib2uid, table2uid)
-            lines.extend(bib_lines)
-
-            return UnstructuredDocument(tables=tables, lines=lines, attachments=[], warnings=["use GROBID (version: 0.8.0)"])
-
-    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
-        """
-            Check if:
-            * the document extension is suitable for this reader (.pdf);
-            * parameter "document_type" is "article";
-            * GROBID service is running on port 8070;
-            Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
-        """
-        if get_param_document_type(parameters) != "article":
-            return False
-
-        self.__update_grobid_alive(self.grobid_url, max_attempts=1)
-        if not self.grobid_is_alive:
-            return False
-
-        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        if not (mime in recognized_mimes.pdf_like_format or extension.lower() == ".pdf"):
-            return False
-        else:
-            return True

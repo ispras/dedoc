@@ -1,35 +1,51 @@
 .. _article_structure:
 
 Article structure type (GROBID)
-======================================
+===============================
 
 This structure type is used for scientific article analysis using `GROBID <https://github.com/kermitt2/grobid>`_ system.
 
+    .. note::
+
+        If you want to use this structure extractor, you should run GROBID service via Docker (or see `grobid running instruction <https://grobid.readthedocs.io/en/latest/Run-Grobid/>`_).
+        In case you use dedoc as a library or a separate Docker image (without docker-compose).
+
+        .. code-block:: shell
+
+            docker run --rm --init --ulimit core=0 -p 8070:8070 lfoppiano/grobid:0.8.0
+
 We analyze the recognition results from GROBID. The following types of objects are included in the resulting tree:
 
-    * Article's title;
-    * Authors with their affiliations to organizations and emails;
-    * Article's sections (for example `Abstract`, `Introduction`, .., `Conclusion` etc);
-    * Tables and their content;
-    * Bibliography;
-    * References on tables and bibliography in the text of the article;
+    * article's title;
+    * authors with their affiliations to organizations and emails;
+    * article's sections headers (for example `Abstract`, `Introduction`, .., `Conclusion` etc);
+    * tables and their content;
+    * bibliography;
+    * references on tables and bibliography items.
 
-.. note::
+There are the following line types in the article structure type:
 
-    In case you use dedoc as a library. You should up GROBID service via Docker (or see `grobid install instruction <https://grobid.readthedocs.io/en/latest/Run-Grobid/>`_):
+    * ``root``;
+    * ``author`` has (``author_first_name``, ``author_surname``, ``email``);
+    * ``author_affiliation`` includes (``org_name``, ``address``);
+    * ``abstract``;
+    * ``section``;
+    * ``bibliography``;
+    * ``bibliography_item`` includes ( [``title`` | ``title_journal`` | ``title_series`` | ``title_conference_proceedings``], ``author``, ``biblScope_volume``, ``biblScope_pages``, ``DOI``, ``publisher``, ``date``);
+    * ``raw_text``.
 
-    .. code-block:: shell
 
-        docker run --rm --init --ulimit core=0 -p 8070:8070 lfoppiano/grobid:0.8.0
+You can see the :download:`example  <../_static/structure_examples/article.pdf>` of the document of this structure type.
+This page provides examples of analysis of this article.
 
-Below is a description of the extracted data in the output tree (description of node):
+Below is a description of nodes in the output tree (description of node):
 
     * **root**: node containing the text of the article title.
 
         There is only one root node in any document.
-        It is obligatory for any document of diploma type.
+        It is obligatory for any document of article type.
         All other document lines are children of the root node.
-        We take the title's text from GROBID's TEI-XML path tag ``<title>``:
+        We take the title's text from GROBID's TEI-XML path tag <title>:
 
         .. code-block:: XML
 
@@ -40,6 +56,15 @@ Below is a description of the extracted data in the output tree (description of 
             </titleStmt>
 
     * **author**: author information.
+
+        ``author`` nodes are children of the node ``root``. This type of node has subnodes.
+
+        * ``author_first_name`` - <persname> tag in GROBID's output. The node doesn`t have children nodes.
+        * ``author_surname`` - <surname> tag in GROBID's output. The node doesn`t have children nodes.
+        * ``email`` - author's email, <email> tag in GROBID's output. The node doesn`t have children nodes.
+        * ``author_affiliation`` - author affiliation description.
+
+
         GROBID's TEI-XML <author>'s name information
 
         .. code-block:: XML
@@ -53,22 +78,21 @@ Below is a description of the extracted data in the output tree (description of 
             ...
             </author>
 
-        GROBID's TEI-XML ``<author>``'s affiliation information according the affiliation `description <https://grobid.readthedocs.io/en/latest/training/affiliation-address/>`_ :
+        GROBID's TEI-XML tag <author><affiliation> information according the affiliation `description <https://grobid.readthedocs.io/en/latest/training/affiliation-address/>`_ :
 
         .. code-block:: XML
 
             <author>    // -> node.paragraph_type="author"
             ...
-            <affiliation key="aff0"> // -> node.paragraph_type="author_affiliation"
-                <orgname type="institution">École Normale Supérieure</orgname> // -> node.paragraph_type="org_name"
+            <affiliation key="aff2">        // -> node.paragraph_type="author_affiliation"
+                <orgName type="department">ICTEAM/ELEN/Crypto Group</orgName>       // -> node.paragraph_type="org_name"
+                <orgName type="institution">Université catholique de Louvain</orgName>
                 <address>
-                    <addrline>45 rue dUlm</addrline>
-                    <postcode>75005</postcode>
-                    <settlement>Paris</settlement>
+                    <country key="BE">Belgium</country>
                 </address>
             </affiliation>
 
-        The result of parsing the second author of the article:
+        The result of parsing of the second author of the article:
 
         ..  example of "node_id": "0.1"
 
@@ -76,11 +100,40 @@ Below is a description of the extracted data in the output tree (description of 
             :language: json
             :lines: 125-198
 
+    * **author_affiliation**: Author's affiliation description.
 
-    * **bibliography** is the article's bibliography list which contains **bibliography_item** nodes.
+        ``author_affiliation`` nodes are children of the node ``author``.
+        This type of node has subnodes.
+
+        * ``org_name`` - organization description, <orgname> tag in GROBID's output. The node doesn`t have children nodes.
+        * ``address`` - organization address, <address> tag in GROBID's output. The node doesn`t have children nodes.
+
+    * **abstract** is the article's abstract section (<abstract> tag in GROBID's output).
+
+    * **section**: node of article section (for example "Introduction", "Conclusion", "V Experiments ..." etc.).
+
+        This type of node has a subnode ``raw_text``.
+        ``section`` nodes are children of a node ``root``.
+
+    * **bibliography** is the article's bibliography list which contains only **bibliography_item** nodes.
+
+    * **bibliography_item** is the article's bibliography item description.
+
+        ``bibliography_item`` nodes are children of the node ``bibliography``.
+        This type of node has subnodes.
+
+        * ``title`` or ``title_journal`` or ``title_series`` or ``title_conference_proceedings``- name of the bibliography item (title description we can see below. The node doesn`t have children nodes.
+        * ``author`` - bibliography author name, <address> tag in GROBID's output. The node doesn`t have children nodes.
+        * ``biblScope_volume`` - volume name, <biblScope unit="volume">4</biblScope> tag in GROBID's output. The node doesn`t have children nodes.
+        * ``biblScope_pages`` - volume name, <biblScope unit="page" from="471" to="488" /> tag in GROBID's output. The node doesn`t have children nodes.
+        * ``DOI`` - bibliography DOI name, <idno> tag in GROBID's output. The node doesn`t have children nodes.
+        * ``publisher`` - bibliography DOI name, <publisher> tag in GROBID's output. The node doesn`t have children nodes.
+        * ``date`` - publication date, <date> tag in GROBID's output. The node doesn`t have children nodes.
+
+
 
         There is GROBID's TEI-XML <bibliography>'s item information description `here <https://grobid.readthedocs.io/en/latest/training/Bibliographical-references/>`_ .
-        We parse GROBID's biblStruct and create bibliography item node. Example of GROBID's biblStruct:
+        We parse GROBID's biblStruct and create a bibliography item node. Example of GROBID's biblStruct:
 
         .. code-block:: XML
 
@@ -108,15 +161,16 @@ Below is a description of the extracted data in the output tree (description of 
                 </biblStruct>
                 <biblStruct xml:id="b1">
 
-    We set paragraph_type of the title according tag level in GROBID, according `title level's description <https://grobid.readthedocs.io/en/latest/training/Bibliographical-references/>`_:
+        We set paragraph_type of the title according the tag level in GROBID (see `title level's description <https://grobid.readthedocs.io/en/latest/training/Bibliographical-references/>`_):
+
         * for ``<title><level="a">`` set the ``parapgraph_type="title"`` for article title or chapter title (but not thesis, see below). Here "a" stands for analytics (a part of a monograph)
         * for ``<title><level="j">`` set the ``parapgraph_type="title_journal"`` for journal title
         * for ``<title><level="s">`` set the ``parapgraph_type="title_series"`` for series title (e.g. "Lecture Notes in Computer Science")
         * for ``<title><level="m">`` set the ``parapgraph_type="title_conference_proceedings"`` for non journal bibliographical item holding the cited article, e.g. conference proceedings title. Note if a book is cited, the title of the book is annotated with ``<title level="m">``
 
-    We present bibliographymitem as the node with fields paragraph_type="bibliography_item" and unique id ``"uid"="uuid"``
-    All bibliography_item nodes are children of the bibliography node.
-    The example of the bibliography item parsing of the article in dedoc:
+        We present a bibliography item as the node with fields paragraph_type="bibliography_item" and unique id ``"uid"="uuid"``
+        All bibliograph item nodes are children of the bibliography node.
+        The example of the bibliography item parsing of the article in dedoc:
 
         .. example of "node_id": "0.20.5"
 
@@ -125,7 +179,7 @@ Below is a description of the extracted data in the output tree (description of 
             :lines: 1745-1880
 
 
-    * **Bibliography references**: We added bibliography references into annotations of the article's text.
+    * **bibliography references**: We added bibliography references into annotations of the article's text.
 
         Text can contain references on bibliography_item nodes.
         (for example, "Authors in [5] describe an approach ...". Here "[5]" is the reference).
@@ -153,13 +207,6 @@ Below is a description of the extracted data in the output tree (description of 
         .. literalinclude:: ../_static/json_format_examples/article_example.json
             :language: json
             :lines: 7501-7513
-
-    * **body**: node containing the rest of the document content.
-
-        There is only one body node in any document.
-        It is obligatory for any document of technical specification type.
-        This is an auxiliary node with empty text, it is nested in the root node along with a table of contents (toc node).
-        All of the rest document lines (except root and toc) are children of the body node.
 
     * **raw_text**: node referring to a simple document line.
 
