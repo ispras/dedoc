@@ -168,11 +168,11 @@ class ArticleReader(BaseReader):
         """
         lines = [self.__create_line(text="", hierarchy_level_id=1, paragraph_type="author")]
 
-        first_name = ArticleReader.__get_tag_by_hierarchy_path(author_tag, ["persname", "forename"])
+        first_name = self.__get_tag_by_hierarchy_path(author_tag, ["persname", "forename"])
         if first_name:
             lines.append(self.__create_line(text=first_name, hierarchy_level_id=2, paragraph_type="author_first_name"))
 
-        surname = ArticleReader.__get_tag_by_hierarchy_path(author_tag, ["persname", "surname"])
+        surname = self.__get_tag_by_hierarchy_path(author_tag, ["persname", "surname"])
         if surname:
             lines.append(self.__create_line(text=surname, hierarchy_level_id=2, paragraph_type="author_surname"))
 

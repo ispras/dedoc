@@ -63,6 +63,10 @@ class TestArticleApi(AbstractTestApiDocReader):
         table = result["content"]["tables"][0]
         self.assertEqual(table["metadata"]["title"], "Table 1 .Performance of some illustrative AES implementations.")
         self.assertEqual(self._get_text_of_row(table["cells"][0]), ["Software (8-bit)", "code size", "cycle", "cost", "physical"])
+        section_with_table_refs = self._get_by_tree_path(tree, "0.7.0")
+        table_refs_in_text = [ann for ann in section_with_table_refs["annotations"] if ann["name"] == "table" and ann["value"] == table["metadata"]["uid"]]
+        self.assertEqual(len(table_refs_in_text), 2)
+        self.assertEqual(["1", "1"], [section_with_table_refs["text"][table_refs_in_text[n]["start"]:table_refs_in_text[n]["end"]] for n in range(2)])
 
         table = result["content"]["tables"][1]  # Grobid can't recognize vertical orientation tables
         self.assertEqual(table["metadata"]["title"], "Table 2 .List of our target implementations.")
