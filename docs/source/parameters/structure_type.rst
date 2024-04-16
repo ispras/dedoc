@@ -30,7 +30,7 @@ Structure type configuring
               In this case, :class:`~dedoc.structure_extractors.TzStructureExtractor` is used.
             * **diploma** -- Russian thesis (:ref:`diploma_structure`)
               In this case, :class:`~dedoc.structure_extractors.DiplomaStructureExtractor` is used.
-            * **article**  -- Research article (:ref:`article_structure`)
+            * **article**  -- scientific article (:ref:`article_structure`)
               In this case, :class:`~dedoc.readers.ArticleReader` and :class:`~dedoc.structure_extractors.ArticleStructureExtractor` are used.
 
         If you use your custom configuration, look to the documentation of :class:`~dedoc.structure_extractors.StructureExtractorComposition`

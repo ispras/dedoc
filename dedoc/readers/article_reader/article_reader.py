@@ -17,22 +17,23 @@ from dedoc.utils.utils import get_mime_extension
 
 class ArticleReader(BaseReader):
     """
-    This class is used for parsing article pdf documents with .pdf extension using `GROBID <https://grobid.readthedocs.io/en/latest/>`_ system.
+    This class is used for parsing scientific articles with .pdf extension using `GROBID <https://grobid.readthedocs.io/en/latest/>`_ system.
     """
 
-    def __init__(self, config: dict) -> None:
+    def __init__(self, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
         self.grobid_url = f"http://{os.environ.get('GROBID_HOST', 'localhost')}:{os.environ.get('GROBID_PORT', '8070')}"
         self.url = f"{self.grobid_url}/api/processFulltextDocument"
         self.grobid_is_alive = False
-        self.__update_grobid_alive(self.grobid_url, max_attempts=config.get("grobid_max_connection_attempts", 3))
+        self.__update_grobid_alive(self.grobid_url, max_attempts=self.config.get("grobid_max_connection_attempts", 3))
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method calls the service GROBID method ``/api/processFulltextDocument`` and analyzes the result (format XML/TEI) of the recognized article
         using beautifulsoup library.
         As a result, the method fills the class :class:`~dedoc.data_structures.UnstructuredDocument`.
-        The method puts in the result class information about ``authors``/``lists of literature``/``sections``/``tables``.
+        Article reader adds additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
+        The method extracts information about ``authors``, ``bibliography items``, ``sections``, and ``tables``.
         You can find more information about the extracted information from GROBID system on the page :ref:`article_structure`.
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.

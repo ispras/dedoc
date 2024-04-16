@@ -80,9 +80,9 @@ Api parameters description
             * **law** -- Russian laws (:ref:`law_structure`);
             * **tz** -- Russian technical specifications (:ref:`tz_structure`);
             * **diploma** -- Russian thesis (:ref:`diploma_structure`);
-            * **article** -- Research article (:ref:`article_structure`).
+            * **article** -- scientific article (:ref:`article_structure`).
 
-        This type is used for choosing a specific structure extractor (in some cases of specific reader selection).
+        This type is used for choosing a specific structure extractor (and, in some cases, a specific reader).
 
     * - structure_type
       - tree, linear

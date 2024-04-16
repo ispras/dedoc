@@ -1,7 +1,7 @@
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
-class TestArticleApi(AbstractTestApiDocReader):
+class TestApiArticle(AbstractTestApiDocReader):
 
     def test_article(self) -> None:
         file_name = "pdf_with_text_layer/article.pdf"
