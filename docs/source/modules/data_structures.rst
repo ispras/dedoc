@@ -116,6 +116,12 @@ Concrete annotations
 
     .. autoattribute:: name
 
+.. autoclass:: dedoc.data_structures.ReferenceAnnotation
+    :show-inheritance:
+    :special-members: __init__
+
+    .. autoattribute:: name
+
 .. autoclass:: dedoc.data_structures.BBoxAnnotation
     :show-inheritance:
     :special-members: __init__

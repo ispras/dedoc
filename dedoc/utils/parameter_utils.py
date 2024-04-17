@@ -19,11 +19,24 @@ def get_param_language(parameters: Optional[dict]) -> str:
     return language
 
 
+def get_param_document_type(parameters: Optional[dict]) -> str:
+    if parameters is None:
+        return "other"
+    document_type = str(parameters.get("document_type", "other")).lower()
+    return document_type
+
+
 def get_param_orient_analysis_cells(parameters: Optional[dict]) -> bool:
     if parameters is None:
         return False
     orient_analysis_cells = str(parameters.get("orient_analysis_cells", "False")).lower() == "true"
     return orient_analysis_cells
+
+
+def get_param_with_attachments(parameters: Optional[dict]) -> bool:
+    if parameters is None:
+        return False
+    return str(parameters.get("with_attachments", "false")).lower() == "true"
 
 
 def get_param_need_header_footers_analysis(parameters: Optional[dict]) -> bool:

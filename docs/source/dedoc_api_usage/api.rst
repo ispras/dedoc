@@ -79,9 +79,10 @@ Api parameters description
             * **other** -- structure for document of any domain (:ref:`other_structure`);
             * **law** -- Russian laws (:ref:`law_structure`);
             * **tz** -- Russian technical specifications (:ref:`tz_structure`);
-            * **diploma** -- Russian thesis (:ref:`diploma_structure`).
+            * **diploma** -- Russian thesis (:ref:`diploma_structure`);
+            * **article** -- scientific article (:ref:`article_structure`).
 
-        This type is used for choosing a specific structure extractor after document reading.
+        This type is used for choosing a specific structure extractor (and, in some cases, a specific reader).
 
     * - structure_type
       - tree, linear

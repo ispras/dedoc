@@ -30,7 +30,7 @@ class ReaderComposition(object):
         :return: intermediate representation of the document with lines, tables and attachments
         """
         file_name = os.path.basename(file_path)
-        extension, mime = get_mime_extension(file_path=file_path)
+        mime, extension = get_mime_extension(file_path=file_path)
 
         for reader in self.readers:
             if reader.can_read(file_path=file_path, mime=mime, extension=extension, parameters=parameters):

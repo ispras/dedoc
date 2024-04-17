@@ -34,7 +34,7 @@ from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
 from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
-from dedoc.utils.parameter_utils import get_param_page_slice, get_param_pdf_with_txt_layer
+from dedoc.utils.parameter_utils import get_param_page_slice, get_param_pdf_with_txt_layer, get_param_with_attachments
 from dedoc.utils.pdf_utils import get_pdf_page_count
 from dedoc.utils.utils import calculate_file_hash, get_mime_extension, get_unique_name
 
@@ -66,8 +66,7 @@ class PdfTabbyReader(PdfBaseReader):
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
-        parameters = {} if parameters is None else parameters
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return (mime in recognized_mimes.pdf_like_format or extension.lower().endswith("pdf")) and get_param_pdf_with_txt_layer(parameters) == "tabby"
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
@@ -80,11 +79,10 @@ class PdfTabbyReader(PdfBaseReader):
         """
         parameters = {} if parameters is None else parameters
         warnings = []
-        lines, tables, tables_on_images, image_attachments, document_metadata = self.__extract(path=file_path, parameters=parameters, warnings=warnings)
-        lines = self.linker.link_objects(lines=lines, tables=tables_on_images, images=image_attachments)
+        lines, tables, tables_on_images, attachments, document_metadata = self.__extract(path=file_path, parameters=parameters, warnings=warnings)
+        lines = self.linker.link_objects(lines=lines, tables=tables_on_images, images=attachments)
 
-        attachments = image_attachments
-        if self._can_contain_attachements(file_path) and self.attachment_extractor.with_attachments(parameters):
+        if get_param_with_attachments(parameters) and self.attachment_extractor.can_extract(file_path):
             attachments += self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
 
         lines = [line for line_group in lines for line in line_group.split("\n")]
@@ -266,7 +264,7 @@ class PdfTabbyReader(PdfBaseReader):
             return HierarchyLevel(1, header_level, False, line_type)
 
         if line_type == "litem":  # TODO automatic list depth and merge list items from multiple lines
-            return DefaultStructureExtractor.get_list_hl_with_regexp(line, prev_line)
+            return DefaultStructureExtractor.get_hl_list_using_regexp(line, prev_line)
 
         return HierarchyLevel(None, None, True, line_type)
 

@@ -7,6 +7,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.docx_reader.data_structures.docx_document import DocxDocument
+from dedoc.utils.parameter_utils import get_param_with_attachments
 from dedoc.utils.utils import get_mime_extension
 
 
@@ -25,7 +26,7 @@ class DocxReader(BaseReader):
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in recognized_extensions.docx_like_format or mime in recognized_mimes.docx_like_format
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
@@ -34,9 +35,7 @@ class DocxReader(BaseReader):
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
-        parameters = {} if parameters is None else parameters
-
-        with_attachments = self.attachment_extractor.with_attachments(parameters=parameters)
+        with_attachments = get_param_with_attachments(parameters)
         attachments = self.attachment_extractor.extract(file_path=file_path, parameters=parameters) if with_attachments else []
 
         docx_document = DocxDocument(path=file_path, attachments=attachments, logger=self.logger)

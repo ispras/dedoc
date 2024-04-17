@@ -23,7 +23,7 @@ class TxtConverter(AbstractConverter):
         """
         Checks if the document is txt-like, e.g. it has .xml extension.
         """
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in converted_extensions.txt_like_format or mime in converted_mimes.txt_like_format
 
     def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:

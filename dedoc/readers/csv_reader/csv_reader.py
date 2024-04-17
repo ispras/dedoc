@@ -25,7 +25,7 @@ class CSVReader(BaseReader):
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in recognized_extensions.csv_like_format
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
