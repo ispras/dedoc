@@ -208,6 +208,7 @@ Currently the following domains can be handled:
     * Russian laws (:ref:`structure description <law_structure>`).
     * Russian technical specifications (:ref:`structure description <tz_structure>`).
     * Russian thesis for bachelor or master degree (:ref:`structure description <diploma_structure>`).
+    * English scientific articles (:ref:`structure description <article_structure>`).
 
 For a document of unknown or unsupported domain there is an option to use default structure extractor
 (``document_type=other`` at :ref:`api_parameters`), the default document structure described :ref:`here <other_structure>`.
@@ -255,6 +256,7 @@ For a document of unknown or unsupported domain there is an option to use defaul
    structure_types/law
    structure_types/tz
    structure_types/diploma
+   structure_types/article
 
 
 .. toctree::

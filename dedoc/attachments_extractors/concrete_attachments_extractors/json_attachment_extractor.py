@@ -22,7 +22,7 @@ class JsonAttachmentsExtractor(AbstractAttachmentsExtractor):
         """
         Checks if this extractor can get attachments from the document (it should have .json extension)
         """
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower().endswith(".json")
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:

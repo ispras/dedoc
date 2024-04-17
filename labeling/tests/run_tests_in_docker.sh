@@ -2,7 +2,7 @@ if [ "$is_test" = "true" ]
   then
     apt install -y cowsay
     echo "run tests"
-    sleep 5
+    sleep 25
     python3 -m unittest -v -f /labeling_root/labeling/tests/test*
     test_exit_code=$?
   if [ $test_exit_code -eq 0 ]

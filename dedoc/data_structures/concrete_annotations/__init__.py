@@ -15,7 +15,8 @@ from .subscript_annotation import SubscriptAnnotation
 from .superscript_annotation import SuperscriptAnnotation
 from .table_annotation import TableAnnotation
 from .underlined_annotation import UnderlinedAnnotation
+from .reference_annotation import ReferenceAnnotation
 
 __all__ = ['AlignmentAnnotation', 'AttachAnnotation', 'BBoxAnnotation', 'BoldAnnotation', 'ColorAnnotation', 'ConfidenceAnnotation',
            'IndentationAnnotation', 'ItalicAnnotation', 'LinkedTextAnnotation', 'SizeAnnotation', 'SpacingAnnotation', 'StrikeAnnotation',
-           'StyleAnnotation', 'SubscriptAnnotation', 'SuperscriptAnnotation', 'TableAnnotation', 'UnderlinedAnnotation']
+           'StyleAnnotation', 'SubscriptAnnotation', 'SuperscriptAnnotation', 'TableAnnotation', 'UnderlinedAnnotation', 'ReferenceAnnotation']

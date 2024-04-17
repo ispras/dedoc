@@ -61,6 +61,7 @@ Json schema of the output is also available during dedoc application running on 
     .. autoattribute:: page_id
     .. autoattribute:: uid
     .. autoattribute:: rotated_angle
+    .. autoattribute:: title
 
 .. autoclass:: dedoc.api.schema.CellWithMeta
 

@@ -25,7 +25,7 @@ class PNGConverter(AbstractConverter):
         """
         Checks if the document is image-like, e.g. it has .bmp, .jpg, .tiff, etc. extension.
         """
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in converted_extensions.image_like_format or mime in converted_mimes.image_like_format
 
     def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:

@@ -66,8 +66,7 @@ class PdfTabbyReader(PdfBaseReader):
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
-        parameters = {} if parameters is None else parameters
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return (mime in recognized_mimes.pdf_like_format or extension.lower().endswith("pdf")) and get_param_pdf_with_txt_layer(parameters) == "tabby"
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
@@ -265,7 +264,7 @@ class PdfTabbyReader(PdfBaseReader):
             return HierarchyLevel(1, header_level, False, line_type)
 
         if line_type == "litem":  # TODO automatic list depth and merge list items from multiple lines
-            return DefaultStructureExtractor.get_list_hl_with_regexp(line, prev_line)
+            return DefaultStructureExtractor.get_hl_list_using_regexp(line, prev_line)
 
         return HierarchyLevel(None, None, True, line_type)
 

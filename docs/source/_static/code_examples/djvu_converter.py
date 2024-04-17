@@ -15,7 +15,7 @@ class DjvuConverter(AbstractConverter):
                     extension: Optional[str] = None,
                     mime: Optional[str] = None,
                     parameters: Optional[dict] = None) -> bool:
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        _, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension == ".djvu"
 
     def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:

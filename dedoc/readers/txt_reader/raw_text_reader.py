@@ -30,7 +30,7 @@ class RawTextReader(BaseReader):
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
-        extension, mime = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower().endswith((".txt", "txt.gz"))
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
@@ -70,7 +70,7 @@ class RawTextReader(BaseReader):
             indent_annotation = self.__get_indent_annotation(line)
 
             line_with_meta = LineWithMeta(line=line, metadata=metadata, annotations=[spacing_annotation, indent_annotation], uid=uid)
-            line_with_meta.metadata.tag_hierarchy_level = DefaultStructureExtractor.get_list_hl_with_regexp(line_with_meta, prev_line)
+            line_with_meta.metadata.tag_hierarchy_level = DefaultStructureExtractor.get_hl_list_using_regexp(line_with_meta, prev_line)
             prev_line = line_with_meta
             lines.append(line_with_meta)
 

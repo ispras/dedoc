@@ -30,9 +30,9 @@ class LineMetadata(Serializable):
         self.hierarchy_level = hierarchy_level
         self.page_id = page_id
         self.line_id = line_id
+        self.__other_fields = {}
         if other_fields is not None and len(other_fields) > 0:
             self.extend_other_fields(other_fields)
-        self.__other_fields = {}
 
     def extend_other_fields(self, new_fields: dict) -> None:
         """

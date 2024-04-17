@@ -44,7 +44,7 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
             elif prediction == "raw_text":
                 line = self.__postprocess_raw_text(line, init_hl_depth)
                 if not (line.metadata.hierarchy_level is not None and line.metadata.hierarchy_level.line_type == "named_item"):
-                    line.metadata.hierarchy_level = DefaultStructureExtractor.get_list_hl_with_regexp(line, previous_raw_text_line)
+                    line.metadata.hierarchy_level = DefaultStructureExtractor.get_hl_list_using_regexp(line, previous_raw_text_line)
                     previous_raw_text_line = line
             else:
                 line.metadata.hierarchy_level = HierarchyLevel.create_raw_text()
