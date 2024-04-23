@@ -1,16 +1,9 @@
-import gzip
-import json
-import os
-import pickle
 import re
-import zipfile
 from collections import defaultdict
 from typing import Dict, Iterator, List, Optional, Tuple
 
 import pandas as pd
-import wget
 from Levenshtein._levenshtein import ratio
-from tqdm import tqdm
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
@@ -27,12 +20,11 @@ from dedoc.structure_extractors.feature_extractors.paired_feature_extractor impo
 from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.utils_feature_extractor import normalization_by_min_max
 from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_year
-from dedoc.utils.utils import flatten
 
 
 class FintocFeatureExtractor(AbstractFeatureExtractor):
 
-    def __init__(self, tocs: dict):
+    def __init__(self) -> None:
         self.paired_feature_extractor = PairedFeatureExtractor()
         self.prefix_list = [BulletPrefix, AnyLetterPrefix, LetterPrefix, BracketPrefix, BracketRomanPrefix, DottedPrefix, RomanPrefix]
         self.list_feature_extractors = [
@@ -42,7 +34,6 @@ class FintocFeatureExtractor(AbstractFeatureExtractor):
         ]
         self.prefix2number = {prefix.name: i for i, prefix in enumerate(self.prefix_list, start=1)}
         self.prefix2number[EmptyPrefix.name] = 0
-        self.tocs = tocs
 
     def parameters(self) -> dict:
         return {}
@@ -50,17 +41,15 @@ class FintocFeatureExtractor(AbstractFeatureExtractor):
     def fit(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None) -> "AbstractFeatureExtractor":
         return self
 
-    def transform(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None) -> pd.DataFrame:
+    def transform(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None, toc_lines: Optional[List[List[dict]]] = None) -> pd.DataFrame:
         assert len(documents) > 0
-        result_matrix = pd.concat([self.__process_document(document) for document in tqdm(documents)], ignore_index=True)
+        result_matrix = pd.concat([self.__process_document(document, d_toc_lines) for document, d_toc_lines in zip(documents, toc_lines)], ignore_index=True)
         result_matrix = pd.concat([result_matrix, self.paired_feature_extractor.transform(documents)], axis=1)
         features = sorted(result_matrix.columns)
         result_matrix = result_matrix[features].astype(float)
-        result_matrix["text"] = [line.line for line in flatten(documents)]
-        features.append("text")
         return result_matrix[features]
 
-    def __process_document(self, lines: List[LineWithMeta]) -> pd.DataFrame:
+    def __process_document(self, lines: List[LineWithMeta], toc: Optional[list] = None) -> pd.DataFrame:
         features_df = pd.DataFrame(self.__look_at_prev_line(document=lines, n=1))
         features_df["line_relative_length"] = self.__get_line_relative_length(lines)
 
@@ -71,8 +60,8 @@ class FintocFeatureExtractor(AbstractFeatureExtractor):
 
         total_lines = len(lines)
         one_line_features_dict = defaultdict(list)
-        for line_id, line in enumerate(lines):
-            for item in self.__one_line_features(line, total_lines, start_page=start_page, finish_page=finish_page):
+        for line in lines:
+            for item in self.__one_line_features(line, total_lines, start_page=start_page, finish_page=finish_page, toc=toc):
                 feature_name, feature = item[0], item[1]
                 one_line_features_dict[feature_name].append(feature)
 
@@ -81,6 +70,7 @@ class FintocFeatureExtractor(AbstractFeatureExtractor):
 
         one_line_features_df = self.prev_next_line_features(one_line_features_df, 3, 3)
         result_matrix = pd.concat([one_line_features_df, features_df, list_features], axis=1)
+        result_matrix["page_id"] = [line.metadata.page_id for line in lines]
         return result_matrix
 
     def __look_at_prev_line(self, document: List[LineWithMeta], n: int = 1) -> Dict[str, List]:
@@ -92,10 +82,10 @@ class FintocFeatureExtractor(AbstractFeatureExtractor):
         :return: dict of features
         """
         res = defaultdict(list)
-        for line_id, line in enumerate(document):
+        for line_id, _ in enumerate(document):
             if line_id >= n:
                 prev_line = document[line_id - n]
-                is_prev_line_ends = prev_line.line.endswith(('.', ';'))
+                is_prev_line_ends = prev_line.line.endswith((".", ";"))
                 res["prev_line_ends"].append(1 if is_prev_line_ends else 0)
                 res["prev_ends_with_colon"].append(prev_line.line.endswith(":"))
                 res["prev_is_space"].append(prev_line.line.lower().isspace())
@@ -110,7 +100,7 @@ class FintocFeatureExtractor(AbstractFeatureExtractor):
         relative_lengths = [len(line.line) / max_len for line in lines]
         return relative_lengths
 
-    def __one_line_features(self, line: LineWithMeta, total_lines: int, start_page: int, finish_page: int) -> Iterator[Tuple[str, int]]:
+    def __one_line_features(self, line: LineWithMeta, total_lines: int, start_page: int, finish_page: int, toc: Optional[list]) -> Iterator[tuple]:
         yield "normalized_page_id", normalization_by_min_max(line.metadata.page_id, min_v=start_page, max_v=finish_page)
         yield "indentation", self._get_indentation(line)
         yield "spacing", self._get_spacing(line)
@@ -125,19 +115,19 @@ class FintocFeatureExtractor(AbstractFeatureExtractor):
         yield "endswith_semicolon", line.line.endswith(";")
         yield "endswith_colon", line.line.endswith(":")
         yield "endswith_comma", line.line.endswith(",")
-        yield "startswith_bracket", line.line.strip().startswith(('(', '{'))
+        yield "startswith_bracket", line.line.strip().startswith(("(", "{"))
 
         bracket_cnt = 0
         for char in line.line:
-            if char == '(':
+            if char == "(":
                 bracket_cnt += 1
-            elif char == ')':
+            elif char == ")":
                 bracket_cnt = max(0, bracket_cnt - 1)
         yield "bracket_num", bracket_cnt
 
         probable_toc_title = re.sub(r"[\s:]", "", line.line).lower()
         yield "is_toc_title", probable_toc_title in TOCFeatureExtractor.titles
-        yield from self.__find_in_toc(line)
+        yield from self.__find_in_toc(line, toc)
 
         line_length = len(line.line) + 1
         yield "supper_percent", sum((1 for letter in line.line if letter.isupper())) / line_length
@@ -145,101 +135,25 @@ class FintocFeatureExtractor(AbstractFeatureExtractor):
         yield "number_percent", sum((1 for letter in line.line if letter.isnumeric())) / line_length
         yield "words_number", len(line.line.split())
 
-    def __find_in_toc(self, line: LineWithMeta) -> Iterator[Tuple[str, int]]:
-        if not hasattr(line, "group"):
+    def __find_in_toc(self, line: LineWithMeta, toc: Optional[List[dict]]) -> Iterator[Tuple[str, int]]:
+        if toc is None:
             yield "is_toc", 0
             yield "in_toc", 0
             yield "toc_exists", 0
         else:
-            toc = self.tocs.get(line.group, [])
-            is_toc = 0
-            in_toc = 0
-            toc_exists = int(len(toc) > 0)
+            is_toc, in_toc, toc_exists = 0, 0, int(len(toc) > 0)
             line_text = line.line.lower().strip()
             for item in toc:
-                if ratio(line_text, item["text"].lower()) > 0.8:
+                if ratio(line_text, item["line"].line.lower()) < 0.8:
+                    continue
+                # toc entry found
+                try:
                     is_toc = 0 if line.metadata.page_id + 1 == int(item["page"]) else 1
                     in_toc = 1 if line.metadata.page_id + 1 == int(item["page"]) else 0
-                    break
+                except TypeError:
+                    pass
+                break
+
             yield "is_toc", is_toc
             yield "in_toc", in_toc
             yield "toc_exists", toc_exists
-
-
-def handle_file(file: str, dir_out: str, extractor: AbstractFeatureExtractor):
-    file_name = os.path.split(file)[-1].split(".")[0]
-    with gzip.open(file) as f_in:
-        lines = pickle.load(file=f_in)
-        df = lines2dataframe(lines, extractor)
-        df.to_csv(os.path.join(dir_out, file_name + "_df.csv.gz"), index=False)
-        df.to_pickle(os.path.join(dir_out, file_name + "_df.pkl.gz"))
-
-
-def lines2dataframe(lines: List[LineWithLabel], extractor: AbstractFeatureExtractor) -> pd.DataFrame:
-    assert(len(lines) > 0)
-    lines2docs = []
-    current_document = None
-    reg_empty_string = re.compile(r"^\s*\n$")
-    special_unicode_symbols = [u"\uf0b7", u"\uf0d8", u"\uf084", u"\uf0a7", u"\uf0f0", u"\x83"]
-
-    lines = [line for line in lines if not reg_empty_string.match(line.line)]
-    for line in lines:
-        for ch in special_unicode_symbols:
-            line.set_line(line.line.replace(ch, ""))
-        if line.group == current_document:
-            lines2docs[-1].append(line)
-        else:
-            current_document = line.group
-            lines2docs.append([line])
-    df = extractor.transform(lines2docs)
-
-    df["label"] = [int(line.label) for line in lines]
-    df["group"] = [line.group for line in lines]
-    df["uid"] = [line.uid for line in lines]
-    df["page_id"] = [line.metadata.page_id for line in lines]
-    return df
-
-
-def main(dir_out: str, train: bool):
-    os.makedirs(dir_out, exist_ok=True)
-
-    root = "/tmp/.fintoc/train" if train else "/tmp/.fintoc/test"
-    lines_dir = os.path.join(root, "lines")
-    if train:
-        lines_url = "https://at.ispras.ru/owncloud/index.php/s/yvYn491d6Du8ZuV/download"  # train
-    else:
-        lines_url = "https://at.ispras.ru/owncloud/index.php/s/h3TdYfQipiVAxpE/download"  # test
-
-    toc_dir = os.path.join(root, "toc")
-    if train:
-        toc_url = "https://at.ispras.ru/owncloud/index.php/s/0VJbQWrD11R98Sy/download"  # train
-    else:
-        toc_url = "https://at.ispras.ru/owncloud/index.php/s/GCoZitUsfCLPLVI/download"  # test
-
-    if not os.path.isdir(root):
-        os.makedirs(root)
-
-    if not os.path.isdir(lines_dir):
-        archive = os.path.join(root, "lines.zip")
-        wget.download(lines_url, archive)
-        with zipfile.ZipFile(archive, 'r') as zip_ref:
-            zip_ref.extractall(root)
-
-    if not os.path.isdir(toc_dir):
-        archive = os.path.join(root, "toc.zip")
-        wget.download(toc_url, archive)
-        with zipfile.ZipFile(archive, 'r') as zip_ref:
-            zip_ref.extractall(root)
-
-    for lang in tqdm(["en", "fr", "sp"]):
-        lines_file = os.path.join(lines_dir, f"lines_{lang}_txt_layer.pkg.gz")
-        tocs_file = os.path.join(toc_dir, f"{lang}_toc.json")
-        with open(tocs_file) as f:
-            tocs = json.load(f)
-        extractor = FintocFeatureExtractor(tocs)
-        handle_file(file=lines_file, extractor=extractor, dir_out=dir_out)
-
-
-if __name__ == '__main__':
-    stage = "test"
-    main(dir_out=f"/home/nasty/fintoc2022/{stage}/pandas", train=stage == "train")

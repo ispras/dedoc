@@ -18,18 +18,21 @@ def create_json_result(data: pd.DataFrame, predictions: List[int]) -> dict:
         }
     ]
     """
-    uid2line = {item[1].uid: {"text": item[1].text.strip() if isinstance(item[1].text, str) else "",
-                              "page": item[1].page_id + 1,
-                              "group": item[1].group} for item in data.iterrows()}
+    uid2line = {
+        item[1].uid: {
+            "text": item[1].line.strip() if isinstance(item[1].line, str) else "",
+            "page": item[1].page_id + 1,
+            "group": item[1].group
+        } for item in data.iterrows()
+    }
     result = defaultdict(list)
-    assert(data.shape[0] == len(predictions))
+    assert data.shape[0] == len(predictions)
     for i, (line_uid, prediction) in enumerate(zip(data.uid, predictions)):
         line = uid2line[line_uid]
         if line["text"] == "":
             continue
         # TODO crop text lines containing colon
-        result[line["group"]].append({"id": i, "depth": str(prediction),
-                                      "text": line["text"], "page": line["page"]})
+        result[line["group"]].append({"id": i, "depth": str(prediction), "text": line["text"], "page": line["page"]})
     return result
 
 
