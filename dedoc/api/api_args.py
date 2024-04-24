@@ -7,7 +7,7 @@ from fastapi import Form
 @dataclass
 class QueryParameters:
     # type of document structure parsing
-    document_type: str = Form("", enum=["", "law", "tz", "diploma"], description="Document domain")
+    document_type: str = Form("", enum=["", "law", "tz", "diploma", "article", "fintoc"], description="Document domain")
     structure_type: str = Form("tree", enum=["linear", "tree"], description="Output structure type")
     return_format: str = Form("json", enum=["json", "html", "plain_text", "tree", "collapsed_tree", "ujson", "pretty_json"],
                               description="Response representation, most types (except json) are used for debug purposes only")

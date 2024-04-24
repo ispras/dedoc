@@ -51,17 +51,17 @@ class FintocClassifier:
         self.binary_classifier.fit(features[features_names], features.label != -1)
         self.target_classifier.fit(features[features_names][features.label != -1], features.label[features.label != -1])
 
-    def save(self, classifiers_dir_path: str, features_importances_dir_path: str, logger: logging.Logger, features_names: List[str]) -> None:
+    def save(self, classifiers_dir_path: str, features_importances_dir_path: str, logger: logging.Logger, features_names: List[str], reader: str) -> None:
         os.makedirs(classifiers_dir_path, exist_ok=True)
         for classifier_type in ("binary", "target"):
-            with gzip.open(os.path.join(classifiers_dir_path, f"{classifier_type}_classifier_{self.language}.pkg.gz"), "wb") as output_file:
+            with gzip.open(os.path.join(classifiers_dir_path, f"{classifier_type}_classifier_{self.language}_{reader}.pkg.gz"), "wb") as output_file:
                 pickle.dump(self.classifiers[classifier_type], output_file)
         logger.info(f"Classifiers were saved in {classifiers_dir_path} directory")
 
         os.makedirs(features_importances_dir_path, exist_ok=True)
         for classifier_type in ("binary", "target"):
             xgbfir.saveXgbFI(self.classifiers[classifier_type], feature_names=features_names,
-                             OutputXlsxFile=os.path.join(features_importances_dir_path, f"feature_importances_{classifier_type}_{self.language}.xlsx"))
+                             OutputXlsxFile=os.path.join(features_importances_dir_path, f"feature_importances_{classifier_type}_{self.language}_{reader}.xlsx"))
         logger.info(f"Features importances were saved in {features_importances_dir_path} directory")
 
     @property

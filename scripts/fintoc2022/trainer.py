@@ -28,6 +28,7 @@ class FintocTrainer:
                  data_url: str,
                  logger: logging.Logger,
                  language: str,
+                 reader_name: str,
                  classifiers_dir_path: str,
                  scores_dir_path: str,
                  features_importances_dir_path: str,
@@ -38,7 +39,8 @@ class FintocTrainer:
         """
         :param data_url: url to download training data for FintocDatasetLoader
         :param logger: logger for logging details of classifier training
-        :param language: language of data ("en", "fr", "sp")
+        :param language: ("en", "fr", "sp") - language of data
+        :param reader_name: ("tabby", "txt_layer") - type of reader for lines extraction from PDF
         :param classifiers_dir_path: path to the directory where to save trained classifiers
         :param scores_dir_path: path to the directory where to save final scores during cross-validation
         :param features_importances_dir_path: path to the directory where to save XLSX files with information about most important features for classifiers
@@ -49,6 +51,7 @@ class FintocTrainer:
         """
         self.logger = logger
         self.language = language
+        self.reader_name = reader_name
         self.feature_extractor = FintocFeatureExtractor()
         self.structure_extractor = FintocStructureExtractor()
 
@@ -70,20 +73,19 @@ class FintocTrainer:
         self.n_splits = n_splits
         self.additional_features_fields = ("line", "label", "group", "uid")
 
-    def fit(self, reader_name: str, cross_val: bool = True, use_cache: bool = True) -> None:
+    def fit(self, cross_val: bool = True, use_cache: bool = True) -> None:
         """
         1 - Load data by `self.data_url` if needed, extract lines from PDF by chosen reader by `reader_name` if needed (FintocDatasetLoader).
         2 - Extract a feature matrix for extracted document lines (FintocFeatureExtractor).
         3 - Do a cross-validation if needed.
         4 - Train resulting classifiers (binary, target) and save them to `self.classifiers_dir_path` (FintocClassifier).
 
-        :param reader_name: ("tabby", "txt_layer") - type of reader for lines extraction from PDF
         :param cross_val: whether to do cross-validation or not
         :param use_cache: whether to use cached extracted lines as training data
         """
         # obtain training data
         self.logger.info("Get data for training and evaluation")
-        data = self.data_loader.get_data(language=self.language, reader_name=reader_name, use_cache=use_cache)
+        data = self.data_loader.get_data(language=self.language, reader_name=self.reader_name, use_cache=use_cache)
 
         # create feature matrix
         self.logger.info("Create a feature matrix")
@@ -110,11 +112,11 @@ class FintocTrainer:
     def __cross_validate(self, features: pd.DataFrame, gt_dir: str) -> dict:
         self.logger.info("Start cross-validation")
         features_names = self.__get_features_names(features)
-        results_path = os.path.join(self.scores_dir_path, "cross_val_results", self.language)
+        results_path = os.path.join(self.scores_dir_path, f"cross_val_results_{self.language}_{self.reader_name}")
         os.makedirs(results_path, exist_ok=True)
 
         kf = GroupKFold(n_splits=self.n_splits)
-        json_results_dir = os.path.join(self.tmp_dir, "json_results", self.language)
+        json_results_dir = os.path.join(self.tmp_dir, f"json_results_{self.language}_{self.reader_name}")
 
         result_scores = {"td_scores": [], "toc_scores": []}
         for i, (train_index, val_index) in tqdm(enumerate(kf.split(features, groups=features.group)), total=self.n_splits):
@@ -128,7 +130,7 @@ class FintocTrainer:
                 shutil.rmtree(json_results_dir)
             os.makedirs(json_results_dir)
 
-            tmp_gt_dir, predictions_dir = os.path.join(json_results_dir, "groundtruth"), os.path.join(self.tmp_dir, "predictions")
+            tmp_gt_dir, predictions_dir = os.path.join(json_results_dir, "groundtruth"), os.path.join(json_results_dir, "predictions")
             os.makedirs(tmp_gt_dir)
             os.makedirs(predictions_dir)
 
@@ -160,7 +162,7 @@ class FintocTrainer:
 
         if scores is not None:
             os.makedirs(self.scores_dir_path, exist_ok=True)
-            scores_path = os.path.join(self.scores_dir_path, f"scores_{self.language}.json")
+            scores_path = os.path.join(self.scores_dir_path, f"scores_{self.language}_{self.reader_name}.json")
             with open(scores_path, "w") as f:
                 json.dump(scores, f)
             self.logger.info(f"Scores were saved in {scores_path}")
@@ -169,5 +171,6 @@ class FintocTrainer:
             classifiers_dir_path=self.classifiers_dir_path,
             features_importances_dir_path=self.features_importances_dir_path,
             features_names=features_names,
-            logger=self.logger
+            logger=self.logger,
+            reader=self.reader_name
         )

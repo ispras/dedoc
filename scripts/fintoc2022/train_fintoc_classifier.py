@@ -33,6 +33,7 @@ if __name__ == "__main__":
         data_url="https://at.ispras.ru/owncloud/index.php/s/EZfm71WimN2h7rC/download",
         logger=logging.getLogger(),
         language=args.language,
+        reader_name=args.reader,
         n_splits=args.n_splits,
         classifiers_dir_path=os.path.join(base_dir, "classifiers"),
         scores_dir_path=os.path.join(base_dir, "scores"),
@@ -42,4 +43,4 @@ if __name__ == "__main__":
         target_classifier_parameters=clf_params[f"{args.language}_target"]
     )
 
-    trainer.fit(reader_name=args.reader, cross_val=args.cross_val)
+    trainer.fit(cross_val=args.cross_val)

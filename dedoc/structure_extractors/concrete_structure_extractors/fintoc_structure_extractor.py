@@ -7,7 +7,6 @@ import pandas as pd
 from PyPDF2 import PdfFileReader, PdfFileWriter
 
 from dedoc.data_structures import HierarchyLevel, LineWithMeta, UnstructuredDocument
-from dedoc.readers import PdfTxtlayerReader
 from dedoc.structure_extractors import AbstractStructureExtractor
 from dedoc.structure_extractors.feature_extractors.fintoc_feature_extractor import FintocFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor
@@ -16,15 +15,18 @@ from dedoc.structure_extractors.line_type_classifiers.fintoc_classifier import F
 
 class FintocStructureExtractor(AbstractStructureExtractor):
     """
-    This class is an implementation of the TOC extractor for the `FinTOC 2022 Shared task<https://wp.lancs.ac.uk/cfie/fintoc2022/>`_.
+    This class is an implementation of the TOC extractor for the `FinTOC 2022 Shared task <https://wp.lancs.ac.uk/cfie/fintoc2022/>`_.
     The code is a modification of the winner's solution (ISP RAS team).
 
-    You can find the description of this type of structure in the section :ref:`fintoc_structure`.
+    This structure extractor is used for English, French and Spanish financial prospects in PDF format (with a textual layer).
+    It is recommended to use :class:`~dedoc.readers.PdfTxtlayerReader` to obtain document lines.
+    You can find the more detailed description of this type of structure in the section :ref:`fintoc_structure`.
     """
     document_type = "fintoc"
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
+        from dedoc.readers import PdfTxtlayerReader  # to exclude circular imports
         self.pdf_reader = PdfTxtlayerReader(config=self.config)
         self.toc_extractor = TOCFeatureExtractor()
         self.features_extractor = FintocFeatureExtractor()
@@ -35,9 +37,22 @@ class FintocStructureExtractor(AbstractStructureExtractor):
 
     def extract(self, document: UnstructuredDocument, parameters: Optional[dict] = None, file_path: Optional[str] = None) -> UnstructuredDocument:
         """
+        According to the `FinTOC 2022 <https://wp.lancs.ac.uk/cfie/fintoc2022/>`_ title detection task, lines are classified as titles and non-titles.
+        The information about titles is saved in ``line.metadata.hierarchy_level`` (:class:`~dedoc.data_structures.HierarchyLevel` class):
 
-        To get the information about the method's parameters look at the documentation of the class \
-        :class:`~dedoc.structure_extractors.AbstractStructureExtractor`.
+            - Title lines have ``HierarchyLevel.header`` type, and their depth (``HierarchyLevel.level_2``) is similar to \
+            the depth of TOC item from the FinTOC 2022 TOC generation task.
+            - Non-title lines have ``HierarchyLevel.raw_text`` type, and their depth isn't obtained.
+
+        :param document: document content that has been received from some of the readers (:class:`~dedoc.readers.PdfTxtlayerReader` is recommended).
+        :param parameters: for this structure extractor, "language" parameter is used for setting document's language, e.g. ``parameters={"language": "en"}``. \
+        The following options are supported:
+
+            * "en" - English (default);
+            * "fr" - French;
+            * "sp" - Spanish.
+        :param file_path: path to the file on disk.
+        :return: document content with added additional information about title/non-title lines and hierarchy levels of titles.
         """
         parameters = {} if parameters is None else parameters
         language = parameters.get("language", "en")
@@ -76,12 +91,16 @@ class FintocStructureExtractor(AbstractStructureExtractor):
 
         return lines
 
-    def __get_toc(self, file_path: Optional[str]) -> Optional[List[Dict[str, Union[LineWithMeta, str]]]]:
-        if file_path is None:
-            return
+    def __get_toc(self, file_path: Optional[str]) -> List[Dict[str, Union[LineWithMeta, str]]]:
+        """
+        Try to get TOC from PDF automatically. If TOC wasn't extracted automatically, it is extracted using regular expressions.
+        """
+        if file_path is None or not file_path.lower().endswith(".pdf"):
+            return []
 
         toc = self.__get_automatic_toc(path=file_path)
         if len(toc) > 0:
+            self.logger.info(f"Got automatic TOC from {os.path.basename(file_path)}")
             return toc
 
         pdf_reader = PdfFileReader(file_path)
@@ -99,7 +118,7 @@ class FintocStructureExtractor(AbstractStructureExtractor):
 
     def __get_automatic_toc(self, path: str) -> List[Dict[str, Union[LineWithMeta, str]]]:
         result = []
-        with os.popen(f"pdftocio -p {path}") as out:
+        with os.popen(f'pdftocio -p "{path}"') as out:
             toc = out.readlines()
         if len(toc) == 0:
             return result

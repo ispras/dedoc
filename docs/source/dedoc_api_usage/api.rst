@@ -80,7 +80,8 @@ Api parameters description
             * **law** -- Russian laws (:ref:`law_structure`);
             * **tz** -- Russian technical specifications (:ref:`tz_structure`);
             * **diploma** -- Russian thesis (:ref:`diploma_structure`);
-            * **article** -- scientific article (:ref:`article_structure`).
+            * **article** -- scientific article (:ref:`article_structure`);
+            * **fintoc** -- English, French and Spanish financial prospects (:ref:`fintoc_structure`).
 
         This type is used for choosing a specific structure extractor (and, in some cases, a specific reader).
 

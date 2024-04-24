@@ -42,7 +42,7 @@ import Levenshtein
 import numpy as np
 
 JSON_EXTENSION = ".fintoc4.json"
-VERBOSE = True
+VERBOSE = False
 STRING_THRESHOLD = 0.85
 
 
