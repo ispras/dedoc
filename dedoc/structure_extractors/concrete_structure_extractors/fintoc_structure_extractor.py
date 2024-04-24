@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Tuple, Union
 import pandas as pd
 from PyPDF2 import PdfFileReader, PdfFileWriter
 
+from dedoc.config import get_config
 from dedoc.data_structures import HierarchyLevel, LineWithMeta, UnstructuredDocument
 from dedoc.structure_extractors import AbstractStructureExtractor
 from dedoc.structure_extractors.feature_extractors.fintoc_feature_extractor import FintocFeatureExtractor
@@ -31,7 +32,8 @@ class FintocStructureExtractor(AbstractStructureExtractor):
         self.toc_extractor = TOCFeatureExtractor()
         self.features_extractor = FintocFeatureExtractor()
         self.languages = ("en", "fr", "sp")
-        self.classifiers = {language: FintocClassifier(language=language) for language in self.languages}
+        path = os.path.join(get_config()["resources_path"], "fintoc_classifiers")
+        self.classifiers = {language: FintocClassifier(language=language, weights_dir_path=path) for language in self.languages}
         self.toc_item_regexp = re.compile(r'"([^"]+)" (\d+)')
         self.empty_string_regexp = re.compile(r"^\s*\n$")
 
@@ -48,16 +50,14 @@ class FintocStructureExtractor(AbstractStructureExtractor):
         :param parameters: for this structure extractor, "language" parameter is used for setting document's language, e.g. ``parameters={"language": "en"}``. \
         The following options are supported:
 
-            * "en" - English (default);
-            * "fr" - French;
-            * "sp" - Spanish.
+            * "en", "eng" - English (default);
+            * "fr", "fra" - French;
+            * "sp", "spa" - Spanish.
         :param file_path: path to the file on disk.
         :return: document content with added additional information about title/non-title lines and hierarchy levels of titles.
         """
         parameters = {} if parameters is None else parameters
-        language = parameters.get("language", "en")
-        if language not in self.languages:
-            raise ValueError(f"Language {language} is not supported by this extractor. Supported languages: {self.languages}")
+        language = self.__get_param_language(parameters=parameters)
 
         features, documents = self.get_features(documents_dict={file_path: document.lines})
         predictions = self.classifiers[language].predict(features)
@@ -72,6 +72,22 @@ class FintocStructureExtractor(AbstractStructureExtractor):
         document.lines = lines
 
         return document
+
+    def __get_param_language(self, parameters: dict) -> str:
+        language = parameters.get("language", "en")
+
+        if language in ("en", "eng", "rus+eng"):
+            return "en"
+
+        if language in ("fr", "fra"):
+            return "fr"
+
+        if language in ("sp", "spa"):
+            return "sp"
+
+        if language not in self.languages:
+            self.logger.warning(f"Language {language} is not supported by this extractor. Use default language (en)")
+        return "en"
 
     def get_features(self, documents_dict: Dict[str, List[LineWithMeta]]) -> Tuple[pd.DataFrame, List[List[LineWithMeta]]]:
         toc_lines, documents = [], []

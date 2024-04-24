@@ -42,7 +42,7 @@ import Levenshtein
 import numpy as np
 
 JSON_EXTENSION = ".fintoc4.json"
-VERBOSE = False
+VERBOSE = True
 STRING_THRESHOLD = 0.85
 
 
@@ -593,7 +593,7 @@ def get_std_row(td_prec, td_reca, td_f1):
     ]
 
 
-def get_logger(name, path_to_log, level=logging.INFO):
+def get_logger(name, path_to_log, level=logging.ERROR):
     handler = logging.FileHandler(path_to_log, mode="w")
     formatter = logging.Formatter("%(message)s")
     handler.setFormatter(formatter)

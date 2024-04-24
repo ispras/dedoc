@@ -29,7 +29,7 @@ class QueryParameters:
     # pdf handling
     pdf_with_text_layer: str = Form("auto_tabby", enum=["true", "false", "auto", "auto_tabby", "tabby"],
                                     description="Extract text from a text layer of PDF or using OCR methods for image-like documents")
-    language: str = Form("rus+eng", enum=["rus+eng", "rus", "eng"], description="Recognition language")
+    language: str = Form("rus+eng", enum=["rus+eng", "rus", "eng", "fra", "spa"], description="Recognition language")
     pages: str = Form(":", description='Page numbers range for reading PDF or images, "left:right" means read pages from left to right')
     is_one_column_document: str = Form("auto", enum=["auto", "true", "false"],
                                        description='One or multiple column document, "auto" - predict number of page columns automatically')

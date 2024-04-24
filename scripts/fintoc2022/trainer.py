@@ -164,7 +164,7 @@ class FintocTrainer:
             os.makedirs(self.scores_dir_path, exist_ok=True)
             scores_path = os.path.join(self.scores_dir_path, f"scores_{self.language}_{self.reader_name}.json")
             with open(scores_path, "w") as f:
-                json.dump(scores, f)
+                json.dump(scores, f, indent=2)
             self.logger.info(f"Scores were saved in {scores_path}")
 
         self.classifier.save(

@@ -15,7 +15,8 @@ model_hash_dict = dict(
     scan_orientation_efficient_net_b0="9ea283f3d346ae4fdd82463a9f60b5369a3ffb58",
     font_classifier="db4481ad60ab050cbb42079b64f97f9e431feb07",
     paragraph_classifier="00bf989876cec171c1cf9859a6b712af6445e864",
-    line_type_classifiers="2e498d1ec82b72c1a96ba0d25344b71402997013"
+    line_type_classifiers="2e498d1ec82b72c1a96ba0d25344b71402997013",
+    fintoc_classifiers="ec08837809f8e8da6010777b07272af705df9e1b"
 )
 
 
@@ -41,6 +42,14 @@ def download(resources_path: str) -> None:
                           out_name=f"{classifier_type}_classifier.pkl.gz",
                           repo_name="line_type_classifiers",
                           hub_name=f"{classifier_type}.pkl.gz")
+
+    fintoc_classifiers_resources_path = os.path.join(resources_path, "fintoc_classifiers")
+    for language in ("en",):  # TODO ("en", "fr", "sp"):
+        for classifier_type in ("target", "binary"):
+            download_from_hub(out_dir=fintoc_classifiers_resources_path,
+                              out_name=f"{classifier_type}_classifier_{language}.pkg.gz",
+                              repo_name="fintoc_classifiers",
+                              hub_name=f"{classifier_type}_classifier_{language}_txt_layer.pkg.gz")
 
 
 if __name__ == "__main__":

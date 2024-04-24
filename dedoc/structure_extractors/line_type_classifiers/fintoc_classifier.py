@@ -9,6 +9,8 @@ import pandas as pd
 import xgbfir
 from xgboost import XGBClassifier
 
+from dedoc.download_models import download_from_hub
+
 
 class FintocClassifier:
     """
@@ -73,8 +75,17 @@ class FintocClassifier:
         return self.__lazy_load_weights("target")
 
     def __lazy_load_weights(self, classifier_type: str) -> XGBClassifier:
+        assert self.weights_dir_path is not None
         if self.classifiers[classifier_type] is None:
-            with gzip.open(os.path.join(self.weights_dir_path, f"{classifier_type}_classifier_{self.language}.pkg.gz"), "rb") as input_file:
+            file_name = f"{classifier_type}_classifier_{self.language}.pkg.gz"
+            classifier_path = os.path.join(self.weights_dir_path, file_name)
+            if not os.path.isfile(classifier_path):
+                download_from_hub(out_dir=self.weights_dir_path,
+                                  out_name=file_name,
+                                  repo_name="fintoc_classifiers",
+                                  hub_name=f"{classifier_type}_classifier_{self.language}_txt_layer.pkg.gz")
+
+            with gzip.open(classifier_path, "rb") as input_file:
                 self.classifiers[classifier_type] = pickle.load(file=input_file)
 
         return self.classifiers[classifier_type]
