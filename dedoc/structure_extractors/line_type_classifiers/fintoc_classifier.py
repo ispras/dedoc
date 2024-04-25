@@ -75,8 +75,8 @@ class FintocClassifier:
         return self.__lazy_load_weights("target")
 
     def __lazy_load_weights(self, classifier_type: str) -> XGBClassifier:
-        assert self.weights_dir_path is not None
         if self.classifiers[classifier_type] is None:
+            assert self.weights_dir_path is not None
             file_name = f"{classifier_type}_classifier_{self.language}.pkg.gz"
             classifier_path = os.path.join(self.weights_dir_path, file_name)
             if not os.path.isfile(classifier_path):
