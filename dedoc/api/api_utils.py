@@ -3,6 +3,7 @@ from typing import Dict, Iterator, List, Optional, Set
 from dedoc.data_structures import LineMetadata
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
+from dedoc.data_structures.concrete_annotations.reference_annotation import ReferenceAnnotation
 from dedoc.data_structures.concrete_annotations.strike_annotation import StrikeAnnotation
 from dedoc.data_structures.concrete_annotations.subscript_annotation import SubscriptAnnotation
 from dedoc.data_structures.concrete_annotations.superscript_annotation import SuperscriptAnnotation
@@ -116,7 +117,7 @@ def json2html(text: str, paragraph: TreeNode, tables: Optional[List[Table]], tab
     if table2id is None:
         table2id = {table.metadata.uid: table_id for table_id, table in enumerate(tables)}
 
-    ptext = __annotations2html(paragraph, table2id)
+    ptext = __annotations2html(paragraph, table2id, tabs=tabs)
 
     if paragraph.metadata.hierarchy_level.line_type in [HierarchyLevel.header, HierarchyLevel.root]:
         ptext = f"<strong>{ptext.strip()}</strong>"
@@ -125,7 +126,10 @@ def json2html(text: str, paragraph: TreeNode, tables: Optional[List[Table]], tab
     else:
         ptext = ptext.strip()
 
-    text += f'<p> {"&nbsp;" * tabs} {ptext}     <sub> id = {paragraph.node_id} ; type = {paragraph.metadata.hierarchy_level.line_type} </sub></p>'
+    ptext = f'<p> {"&nbsp;" * tabs} {ptext}     <sub> id = {paragraph.node_id} ; type = {paragraph.metadata.hierarchy_level.line_type} </sub></p>'
+    if hasattr(paragraph.metadata, "uid"):
+        ptext = f'<div id="{paragraph.metadata.uid}">{ptext}</div>'
+    text += ptext
 
     for subparagraph in paragraph.subparagraphs:
         text = json2html(text=text, paragraph=subparagraph, tables=None, tabs=tabs + 4, table2id=table2id)
@@ -157,6 +161,9 @@ def __value2tag(name: str, value: str) -> str:
     if name == UnderlinedAnnotation.name:
         return "u"
 
+    if name == ReferenceAnnotation.name:
+        return "a"
+
     if value.startswith("heading "):
         level = value[len("heading "):]
         return "h" + level if level.isdigit() and int(level) < 7 else "strong"
@@ -164,7 +171,7 @@ def __value2tag(name: str, value: str) -> str:
     return value
 
 
-def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int]) -> str:
+def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int], tabs: int = 0) -> str:
     indexes = dict()
 
     for annotation in paragraph.annotations:
@@ -177,7 +184,7 @@ def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int]) -> str:
                             SubscriptAnnotation.name,
                             SuperscriptAnnotation.name,
                             UnderlinedAnnotation.name]
-        check_annotations = bool_annotations + ["table"]
+        check_annotations = bool_annotations + ["table", "reference"]
         if name not in check_annotations and not value.startswith("heading "):
             continue
         elif name in bool_annotations and annotation.value == "False":
@@ -187,10 +194,13 @@ def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int]) -> str:
         indexes.setdefault(annotation.start, "")
         indexes.setdefault(annotation.end, "")
         if name == "table":
-            indexes[annotation.start] += f'<p> <sub> <a href="#{tag}"> table#{table2id[tag]} </a> </sub> </p>'
+            indexes[annotation.end] += f' (<a href="#{tag}">table {table2id[tag]}</a>)'
+        elif name == "reference":
+            indexes[annotation.start] += f'<{tag} href="#{value}">'
+            indexes[annotation.end] = f"</{tag}>" + indexes[annotation.end]
         else:
-            indexes[annotation.start] += "<" + tag + ">"
-            indexes[annotation.end] = "</" + tag + ">" + indexes[annotation.end]
+            indexes[annotation.start] += f"<{tag}>"
+            indexes[annotation.end] = f"</{tag}>" + indexes[annotation.end]
 
     insert_tags = sorted([(index, tag) for index, tag in indexes.items()], reverse=True)
     text = paragraph.text
@@ -198,12 +208,13 @@ def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int]) -> str:
     for index, tag in insert_tags:
         text = text[:index] + tag + text[index:]
 
-    return text.replace("\n", "<br>")
+    return text.replace("\n", f'<br>{"&nbsp;" * tabs}')
 
 
 def table2html(table: Table, table2id: Dict[str, int]) -> str:
     uid = table.metadata.uid
-    text = f"<h4> table {table2id[uid]}:</h4>"
+    table_title = f" {table.metadata.title}" if table.metadata.title else ""
+    text = f"<h4> table {table2id[uid]}:{table_title}</h4>"
     text += f'<table border="1" id={uid} style="border-collapse: collapse; width: 100%;">\n<tbody>\n'
     for row in table.cells:
         text += "<tr>\n"
