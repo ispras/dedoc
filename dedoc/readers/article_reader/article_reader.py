@@ -11,6 +11,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes
 from dedoc.readers.base_reader import BaseReader
+from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
 from dedoc.utils.parameter_utils import get_param_document_type
 from dedoc.utils.utils import get_mime_extension
 
@@ -33,7 +34,8 @@ class ArticleReader(BaseReader):
         using beautifulsoup library.
         As a result, the method fills the class :class:`~dedoc.data_structures.UnstructuredDocument`.
         Article reader adds additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
-        The method extracts information about ``authors``, ``bibliography items``, ``sections``, and ``tables``.
+        The method extracts information about ``authors``, ``keywords``, ``bibliography items``, ``sections``, and ``tables``.
+        In table cells, ``colspan`` attribute can be filled according to the GROBID's "cols" attribute.
         You can find more information about the extracted information from GROBID system on the page :ref:`article_structure`.
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
@@ -51,12 +53,13 @@ class ArticleReader(BaseReader):
                 self.logger.warning(warning)
                 return UnstructuredDocument(tables=[], lines=[], attachments=[], warnings=[warning])
 
-            soup = BeautifulSoup(response.text, features="lxml")
+            soup = BeautifulSoup(response.text, features="xml")
             lines = self.__parse_title(soup)
 
-            if soup.biblstruct is not None:
-                authors = soup.biblstruct.find_all("author")
+            if soup.biblStruct is not None:
+                authors = soup.biblStruct.find_all("author")
                 lines += [line for author in authors for line in self.__parse_author(author)]
+            lines += self.__parse_keywords(soup.keywords)
 
             bib_lines, bib2uid = self.__parse_bibliography(soup)
             tables, table2uid = self.__parse_tables(soup)
@@ -135,11 +138,13 @@ class ArticleReader(BaseReader):
     def __parse_affiliation(self, affiliation_tag: Tag) -> List[LineWithMeta]:
         lines = [self.__create_line(text=affiliation_tag.get("key"), hierarchy_level_id=2, paragraph_type="author_affiliation")]
 
-        if affiliation_tag.orgname:
-            lines.append(self.__create_line(text=self.__tag2text(affiliation_tag.orgname), hierarchy_level_id=3, paragraph_type="org_name"))
+        if affiliation_tag.orgName:
+            lines.append(self.__create_line(text=self.__tag2text(affiliation_tag.orgName), hierarchy_level_id=3, paragraph_type="org_name"))
 
         if affiliation_tag.address:
-            lines.append(self.__create_line(text=affiliation_tag.address.text, hierarchy_level_id=3, paragraph_type="address"))
+            lines.append(self.__create_line(text=self.__remove_newlines(affiliation_tag.address).get_text(separator=", "),
+                                            hierarchy_level_id=3,
+                                            paragraph_type="address"))
 
         return lines
 
@@ -169,11 +174,11 @@ class ArticleReader(BaseReader):
         """
         lines = [self.__create_line(text="", hierarchy_level_id=1, paragraph_type="author")]
 
-        first_name = self.__get_tag_by_hierarchy_path(author_tag, ["persname", "forename"])
+        first_name = self.__get_tag_by_hierarchy_path(author_tag, ["persName", "forename"])
         if first_name:
             lines.append(self.__create_line(text=first_name, hierarchy_level_id=2, paragraph_type="author_first_name"))
 
-        surname = self.__get_tag_by_hierarchy_path(author_tag, ["persname", "surname"])
+        surname = self.__get_tag_by_hierarchy_path(author_tag, ["persName", "surname"])
         if surname:
             lines.append(self.__create_line(text=surname, hierarchy_level_id=2, paragraph_type="author_surname"))
 
@@ -185,6 +190,21 @@ class ArticleReader(BaseReader):
         affiliations = author_tag.find_all("affiliation")
         lines += [line for affiliation in affiliations for line in self.__parse_affiliation(affiliation)]
 
+        return lines
+
+    def __parse_keywords(self, keywords_tag: Tag) -> List[LineWithMeta]:
+        """
+        <keywords>
+            <term>Multi-Object Tracking</term>
+            <term>Data Association</term>
+            <term>Survey</term>
+        </keywords>
+        """
+        if keywords_tag is None:
+            return []
+
+        lines = [self.__create_line(text="", hierarchy_level_id=1, paragraph_type="keywords")]
+        lines += [self.__create_line(text=item.text, hierarchy_level_id=2, paragraph_type="keyword") for item in keywords_tag.find_all("term")]
         return lines
 
     def __create_line_with_refs(self, content: List[Tuple[str, Tag]], bib2uid: dict, table2uid: dict) -> LineWithMeta:
@@ -219,20 +239,31 @@ class ArticleReader(BaseReader):
         lines.append(self.__create_line(text="Abstract", hierarchy_level_id=1, paragraph_type="abstract"))
         lines.append(self.__create_line(text=self.__tag2text(abstract)))
 
-        for text in soup.find_all("text"):
-            for part in text.find_all("div"):
-                # TODO: Beautifulsoup doesn't read <head> tags from input XML file. WTF!
-                #       As a result we lose section number in text (see example above)
-                #       Need to fix this in the future.
-                number = part.head.get("n") + " " if part.head else ""
-                line_text = str(part.contents[0]) if len(part.contents) > 0 else None
-                if line_text is not None and len(line_text) > 0:
-                    lines.append(self.__create_line(text=number + line_text, hierarchy_level_id=1, paragraph_type="section"))
-                for subpart in part.find_all("p"):
-                    if subpart.string is not None:
-                        lines.append(self.__create_line_with_refs(subpart.string, bib2uid, table2uid))
-                    elif subpart.contents and len(subpart.contents) > 0:
-                        lines.append(self.__create_line_with_refs(subpart.contents, bib2uid, table2uid))
+        for part in soup.body.find_all("div"):
+            lines.extend(self.__parse_section(part, bib2uid, table2uid))
+
+        for other_text_type in ("acknowledgement", "annex"):
+            for text_tag in soup.find_all("div", attrs={"type": other_text_type}):
+                for part in text_tag.find_all("div"):
+                    lines.extend(self.__parse_section(part, bib2uid, table2uid))
+
+        return lines
+
+    def __parse_section(self, section_tag: Tag, bib2uid: dict, table2uid: dict) -> List[LineWithMeta]:
+        lines = []
+        number = section_tag.head.get("n") if section_tag.head else ""
+        number = number + " " if number else ""
+        section_depth = get_dotted_item_depth(number)
+        section_depth = section_depth if section_depth > 0 else 1
+
+        line_text = section_tag.head.string if section_tag.head else None
+        if line_text is not None and len(line_text) > 0:
+            lines.append(self.__create_line(text=number + line_text, hierarchy_level_id=section_depth, paragraph_type="section"))
+        for subpart in section_tag.find_all("p"):
+            if subpart.string is not None:
+                lines.append(self.__create_line_with_refs(subpart.string + "\n", bib2uid, table2uid))
+            elif subpart.contents and len(subpart.contents) > 0:
+                lines.append(self.__create_line_with_refs(subpart.contents, bib2uid, table2uid))
 
         return lines
 
@@ -265,12 +296,26 @@ class ArticleReader(BaseReader):
 
         tag_tables = soup.find_all("figure", {"type": "table"})
         for table in tag_tables:
-            row_cells = []
+            table_cells = []
             head = table.contents[0] if len(table.contents) > 0 and isinstance(table.contents[0], str) else self.__tag2text(table.head)
-            title = head + self.__tag2text(table.figdesc)
+            title = head + self.__tag2text(table.figDesc)
             for row in table.table.find_all("row"):
-                row_cells.append([CellWithMeta(lines=[self.__create_line(self.__tag2text(cell))]) for cell in row.find_all("cell")])
-            tables.append(Table(cells=row_cells, metadata=TableMetadata(page_id=0, title=title)))
+                row_cells = []
+                for cell in row.find_all("cell"):
+                    cell_text = self.__create_line(self.__tag2text(cell))
+                    colspan = int(cell.get("cols", 1))
+                    row_cells.append(CellWithMeta(lines=[cell_text], colspan=colspan))
+
+                    if colspan > 1:
+                        row_cells.extend([CellWithMeta(lines=[cell_text], invisible=True) for _ in range(colspan - 1)])
+
+                table_cells.append(row_cells)
+
+            # ignore empty tables
+            if len(table_cells) == 0:
+                continue
+
+            tables.append(Table(cells=table_cells, metadata=TableMetadata(page_id=0, title=title)))
             table2uid["#" + table.get("xml:id")] = tables[-1].metadata.uid
 
         return tables, table2uid
@@ -310,12 +355,12 @@ class ArticleReader(BaseReader):
         # according GROBID description
         level_2_paragraph_type = {"a": "title", "j": "title_journal", "s": "title_series", "m": "title_conference_proceedings"}
 
-        bibliography = soup.find("listbibl", recursive=True)
+        bibliography = soup.find("listBibl", recursive=True)
         lines.append(self.__create_line(text="bibliography", hierarchy_level_id=1, paragraph_type="bibliography"))
         if not bibliography:
             return lines, cites
 
-        bib_items = bibliography.find_all("biblstruct")
+        bib_items = bibliography.find_all("biblStruct")
         if not bib_items:
             return lines, cites
 
@@ -331,19 +376,19 @@ class ArticleReader(BaseReader):
                     lines.append(self.__create_line(text=self.__tag2text(title), hierarchy_level_id=3, paragraph_type=paragraph_type))
 
             lines += [  # parse bib authors
-                self.__create_line(text=author.get_text(), hierarchy_level_id=3, paragraph_type="author")
+                self.__create_line(text=self.__remove_newlines(author).get_text(separator=" "), hierarchy_level_id=3, paragraph_type="author")
                 for author in bib_item.find_all("author", recursive=True) if author
             ]
 
             lines += [  # parse biblScope <biblScope unit="volume">
                 self.__create_line(text=self.__tag2text(bibl_scope), hierarchy_level_id=3, paragraph_type="biblScope_volume")
-                for bibl_scope in bib_item.find_all("biblscope", {"unit": "volume"}, recursive=True) if bibl_scope
+                for bibl_scope in bib_item.find_all("biblScope", {"unit": "volume"}, recursive=True) if bibl_scope
             ]
 
             try:
                 lines += [  # parse <biblScope unit="page"> values
                     self.__create_line(text=f"{bibl_scope.get('from')}-{bibl_scope.get('to')}", hierarchy_level_id=3, paragraph_type="biblScope_page")
-                    for bibl_scope in bib_item.find_all("biblscope", {"unit": "page"}, recursive=True) if bibl_scope
+                    for bibl_scope in bib_item.find_all("biblScope", {"unit": "page"}, recursive=True) if bibl_scope
                 ]
             finally:
                 self.logger.warning("Grobid parsing warning: <biblScope unit='page' ... /> was non-standard format")
@@ -363,3 +408,9 @@ class ArticleReader(BaseReader):
 
     def __parse_title(self, soup: Tag) -> List[LineWithMeta]:
         return [self.__create_line(text=self.__tag2text(soup.title), hierarchy_level_id=0, paragraph_type="root")]
+
+    def __remove_newlines(self, tag: Tag) -> Tag:
+        for item in tag:
+            if not isinstance(item, Tag):
+                item.extract()
+        return tag

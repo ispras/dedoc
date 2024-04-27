@@ -34,24 +34,28 @@ class TestApiArticle(AbstractTestApiDocReader):
         self.assertEqual("org_name", self._get_by_tree_path(tree, "0.2.2.0")["metadata"]["paragraph_type"])
         self.assertEqual("ICTEAM/ELEN/Crypto Group", self._get_by_tree_path(tree, "0.2.2.0")["text"])
 
+        # check section
+        self.assertEqual("section", self._get_by_tree_path(tree, "0.4")["metadata"]["paragraph_type"])
+        self.assertEqual("1 Introduction", self._get_by_tree_path(tree, "0.4")["text"])
+
         # check bibliography list
-        self.assertEqual("bibliography", self._get_by_tree_path(tree, "0.20")["metadata"]["paragraph_type"])
-        self.assertEqual(65, len(self._get_by_tree_path(tree, "0.20")["subparagraphs"]))
+        self.assertEqual("bibliography", self._get_by_tree_path(tree, "0.12")["metadata"]["paragraph_type"])
+        self.assertEqual(65, len(self._get_by_tree_path(tree, "0.12")["subparagraphs"]))
 
         # check bib_item 1 recognizing
-        self.assertEqual("title", self._get_by_tree_path(tree, "0.20.0.0")["metadata"]["paragraph_type"])
-        self.assertEqual("Leakage-resilient symmetric encryption via re-keying", self._get_by_tree_path(tree, "0.20.0.0")["text"])
-        self.assertEqual("title_conference_proceedings", self._get_by_tree_path(tree, "0.20.0.1")["metadata"]["paragraph_type"])
-        self.assertEqual("Bertoni and Coron", self._get_by_tree_path(tree, "0.20.0.1")["text"])
-        self.assertEqual("author", self._get_by_tree_path(tree, "0.20.0.2")["metadata"]["paragraph_type"])  # author 1
-        self.assertEqual("\nMichelAbdalla\n", self._get_by_tree_path(tree, "0.20.0.2")["text"])
-        self.assertEqual("biblScope_volume", self._get_by_tree_path(tree, "0.20.0.5")["metadata"]["paragraph_type"])  # author 1
-        self.assertEqual("4", self._get_by_tree_path(tree, "0.20.0.5")["text"])
-        self.assertEqual("biblScope_page", self._get_by_tree_path(tree, "0.20.0.6")["metadata"]["paragraph_type"])  # author 1
-        self.assertEqual("471-488", self._get_by_tree_path(tree, "0.20.0.6")["text"])
+        self.assertEqual("title", self._get_by_tree_path(tree, "0.12.0.0")["metadata"]["paragraph_type"])
+        self.assertEqual("Leakage-resilient symmetric encryption via re-keying", self._get_by_tree_path(tree, "0.12.0.0")["text"])
+        self.assertEqual("title_conference_proceedings", self._get_by_tree_path(tree, "0.12.0.1")["metadata"]["paragraph_type"])
+        self.assertEqual("Bertoni and Coron", self._get_by_tree_path(tree, "0.12.0.1")["text"])
+        self.assertEqual("author", self._get_by_tree_path(tree, "0.12.0.2")["metadata"]["paragraph_type"])  # author 1
+        self.assertEqual("Michel Abdalla", self._get_by_tree_path(tree, "0.12.0.2")["text"])
+        self.assertEqual("biblScope_volume", self._get_by_tree_path(tree, "0.12.0.5")["metadata"]["paragraph_type"])  # author 1
+        self.assertEqual("4", self._get_by_tree_path(tree, "0.12.0.5")["text"])
+        self.assertEqual("biblScope_page", self._get_by_tree_path(tree, "0.12.0.6")["metadata"]["paragraph_type"])  # author 1
+        self.assertEqual("471-488", self._get_by_tree_path(tree, "0.12.0.6")["text"])
 
         # check cite on bib_item
-        bibliography_item_uuid = self._get_by_tree_path(tree, "0.20.57")["metadata"]["uid"]  # checking on [58] references
+        bibliography_item_uuid = self._get_by_tree_path(tree, "0.12.57")["metadata"]["uid"]  # checking on [58] references
         section = self._get_by_tree_path(tree, "0.4.0")
         bibliography_refs_in_text = [ann for ann in section["annotations"] if ann["name"] == "reference" and ann["value"] == bibliography_item_uuid]
         # We must found two refs [58] in Introduction section

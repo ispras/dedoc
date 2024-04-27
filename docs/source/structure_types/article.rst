@@ -27,6 +27,7 @@ There are the following line types in the article structure type:
 
     * ``root``;
     * ``author`` (includes ``author_first_name``, ``author_surname``, ``email``);
+    * ``keywords`` (includes ``keyword``);
     * ``author_affiliation`` (includes ``org_name``, ``address``);
     * ``abstract``;
     * ``section``;
@@ -108,9 +109,15 @@ Below is a description of nodes in the output tree:
             :language: json
             :lines: 125-198
 
+    * **keywords** node (if exist) is a child  node of the node ``root``.
+
+        ``keywords`` node contains ``keyword`` nodes as children. Each ``keyword`` node contains the text of one key word item.
+
     * **abstract** is the article's abstract section (<abstract> tag in GROBID's output).
 
-    * **section**: nodes of article sections (for example "Introduction", "Conclusion", "V Experiments ..." etc.). This type of node has a subnode ``raw_text``. ``section`` nodes are children of a node ``root``.
+    * **section**: nodes of article sections (for example "Introduction", "Conclusion", "V Experiments ..." etc.). This type of node has a subnode ``raw_text``.
+
+        ``section`` nodes are children of a node ``root`` and may me nested (e.g., section "2.1. Datasets" is nested to the section "2. Related work").
 
     * **bibliography** is the article's bibliography list which contains only ``bibliography_item`` nodes.
 
