@@ -1,10 +1,8 @@
 import os
 import re
-import tempfile
 from typing import Dict, List, Optional, Tuple, Union
 
 import pandas as pd
-from PyPDF2 import PdfFileReader, PdfFileWriter
 
 from dedoc.config import get_config
 from dedoc.data_structures import HierarchyLevel, LineWithMeta, UnstructuredDocument
@@ -119,29 +117,9 @@ class FintocStructureExtractor(AbstractStructureExtractor):
             self.logger.info(f"Got automatic TOC from {os.path.basename(file_path)}")
             return toc
 
-        lines = self.__read_one_column_lines(file_path)
+        parameters = {"is_one_column_document": "True", "need_header_footer_analysis": "True", "pages": ":10"}
+        lines = self.pdf_reader.read(file_path=file_path, parameters=parameters).lines
         return self.toc_extractor.get_toc(lines)
-
-    def __read_one_column_lines(self, file_path: str) -> List[LineWithMeta]:
-        """
-        TOC is one-columned even in two-columned documents (as a rule), so we handle TOC lines extraction separately:
-        1. save first 10 pages of the document to a temporary directory;
-        2. read lines from these pages in one-column mode without headers and footers.
-
-        Later these lines will be analysed for TOC lines extraction.
-        """
-        pdf_reader = PdfFileReader(file_path)
-        writer = PdfFileWriter()
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmp_path = os.path.join(tmpdir, os.path.basename(file_path))
-            for page_id in range(0, min(9, pdf_reader.getNumPages())):
-                writer.addPage(pdf_reader.getPage(page_id))
-            with open(tmp_path, "wb") as write_file:
-                writer.write(write_file)
-            lines = self.pdf_reader.read(file_path=tmp_path, parameters={"is_one_column_document": "True", "need_header_footer_analysis": "True"}).lines
-
-        return lines
 
     def __get_automatic_toc(self, path: str) -> List[Dict[str, Union[LineWithMeta, str]]]:
         result = []
