@@ -34,7 +34,8 @@ class ArticleReader(BaseReader):
         using beautifulsoup library.
         As a result, the method fills the class :class:`~dedoc.data_structures.UnstructuredDocument`.
         Article reader adds additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
-        The method extracts information about ``authors``, ``bibliography items``, ``sections``, and ``tables``.
+        The method extracts information about ``authors``, ``keywords``, ``bibliography items``, ``sections``, and ``tables``.
+        In table cells, ``colspan`` attribute can be filled according to the GROBID's "cols" attribute.
         You can find more information about the extracted information from GROBID system on the page :ref:`article_structure`.
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
