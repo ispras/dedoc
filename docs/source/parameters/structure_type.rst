@@ -15,23 +15,25 @@ Structure type configuring
       - Description
 
     * - document_type
-      - other, law, tz, diploma
+      - other, law, tz, diploma, article, fintoc
       - other
       - * :meth:`dedoc.DedocManager.parse`
         * :meth:`dedoc.structure_extractors.StructureExtractorComposition.extract`
       - Type of the document structure according to specific domain.
         If you use default manager config for :class:`~dedoc.DedocManager`, then the following options are available:
 
-            * **other** -- structure for document of any domain (:ref:`other_structure`)
+            * **other** -- structure for document of any domain (:ref:`other_structure`).
               In this case, :class:`~dedoc.structure_extractors.DefaultStructureExtractor` is used.
-            * **law** -- Russian laws (:ref:`law_structure`)
+            * **law** -- Russian laws (:ref:`law_structure`).
               In this case, :class:`~dedoc.structure_extractors.ClassifyingLawStructureExtractor` is used.
-            * **tz** -- Russian technical specifications (:ref:`tz_structure`)
+            * **tz** -- Russian technical specifications (:ref:`tz_structure`).
               In this case, :class:`~dedoc.structure_extractors.TzStructureExtractor` is used.
-            * **diploma** -- Russian thesis (:ref:`diploma_structure`)
+            * **diploma** -- Russian thesis (:ref:`diploma_structure`).
               In this case, :class:`~dedoc.structure_extractors.DiplomaStructureExtractor` is used.
-            * **article**  -- scientific article (:ref:`article_structure`)
+            * **article**  -- scientific article (:ref:`article_structure`).
               In this case, :class:`~dedoc.readers.ArticleReader` and :class:`~dedoc.structure_extractors.ArticleStructureExtractor` are used.
+            * **fintoc** -- English, French and Spanish financial prospects (:ref:`fintoc_structure`).
+              In this case, :class:`~dedoc.structure_extractors.FintocStructureExtractor` is used.
 
         If you use your custom configuration, look to the documentation of :class:`~dedoc.structure_extractors.StructureExtractorComposition`
 

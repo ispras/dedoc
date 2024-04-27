@@ -53,7 +53,7 @@ class PdfBaseReader(BaseReader):
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
-        self.config["n_jobs"] = config.get("n_jobs", 1)
+        self.config["n_jobs"] = self.config.get("n_jobs", 1)
         self.table_recognizer = TableRecognizer(config=self.config)
         self.metadata_extractor = LineMetadataExtractor(config=self.config)
         self.attachment_extractor = PDFAttachmentsExtractor(config=self.config)

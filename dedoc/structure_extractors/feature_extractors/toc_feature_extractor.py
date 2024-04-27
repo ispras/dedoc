@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from Levenshtein._levenshtein import ratio
@@ -17,11 +17,11 @@ class TOCFeatureExtractor:
         "indice", "índice", "contenidos", "tabladecontenido"  # spanish
     )
 
-    def get_toc(self, document: List[LineWithMeta]) -> List[dict]:
+    def get_toc(self, document: List[LineWithMeta]) -> List[Dict[str, Union[LineWithMeta, str]]]:
         """
         Finds the table of contents in the given document
         Returns:
-            list of dictionaries with toc item and page number where it is located: {"line", "page"}
+            list of dictionaries with toc item (LineWithMeta) and page number where it is located: {"line", "page"}
         """
         corrected_lines, marks = self.__get_probable_toc(document)
 

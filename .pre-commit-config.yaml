@@ -3,7 +3,7 @@ repos:
     rev: 5.0.4
     hooks:
     -   id: flake8
-        exclude: \.github|.*__init__\.py|resources|docs|venv|build|dedoc\.egg-info
+        exclude: \.github|.*__init__\.py|resources|docs|venv|build|dedoc\.egg-info|scripts/fintoc2022/metric.py
         args:
             - "--config=.flake8"
         additional_dependencies: [

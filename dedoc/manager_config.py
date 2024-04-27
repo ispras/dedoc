@@ -1,7 +1,5 @@
 from typing import Optional
 
-from dedoc.readers.article_reader.article_reader import ArticleReader
-
 
 def _get_manager_config(config: dict) -> dict:
     """
@@ -23,6 +21,7 @@ def _get_manager_config(config: dict) -> dict:
     from dedoc.metadata_extractors.concrete_metadata_extractors.pdf_metadata_extractor import PdfMetadataExtractor
     from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
     from dedoc.readers.archive_reader.archive_reader import ArchiveReader
+    from dedoc.readers.article_reader.article_reader import ArticleReader
     from dedoc.readers.csv_reader.csv_reader import CSVReader
     from dedoc.readers.docx_reader.docx_reader import DocxReader
     from dedoc.readers.email_reader.email_reader import EmailReader
@@ -41,9 +40,11 @@ def _get_manager_config(config: dict) -> dict:
     from dedoc.structure_constructors.concrete_structure_constructors.linear_constructor import LinearConstructor
     from dedoc.structure_constructors.concrete_structure_constructors.tree_constructor import TreeConstructor
     from dedoc.structure_constructors.structure_constructor_composition import StructureConstructorComposition
+    from dedoc.structure_extractors.concrete_structure_extractors.article_structure_extractor import ArticleStructureExtractor
     from dedoc.structure_extractors.concrete_structure_extractors.classifying_law_structure_extractor import ClassifyingLawStructureExtractor
     from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
     from dedoc.structure_extractors.concrete_structure_extractors.diploma_structure_extractor import DiplomaStructureExtractor
+    from dedoc.structure_extractors.concrete_structure_extractors.fintoc_structure_extractor import FintocStructureExtractor
     from dedoc.structure_extractors.concrete_structure_extractors.foiv_law_structure_extractor import FoivLawStructureExtractor
     from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
     from dedoc.structure_extractors.concrete_structure_extractors.tz_structure_extractor import TzStructureExtractor
@@ -93,7 +94,9 @@ def _get_manager_config(config: dict) -> dict:
         DefaultStructureExtractor.document_type: DefaultStructureExtractor(config=config),
         DiplomaStructureExtractor.document_type: DiplomaStructureExtractor(config=config),
         TzStructureExtractor.document_type: TzStructureExtractor(config=config),
-        ClassifyingLawStructureExtractor.document_type: ClassifyingLawStructureExtractor(extractors=law_extractors, config=config)
+        ClassifyingLawStructureExtractor.document_type: ClassifyingLawStructureExtractor(extractors=law_extractors, config=config),
+        ArticleStructureExtractor.document_type: ArticleStructureExtractor(config=config),
+        FintocStructureExtractor.document_type: FintocStructureExtractor(config=config)
     }
 
     return dict(

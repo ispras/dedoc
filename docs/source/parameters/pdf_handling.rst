@@ -49,16 +49,19 @@ PDF and images handling
               It is highly recommended to use this option value for any PDF document parsing.
 
     * - language
-      - rus, eng, rus+eng
+      - rus, eng, rus+eng, fra, spa
       - rus+eng
       - * :meth:`dedoc.DedocManager.parse`
         * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
         * :meth:`dedoc.readers.ReaderComposition.read`
+        * :meth:`dedoc.structure_extractors.FintocStructureExtractor.extract`
       - Language of the document without a textual layer. The following values are available:
 
             * **rus** -- Russian;
             * **eng** -- English;
-            * **rus+eng** -- both Russian and English.
+            * **rus+eng** -- both Russian and English;
+            * **fra** -- French (for :class:`~dedoc.structure_extractors.FintocStructureExtractor`);
+            * **spa** -- Spanish (for :class:`~dedoc.structure_extractors.FintocStructureExtractor`).
 
     * - pages
       - :, start:, :end, start:end
