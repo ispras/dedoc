@@ -2,7 +2,7 @@ import gzip
 import logging
 import os
 import pickle
-from typing import List, Optional
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -47,7 +47,11 @@ class FintocClassifier:
         # return list [1, 2, 3, -1, -1, ...], where positive values mean headers depth, -1 mean non-header lines
         return list(result)
 
-    def fit(self, binary_classifier_parameters: dict, target_classifier_parameters: dict, features: pd.DataFrame, features_names: list[str]) -> None:
+    def fit(self,
+            binary_classifier_parameters: Dict[str, Union[int, float, str]],
+            target_classifier_parameters: Dict[str, Union[int, float, str]],
+            features: pd.DataFrame,
+            features_names: List[str]) -> None:
         self.classifiers["binary"] = XGBClassifier(**binary_classifier_parameters)
         self.classifiers["target"] = XGBClassifier(**target_classifier_parameters)
         self.binary_classifier.fit(features[features_names], features.label != -1)

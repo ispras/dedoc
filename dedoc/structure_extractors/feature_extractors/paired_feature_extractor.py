@@ -13,6 +13,22 @@ from dedoc.utils.utils import flatten
 
 
 class PairedFeatureExtractor(AbstractFeatureExtractor):
+    """
+    This class is used as an auxiliary feature extractor to the main extractor.
+    It allows to add "raw" features related to the lines importance.
+    Based on one line property (size, indentation) it computes a raw line's depth inside the document tree.
+
+    Example:
+        For lines
+            line1 (size=16)
+            line2 (size=14)
+            line3 (size=12)
+            line4 (size=12)
+            line5 (size=14)
+            line6 (size=12)
+        We will obtain a feature vector (raw_depth_size)
+            [0, 1, 2, 2, 1, 2]
+    """
 
     def parameters(self) -> dict:
         return {}

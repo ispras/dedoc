@@ -1,11 +1,11 @@
 import os
 from collections import defaultdict
-from typing import List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import pandas as pd
 
 
-def create_json_result(data: pd.DataFrame, predictions: List[int]) -> dict:
+def create_json_result(data: pd.DataFrame, predictions: List[int]) -> Dict[str, List[Dict[str, Union[str, int]]]]:
     """
     Creates dictionary with TOCs for each document: {"doc_name": TOC}.
     TOC is a following list of dictionaries:

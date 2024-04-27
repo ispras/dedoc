@@ -85,14 +85,13 @@ class FintocFeatureExtractor(AbstractFeatureExtractor):
         for line_id, _ in enumerate(document):
             if line_id >= n:
                 prev_line = document[line_id - n]
-                is_prev_line_ends = prev_line.line.endswith((".", ";"))
-                res["prev_line_ends"].append(1 if is_prev_line_ends else 0)
+                res["prev_line_ends"].append(prev_line.line.endswith((".", ";")))
                 res["prev_ends_with_colon"].append(prev_line.line.endswith(":"))
                 res["prev_is_space"].append(prev_line.line.lower().isspace())
             else:
-                res["prev_line_ends"].append(0)
-                res["prev_ends_with_colon"].append(0)
-                res["prev_is_space"].append(0)
+                res["prev_line_ends"].append(False)
+                res["prev_ends_with_colon"].append(False)
+                res["prev_is_space"].append(False)
         return res
 
     def __get_line_relative_length(self, lines: List[LineWithMeta]) -> List[float]:

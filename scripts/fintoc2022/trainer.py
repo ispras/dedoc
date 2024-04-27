@@ -4,7 +4,7 @@ import logging
 import os
 import shutil
 from statistics import mean
-from typing import Optional
+from typing import Dict, List, Optional, Union
 
 import pandas as pd
 from sklearn.model_selection import GroupKFold
@@ -101,15 +101,15 @@ class FintocTrainer:
         scores = self.__cross_validate(features=features, gt_dir=gt_dir) if cross_val else None
 
         # train resulting classifiers on all data
-        self.logger.info("Train resulting classifiers")
+        self.logger.info("Start training resulting classifiers on all data")
         self.classifier.fit(self.binary_classifier_parameters, self.target_classifier_parameters, features=features, features_names=features_names)
         self.__save(features_names=features_names, scores=scores)
 
-    def __get_features_names(self, features_df: pd.DataFrame) -> list:
+    def __get_features_names(self, features_df: pd.DataFrame) -> List[str]:
         features_names = [col for col in features_df.columns if col not in self.additional_features_fields]
         return features_names
 
-    def __cross_validate(self, features: pd.DataFrame, gt_dir: str) -> dict:
+    def __cross_validate(self, features: pd.DataFrame, gt_dir: str) -> Dict[str, Union[List[float], float]]:
         self.logger.info("Start cross-validation")
         features_names = self.__get_features_names(features)
         results_path = os.path.join(self.scores_dir_path, f"cross_val_results_{self.language}_{self.reader_name}")
@@ -158,7 +158,7 @@ class FintocTrainer:
         result_scores["toc_mean"] = mean(result_scores["toc_scores"])
         return result_scores
 
-    def __save(self, features_names: list[str], scores: Optional[dict]) -> None:
+    def __save(self, features_names: List[str], scores: Optional[Dict[str, Union[List[float], float]]]) -> None:
 
         if scores is not None:
             os.makedirs(self.scores_dir_path, exist_ok=True)

@@ -15,7 +15,7 @@ Structure type configuring
       - Description
 
     * - document_type
-      - other, law, tz, diploma
+      - other, law, tz, diploma, article, fintoc
       - other
       - * :meth:`dedoc.DedocManager.parse`
         * :meth:`dedoc.structure_extractors.StructureExtractorComposition.extract`

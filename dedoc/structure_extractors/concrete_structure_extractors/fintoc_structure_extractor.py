@@ -119,6 +119,17 @@ class FintocStructureExtractor(AbstractStructureExtractor):
             self.logger.info(f"Got automatic TOC from {os.path.basename(file_path)}")
             return toc
 
+        lines = self.__read_one_column_lines(file_path)
+        return self.toc_extractor.get_toc(lines)
+
+    def __read_one_column_lines(self, file_path: str) -> List[LineWithMeta]:
+        """
+        TOC is one-columned even in two-columned documents (as a rule), so we handle TOC lines extraction separately:
+        1. save first 10 pages of the document to a temporary directory;
+        2. read lines from these pages in one-column mode without headers and footers.
+
+        Later these lines will be analysed for TOC lines extraction.
+        """
         pdf_reader = PdfFileReader(file_path)
         writer = PdfFileWriter()
 
@@ -130,14 +141,12 @@ class FintocStructureExtractor(AbstractStructureExtractor):
                 writer.write(write_file)
             lines = self.pdf_reader.read(file_path=tmp_path, parameters={"is_one_column_document": "True", "need_header_footer_analysis": "True"}).lines
 
-        return self.toc_extractor.get_toc(lines)
+        return lines
 
     def __get_automatic_toc(self, path: str) -> List[Dict[str, Union[LineWithMeta, str]]]:
         result = []
         with os.popen(f'pdftocio -p "{path}"') as out:
             toc = out.readlines()
-        if len(toc) == 0:
-            return result
 
         for line in toc:
             match = self.toc_item_regexp.match(line.strip())
