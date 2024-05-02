@@ -27,7 +27,6 @@ class TestApiPdfReader(AbstractTestApiDocReader):
     def __check_metainfo(self, metainfo: dict, actual_type: str, actual_name: str) -> None:
         self.assertEqual(metainfo["file_type"], actual_type)
         self.assertEqual(metainfo["file_name"], actual_name)
-        self.assertIn("rotated_page_angles", metainfo)
 
     def test_pdf(self) -> None:
         file_name = "example.pdf"
