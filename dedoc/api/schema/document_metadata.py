@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel, Extra, Field
 
 
@@ -18,4 +16,3 @@ class DocumentMetadata(BaseModel):
     created_time: int = Field(description="Creation time of the document in the UnixTime format", example=1590579805)
     access_time: int = Field(description="File access time in the UnixTime format", example=1590579805)
     file_type: str = Field(description="Mime type of the file", example="application/vnd.oasis.opendocument.text")
-    other_fields: Optional[dict] = Field(description="Other optional fields")

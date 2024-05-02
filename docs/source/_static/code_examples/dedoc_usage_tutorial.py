@@ -64,10 +64,10 @@ document.lines[5].annotations[-2]  # Attachment(0:10, attach_6de4dc06-0b75-11ee-
 metadata_extractor = DocxMetadataExtractor()
 metadata_extractor.can_extract(file_path)  # True
 document.metadata = metadata_extractor.extract(file_path)
-document.metadata  # {'file_name': 'example.docx', 'file_type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'size': 373795,
-# 'access_time': 1686825619, 'created_time': 1686825617, 'modified_time': 1686823541, 'other_fields': {'document_subject': '', 'keywords': '',
-# 'category': '', 'comments': '', 'author': '', 'last_modified_by': '', 'created_date': 1568725611, 'modified_date': 1686752726,
-# 'last_printed_date': None}}
+document.metadata  # {'file_name': 'example.docx', 'temporary_file_name': 'example.docx',
+# 'file_type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'size': 373839, 'access_time': 1713964145,
+# 'created_time': 1713958120, 'modified_time': 1709111749, 'document_subject': '', 'keywords': '', 'category': '', 'comments': '', 'author': '',
+# 'last_modified_by': 'python-docx', 'created_date': None, 'modified_date': 1714635406, 'last_printed_date': None}
 
 
 """Using attachments extractors"""

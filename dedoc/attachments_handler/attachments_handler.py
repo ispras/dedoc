@@ -72,7 +72,7 @@ class AttachmentsHandler:
                 # return empty ParsedDocument with Meta information
                 parsed_file = self.__get_empty_document(document_parser=document_parser, attachment=attachment, parameters=parameters_copy)
 
-            parsed_file.metadata.set_uid(attachment.uid)
+            parsed_file.metadata.uid = attachment.uid
             attachments.append(parsed_file)
         return attachments
 

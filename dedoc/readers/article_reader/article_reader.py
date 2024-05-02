@@ -132,7 +132,7 @@ class ArticleReader(BaseReader):
             hierarchy_level = HierarchyLevel(level_1=hierarchy_level_id, level_2=0, can_be_multiline=False, line_type=paragraph_type)
 
         return LineWithMeta(line=text,
-                            metadata=LineMetadata(page_id=0, line_id=0, tag_hierarchy_level=hierarchy_level, other_fields=other_fields),
+                            metadata=LineMetadata(page_id=0, line_id=0, tag_hierarchy_level=hierarchy_level, **other_fields),
                             annotations=annotations)
 
     def __parse_affiliation(self, affiliation_tag: Tag) -> List[LineWithMeta]:
