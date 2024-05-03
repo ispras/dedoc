@@ -27,6 +27,7 @@ There are the following line types in the article structure type:
 
     * ``root``;
     * ``author`` (includes ``author_first_name``, ``author_surname``, ``email``);
+    * ``keywords`` (includes ``keyword``);
     * ``author_affiliation`` (includes ``org_name``, ``address``);
     * ``abstract``;
     * ``section``;
@@ -106,11 +107,17 @@ Below is a description of nodes in the output tree:
 
         .. literalinclude:: ../_static/json_format_examples/article_example.json
             :language: json
-            :lines: 125-198
+            :lines: 115-182
+
+    * **keywords** node (if exist) is a child  node of the node ``root``.
+
+        ``keywords`` node contains ``keyword`` nodes as children. Each ``keyword`` node contains the text of one key word item.
 
     * **abstract** is the article's abstract section (<abstract> tag in GROBID's output).
 
-    * **section**: nodes of article sections (for example "Introduction", "Conclusion", "V Experiments ..." etc.). This type of node has a subnode ``raw_text``. ``section`` nodes are children of a node ``root``.
+    * **section**: nodes of article sections (for example "Introduction", "Conclusion", "V Experiments ..." etc.). This type of node has a subnode ``raw_text``.
+
+        ``section`` nodes are children of a node ``root`` and may me nested (e.g., section "2.1. Datasets" is nested to the section "2. Related work").
 
     * **bibliography** is the article's bibliography list which contains only ``bibliography_item`` nodes.
 
@@ -169,11 +176,11 @@ Below is a description of nodes in the output tree:
         All ``bibliography_item`` nodes are children of the ``bibliography`` node.
         The example of the bibliography item parsing of the article in dedoc:
 
-        .. example of "node_id": "0.20.5"
+        .. example of "node_id": "0.12.5"
 
         .. literalinclude:: ../_static/json_format_examples/article_example.json
             :language: json
-            :lines: 1745-1880
+            :lines: 1591-1713
 
 
     * **bibliography references**: bibliography references in annotations of the article's text.
@@ -186,25 +193,25 @@ Below is a description of nodes in the output tree:
         Example of a bibliography reference in dedoc is given below.
         There is a textual node with two bibliography references (with two annotations):
 
-        .. example of "node_id": "0.15.0"
+        .. example of "node_id": "0.10.0"
 
         .. literalinclude:: ../_static/json_format_examples/article_example.json
             :language: json
-            :lines: 1085-1109
+            :lines: 1038-1061
 
         In the example, the annotations reference two ``bibliography_item`` nodes:
 
-        .. example of "node_id": "0.20.33"
+        .. example of "node_id": "0.12.33"
 
         .. literalinclude:: ../_static/json_format_examples/article_example.json
             :language: json
-            :lines: 4581-4593
+            :lines: 4144-4153
 
-        .. example of "node_id": "0.20.61"
+        .. example of "node_id": "0.12.61"
 
         .. literalinclude:: ../_static/json_format_examples/article_example.json
             :language: json
-            :lines: 7501-7513
+            :lines: 6774-6783
 
     * **raw_text**: node referring to a simple document line.
 

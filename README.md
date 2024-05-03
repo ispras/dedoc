@@ -1,6 +1,10 @@
 # Dedoc
 
+[![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 [![Documentation Status](https://readthedocs.org/projects/dedoc/badge/?version=latest)](https://dedoc.readthedocs.io/en/latest/?badge=latest)
+[![GitHub release](https://img.shields.io/github/release/ispras/dedoc.svg)](https://github.com/ispras/dedoc/releases/)
+[![Demo dedoc-readme.hf.space](https://img.shields.io/website-up-down-green-red/https/huggingface.co/spaces/dedoc/README.svg)](https://dedoc-readme.hf.space)
+[![Docker Hub](https://img.shields.io/docker/pulls/dedocproject/dedoc.svg)](https://hub.docker.com/r/dedocproject/dedoc/ "Docker Pulls")
 
 ![Dedoc](https://github.com/ispras/dedoc/raw/master/dedoc_logo.png)
 
@@ -39,26 +43,26 @@ In 2022, the system won a grant to support the development of promising AI proje
 ## Document format description
 The system processes different document formats. The main formats are listed below:
 
-| Format group          | Description                                                                                                                                                                                                                                                                                                                                                                     |
-|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Office formats        | DOCX, XLSX, PPTX and formats that canbe converted to them. Handling of these for-mats is held by analysis of format inner rep-resentation and using specialized libraries ([python-docx](https://python-docx.readthedocs.io/en/latest/), [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/))                                                               |
-| HTML, EML, MHTML      | HTML  documents  are  parsed  using  tagsanalysis,  HTML  handler  is  used  for  han-dling  documents  of  other  formats  in  thisgroup                                                                                                                                                                                                                                       |
-| TXT                   | Only raw textual content is analyzed                                                                                                                                                                                                                                                                                                                                            |
-| Archives              | Attachments of the archive are analyzed                                                                                                                                                                                                                                                                                                                                         |                                                                                                                                                                                                                                                                                                                  |
-| PDF,document images   | Copyable PDF documents (with a textual layer) can be handled using [pdfminer-six](https://pdfminersix.readthedocs.io/en/latest/) library or [tabby](https://github.com/sunveil/ispras_tbl_extr) software. Non-copyable PDF documents or imagesare handled using [Tesseract-OCR](https://github.com/tesseract-ocr/tesseract), machine learning methods (including neural network methods) and [image processing methods](https://opencv.org/) |
+| Format group         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Office formats       | DOCX, XLSX, PPTX and formats that can be converted to them. Handling of these formats is held by analysis of format inner representation and using specialized libraries ([python-docx](https://python-docx.readthedocs.io/en/latest/), [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/))                                                                                                                              |
+| HTML, EML, MHTML     | HTML  documents  are  parsed  using  tags analysis,  HTML  handler  is  used  for  handling  documents  of  other  formats  in  this group                                                                                                                                                                                                                                                                                                    |
+| TXT                  | Only raw textual content is analyzed                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Archives             | Attachments of the archive are analyzed                                                                                                                                                                                                                                                                                                                                                                                                       |                                                                                                                                                                                                                                                                                                                  |
+| PDF, document images | Copyable PDF documents (with a textual layer) can be handled using [pdfminer-six](https://pdfminersix.readthedocs.io/en/latest/) library or [tabby](https://github.com/sunveil/ispras_tbl_extr) software. Non-copyable PDF documents or images are handled using [Tesseract-OCR](https://github.com/tesseract-ocr/tesseract), machine learning methods (including neural network methods) and [image processing methods](https://opencv.org/) |
 
 ## Examples of processed scanned documents
 * Dedoc can only process scanned black and white documents, such as technical specifications, regulations, articles, etc.
-<img src="docs/source/_static/doc_examples.png" alt="Document examples" style="width:800px;"/>
-<!--![Document examples](docs/source/_static/doc_examples.png){:height="150px"}-->
+<img src="https://github.com/ispras/dedoc/raw/master/docs/source/_static/doc_examples.png" alt="Document examples" style="width:800px;"/>
+
 * In particular, dedoc recognizes tabular information only from tables with explicit boundaries. Here are examples of documents that can be processed by an dedoc's image handler:
-<img src="docs/source/_static/example_table.jpg" alt="Table parsing example" style="width:600px;"/>
-<!--![Table Example](docs/source/_static/example_table.jpg)-->
+<img src="https://github.com/ispras/dedoc/raw/master/docs/source/_static/example_table.jpg" alt="Table parsing example" style="width:600px;"/>
+
 * The system also automatically detects and corrects the orientation of scanned documents
 
-## Example of structure extractor
-<img src="docs/source/_static/str_ext_example_law.png" alt="Law structure example"/>
-<img src="docs/source/_static/str_ext_example_tz.png" alt="Tz structure example"/>
+## Examples of structure extractors
+<img src="https://github.com/ispras/dedoc/raw/master/docs/source/_static/str_ext_example_law.png" alt="Law structure example"/>
+<img src="https://github.com/ispras/dedoc/raw/master/docs/source/_static/str_ext_example_tz.png" alt="Tz structure example"/>
 
 
 ## Impact
@@ -66,25 +70,26 @@ This project may be useful as a first step of automatic document analysis pipeli
 Dedoc is in demand for information analytic systems, information leak monitoring systems, as well as for natural language processing systems.
 The library is intended for application use by developers of systems for automatic analysis and structuring of electronic documents, including for further search in electronic documents. 
 
-# Online-Documentation
-Relevant documentation of the dedoc is available [here](https://dedoc.readthedocs.io/en/latest/)
+# Documentation
+Relevant documentation of dedoc is available [here](https://dedoc.readthedocs.io/en/latest/)
 
 # Demo
-You can try dedoc's demo: https://dedoc-readme.hf.space.
 
-We have a video to demonstrate how to use the system: https://www.youtube.com/watch?v=ZUnPYV8rd9A.
+* You can try [dedoc demo](https://dedoc-readme.hf.space)
+* You can watch [video about dedoc](https://www.youtube.com/watch?v=ZUnPYV8rd9A)
 
-![Web_interface](docs/source/_static/web_interface.png)
+![](https://github.com/ispras/dedoc/raw/master/docs/source/_static/web_interface.png)
 
-![dedoc_demo](docs/source/_static/dedoc_short.gif)
+![](https://github.com/ispras/dedoc/raw/master/docs/source/_static/dedoc_short.gif)
 
-# Some our publications
+# Publications related to dedoc
 
-* Article on [Habr](https://habr.com/ru/companies/isp_ras/articles/779390/), where we describe our system in detail
-* [Our article](https://aclanthology.org/2022.fnp-1.13.pdf) from the FINTOC 2022 competition. We are the winners :smiley: :trophy:!
+* Article [ISPRAS@FinTOC-2022 shared task: Two-stage TOC generation model](https://aclanthology.org/2022.fnp-1.13.pdf) for the [FinTOC 2022 Shared Task](https://wp.lancs.ac.uk/cfie/fintoc2022/). We are the winners :smiley: :trophy:!
+* Article on habr.com [Dedoc: как автоматически извлечь из текстового документа всё и даже немного больше](https://habr.com/ru/companies/isp_ras/articles/779390/) in Russian (2023)
+* Article [Dedoc: A Universal System for Extracting Content and Logical Structure From Textual Documents](https://ieeexplore.ieee.org/abstract/document/10508151/) in English (2023)
 
 # Installation instructions
-****************************************
+
 This project has REST Api and you can run it in Docker container.
 Also, dedoc can be installed as a library via `pip`.
 There are two ways to install and run dedoc as a web application or a library that are described below.

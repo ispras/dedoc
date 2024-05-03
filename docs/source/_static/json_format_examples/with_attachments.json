@@ -1,16 +1,13 @@
 {
-  "version": "0.11.2",
-  "warnings": [],
   "content": {
     "structure": {
       "node_id": "0",
       "text": "",
       "annotations": [],
       "metadata": {
-        "page_id": 0,
-        "line_id": 0,
         "paragraph_type": "root",
-        "other_fields": {}
+        "page_id": 0,
+        "line_id": 0
       },
       "subparagraphs": [
         {
@@ -55,10 +52,9 @@
             }
           ],
           "metadata": {
-            "page_id": 0,
-            "line_id": 0,
             "paragraph_type": "header",
-            "other_fields": {}
+            "page_id": 0,
+            "line_id": 0
           },
           "subparagraphs": [
             {
@@ -103,10 +99,9 @@
                 }
               ],
               "metadata": {
-                "page_id": 0,
-                "line_id": 1,
                 "paragraph_type": "header",
-                "other_fields": {}
+                "page_id": 0,
+                "line_id": 1
               },
               "subparagraphs": [
                 {
@@ -132,10 +127,28 @@
                       "value": "120"
                     },
                     {
+                      "start": 11,
+                      "end": 38,
+                      "name": "spacing",
+                      "value": "140"
+                    },
+                    {
+                      "start": 38,
+                      "end": 50,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
                       "start": 0,
                       "end": 37,
                       "name": "style",
                       "value": "Body Text"
+                    },
+                    {
+                      "start": 37,
+                      "end": 50,
+                      "name": "style",
+                      "value": "Normal"
                     },
                     {
                       "start": 0,
@@ -144,16 +157,22 @@
                       "value": "16.0"
                     },
                     {
+                      "start": 25,
+                      "end": 30,
+                      "name": "size",
+                      "value": "10.0"
+                    },
+                    {
                       "start": 30,
                       "end": 37,
                       "name": "size",
                       "value": "16.0"
                     },
                     {
-                      "start": 11,
-                      "end": 38,
-                      "name": "spacing",
-                      "value": "140"
+                      "start": 38,
+                      "end": 50,
+                      "name": "size",
+                      "value": "14.0"
                     },
                     {
                       "start": 11,
@@ -168,41 +187,16 @@
                       "value": "True"
                     },
                     {
-                      "start": 25,
-                      "end": 30,
-                      "name": "size",
-                      "value": "10.0"
-                    },
-                    {
                       "start": 11,
                       "end": 37,
                       "name": "table",
                       "value": "3a327789721e09b3fa6fd9560f3ee263"
-                    },
-                    {
-                      "start": 37,
-                      "end": 50,
-                      "name": "style",
-                      "value": "Normal"
-                    },
-                    {
-                      "start": 38,
-                      "end": 50,
-                      "name": "spacing",
-                      "value": "0"
-                    },
-                    {
-                      "start": 38,
-                      "end": 50,
-                      "name": "size",
-                      "value": "14.0"
                     }
                   ],
                   "metadata": {
-                    "page_id": 0,
-                    "line_id": 2,
                     "paragraph_type": "raw_text",
-                    "other_fields": {}
+                    "page_id": 0,
+                    "line_id": 2
                   },
                   "subparagraphs": []
                 },
@@ -211,10 +205,9 @@
                   "text": "",
                   "annotations": [],
                   "metadata": {
-                    "page_id": 0,
-                    "line_id": 6,
                     "paragraph_type": "list",
-                    "other_fields": {}
+                    "page_id": 0,
+                    "line_id": 6
                   },
                   "subparagraphs": [
                     {
@@ -253,10 +246,9 @@
                         }
                       ],
                       "metadata": {
-                        "page_id": 0,
-                        "line_id": 6,
                         "paragraph_type": "list_item",
-                        "other_fields": {}
+                        "page_id": 0,
+                        "line_id": 6
                       },
                       "subparagraphs": []
                     },
@@ -298,14 +290,13 @@
                           "start": 0,
                           "end": 14,
                           "name": "attachment",
-                          "value": "attach_0bd61680-5e07-11ee-9889-0242ac120002"
+                          "value": "attach_7098fafc-e566-46d5-9125-adb6e9b047d8"
                         }
                       ],
                       "metadata": {
-                        "page_id": 0,
-                        "line_id": 7,
                         "paragraph_type": "list_item",
-                        "other_fields": {}
+                        "page_id": 0,
+                        "line_id": 7
                       },
                       "subparagraphs": []
                     }
@@ -359,8 +350,8 @@
                   ]
                 }
               ],
-              "colspan": 2,
               "rowspan": 1,
+              "colspan": 2,
               "invisible": false
             },
             {
@@ -401,8 +392,8 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": true
             }
           ],
@@ -445,8 +436,8 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 2,
+              "colspan": 1,
               "invisible": false
             },
             {
@@ -487,8 +478,8 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": false
             }
           ],
@@ -531,8 +522,8 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": true
             },
             {
@@ -573,8 +564,8 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": false
             }
           ],
@@ -617,8 +608,8 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": false
             },
             {
@@ -659,28 +650,29 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": false
             }
           ]
         ],
         "metadata": {
-          "uid": "3a327789721e09b3fa6fd9560f3ee263",
           "page_id": null,
-          "rotated_angle": 0.0
+          "uid": "3a327789721e09b3fa6fd9560f3ee263",
+          "rotated_angle": 0.0,
+          "title": ""
         }
       }
     ]
   },
   "metadata": {
-    "uid": "doc_uid_auto_0be919ce-5e07-11ee-9889-0242ac120002",
+    "uid": "doc_uid_auto_ffbdff46-0871-11ef-b95c-0242ac120002",
     "file_name": "example_return_format.docx",
-    "temporary_file_name": "1695909485_143.docx",
+    "temporary_file_name": "1714647118_747.docx",
     "size": 21270,
-    "modified_time": 1695909485,
-    "created_time": 1695909485,
-    "access_time": 1695909485,
+    "modified_time": 1714647118,
+    "created_time": 1714647118,
+    "access_time": 1714647118,
     "file_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "document_subject": "",
     "keywords": "",
@@ -690,49 +682,38 @@
     "last_modified_by": "",
     "created_date": 1568725611,
     "modified_date": 1686912636,
-    "last_printed_date": null,
-    "other_fields": {
-      "document_subject": "",
-      "keywords": "",
-      "category": "",
-      "comments": "",
-      "author": "",
-      "last_modified_by": "",
-      "created_date": 1568725611,
-      "modified_date": 1686912636,
-      "last_printed_date": null
-    }
+    "last_printed_date": null
   },
+  "version": "2.2",
+  "warnings": [],
   "attachments": [
     {
-      "version": "0.11.2",
-      "warnings": [],
       "content": {
         "structure": {
           "node_id": "0",
           "text": "",
           "annotations": [],
           "metadata": {
-            "page_id": 0,
-            "line_id": 0,
             "paragraph_type": "root",
-            "other_fields": {}
+            "page_id": 0,
+            "line_id": 0
           },
           "subparagraphs": []
         },
         "tables": []
       },
       "metadata": {
-        "uid": "attach_0bd61680-5e07-11ee-9889-0242ac120002",
+        "uid": "attach_7098fafc-e566-46d5-9125-adb6e9b047d8",
         "file_name": "image1.png",
-        "temporary_file_name": "1695909485_135.png",
+        "temporary_file_name": "1714647118_301.png",
         "size": 14874,
-        "modified_time": 1695909485,
-        "created_time": 1695909485,
-        "access_time": 1695909485,
-        "file_type": "image/png",
-        "other_fields": {}
+        "modified_time": 1714647118,
+        "created_time": 1714647118,
+        "access_time": 1714647118,
+        "file_type": "image/png"
       },
+      "version": "2.2",
+      "warnings": [],
       "attachments": []
     }
   ]

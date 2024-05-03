@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v2.2.1 (2023-05-03)
+-------------------
+Release note: `v2.2.1 <https://github.com/ispras/dedoc/releases/tag/v2.2.1>`_
+
+* Added `fintoc` structure type for parsing financial prospects according to the `FinTOC 2022 Shared task <https://wp.lancs.ac.uk/cfie/fintoc2022/>`_ (`FintocStructureExtractor`).
+* Fixed small bugs in `ArticleReader`: colspan for tables, keywords, sections numbering, etc.
+* Added references to nodes and fixed small bugs in the HTML output representation (return_format="html").
+* Removed `other_fields` from `LineMetadata` and `DocumentMetadata`.
+* Update `README.md`.
+
 v2.2 (2023-04-17)
 -----------------
 Release note: `v2.2 <https://github.com/ispras/dedoc/releases/tag/v2.2>`_
@@ -15,7 +25,7 @@ v2.1.1 (2024-03-21)
 -------------------
 Release note: `v2.1.1 <https://github.com/ispras/dedoc/releases/tag/v2.1.1>`_
 
-* Update README.md.
+* Update `README.md`.
 * Update table and time benchmarks.
 * Re-label line-classifier datasets (law, tz, diploma, paragraphs datasets).
 * Update tasker creators (for the labeling system).

@@ -181,7 +181,7 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
         for file_name in file_names:
             result = self._send_request(file_name, data=dict())
-            page_angle = result["metadata"]["other_fields"]["rotated_page_angles"][0]
+            page_angle = result["metadata"]["rotated_page_angles"][0]
 
             image = cv2.imread(self._get_abs_path(file_name))
             image = rotate_image(image, page_angle)
@@ -215,7 +215,7 @@ class TestWordExtraction(AbstractTestApiDocReader):
             structure = result["content"]["structure"]
             word_annotations = self.__get_words_annotation(structure)
             image = cv2.imread(self._get_abs_path(filename))
-            image = rotate_image(image, result["metadata"]["other_fields"].get("rotated_page_angles", [0.])[0])
+            image = rotate_image(image, result["metadata"].get("rotated_page_angles", [0.])[0])
             image = self.__draw_word_annotations(image, word_annotations)
             tables = result["content"]["tables"]
             if len(tables) > 0:

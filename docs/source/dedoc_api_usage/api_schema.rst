@@ -29,7 +29,6 @@ Json schema of the output is also available during dedoc application running on 
     .. autoattribute:: created_time
     .. autoattribute:: access_time
     .. autoattribute:: file_type
-    .. autoattribute:: other_fields
 
 .. autoclass:: dedoc.api.schema.TreeNode
 
@@ -49,7 +48,6 @@ Json schema of the output is also available during dedoc application running on 
     .. autoattribute:: paragraph_type
     .. autoattribute:: page_id
     .. autoattribute:: line_id
-    .. autoattribute:: other_fields
 
 .. autoclass:: dedoc.api.schema.Table
 

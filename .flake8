@@ -16,12 +16,15 @@ exclude =
     resources,
     venv,
     build,
-    dedoc.egg-info
-    docs/_build
+    dedoc.egg-info,
+    docs/_build,
+    scripts/fintoc2022/metric.py
 
 # ANN101 - type annotations for self
+# T201 - prints found
+# JS101 - Multi-line container not broken after opening character
 ignore =
     ANN101
 per-file-ignores =
     scripts/*:T201
-    scripts/benchmark_pdf_performance*:JS101,T201
+    scripts/benchmark_pdf_performance*:JS101

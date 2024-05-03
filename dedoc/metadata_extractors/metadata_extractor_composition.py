@@ -21,16 +21,13 @@ class MetadataExtractorComposition:
                 file_path: str,
                 converted_filename: Optional[str] = None,
                 original_filename: Optional[str] = None,
-                parameters: Optional[dict] = None,
-                other_fields: Optional[dict] = None) -> dict:
+                parameters: Optional[dict] = None) -> dict:
         """
         Extract metadata using one of the extractors if suitable extractor was found.
         Look to the method :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` of the class
         :class:`~dedoc.metadata_extractors.AbstractMetadataExtractor` documentation to get the information about method's parameters.
         """
         for extractor in self.extractors:
-            if extractor.can_extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters,
-                                     other_fields=other_fields):
-                return extractor.extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters,
-                                         other_fields=other_fields)
+            if extractor.can_extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters):
+                return extractor.extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters)
         raise Exception(f"Can't extract metadata from from file {os.path.basename(file_path)}")

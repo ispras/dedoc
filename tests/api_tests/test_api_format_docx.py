@@ -13,13 +13,12 @@ class TestApiDocReader(AbstractTestApiDocReader):
         file_name = "english_doc.docx"
         result = self._send_request(file_name)
         metadata = result["metadata"]
-        docx_metadata = metadata["other_fields"]
-        self.assertEqual("Тема", docx_metadata["document_subject"])
-        self.assertEqual("анализ естественных языков", docx_metadata["keywords"])
-        self.assertEqual("курсовая работа", docx_metadata["category"])
-        self.assertEqual("на 3 потянет", docx_metadata["comments"])
-        self.assertEqual("Андрей Пышкин", docx_metadata["author"])
-        self.assertEqual("Андреус Пышкинус", docx_metadata["last_modified_by"])
+        self.assertEqual("Тема", metadata["document_subject"])
+        self.assertEqual("анализ естественных языков", metadata["keywords"])
+        self.assertEqual("курсовая работа", metadata["category"])
+        self.assertEqual("на 3 потянет", metadata["comments"])
+        self.assertEqual("Андрей Пышкин", metadata["author"])
+        self.assertEqual("Андреус Пышкинус", metadata["last_modified_by"])
 
     def test_docx(self) -> None:
         file_name = "example.docx"
@@ -154,4 +153,4 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertTrue(metadata["modified_time"] is not None)
         self.assertTrue(metadata["created_time"] is not None)
         self.assertTrue(metadata["access_time"] is not None)
-        self.assertIn("modified_date", metadata["other_fields"])
+        self.assertIn("modified_date", metadata)

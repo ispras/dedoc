@@ -4,11 +4,12 @@ from .concrete_structure_extractors.abstract_law_structure_extractor import Abst
 from .concrete_structure_extractors.article_structure_extractor import ArticleStructureExtractor
 from .concrete_structure_extractors.classifying_law_structure_extractor import ClassifyingLawStructureExtractor
 from .concrete_structure_extractors.diploma_structure_extractor import DiplomaStructureExtractor
+from .concrete_structure_extractors.fintoc_structure_extractor import FintocStructureExtractor
 from .concrete_structure_extractors.foiv_law_structure_extractor import FoivLawStructureExtractor
 from .concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
 from .concrete_structure_extractors.tz_structure_extractor import TzStructureExtractor
 from .structure_extractor_composition import StructureExtractorComposition
 
 __all__ = ['AbstractStructureExtractor', 'AbstractLawStructureExtractor', 'ArticleStructureExtractor', 'ClassifyingLawStructureExtractor',
-           'DefaultStructureExtractor', 'DiplomaStructureExtractor', 'FoivLawStructureExtractor', 'LawStructureExtractor', 'TzStructureExtractor',
-           'StructureExtractorComposition']
+           'DefaultStructureExtractor', 'DiplomaStructureExtractor', 'FintocStructureExtractor', 'FoivLawStructureExtractor', 'LawStructureExtractor',
+           'TzStructureExtractor', 'StructureExtractorComposition']

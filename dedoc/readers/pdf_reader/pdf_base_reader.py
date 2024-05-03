@@ -53,7 +53,7 @@ class PdfBaseReader(BaseReader):
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
-        self.config["n_jobs"] = config.get("n_jobs", 1)
+        self.config["n_jobs"] = self.config.get("n_jobs", 1)
         self.table_recognizer = TableRecognizer(config=self.config)
         self.metadata_extractor = LineMetadataExtractor(config=self.config)
         self.attachment_extractor = PDFAttachmentsExtractor(config=self.config)
@@ -88,13 +88,13 @@ class PdfBaseReader(BaseReader):
             attachments_dir=attachments_dir
         )
 
-        lines, scan_tables, attachments, warnings, other_fields = self._parse_document(file_path, params_for_parse)
+        lines, scan_tables, attachments, warnings, metadata = self._parse_document(file_path, params_for_parse)
         tables = [scan_table.to_table() for scan_table in scan_tables]
 
         if param_utils.get_param_with_attachments(parameters) and self.attachment_extractor.can_extract(file_path):
             attachments += self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
 
-        result = UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=warnings, metadata=other_fields)
+        result = UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=warnings, metadata=metadata)
         return self._postprocess(result)
 
     def _parse_document(self, path: str, parameters: ParametersForParseDoc) -> (

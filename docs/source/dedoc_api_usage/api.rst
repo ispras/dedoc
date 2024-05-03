@@ -70,7 +70,7 @@ Api parameters description
     * - :cspan:`3` **Type of document structure parsing**
 
     * - document_type
-      - other, law, tz, diploma
+      - other, law, tz, diploma, article, fintoc
       - other
       - Type of the document structure according to specific domain.
 
@@ -80,7 +80,8 @@ Api parameters description
             * **law** -- Russian laws (:ref:`law_structure`);
             * **tz** -- Russian technical specifications (:ref:`tz_structure`);
             * **diploma** -- Russian thesis (:ref:`diploma_structure`);
-            * **article** -- scientific article (:ref:`article_structure`).
+            * **article** -- scientific article (:ref:`article_structure`);
+            * **fintoc** -- English, French and Spanish financial prospects (:ref:`fintoc_structure`).
 
         This type is used for choosing a specific structure extractor (and, in some cases, a specific reader).
 
@@ -215,13 +216,15 @@ Api parameters description
               It is highly recommended to use this option value for any PDF document parsing.
 
     * - language
-      - rus, eng, rus+eng
+      - rus, eng, rus+eng, fra, spa
       - rus+eng
       - Language of the parsed PDF document without a textual layer. The following values are available:
 
             * **rus** -- Russian;
             * **eng** -- English;
-            * **rus+eng** -- both Russian and English.
+            * **rus+eng** -- both Russian and English;
+            * **fra** -- French (for fintoc structure type);
+            * **spa** -- Spanish (for fintoc structure type).
 
     * - pages
       - :, start:, :end, start:end

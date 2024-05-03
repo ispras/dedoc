@@ -1,16 +1,13 @@
 {
-  "version": "0.11.2",
-  "warnings": [],
   "content": {
     "structure": {
       "node_id": "0",
       "text": "",
       "annotations": [],
       "metadata": {
-        "page_id": 0,
-        "line_id": 0,
         "paragraph_type": "root",
-        "other_fields": {}
+        "page_id": 0,
+        "line_id": 0
       },
       "subparagraphs": [
         {
@@ -55,10 +52,9 @@
             }
           ],
           "metadata": {
-            "page_id": 0,
-            "line_id": 0,
             "paragraph_type": "header",
-            "other_fields": {}
+            "page_id": 0,
+            "line_id": 0
           },
           "subparagraphs": [
             {
@@ -103,10 +99,9 @@
                 }
               ],
               "metadata": {
-                "page_id": 0,
-                "line_id": 1,
                 "paragraph_type": "header",
-                "other_fields": {}
+                "page_id": 0,
+                "line_id": 1
               },
               "subparagraphs": [
                 {
@@ -132,10 +127,28 @@
                       "value": "120"
                     },
                     {
+                      "start": 11,
+                      "end": 38,
+                      "name": "spacing",
+                      "value": "140"
+                    },
+                    {
+                      "start": 38,
+                      "end": 50,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
                       "start": 0,
                       "end": 37,
                       "name": "style",
                       "value": "Body Text"
+                    },
+                    {
+                      "start": 37,
+                      "end": 50,
+                      "name": "style",
+                      "value": "Normal"
                     },
                     {
                       "start": 0,
@@ -144,16 +157,22 @@
                       "value": "16.0"
                     },
                     {
+                      "start": 25,
+                      "end": 30,
+                      "name": "size",
+                      "value": "10.0"
+                    },
+                    {
                       "start": 30,
                       "end": 37,
                       "name": "size",
                       "value": "16.0"
                     },
                     {
-                      "start": 11,
-                      "end": 38,
-                      "name": "spacing",
-                      "value": "140"
+                      "start": 38,
+                      "end": 50,
+                      "name": "size",
+                      "value": "14.0"
                     },
                     {
                       "start": 11,
@@ -168,41 +187,16 @@
                       "value": "True"
                     },
                     {
-                      "start": 25,
-                      "end": 30,
-                      "name": "size",
-                      "value": "10.0"
-                    },
-                    {
                       "start": 11,
                       "end": 37,
                       "name": "table",
                       "value": "3a327789721e09b3fa6fd9560f3ee263"
-                    },
-                    {
-                      "start": 37,
-                      "end": 50,
-                      "name": "style",
-                      "value": "Normal"
-                    },
-                    {
-                      "start": 38,
-                      "end": 50,
-                      "name": "spacing",
-                      "value": "0"
-                    },
-                    {
-                      "start": 38,
-                      "end": 50,
-                      "name": "size",
-                      "value": "14.0"
                     }
                   ],
                   "metadata": {
-                    "page_id": 0,
-                    "line_id": 2,
                     "paragraph_type": "raw_text",
-                    "other_fields": {}
+                    "page_id": 0,
+                    "line_id": 2
                   },
                   "subparagraphs": []
                 },
@@ -211,10 +205,9 @@
                   "text": "",
                   "annotations": [],
                   "metadata": {
-                    "page_id": 0,
-                    "line_id": 6,
                     "paragraph_type": "list",
-                    "other_fields": {}
+                    "page_id": 0,
+                    "line_id": 6
                   },
                   "subparagraphs": [
                     {
@@ -253,10 +246,9 @@
                         }
                       ],
                       "metadata": {
-                        "page_id": 0,
-                        "line_id": 6,
                         "paragraph_type": "list_item",
-                        "other_fields": {}
+                        "page_id": 0,
+                        "line_id": 6
                       },
                       "subparagraphs": []
                     },
@@ -293,21 +285,51 @@
                           "end": 14,
                           "name": "size",
                           "value": "14.0"
-                        },
-                        {
-                          "start": 0,
-                          "end": 14,
-                          "name": "attachment",
-                          "value": "attach_0ba300a6-5e07-11ee-9889-0242ac120002"
                         }
                       ],
                       "metadata": {
-                        "page_id": 0,
-                        "line_id": 7,
                         "paragraph_type": "list_item",
-                        "other_fields": {}
+                        "page_id": 0,
+                        "line_id": 7
                       },
-                      "subparagraphs": []
+                      "subparagraphs": [
+                        {
+                          "node_id": "0.0.0.1.1.0",
+                          "text": "\n",
+                          "annotations": [
+                            {
+                              "start": 0,
+                              "end": 1,
+                              "name": "indentation",
+                              "value": "0"
+                            },
+                            {
+                              "start": 0,
+                              "end": 1,
+                              "name": "alignment",
+                              "value": "left"
+                            },
+                            {
+                              "start": 0,
+                              "end": 1,
+                              "name": "spacing",
+                              "value": "0"
+                            },
+                            {
+                              "start": 0,
+                              "end": 1,
+                              "name": "style",
+                              "value": "Normal"
+                            }
+                          ],
+                          "metadata": {
+                            "paragraph_type": "raw_text",
+                            "page_id": 0,
+                            "line_id": 8
+                          },
+                          "subparagraphs": []
+                        }
+                      ]
                     }
                   ]
                 }
@@ -359,8 +381,8 @@
                   ]
                 }
               ],
-              "colspan": 2,
               "rowspan": 1,
+              "colspan": 2,
               "invisible": false
             },
             {
@@ -401,8 +423,8 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": true
             }
           ],
@@ -445,8 +467,8 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 2,
+              "colspan": 1,
               "invisible": false
             },
             {
@@ -487,8 +509,8 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": false
             }
           ],
@@ -531,8 +553,8 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": true
             },
             {
@@ -573,8 +595,8 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": false
             }
           ],
@@ -617,8 +639,8 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": false
             },
             {
@@ -659,28 +681,29 @@
                   ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": false
             }
           ]
         ],
         "metadata": {
-          "uid": "3a327789721e09b3fa6fd9560f3ee263",
           "page_id": null,
-          "rotated_angle": 0.0
+          "uid": "3a327789721e09b3fa6fd9560f3ee263",
+          "rotated_angle": 0.0,
+          "title": ""
         }
       }
     ]
   },
   "metadata": {
-    "uid": "doc_uid_auto_0bb4e406-5e07-11ee-9889-0242ac120002",
+    "uid": "doc_uid_auto_ff95f898-0871-11ef-b95c-0242ac120002",
     "file_name": "example_return_format.docx",
-    "temporary_file_name": "1695909484_339.docx",
+    "temporary_file_name": "1714647118_806.docx",
     "size": 21270,
-    "modified_time": 1695909484,
-    "created_time": 1695909484,
-    "access_time": 1695909484,
+    "modified_time": 1714647118,
+    "created_time": 1714647118,
+    "access_time": 1714647118,
     "file_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "document_subject": "",
     "keywords": "",
@@ -690,18 +713,9 @@
     "last_modified_by": "",
     "created_date": 1568725611,
     "modified_date": 1686912636,
-    "last_printed_date": null,
-    "other_fields": {
-      "document_subject": "",
-      "keywords": "",
-      "category": "",
-      "comments": "",
-      "author": "",
-      "last_modified_by": "",
-      "created_date": 1568725611,
-      "modified_date": 1686912636,
-      "last_printed_date": null
-    }
+    "last_printed_date": null
   },
+  "version": "2.2",
+  "warnings": [],
   "attachments": []
 }

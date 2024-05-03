@@ -44,8 +44,7 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
                     file_path: str,
                     converted_filename: Optional[str] = None,
                     original_filename: Optional[str] = None,
-                    parameters: Optional[dict] = None,
-                    other_fields: Optional[dict] = None) -> bool:
+                    parameters: Optional[dict] = None) -> bool:
         """
         Check if the document has .pdf extension.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
@@ -57,19 +56,15 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
                 file_path: str,
                 converted_filename: Optional[str] = None,
                 original_filename: Optional[str] = None,
-                parameters: Optional[dict] = None,
-                other_fields: Optional[dict] = None) -> dict:
+                parameters: Optional[dict] = None) -> dict:
         """
         Add the predefined list of metadata for the pdf documents.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
         """
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
-        result = super().extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters,
-                                 other_fields=other_fields)
-        path = os.path.join(file_dir, converted_filename)
-        pdf_fields = self._get_pdf_info(path)
-        if len(pdf_fields) > 0:
-            result["other_fields"] = {**result.get("other_fields", {}), **pdf_fields}
+        base_fields = super().extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters)
+        pdf_fields = self._get_pdf_info(os.path.join(file_dir, converted_filename))
+        result = {**base_fields, **pdf_fields}
         return result
 
     def _get_pdf_info(self, path: str) -> dict:

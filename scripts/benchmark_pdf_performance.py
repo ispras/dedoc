@@ -95,7 +95,7 @@ def main() -> None:
 
     assert args.loops > 0, "The number of repetitions of testing one file must be positive"
 
-    print(f'Run pdf performance benchmark with next pdf options: {", ".join(args.pdf_options)}')
+    print(f'Run pdf performance benchmark with next pdf options: {", ".join(args.pdf_options)}')  # noqa
     configs = [{}]
 
     if args.parameters:

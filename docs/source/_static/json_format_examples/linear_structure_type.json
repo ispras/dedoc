@@ -1,16 +1,13 @@
 {
-  "version": "0.11.2",
-  "warnings": [],
   "content": {
     "structure": {
       "node_id": "0",
       "text": "",
       "annotations": [],
       "metadata": {
-        "page_id": 0,
-        "line_id": 0,
         "paragraph_type": "root",
-        "other_fields": {}
+        "page_id": 0,
+        "line_id": 0
       },
       "subparagraphs": [
         {
@@ -55,10 +52,9 @@
             }
           ],
           "metadata": {
-            "page_id": 0,
-            "line_id": 0,
             "paragraph_type": "header",
-            "other_fields": {}
+            "page_id": 0,
+            "line_id": 0
           },
           "subparagraphs": []
         },
@@ -104,10 +100,9 @@
             }
           ],
           "metadata": {
-            "page_id": 0,
-            "line_id": 1,
             "paragraph_type": "header",
-            "other_fields": {}
+            "page_id": 0,
+            "line_id": 1
           },
           "subparagraphs": []
         },
@@ -147,10 +142,9 @@
             }
           ],
           "metadata": {
-            "page_id": 0,
-            "line_id": 2,
             "paragraph_type": "raw_text",
-            "other_fields": {}
+            "page_id": 0,
+            "line_id": 2
           },
           "subparagraphs": []
         },
@@ -189,6 +183,12 @@
               "value": "16.0"
             },
             {
+              "start": 14,
+              "end": 19,
+              "name": "size",
+              "value": "10.0"
+            },
+            {
               "start": 19,
               "end": 26,
               "name": "size",
@@ -207,12 +207,6 @@
               "value": "True"
             },
             {
-              "start": 14,
-              "end": 19,
-              "name": "size",
-              "value": "10.0"
-            },
-            {
               "start": 0,
               "end": 26,
               "name": "table",
@@ -220,10 +214,9 @@
             }
           ],
           "metadata": {
-            "page_id": 0,
-            "line_id": 3,
             "paragraph_type": "raw_text",
-            "other_fields": {}
+            "page_id": 0,
+            "line_id": 3
           },
           "subparagraphs": []
         },
@@ -257,10 +250,9 @@
             }
           ],
           "metadata": {
-            "page_id": 0,
-            "line_id": 4,
             "paragraph_type": "raw_text",
-            "other_fields": {}
+            "page_id": 0,
+            "line_id": 4
           },
           "subparagraphs": []
         },
@@ -300,10 +292,9 @@
             }
           ],
           "metadata": {
-            "page_id": 0,
-            "line_id": 5,
             "paragraph_type": "raw_text",
-            "other_fields": {}
+            "page_id": 0,
+            "line_id": 5
           },
           "subparagraphs": []
         },
@@ -343,10 +334,9 @@
             }
           ],
           "metadata": {
-            "page_id": 0,
-            "line_id": 6,
             "paragraph_type": "list_item",
-            "other_fields": {}
+            "page_id": 0,
+            "line_id": 6
           },
           "subparagraphs": []
         },
@@ -383,19 +373,84 @@
               "end": 14,
               "name": "size",
               "value": "14.0"
-            },
-            {
-              "start": 0,
-              "end": 14,
-              "name": "attachment",
-              "value": "attach_75d13b70-5df1-11ee-bfc1-0242ac120002"
             }
           ],
           "metadata": {
-            "page_id": 0,
-            "line_id": 7,
             "paragraph_type": "list_item",
-            "other_fields": {}
+            "page_id": 0,
+            "line_id": 7
+          },
+          "subparagraphs": []
+        },
+        {
+          "node_id": "0.8",
+          "text": "\n",
+          "annotations": [
+            {
+              "start": 0,
+              "end": 1,
+              "name": "indentation",
+              "value": "0"
+            },
+            {
+              "start": 0,
+              "end": 1,
+              "name": "alignment",
+              "value": "left"
+            },
+            {
+              "start": 0,
+              "end": 1,
+              "name": "spacing",
+              "value": "0"
+            },
+            {
+              "start": 0,
+              "end": 1,
+              "name": "style",
+              "value": "Normal"
+            }
+          ],
+          "metadata": {
+            "paragraph_type": "raw_text",
+            "page_id": 0,
+            "line_id": 8
+          },
+          "subparagraphs": []
+        },
+        {
+          "node_id": "0.9",
+          "text": "",
+          "annotations": [
+            {
+              "start": 0,
+              "end": 0,
+              "name": "indentation",
+              "value": "0"
+            },
+            {
+              "start": 0,
+              "end": 0,
+              "name": "alignment",
+              "value": "left"
+            },
+            {
+              "start": 0,
+              "end": 0,
+              "name": "spacing",
+              "value": "0"
+            },
+            {
+              "start": 0,
+              "end": 0,
+              "name": "style",
+              "value": "Normal"
+            }
+          ],
+          "metadata": {
+            "paragraph_type": "raw_text",
+            "page_id": 0,
+            "line_id": 9
           },
           "subparagraphs": []
         }
@@ -409,22 +464,84 @@
               "lines": [
                 {
                   "text": "Table header",
-                  "annotations": []
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "alignment",
+                      "value": "center"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
                 }
               ],
-              "colspan": 2,
               "rowspan": 1,
+              "colspan": 2,
               "invisible": false
             },
             {
               "lines": [
                 {
                   "text": "Table header",
-                  "annotations": []
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "alignment",
+                      "value": "center"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 12,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": true
             }
           ],
@@ -433,22 +550,84 @@
               "lines": [
                 {
                   "text": "Vertically merged cells",
-                  "annotations": []
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "alignment",
+                      "value": "left"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 2,
+              "colspan": 1,
               "invisible": false
             },
             {
               "lines": [
                 {
                   "text": "Text 1",
-                  "annotations": []
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "alignment",
+                      "value": "left"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": false
             }
           ],
@@ -457,22 +636,84 @@
               "lines": [
                 {
                   "text": "Vertically merged cells",
-                  "annotations": []
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "alignment",
+                      "value": "left"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 23,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": true
             },
             {
               "lines": [
                 {
                   "text": "Text 2",
-                  "annotations": []
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "alignment",
+                      "value": "left"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": false
             }
           ],
@@ -481,42 +722,105 @@
               "lines": [
                 {
                   "text": "Text 3",
-                  "annotations": []
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "alignment",
+                      "value": "left"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": false
             },
             {
               "lines": [
                 {
                   "text": "Text 4",
-                  "annotations": []
+                  "annotations": [
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "indentation",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "alignment",
+                      "value": "left"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "spacing",
+                      "value": "0"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "style",
+                      "value": "Table Contents"
+                    },
+                    {
+                      "start": 0,
+                      "end": 6,
+                      "name": "size",
+                      "value": "14.0"
+                    }
+                  ]
                 }
               ],
-              "colspan": 1,
               "rowspan": 1,
+              "colspan": 1,
               "invisible": false
             }
           ]
         ],
         "metadata": {
-          "uid": "3a327789721e09b3fa6fd9560f3ee263",
           "page_id": null,
-          "rotated_angle": 0.0
+          "uid": "3a327789721e09b3fa6fd9560f3ee263",
+          "rotated_angle": 0.0,
+          "title": ""
         }
       }
     ]
   },
   "metadata": {
-    "uid": "doc_uid_auto_75e45e94-5df1-11ee-bfc1-0242ac120002",
+    "uid": "doc_uid_auto_ffa700ca-0871-11ef-b95c-0242ac120002",
     "file_name": "example_return_format.docx",
-    "temporary_file_name": "1695900214_259.docx",
+    "temporary_file_name": "1714647118_760.docx",
     "size": 21270,
-    "modified_time": 1695900213,
-    "created_time": 1695900213,
-    "access_time": 1695900214,
+    "modified_time": 1714647118,
+    "created_time": 1714647118,
+    "access_time": 1714647118,
     "file_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "document_subject": "",
     "keywords": "",
@@ -526,18 +830,9 @@
     "last_modified_by": "",
     "created_date": 1568725611,
     "modified_date": 1686912636,
-    "last_printed_date": null,
-    "other_fields": {
-      "document_subject": "",
-      "keywords": "",
-      "category": "",
-      "comments": "",
-      "author": "",
-      "last_modified_by": "",
-      "created_date": 1568725611,
-      "modified_date": 1686912636,
-      "last_printed_date": null
-    }
+    "last_printed_date": null
   },
+  "version": "2.2",
+  "warnings": [],
   "attachments": []
 }

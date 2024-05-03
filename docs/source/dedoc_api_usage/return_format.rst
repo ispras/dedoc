@@ -41,7 +41,7 @@ The beginning of the document's content:
 
 .. literalinclude:: ../_static/json_format_examples/basic_example.json
     :language: json
-    :lines: 4-24
+    :lines: 2-22
 
 The key "node_id" means the level of the line in a document tree.
 The amount of numbers separated by dot shows the depth of the line inside the document tree,
@@ -52,25 +52,25 @@ so it's is a subparagraph of the line with text "Document example":
 
 .. literalinclude:: ../_static/json_format_examples/basic_example.json
     :language: json
-    :lines: 63-66
+    :lines: 59-62
 
 The beginning of the document's tables:
 
 .. literalinclude:: ../_static/json_format_examples/basic_example.json
     :language: json
-    :lines: 320-346
+    :lines: 342-368
 
 The beginning of the document's metadata:
 
 .. literalinclude:: ../_static/json_format_examples/basic_example.json
     :language: json
-    :lines: 676-684
+    :lines: 699-707
 
 The document's attachments:
 
 .. literalinclude:: ../_static/json_format_examples/basic_example.json
     :language: json
-    :lines: 706
+    :lines: 720
 
 As we see, the ``attachments`` field is empty because the option
 ``with_attachments`` is set to ``"false"`` by default (see :ref:`table_parameters`).
@@ -91,14 +91,14 @@ The beginning of the document's content is the same as in the previous example w
 
 .. literalinclude:: ../_static/json_format_examples/linear_structure_type.json
     :language: json
-    :lines: 4-24
+    :lines: 2-22
 
 But the next document line isn't a subparagraph of the document's title (line with text "Document example"),
 it has the same level in the document's tree hierarchy.
 
 .. literalinclude:: ../_static/json_format_examples/linear_structure_type.json
     :language: json
-    :lines: 66-68
+    :lines: 62-63
 
 All remaining document lines have the same level as well.
 
@@ -118,7 +118,7 @@ Unlike the previous examples, in this case we have ``attachments`` field filled:
 
 .. literalinclude:: ../_static/json_format_examples/with_attachments.json
     :language: json
-    :lines: 706-738
+    :lines: 689-719
 
 Example with base64 attachments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -136,7 +136,7 @@ The only difference is in the attachment's metadata: attachment's content is enc
 
 .. literalinclude:: ../_static/json_format_examples/with_base64_attachments.json
     :language: json
-    :lines: 706-741
+    :lines: 689-720
 
 Example with parsed attachments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -156,4 +156,4 @@ The beginning of the document's attachments:
 
 .. literalinclude:: ../_static/json_format_examples/with_parsed_attachments.json
     :language: json
-    :lines: 706-731
+    :lines: 689-711
