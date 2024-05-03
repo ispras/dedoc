@@ -105,8 +105,8 @@ class DedocManager:
 
             # Step 3 - Adding meta-information
             metadata = self.document_metadata_extractor.extract(file_path=tmp_file_path, converted_filename=os.path.basename(converted_file_path),
-                                                                original_filename=file_name, parameters=parameters, other_fields=unstructured_document.metadata)
-            unstructured_document.metadata = metadata
+                                                                original_filename=file_name, parameters=parameters)
+            unstructured_document.metadata = {**unstructured_document.metadata, **metadata}
             self.logger.info(f"Add metadata of file {file_name}")
 
             # Step 4 - Extract structure

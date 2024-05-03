@@ -55,6 +55,16 @@ def with_parsed_attachments_example() -> dict:
     return json.loads(result)
 
 
+def article_example() -> dict:
+    with open("test_dir/article.pdf", "rb") as file:
+        files = {"file": ("article.pdf", file)}
+        r = requests.post("http://localhost:1231/upload", files=files, data=dict(document_type="article"))
+        result = r.content.decode("utf-8")
+
+    assert r.status_code == 200
+    return json.loads(result)
+
+
 if __name__ == "__main__":
     with open("../json_format_examples/basic_example.json", "w") as f:
         json.dump(basic_example(), f, indent=2, ensure_ascii=False)
@@ -70,3 +80,6 @@ if __name__ == "__main__":
 
     with open("../json_format_examples/with_parsed_attachments.json", "w") as f:
         json.dump(with_parsed_attachments_example(), f, indent=2, ensure_ascii=False)
+
+    with open("../json_format_examples/article_example.json", "w") as f:
+        json.dump(article_example(), f, indent=2, ensure_ascii=False)

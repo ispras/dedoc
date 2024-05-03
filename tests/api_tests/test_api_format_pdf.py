@@ -94,9 +94,9 @@ class TestApiPdfReader(AbstractTestApiDocReader):
     def test_image_metadata(self) -> None:
         file_name = "orient_3.png"
         result = self._send_request(file_name)
-        exif = result["metadata"]["other_fields"]
-        self.assertEqual(exif["exif_image_width"], 1654)
-        self.assertEqual(exif["exif_image_height"], 2338)
+        self.assertEqual(result["metadata"]["exif_image_width"], 1654)
+        self.assertEqual(result["metadata"]["exif_image_height"], 2338)
+        self.assertIn("rotated_page_angles", result["metadata"])
 
     def test_image_binarization(self) -> None:
         result = self._send_request("01_МФО_Наклон.jpg", data=dict(need_binarization="true"))

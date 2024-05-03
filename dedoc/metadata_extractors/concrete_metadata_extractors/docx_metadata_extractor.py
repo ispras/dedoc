@@ -30,8 +30,7 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
                     file_path: str,
                     converted_filename: Optional[str] = None,
                     original_filename: Optional[str] = None,
-                    parameters: Optional[dict] = None,
-                    other_fields: Optional[dict] = None) -> bool:
+                    parameters: Optional[dict] = None) -> bool:
         """
         Check if the document has .docx extension.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
@@ -43,8 +42,7 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
                 file_path: str,
                 converted_filename: Optional[str] = None,
                 original_filename: Optional[str] = None,
-                parameters: Optional[dict] = None,
-                other_fields: Optional[dict] = None) -> dict:
+                parameters: Optional[dict] = None) -> dict:
         """
         Add the predefined list of metadata for the docx documents.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
@@ -52,19 +50,14 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
         parameters = {} if parameters is None else parameters
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
 
-        result = super().extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters,
-                                 other_fields=other_fields)
+        base_fields = super().extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters)
+        docx_fields = self._get_docx_fields(os.path.join(file_dir, converted_filename))
 
-        file_path = os.path.join(file_dir, converted_filename)
-        docx_other_fields = self._get_docx_fields(file_path)
-
-        result["other_fields"] = {**result.get("other_fields", {}), **docx_other_fields}
+        result = {**base_fields, **docx_fields}
         return result
 
     def __convert_date(self, date: Optional[datetime]) -> Optional[int]:
-        if date is not None:
-            return int(date.timestamp())
-        return None
+        return None if date is None else int(date.timestamp())
 
     def _get_docx_fields(self, file_path: str) -> dict:
         assert os.path.isfile(file_path)

@@ -52,8 +52,7 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
                     file_path: str,
                     converted_filename: Optional[str] = None,
                     original_filename: Optional[str] = None,
-                    parameters: Optional[dict] = None,
-                    other_fields: Optional[dict] = None) -> bool:
+                    parameters: Optional[dict] = None) -> bool:
         """
         Check if the document has image-like extension (".png", ".jpg", ".jpeg").
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
@@ -65,20 +64,16 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
                 file_path: str,
                 converted_filename: Optional[str] = None,
                 original_filename: Optional[str] = None,
-                parameters: Optional[dict] = None,
-                other_fields: Optional[dict] = None) -> dict:
+                parameters: Optional[dict] = None) -> dict:
         """
         Add the predefined list of metadata for images.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
         """
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
-        result = super().extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters,
-                                 other_fields=other_fields)
+        base_fields = super().extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters)
 
-        path = os.path.join(file_dir, converted_filename)
-        exif_fields = self._get_exif(path)
-        if len(exif_fields) > 0:
-            result["other_fields"] = {**result.get("other_fields", {}), **exif_fields}
+        exif_fields = self._get_exif(os.path.join(file_dir, converted_filename))
+        result = {**base_fields, **exif_fields}
         return result
 
     def __encode_exif(self, exif: Union[str, bytes]) -> Optional[str]:

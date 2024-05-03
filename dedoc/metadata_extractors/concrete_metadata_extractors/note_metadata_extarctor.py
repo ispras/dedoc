@@ -21,8 +21,7 @@ class NoteMetadataExtractor(BaseMetadataExtractor):
                     file_path: str,
                     converted_filename: Optional[str] = None,
                     original_filename: Optional[str] = None,
-                    parameters: Optional[dict] = None,
-                    other_fields: Optional[dict] = None) -> bool:
+                    parameters: Optional[dict] = None) -> bool:
         """
         Check if the document has .note.pickle extension.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
@@ -34,8 +33,7 @@ class NoteMetadataExtractor(BaseMetadataExtractor):
                 file_path: str,
                 converted_filename: Optional[str] = None,
                 original_filename: Optional[str] = None,
-                parameters: Optional[dict] = None,
-                other_fields: Optional[dict] = None) -> dict:
+                parameters: Optional[dict] = None) -> dict:
         """
         Add the predefined list of metadata for the .note.pickle documents.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
@@ -47,16 +45,13 @@ class NoteMetadataExtractor(BaseMetadataExtractor):
             with open(file_path, "rb") as infile:
                 note_dict = pickle.load(infile)
 
-            fields = {"author": note_dict["author"]}
-            other_fields = {**other_fields, **fields} if other_fields is not None else fields
-
             meta_info = dict(file_name=original_filename,
                              file_type="note",
                              size=note_dict["size"],
                              access_time=note_dict["modified_time"],
                              created_time=note_dict["created_time"],
                              modified_time=note_dict["modified_time"],
-                             other_fields=other_fields)
+                             author=note_dict["author"])
             return meta_info
         except Exception:
             raise BadFileFormatError(f"Bad note file:\n file_name = {os.path.basename(file_path)}. Seems note-format is broken")

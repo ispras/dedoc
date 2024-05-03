@@ -80,8 +80,6 @@ class ContentChecker(unittest.TestCase):
         self.assertIsInstance(metadata["access_time"], int)
         if "file_type" in metadata:
             self.assertIsInstance(metadata["file_type"], str)
-        if "other_fields" in metadata:
-            self.assertIsInstance(metadata["other_fields"], dict)
 
     def _check_english_doc(self, result: dict) -> None:
         content = result["content"]

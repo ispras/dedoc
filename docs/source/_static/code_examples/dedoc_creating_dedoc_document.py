@@ -7,7 +7,7 @@ simple_line = LineWithMeta(text)
 
 hierarchy_level = HierarchyLevel(level_1=0, level_2=0, line_type="header", can_be_multiline=True)
 
-metadata = LineMetadata(page_id=0, line_id=1, tag_hierarchy_level=None, hierarchy_level=hierarchy_level, other_fields=None)
+metadata = LineMetadata(page_id=0, line_id=1, tag_hierarchy_level=None, hierarchy_level=hierarchy_level)
 annotations = [LinkedTextAnnotation(start=0, end=5, value="Now the line isn't so simple :)"), BoldAnnotation(start=7, end=10, value="True")]
 
 super_line = LineWithMeta(text, metadata=metadata, annotations=annotations)

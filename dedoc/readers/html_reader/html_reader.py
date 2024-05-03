@@ -83,7 +83,7 @@ class HtmlReader(BaseReader):
             block_lines = self.__handle_single_tag(tag=tag, filepath_hash=filepath_hash, uid=tag_uid, table=table)
         for line in block_lines:
             if not getattr(line.metadata, "html_tag", None):
-                line.metadata.extend_other_fields({"html_tag": tag.name})
+                line.metadata.html_tag = tag.name
         return block_lines
 
     def __handle_single_tag(self, tag: Tag, filepath_hash: str, uid: str, table: Optional[bool] = False) -> List[LineWithMeta]:
@@ -97,7 +97,7 @@ class HtmlReader(BaseReader):
         line_type = HierarchyLevel.unknown if header_level == 0 else HierarchyLevel.header
         tag_uid = hashlib.md5((uid + text).encode()).hexdigest()
         line = self.__make_line(line=text, line_type=line_type, header_level=header_level, uid=tag_uid, filepath_hash=filepath_hash, annotations=annotations)
-        line.metadata.extend_other_fields({"html_tag": tag.name})
+        line.metadata.html_tag = tag.name
         return [line]
 
     def __read_blocks(self, block: Tag, filepath_hash: str = "", handle_invisible_table: bool = False, table: Optional[bool] = False,

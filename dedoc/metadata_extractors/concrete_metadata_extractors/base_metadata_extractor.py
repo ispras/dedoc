@@ -32,8 +32,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
                     file_path: str,
                     converted_filename: Optional[str] = None,
                     original_filename: Optional[str] = None,
-                    parameters: Optional[dict] = None,
-                    other_fields: Optional[dict] = None) -> bool:
+                    parameters: Optional[dict] = None) -> bool:
         """
         This extractor can handle any file so the method always returns True.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
@@ -44,8 +43,7 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
                 file_path: str,
                 converted_filename: Optional[str] = None,
                 original_filename: Optional[str] = None,
-                parameters: Optional[dict] = None,
-                other_fields: Optional[dict] = None) -> dict:
+                parameters: Optional[dict] = None) -> dict:
         """
         Gets the basic meta-information about the file.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
@@ -55,14 +53,9 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         meta_info = self._get_base_meta_information(file_dir, file_name, original_filename)
 
         if parameters.get("is_attached", False) and str(parameters.get("return_base64", "false")).lower() == "true":
-            other_fields = {} if other_fields is None else other_fields
+            with open(os.path.join(file_dir, converted_filename), "rb") as file:
+                meta_info["base64_encode"] = b64encode(file.read()).decode("utf-8")
 
-            path = os.path.join(file_dir, converted_filename)
-            with open(path, "rb") as file:
-                other_fields["base64_encode"] = b64encode(file.read()).decode("utf-8")
-
-        if other_fields is not None and len(other_fields) > 0:
-            meta_info["other_fields"] = other_fields
         return meta_info
 
     @staticmethod
