@@ -64,7 +64,7 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
         base_fields = super().extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters)
         pdf_fields = self._get_pdf_info(os.path.join(file_dir, converted_filename))
-        result = {**base_fields, **pdf_fields} if len(pdf_fields) > 0 else base_fields
+        result = {**base_fields, **pdf_fields}
         return result
 
     def _get_pdf_info(self, path: str) -> dict:

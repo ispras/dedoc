@@ -73,7 +73,7 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
         base_fields = super().extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters)
 
         exif_fields = self._get_exif(os.path.join(file_dir, converted_filename))
-        result = {**base_fields, **exif_fields} if len(exif_fields) > 0 else base_fields
+        result = {**base_fields, **exif_fields}
         return result
 
     def __encode_exif(self, exif: Union[str, bytes]) -> Optional[str]:
