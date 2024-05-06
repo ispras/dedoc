@@ -34,7 +34,7 @@ from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
 from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
-from dedoc.utils.parameter_utils import get_param_page_slice, get_param_pdf_with_txt_layer, get_param_with_attachments
+from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_page_slice, get_param_pdf_with_txt_layer, get_param_with_attachments
 from dedoc.utils.pdf_utils import get_pdf_page_count
 from dedoc.utils.utils import calculate_file_hash, get_mime_extension, get_unique_name
 
@@ -95,8 +95,7 @@ class PdfTabbyReader(PdfBaseReader):
             -> Tuple[List[LineWithMeta], List[Table], List[ScanTable], List[PdfImageAttachment], Optional[dict]]:
         all_lines, all_tables, all_tables_on_images, all_attached_images = [], [], [], []
         document_metadata = None
-        attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = os.path.dirname(path) if attachments_dir is None else attachments_dir
+        attachments_dir = get_param_attachments_dir(parameters, path)
 
         file_hash = calculate_file_hash(path=path)
         page_count = get_pdf_page_count(path)

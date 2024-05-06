@@ -16,6 +16,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.html_reader.html_reader import HtmlReader
+from dedoc.utils.parameter_utils import get_param_attachments_dir
 from dedoc.utils.utils import get_mime_extension, get_unique_name, save_data_to_unique_file
 
 
@@ -46,8 +47,7 @@ class EmailReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
+        attachments_dir = get_param_attachments_dir(parameters, file_path)
 
         with open(file_path, "rb") as f:
             msg = email.message_from_binary_file(f)

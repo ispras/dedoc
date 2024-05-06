@@ -12,6 +12,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.html_reader.html_reader import HtmlReader
 from dedoc.utils import supported_image_types
+from dedoc.utils.parameter_utils import get_param_attachments_dir
 from dedoc.utils.utils import check_filename_length, get_encoding, get_mime_extension, save_data_to_unique_file
 
 
@@ -42,8 +43,7 @@ class MhtmlReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
+        attachments_dir = get_param_attachments_dir(parameters, file_path)
 
         names_list, original_names_list = self.__extract_files(path=file_path, save_dir=attachments_dir)
         names_html = self.__find_html(names_list=names_list)

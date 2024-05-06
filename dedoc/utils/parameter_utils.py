@@ -162,3 +162,13 @@ def get_path_param(parameters: Optional[dict], path_key: str) -> str:
 
     os.makedirs(path_value, exist_ok=True)
     return path_value
+
+
+def get_param_attachments_dir(parameters: Optional[dict], file_path: str) -> str:
+    default_dir = file_path if os.path.isdir(file_path) else os.path.dirname(file_path)
+    parameters = {} if parameters is None else parameters
+
+    attachments_dir = parameters.get("attachments_dir", None)
+    attachments_dir = default_dir if attachments_dir is None else attachments_dir
+    os.makedirs(attachments_dir, exist_ok=True)
+    return attachments_dir

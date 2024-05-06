@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
 
 from dedoc.data_structures.attached_file import AttachedFile
+from dedoc.utils.parameter_utils import get_param_attachments_dir
 from dedoc.utils.utils import save_data_to_unique_file
 
 
@@ -62,8 +63,7 @@ class AbstractAttachmentsExtractor(ABC):
 
     def _content2attach_file(self, content: List[Tuple[str, bytes]], tmpdir: str, need_content_analysis: bool, parameters: dict) -> List[AttachedFile]:
         attachments = []
-        attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = tmpdir if attachments_dir is None else attachments_dir
+        attachments_dir = get_param_attachments_dir(parameters, tmpdir)
 
         for original_name, contents in content:
             tmp_file_name = save_data_to_unique_file(directory=attachments_dir, filename=original_name, binary_data=contents)

@@ -70,8 +70,6 @@ class PdfBaseReader(BaseReader):
         """
         parameters = {} if parameters is None else parameters
         first_page, last_page = param_utils.get_param_page_slice(parameters)
-        attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
 
         params_for_parse = ParametersForParseDoc(
             language=param_utils.get_param_language(parameters),
@@ -85,7 +83,7 @@ class PdfBaseReader(BaseReader):
             last_page=last_page,
             need_binarization=param_utils.get_param_need_binarization(parameters),
             table_type=param_utils.get_param_table_type(parameters),
-            attachments_dir=attachments_dir
+            attachments_dir=param_utils.get_param_attachments_dir(parameters, file_path)
         )
 
         lines, scan_tables, attachments, warnings, metadata = self._parse_document(file_path, params_for_parse)

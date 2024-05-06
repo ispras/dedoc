@@ -17,7 +17,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
-from dedoc.utils.parameter_utils import get_param_document_type
+from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_document_type, get_param_with_attachments
 from dedoc.utils.utils import get_mime_extension
 
 
@@ -45,9 +45,7 @@ class ArticleReader(BaseReader):
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
-        parameters = {} if parameters is None else parameters
-        attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
+        attachments_dir = get_param_attachments_dir(parameters, file_path)
 
         with open(file_path, "rb") as file:
             files = {"input": file}
@@ -72,7 +70,7 @@ class ArticleReader(BaseReader):
 
             bib_lines, bib2uid = self.__parse_bibliography(soup)
             tables, table2uid = self.__parse_tables(soup)
-            attachments, attachment2uid = self.__parse_images(soup, file_path, attachments_dir)
+            attachments, attachment2uid = self.__parse_images(soup, file_path, attachments_dir) if get_param_with_attachments(parameters) else [], {}
 
             lines += self.__parse_text(soup, bib2uid, table2uid, attachment2uid)
             lines.extend(bib_lines)
@@ -360,29 +358,32 @@ class ArticleReader(BaseReader):
 
         attachments, attachment2uid = [], {}
         figure_tags = soup.find_all("figure", {"type": None})
-        for i, figure_tag in enumerate(figure_tags):
-            # coords=[p, y, x, h, w], where p - page number, (x, y) - upper-left point, h - height, w - width
-            coords = figure_tag.graphic["coords"].split(",")
-            page_number = int(coords[0])
-            coords = [float(i) for i in coords[1:]]
+        for figure_tag in figure_tags:
+            try:
+                # coords=[p, y, x, h, w], where p - page number, (x, y) - upper-left point, h - height, w - width
+                coords = figure_tag.graphic["coords"].split(",")
+                page_number = int(coords[0])
+                coords = [float(i) for i in coords[1:]]
 
-            image_page = np.array(convert_from_path(file_path, first_page=page_number, last_page=page_number)[0])
-            page_size = page_sizes[page_number - 1]
-            actual_page_size = image_page.shape[1], image_page.shape[0]
+                image_page = np.array(convert_from_path(file_path, first_page=page_number, last_page=page_number)[0])
+                page_size = page_sizes[page_number - 1]
+                actual_page_size = image_page.shape[1], image_page.shape[0]
 
-            coords = [
-                coords[0] / page_size[0] * actual_page_size[0], coords[1] / page_size[1] * actual_page_size[1],
-                coords[2] / page_size[0] * actual_page_size[0], coords[3] / page_size[1] * actual_page_size[1]
-            ]
-            y, x, h, w = coords[0], coords[1], coords[2], coords[3]
-            cropped = image_page[math.floor(x):math.ceil(x + w), math.floor(y):math.ceil(y + h)]
+                coords = [
+                    coords[0] / page_size[0] * actual_page_size[0], coords[1] / page_size[1] * actual_page_size[1],
+                    coords[2] / page_size[0] * actual_page_size[0], coords[3] / page_size[1] * actual_page_size[1]
+                ]
+                y, x, h, w = coords[0], coords[1], coords[2], coords[3]
+                cropped = image_page[math.floor(x):math.ceil(x + w), math.floor(y):math.ceil(y + h)]
 
-            uid = f"fig_{uuid.uuid1()}"
-            file_name = f"{uid}.png"
-            attachment_path = os.path.join(save_dir, file_name)
-            cv2.imwrite(attachment_path, cropped)
-            attachments.append(AttachedFile(original_name=file_name, tmp_file_path=attachment_path, need_content_analysis=False, uid=uid))
-            attachment2uid[f'#{figure_tag.get("xml:id")}'] = attachments[-1].uid
+                uid = f"fig_{uuid.uuid1()}"
+                file_name = f"{uid}.png"
+                attachment_path = os.path.join(save_dir, file_name)
+                cv2.imwrite(attachment_path, cropped)
+                attachments.append(AttachedFile(original_name=file_name, tmp_file_path=attachment_path, need_content_analysis=False, uid=uid))
+                attachment2uid[f'#{figure_tag.get("xml:id")}'] = attachments[-1].uid
+            except Exception as e:
+                self.logger.warning(f"Exception {e} during figure tag handling:\n{figure_tag}")
 
         return attachments, attachment2uid
 
