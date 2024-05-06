@@ -10,6 +10,7 @@ from PyPDF2.utils import PdfReadError
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.extensions import recognized_mimes
+from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
 from dedoc.utils.utils import convert_datetime, get_mime_extension, get_unique_name
 
 
@@ -39,9 +40,9 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
         the methods' parameters.
         """
         parameters = {} if parameters is None else parameters
-        tmpdir, filename = os.path.split(file_path)
+        filename = os.path.basename(file_path)
 
-        with open(os.path.join(tmpdir, filename), "rb") as handler:
+        with open(file_path, "rb") as handler:
             try:
                 reader = PyPDF2.PdfFileReader(handler)
             except Exception as e:
@@ -57,8 +58,9 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
             except PdfReadError:
                 self.logger.warning(f"{filename} is broken")
 
-        need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
-        return self._content2attach_file(content=attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis, parameters=parameters)
+        need_content_analysis = get_param_need_content_analysis(parameters)
+        attachments_dir = get_param_attachments_dir(parameters, file_path)
+        return self._content2attach_file(content=attachments, tmpdir=attachments_dir, need_content_analysis=need_content_analysis, parameters=parameters)
 
     def __get_notes(self, page: PageObject) -> List[Tuple[str, bytes]]:
         attachments = []

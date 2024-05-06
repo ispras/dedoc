@@ -17,7 +17,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
-from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_document_type, get_param_with_attachments
+from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_document_type, get_param_need_content_analysis, get_param_with_attachments
 from dedoc.utils.utils import get_mime_extension
 
 
@@ -45,8 +45,6 @@ class ArticleReader(BaseReader):
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
-        attachments_dir = get_param_attachments_dir(parameters, file_path)
-
         with open(file_path, "rb") as file:
             files = {"input": file}
             try:
@@ -70,7 +68,7 @@ class ArticleReader(BaseReader):
 
             bib_lines, bib2uid = self.__parse_bibliography(soup)
             tables, table2uid = self.__parse_tables(soup)
-            attachments, attachment2uid = self.__parse_images(soup, file_path, attachments_dir) if get_param_with_attachments(parameters) else [], {}
+            attachments, attachment2uid = self.__parse_images(soup, file_path, parameters)
 
             lines += self.__parse_text(soup, bib2uid, table2uid, attachment2uid)
             lines.extend(bib_lines)
@@ -329,7 +327,7 @@ class ArticleReader(BaseReader):
 
         return tables, table2uid
 
-    def __parse_images(self, soup: Tag, file_path: str, save_dir: str) -> Tuple[List[AttachedFile], dict]:
+    def __parse_images(self, soup: Tag, file_path: str, parameters: Optional[dict]) -> Tuple[List[AttachedFile], dict]:
         """
         Example Figure with figure's ref:
         -----------------------------------------------
@@ -350,6 +348,11 @@ class ArticleReader(BaseReader):
                 </facsimile>
         Documentation: https://grobid.readthedocs.io/en/latest/Coordinates-in-PDF/
         """
+        if not get_param_with_attachments(parameters):
+            return [], {}
+
+        attachments_dir = get_param_attachments_dir(parameters, file_path)
+        need_content_analysis = get_param_need_content_analysis(parameters)
         try:
             page_sizes = [(float(item["lrx"]), float(item["lry"])) for item in soup.facsimile.find_all("surface")]
         except Exception as e:
@@ -360,32 +363,60 @@ class ArticleReader(BaseReader):
         figure_tags = soup.find_all("figure", {"type": None})
         for figure_tag in figure_tags:
             try:
-                # coords=[p, y, x, h, w], where p - page number, (x, y) - upper-left point, h - height, w - width
-                coords = figure_tag.graphic["coords"].split(",")
-                page_number = int(coords[0])
-                coords = [float(i) for i in coords[1:]]
-
-                image_page = np.array(convert_from_path(file_path, first_page=page_number, last_page=page_number)[0])
-                page_size = page_sizes[page_number - 1]
-                actual_page_size = image_page.shape[1], image_page.shape[0]
-
-                coords = [
-                    coords[0] / page_size[0] * actual_page_size[0], coords[1] / page_size[1] * actual_page_size[1],
-                    coords[2] / page_size[0] * actual_page_size[0], coords[3] / page_size[1] * actual_page_size[1]
-                ]
-                y, x, h, w = coords[0], coords[1], coords[2], coords[3]
-                cropped = image_page[math.floor(x):math.ceil(x + w), math.floor(y):math.ceil(y + h)]
+                cropped = self.__get_image(figure_tag, file_path, page_sizes)
+                if cropped is None:
+                    continue
 
                 uid = f"fig_{uuid.uuid1()}"
                 file_name = f"{uid}.png"
-                attachment_path = os.path.join(save_dir, file_name)
+                attachment_path = os.path.join(attachments_dir, file_name)
                 cv2.imwrite(attachment_path, cropped)
-                attachments.append(AttachedFile(original_name=file_name, tmp_file_path=attachment_path, need_content_analysis=False, uid=uid))
+                attachments.append(AttachedFile(original_name=file_name, tmp_file_path=attachment_path, need_content_analysis=need_content_analysis, uid=uid))
                 attachment2uid[f'#{figure_tag.get("xml:id")}'] = attachments[-1].uid
             except Exception as e:
                 self.logger.warning(f"Exception {e} during figure tag handling:\n{figure_tag}")
 
         return attachments, attachment2uid
+
+    def __get_image(self, figure_tag: Tag, file_path: str, page_sizes: List[Tuple[float, float]]) -> Optional[np.ndarray]:
+        """
+        Crop the PDF page according to the figure's coordinates.
+        Figure can consist of multiple sub-figures: we crop the union of all sub-figures.
+        Example of the figure's coordinates: coords="3,151.56,211.52,312.23,7.89;3,136.68,115.84,338.92,75.24"
+        """
+        if figure_tag.graphic is None:
+            return None
+
+        coords_list = figure_tag["coords"].split(";")
+        prev_page_number, page_image = None, None
+        x_min, x_max, y_min, y_max = np.inf, 0, np.inf, 0
+
+        for coords_text in coords_list:
+            # coords=[p, y, x, h, w], where p - page number, (x, y) - upper-left point, h - height, w - width
+            coords = coords_text.split(",")
+            page_number = int(coords[0])
+
+            if prev_page_number is None:
+                prev_page_number = page_number
+                page_image = np.array(convert_from_path(file_path, first_page=page_number, last_page=page_number)[0])
+
+            if page_number != prev_page_number:
+                self.logger.warning("The figure is located on several pages (handle only the first page)")
+                break  # we don't handle multi-page images
+
+            coords = [float(i) for i in coords[1:]]
+            page_size = page_sizes[page_number - 1]
+            actual_page_size = page_image.shape[1], page_image.shape[0]
+            coords = [
+                coords[0] / page_size[0] * actual_page_size[0], coords[1] / page_size[1] * actual_page_size[1],
+                coords[2] / page_size[0] * actual_page_size[0], coords[3] / page_size[1] * actual_page_size[1]
+            ]
+            y, x, h, w = coords[0], coords[1], coords[2], coords[3]
+            x1, x2, y1, y2 = math.floor(x), math.ceil(x + w), math.floor(y), math.ceil(y + h)
+            x_min, x_max, y_min, y_max = min(x_min, x1), max(x_max, x2), min(y_min, y1), max(y_max, y2)
+
+        cropped = page_image[x_min:x_max, y_min:y_max]
+        return cropped
 
     def __parse_bibliography(self, soup: Tag) -> Tuple[List[LineWithMeta], dict]:
         """

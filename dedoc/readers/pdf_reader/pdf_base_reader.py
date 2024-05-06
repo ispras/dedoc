@@ -42,7 +42,8 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "last_page",
     "need_binarization",
     "table_type",
-    "attachments_dir"
+    "attachments_dir",
+    "need_content_analysis"
 ])
 
 
@@ -83,7 +84,8 @@ class PdfBaseReader(BaseReader):
             last_page=last_page,
             need_binarization=param_utils.get_param_need_binarization(parameters),
             table_type=param_utils.get_param_table_type(parameters),
-            attachments_dir=param_utils.get_param_attachments_dir(parameters, file_path)
+            attachments_dir=param_utils.get_param_attachments_dir(parameters, file_path),
+            need_content_analysis=param_utils.get_param_need_content_analysis(parameters)
         )
 
         lines, scan_tables, attachments, warnings, metadata = self._parse_document(file_path, params_for_parse)

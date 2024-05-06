@@ -12,7 +12,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.html_reader.html_reader import HtmlReader
 from dedoc.utils import supported_image_types
-from dedoc.utils.parameter_utils import get_param_attachments_dir
+from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
 from dedoc.utils.utils import check_filename_length, get_encoding, get_mime_extension, save_data_to_unique_file
 
 
@@ -55,8 +55,7 @@ class MhtmlReader(BaseReader):
             lines.extend(result.lines)
             tables.extend(result.tables)
 
-        need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
-
+        need_content_analysis = get_param_need_content_analysis(parameters)
         tmp_file_names = []
         original_file_names = []
         for tmp_file_name, original_file_name in zip(names_list, original_names_list):

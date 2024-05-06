@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
+from dedoc.utils.parameter_utils import get_param_need_content_analysis
 from dedoc.utils.utils import get_mime_extension
 
 
@@ -68,7 +69,7 @@ class JsonAttachmentsExtractor(AbstractAttachmentsExtractor):
 
             attachments.append((attached_filename, binary_data))
 
-        need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+        need_content_analysis = get_param_need_content_analysis(parameters)
         return self._content2attach_file(content=attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis, parameters=parameters)
 
     def __get_value_by_keys(self, data: dict, keys: List[str]) -> dict:

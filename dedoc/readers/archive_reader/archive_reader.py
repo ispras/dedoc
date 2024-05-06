@@ -13,7 +13,7 @@ from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_with_attachments
+from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis, get_param_with_attachments
 from dedoc.utils.utils import get_file_mime_type, get_mime_extension, save_data_to_unique_file
 
 
@@ -45,7 +45,7 @@ class ArchiveReader(BaseReader):
             return UnstructuredDocument(lines=[], tables=[], attachments=[])
 
         attachments_dir = get_param_attachments_dir(parameters, file_path)
-        need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+        need_content_analysis = get_param_need_content_analysis(parameters)
         attachments = self.__get_attachments(path=file_path, tmp_dir=attachments_dir, need_content_analysis=need_content_analysis)
         return UnstructuredDocument(lines=[], tables=[], attachments=attachments)
 

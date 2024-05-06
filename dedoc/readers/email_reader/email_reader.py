@@ -16,7 +16,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.html_reader.html_reader import HtmlReader
-from dedoc.utils.parameter_utils import get_param_attachments_dir
+from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
 from dedoc.utils.utils import get_mime_extension, get_unique_name, save_data_to_unique_file
 
 
@@ -62,7 +62,7 @@ class EmailReader(BaseReader):
         with open(header_file_path, "w", encoding="utf-8") as f:
             json.dump(all_header_fields, f, ensure_ascii=False, indent=4)
 
-        need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+        need_content_analysis = get_param_need_content_analysis(parameters)
         attachments.append(AttachedFile(original_name=header_filename,
                                         tmp_file_path=header_file_path,
                                         uid=f"attach_{uuid.uuid1()}",
