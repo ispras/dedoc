@@ -1,5 +1,6 @@
 # Dedoc
 
+[![PyPI version](https://badge.fury.io/py/dedoc.svg)](https://badge.fury.io/py/dedoc)
 [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 [![Documentation Status](https://readthedocs.org/projects/dedoc/badge/?version=latest)](https://dedoc.readthedocs.io/en/latest/?badge=latest)
 [![GitHub release](https://img.shields.io/github/release/ispras/dedoc.svg)](https://github.com/ispras/dedoc/releases/)

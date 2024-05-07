@@ -3,14 +3,16 @@ from typing import List
 
 from dedoc.utils.utils import get_extensions_by_mimes
 
-Extensions = namedtuple("Parts", "excel_like_format "
-                                 "pptx_like_format "
-                                 "csv_like_format "
-                                 "docx_like_format "
-                                 "archive_like_format "
-                                 "image_like_format "
-                                 "pdf_like_format "
-                                 "txt_like_format")
+Extensions = namedtuple("Parts", [
+    "excel_like_format",
+    "docx_like_format",
+    "pptx_like_format",
+    "archive_like_format",
+    "image_like_format",
+    "pdf_like_format",
+    "csv_like_format",
+    "txt_like_format"
+])
 
 
 converted_extensions = Extensions(
@@ -18,8 +20,11 @@ converted_extensions = Extensions(
     docx_like_format=[".odt", ".doc", ".rtf"],
     pptx_like_format=[".odp", ".ppt"],
     archive_like_format=[],
-    image_like_format=[".pcx", ".webp", ".sgi", ".hdr", ".sr", ".pic", ".dib", ".jfif", ".j2k"],
-    pdf_like_format=[],
+    image_like_format=[
+        ".bmp", ".dib", ".eps", ".gif", ".hdr", ".j2k", ".jfif", ".jp2", ".jpe", ".jpeg", ".jpg", ".pbm", ".pcx", ".pgm", ".pic", ".pnm", ".ppm", ".ras",
+        ".sgi", ".sr", ".tiff", ".webp"
+    ],
+    pdf_like_format=[".djvu"],
     csv_like_format=[],
     txt_like_format=[".xml"]
 )
@@ -27,17 +32,12 @@ converted_extensions = Extensions(
 converted_mimes = Extensions(
     excel_like_format=["application/vnd.oasis.opendocument.spreadsheet", "application/vnd.ms-excel"],
     docx_like_format=["application/msword", "application/vnd.oasis.opendocument.text", "application/rtf"],
-    pptx_like_format=[
-        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        "application/vnd.ms-powerpoint",
-        "application/vnd.oasis.opendocument.presentation"
-    ],
+    pptx_like_format=["application/vnd.ms-powerpoint", "application/vnd.oasis.opendocument.presentation"],
     archive_like_format=[],
     image_like_format=[
-        "image/gif",
-        "image/x-portable-pixmap", "image/x-portable-anymap", "image/x-portable-graymap",
-        "image/x-portable-bitmap", "image/x-pcx", "image/x-pict",
-        "application/postscript", "image/x-cmu-raster"
+        "image/bmp", "image/x-ms-bmp", "image/dib", "image/x-eps", "application/postscript", "image/gif", "image/jpeg", "image/x-jp2", "image/jpg",
+        "image/x-portable-pixmap", "image/x-portable-anymap", "image/x-portable-graymap", "image/x-portable-bitmap", "image/x-pcx", "image/x-pict",
+        "image/ras", "image/sgi", "image/x-sgi", "image/tiff", "image/webp", "image/x-cmu-raster"
     ],
     pdf_like_format=["image/vnd.djvu"],
     csv_like_format=[],
@@ -48,7 +48,7 @@ recognized_extensions = Extensions(
     excel_like_format=[".xlsx"],
     docx_like_format=[".docx"],
     pptx_like_format=[".pptx"],
-    archive_like_format=[".tar.gz"],
+    archive_like_format=[".zip", ".tar", ".tar.gz", ".rar", ".7z"],
     image_like_format=[".png"],
     pdf_like_format=[".pdf"],
     csv_like_format=[".csv", ".tsv"],
@@ -56,14 +56,14 @@ recognized_extensions = Extensions(
 )
 
 recognized_mimes = Extensions(
-    excel_like_format=["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel"],
+    excel_like_format=["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
     docx_like_format=["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
     pptx_like_format=["application/vnd.openxmlformats-officedocument.presentationml.presentation"],
     archive_like_format=["application/zip", "application/x-tar", "application/x-rar-compressed", "application/rar", "application/x-7z-compressed"],
-    image_like_format=["image/jpeg", "image/png", "image/tiff", "image/x-ms-bmp", "image/bmp"],
+    image_like_format=["image/png"],
     pdf_like_format=["application/pdf"],
-    csv_like_format=["text/csv"],
-    txt_like_format=["text/plain", "text/html"]
+    csv_like_format=["text/csv", "text/tab-separated-values"],
+    txt_like_format=["text/plain"]
 )
 
 
