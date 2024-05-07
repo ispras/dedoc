@@ -1,4 +1,4 @@
-# noqa
+# flake8: noqa
 
 import itertools
 import unittest.runner
@@ -14,11 +14,13 @@ class CustomTextTestResult(unittest.runner.TextTestResult):
 
         return super(CustomTextTestResult, self).__init__(stream, descriptions, verbosity)
 
-    def startTest(self, test):
+    def startTest(self, test):  # noqa
         """Writes the test number to the stream if showAll is set, then calls super impl"""
 
         if self.showAll:
-            progress = '[{0}/{1}] '.format(next(self.test_numbers), self.test_case_count)
+            test_numbers = next(self.test_numbers)
+            test_case_count = self.test_case_count
+            progress = f"[{test_numbers}/{test_case_count}] "
             self.stream.write(progress)
 
             # Also store the progress in the test itself, so that if it errors,
