@@ -23,6 +23,11 @@ exclude =
 # ANN101 - type annotations for self
 # T201 - prints found
 # JS101 - Multi-line container not broken after opening character
+# ANN001 - Missing type annotation for function argument
+# ANN201 - Missing return type annotation for public function
+# ANN202 - Missing return type annotation for protected function
+# ANN204 - Missing return type annotation for special method
+# N802 - function name should be lowercase
 ignore =
     ANN101
 per-file-ignores =
