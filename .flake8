@@ -28,3 +28,4 @@ ignore =
 per-file-ignores =
     scripts/*:T201
     scripts/benchmark_pdf_performance*:JS101
+    tests/custom_test_runner.py:ANN001,ANN201,ANN202,ANN204,N802

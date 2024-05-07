@@ -1,5 +1,3 @@
-# flake8: noqa
-
 import itertools
 import unittest.runner
 
@@ -14,7 +12,7 @@ class CustomTextTestResult(unittest.runner.TextTestResult):
 
         return super(CustomTextTestResult, self).__init__(stream, descriptions, verbosity)
 
-    def startTest(self, test):  # noqa
+    def startTest(self, test):
         """Writes the test number to the stream if showAll is set, then calls super impl"""
 
         if self.showAll:
@@ -36,10 +34,9 @@ class CustomTextTestResult(unittest.runner.TextTestResult):
         info = super(CustomTextTestResult, self)._exc_info_to_string(err, test)
 
         if self.showAll:
-            info = 'Test number: {index}\n{info}'.format(
-                index=test.progress_index,
-                info=info
-            )
+            index = test.progress_index
+            test_info = info
+            info = f"Test number: {index}\n{test_info}"
 
         return info
 
