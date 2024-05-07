@@ -161,10 +161,7 @@ It is better to work with the source code directly, similarly adding new code to
         @dataclass
         class TrainDatasetParameters(QueryParameters):
             type_of_task: Optional[str] = Form("law_classifier",
-                                               enum=[
-                                                   "law_classifier", "tz_classifier", "diploma_classifier", "header_classifier", "paragraph_classifier",
-                                                   "tables_classifier", "article_classifier"
-                                               ],
+                                               enum=["law_classifier", "tz_classifier", "diploma_classifier", "paragraph_classifier", "article_classifier"],
                                                description="Type of the task to create")
             task_size: Optional[str] = Form("250", description="Maximum number of images in one task")
 
@@ -178,9 +175,7 @@ It is better to work with the source code directly, similarly adding new code to
                 <option value="law_classifier" selected>law</option>
                 <option value="tz_classifier">tz</option>
                 <option value="diploma_classifier">diploma</option>
-                <option value="header_classifier">header_classifier</option>
                 <option value="paragraph_classifier">paragraph</option>
-                <option value="tables_classifier">tables</option>
                 <option value="article_classifier">article</option>
             </select> type_of_task
         </label>
