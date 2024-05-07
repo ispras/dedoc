@@ -1,18 +1,23 @@
+import math
 import os
 import time
+import uuid
 from typing import Dict, List, Optional, Tuple
 
+import cv2
+import numpy as np
 import requests
 from bs4 import BeautifulSoup, Tag
+from pdf2image import convert_from_path
 
-from dedoc.data_structures import Annotation, CellWithMeta, HierarchyLevel, LineMetadata, Table, TableAnnotation, TableMetadata
+from dedoc.data_structures import Annotation, AttachAnnotation, AttachedFile, CellWithMeta, HierarchyLevel, LineMetadata, Table, TableAnnotation, TableMetadata
 from dedoc.data_structures.concrete_annotations.reference_annotation import ReferenceAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
-from dedoc.utils.parameter_utils import get_param_document_type
+from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_document_type, get_param_need_content_analysis, get_param_with_attachments
 from dedoc.utils.utils import get_mime_extension
 
 
@@ -23,7 +28,11 @@ class ArticleReader(BaseReader):
 
     def __init__(self, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
-        self.grobid_url = f"http://{os.environ.get('GROBID_HOST', 'localhost')}:{os.environ.get('GROBID_PORT', '8070')}"
+        grobid_url = os.environ.get("GROBID_URL", "")
+        if grobid_url:
+            self.grobid_url = grobid_url
+        else:
+            self.grobid_url = f"http://{os.environ.get('GROBID_HOST', 'localhost')}:{os.environ.get('GROBID_PORT', '8070')}"
         self.url = f"{self.grobid_url}/api/processFulltextDocument"
         self.grobid_is_alive = False
         self.__update_grobid_alive(self.grobid_url, max_attempts=self.config.get("grobid_max_connection_attempts", 3))
@@ -43,7 +52,7 @@ class ArticleReader(BaseReader):
         with open(file_path, "rb") as file:
             files = {"input": file}
             try:
-                response = requests.post(self.url, files=files)
+                response = requests.post(self.url, files=files, data={"teiCoordinates": "figure"})
                 if response.status_code != 200:
                     warning = f"GROBID returns code {response.status_code}."
                     self.logger.warning(warning)
@@ -63,11 +72,12 @@ class ArticleReader(BaseReader):
 
             bib_lines, bib2uid = self.__parse_bibliography(soup)
             tables, table2uid = self.__parse_tables(soup)
+            attachments, attachment2uid = self.__parse_images(soup, file_path, parameters)
 
-            lines += self.__parse_text(soup, bib2uid, table2uid)
+            lines += self.__parse_text(soup, bib2uid, table2uid, attachment2uid)
             lines.extend(bib_lines)
 
-            return UnstructuredDocument(tables=tables, lines=lines, attachments=[], warnings=["use GROBID (version: 0.8.0)"])
+            return UnstructuredDocument(tables=tables, lines=lines, attachments=attachments, warnings=["use GROBID (version: 0.8.0)"])
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
@@ -150,26 +160,25 @@ class ArticleReader(BaseReader):
 
     def __parse_author(self, author_tag: Tag) -> List[LineWithMeta]:
         """
-
         Example:
         <author>
-        <persname><forename type="first">Sonia</forename><surname>Belaïd</surname></persname>
-        <affiliation key="aff0">
-        <orgname type="institution">École Normale Supérieure</orgname>
-        <address>
-        <addrline>45 rue dUlm</addrline>
-        <postcode>75005</postcode>
-        <settlement>Paris</settlement>
-        </address>
-        </affiliation>
-        <affiliation key="aff1">
-        <orgname type="institution">Thales Communications &amp; Security</orgname>
-        <address>
-        <addrline>4 Avenue des Louvresses</addrline>
-        <postcode>92230</postcode>
-        <settlement>Gennevilliers</settlement>
-        </address>
-        </affiliation>
+            <persname><forename type="first">Sonia</forename><surname>Belaïd</surname></persname>
+            <affiliation key="aff0">
+                <orgname type="institution">École Normale Supérieure</orgname>
+                <address>
+                    <addrline>45 rue dUlm</addrline>
+                    <postcode>75005</postcode>
+                    <settlement>Paris</settlement>
+                </address>
+            </affiliation>
+            <affiliation key="aff1">
+                <orgname type="institution">Thales Communications &amp; Security</orgname>
+                <address>
+                    <addrline>4 Avenue des Louvresses</addrline>
+                    <postcode>92230</postcode>
+                    <settlement>Gennevilliers</settlement>
+                </address>
+            </affiliation>
         </author>
         """
         lines = [self.__create_line(text="", hierarchy_level_id=1, paragraph_type="author")]
@@ -207,7 +216,7 @@ class ArticleReader(BaseReader):
         lines += [self.__create_line(text=item.text, hierarchy_level_id=2, paragraph_type="keyword") for item in keywords_tag.find_all("term")]
         return lines
 
-    def __create_line_with_refs(self, content: List[Tuple[str, Tag]], bib2uid: dict, table2uid: dict) -> LineWithMeta:
+    def __create_line_with_refs(self, content: List[Tuple[str, Tag]], bib2uid: dict, table2uid: dict, attachment2uid: dict) -> LineWithMeta:
         text = ""
         start = 0
         annotations = []
@@ -220,6 +229,8 @@ class ArticleReader(BaseReader):
                     annotations.append(ReferenceAnnotation(value=bib2uid[target], start=start, end=start + len(sub_text)))
                 if subpart.get("type") == "table" and target in table2uid:
                     annotations.append(TableAnnotation(name=table2uid[target], start=start, end=start + len(sub_text)))
+                if subpart.get("type") == "figure" and target in attachment2uid:
+                    annotations.append(AttachAnnotation(attach_uid=attachment2uid[target], start=start, end=start + len(sub_text)))
             else:
                 sub_text = subpart if isinstance(subpart, str) else ""
 
@@ -228,7 +239,7 @@ class ArticleReader(BaseReader):
 
         return self.__create_line(text=text, hierarchy_level_id=None, paragraph_type=None, annotations=annotations)
 
-    def __parse_text(self, soup: Tag, bib2uid: dict, table2uid: dict) -> List[LineWithMeta]:
+    def __parse_text(self, soup: Tag, bib2uid: dict, table2uid: dict, attachment2uid: dict) -> List[LineWithMeta]:
         """
         Example of section XML tag:
         <div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.1">Preprocessing</head><p>...</p><p>...</p></div>
@@ -240,16 +251,16 @@ class ArticleReader(BaseReader):
         lines.append(self.__create_line(text=self.__tag2text(abstract)))
 
         for part in soup.body.find_all("div"):
-            lines.extend(self.__parse_section(part, bib2uid, table2uid))
+            lines.extend(self.__parse_section(part, bib2uid, table2uid, attachment2uid))
 
         for other_text_type in ("acknowledgement", "annex"):
             for text_tag in soup.find_all("div", attrs={"type": other_text_type}):
                 for part in text_tag.find_all("div"):
-                    lines.extend(self.__parse_section(part, bib2uid, table2uid))
+                    lines.extend(self.__parse_section(part, bib2uid, table2uid, attachment2uid))
 
         return lines
 
-    def __parse_section(self, section_tag: Tag, bib2uid: dict, table2uid: dict) -> List[LineWithMeta]:
+    def __parse_section(self, section_tag: Tag, bib2uid: dict, table2uid: dict, attachment2uid: dict) -> List[LineWithMeta]:
         lines = []
         number = section_tag.head.get("n") if section_tag.head else ""
         number = number + " " if number else ""
@@ -261,9 +272,9 @@ class ArticleReader(BaseReader):
             lines.append(self.__create_line(text=number + line_text, hierarchy_level_id=section_depth, paragraph_type="section"))
         for subpart in section_tag.find_all("p"):
             if subpart.string is not None:
-                lines.append(self.__create_line_with_refs(subpart.string + "\n", bib2uid, table2uid))
+                lines.append(self.__create_line_with_refs(subpart.string + "\n", bib2uid, table2uid, attachment2uid))
             elif subpart.contents and len(subpart.contents) > 0:
-                lines.append(self.__create_line_with_refs(subpart.contents, bib2uid, table2uid))
+                lines.append(self.__create_line_with_refs(subpart.contents, bib2uid, table2uid, attachment2uid))
 
         return lines
 
@@ -280,15 +291,15 @@ class ArticleReader(BaseReader):
             ...
             Table Example:
                 <figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0">
-                <head>Table 1 .</head>
-                <label>1</label>
-                <figDesc>Performance of some illustrative AES implementations.</figDesc>
-                <table>
-                <row><cell>Software (8-bit)</cell><cell>code size</cell><cell>cycle</cell><cell>cost</cell><cell>physical</cell></row>
-                <row><cell>Implementations</cell><cell>(bytes)</cell><cell>count</cell><cell>function</cell><cell>assumptions</cell></row>
-                <row><cell>Unprotected [13]</cell><cell>1659</cell><cell>4557</cell><cell>7.560</cell><cell>-</cell></row>
-                ...
-                </table>
+                    <head>Table 1 .</head>
+                    <label>1</label>
+                    <figDesc>Performance of some illustrative AES implementations.</figDesc>
+                    <table>
+                        <row><cell>Software (8-bit)</cell><cell>code size</cell><cell>cycle</cell><cell>cost</cell><cell>physical</cell></row>
+                        <row><cell>Implementations</cell><cell>(bytes)</cell><cell>count</cell><cell>function</cell><cell>assumptions</cell></row>
+                        <row><cell>Unprotected [13]</cell><cell>1659</cell><cell>4557</cell><cell>7.560</cell><cell>-</cell></row>
+                        ...
+                    </table>
                 </figure>
         """
         tables = []
@@ -316,9 +327,100 @@ class ArticleReader(BaseReader):
                 continue
 
             tables.append(Table(cells=table_cells, metadata=TableMetadata(page_id=0, title=title)))
-            table2uid["#" + table.get("xml:id")] = tables[-1].metadata.uid
+            table2uid[f'#{table.get("xml:id")}'] = tables[-1].metadata.uid
 
         return tables, table2uid
+
+    def __parse_images(self, soup: Tag, file_path: str, parameters: Optional[dict]) -> Tuple[List[AttachedFile], dict]:
+        """
+        Example Figure with figure's ref:
+        -----------------------------------------------
+            Figure Reference Example:
+                <ref type="figure" coords="2,444.07,632.21,4.98,8.74" target="#fig_0">1</ref>
+            Figure Example:
+                <figure
+                    xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0" coords="3,151.56,211.52,312.23,7.89;3,136.68,115.84,338.92,75.24">
+                    <head>Fig. 1 .</head>
+                    <label>1</label>
+                    <figDesc>Fig. 1. Stateful leakage-resilient PRG with N = 2 (left) and N = 256 (right).</figDesc>
+                    <graphic coords="3,136.68,115.84,338.92,75.24" type="bitmap"/>
+                </figure>
+            List of PDF page sizes:
+                <facsimile>
+                    <surface n="1" ulx="0.0" uly="0.0" lrx="612.0" lry="792.0"/>
+                    <surface n="2" ulx="0.0" uly="0.0" lrx="612.0" lry="792.0"/>
+                </facsimile>
+        Documentation: https://grobid.readthedocs.io/en/latest/Coordinates-in-PDF/
+        """
+        if not get_param_with_attachments(parameters):
+            return [], {}
+
+        attachments_dir = get_param_attachments_dir(parameters, file_path)
+        need_content_analysis = get_param_need_content_analysis(parameters)
+        try:
+            page_sizes = [(float(item["lrx"]), float(item["lry"])) for item in soup.facsimile.find_all("surface")]
+        except Exception as e:
+            self.logger.warning(f"Exception {e} during attached images handling")
+            return [], {}
+
+        attachments, attachment2uid = [], {}
+        figure_tags = soup.find_all("figure", {"type": None})
+        for figure_tag in figure_tags:
+            try:
+                cropped = self.__get_image(figure_tag, file_path, page_sizes)
+                if cropped is None:
+                    continue
+
+                uid = f"fig_{uuid.uuid1()}"
+                file_name = f"{uid}.png"
+                attachment_path = os.path.join(attachments_dir, file_name)
+                cv2.imwrite(attachment_path, cropped)
+                attachments.append(AttachedFile(original_name=file_name, tmp_file_path=attachment_path, need_content_analysis=need_content_analysis, uid=uid))
+                attachment2uid[f'#{figure_tag.get("xml:id")}'] = attachments[-1].uid
+            except Exception as e:
+                self.logger.warning(f"Exception {e} during figure tag handling:\n{figure_tag}")
+
+        return attachments, attachment2uid
+
+    def __get_image(self, figure_tag: Tag, file_path: str, page_sizes: List[Tuple[float, float]]) -> Optional[np.ndarray]:
+        """
+        Crop the PDF page according to the figure's coordinates.
+        Figure can consist of multiple sub-figures: we crop the union of all sub-figures.
+        Example of the figure's coordinates: coords="3,151.56,211.52,312.23,7.89;3,136.68,115.84,338.92,75.24"
+        """
+        if figure_tag.graphic is None:
+            return None
+
+        coords_list = figure_tag["coords"].split(";")
+        prev_page_number, page_image = None, None
+        x_min, x_max, y_min, y_max = np.inf, 0, np.inf, 0
+
+        for coords_text in coords_list:
+            # coords=[p, y, x, h, w], where p - page number, (x, y) - upper-left point, h - height, w - width
+            coords = coords_text.split(",")
+            page_number = int(coords[0])
+
+            if prev_page_number is None:
+                prev_page_number = page_number
+                page_image = np.array(convert_from_path(file_path, first_page=page_number, last_page=page_number)[0])
+
+            if page_number != prev_page_number:
+                self.logger.warning("The figure is located on several pages: handle only the first page (we don't handle multi-page images)")
+                break
+
+            coords = [float(i) for i in coords[1:]]
+            page_size = page_sizes[page_number - 1]
+            actual_page_size = page_image.shape[1], page_image.shape[0]
+            coords = [
+                coords[0] / page_size[0] * actual_page_size[0], coords[1] / page_size[1] * actual_page_size[1],
+                coords[2] / page_size[0] * actual_page_size[0], coords[3] / page_size[1] * actual_page_size[1]
+            ]
+            y, x, h, w = coords[0], coords[1], coords[2], coords[3]
+            x1, x2, y1, y2 = math.floor(x), math.ceil(x + w), math.floor(y), math.ceil(y + h)
+            x_min, x_max, y_min, y_max = min(x_min, x1), max(x_max, x2), min(y_min, y1), max(y_max, y2)
+
+        cropped = page_image[x_min:x_max, y_min:y_max]
+        return cropped
 
     def __parse_bibliography(self, soup: Tag) -> Tuple[List[LineWithMeta], dict]:
         """

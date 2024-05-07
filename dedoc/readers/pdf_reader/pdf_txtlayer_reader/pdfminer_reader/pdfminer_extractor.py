@@ -28,6 +28,7 @@ from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageA
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
 from dedoc.readers.pdf_reader.data_classes.word_with_bbox import WordWithBBox
+from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_utils import create_bbox, draw_annotation
 from dedoc.utils.parameter_utils import get_path_param
 from dedoc.utils.pdf_utils import get_page_image
@@ -49,12 +50,12 @@ class PdfminerExtractor:
     def get_pages(fp: BinaryIO) -> Iterator[PDFPage]:
         return PDFPage.get_pages(fp)
 
-    def extract_text_layer(self, path: str, page_number: int, attachments_dir: str) -> Optional[PageWithBBox]:
+    def extract_text_layer(self, path: str, page_number: int, parameters: ParametersForParseDoc) -> Optional[PageWithBBox]:
         """
         Extract text information with metadata from pdf with help pdfminer.six
         :param path: path to pdf
         :param page_number: number of the page to read
-        :param attachments_dir: directory for saving attachments
+        :param parameters: parameters of document parsing
         :return: pages_with_bbox - page with extracted text
         """
         with open(path, "rb") as fp:
@@ -62,9 +63,9 @@ class PdfminerExtractor:
             for page_num, page in enumerate(pages):
                 if page_num != page_number:
                     continue
-                return self.__handle_page(page=page, page_number=page_number, path=path, attachments_dir=attachments_dir)
+                return self.__handle_page(page=page, page_number=page_number, path=path, parameters=parameters)
 
-    def __handle_page(self, page: PDFPage, page_number: int, path: str, attachments_dir: str) -> PageWithBBox:
+    def __handle_page(self, page: PDFPage, page_number: int, path: str, parameters: ParametersForParseDoc) -> PageWithBBox:
         device, interpreter = self.__get_interpreter()
         try:
             interpreter.process_page(page)
@@ -99,8 +100,8 @@ class PdfminerExtractor:
             elif isinstance(lobj, LTTextLineHorizontal):
                 lobjs_textline.append(lobj)
 
-            elif isinstance(lobj, LTFigure) and not page_broken:
-                attachment = self.__extract_image(attachments_dir, height, image_page, k_h, k_w, lobj, page_number)
+            elif isinstance(lobj, LTFigure) and not page_broken and parameters.with_attachments:
+                attachment = self.__extract_image(parameters, height, image_page, k_h, k_w, lobj, page_number)
                 if attachment is not None:
                     images.append(attachment)
 
@@ -115,7 +116,7 @@ class PdfminerExtractor:
         return PageWithBBox(bboxes=bboxes, image=image_page, page_num=page_number, attachments=attachments, pdf_page_height=height, pdf_page_width=width)
 
     def __extract_image(self,
-                        directory: str,
+                        parameters: ParametersForParseDoc,
                         height: int,
                         image_page: np.ndarray,
                         k_h: float,
@@ -128,9 +129,15 @@ class PdfminerExtractor:
             cropped = image_page[bbox.y_top_left: bbox.y_bottom_right, bbox.x_top_left: bbox.x_bottom_right]
             uid = f"fig_{uuid.uuid1()}"
             file_name = f"{uid}.png"
-            path_out = os.path.join(directory, file_name)
+            path_out = os.path.join(parameters.attachments_dir, file_name)
             Image.fromarray(cropped).save(path_out)
-            attachment = PdfImageAttachment(original_name=file_name, tmp_file_path=path_out, need_content_analysis=False, uid=uid, location=location)
+            attachment = PdfImageAttachment(
+                original_name=file_name,
+                tmp_file_path=path_out,
+                need_content_analysis=parameters.need_content_analysis,
+                uid=uid,
+                location=location
+            )
         except Exception as ex:
             self.logger.error(ex)
             attachment = None

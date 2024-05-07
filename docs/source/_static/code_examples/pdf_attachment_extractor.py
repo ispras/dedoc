@@ -6,6 +6,7 @@ import PyPDF2
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures import AttachedFile
 from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
 from dedoc.utils.utils import get_mime_extension
 
 
@@ -34,5 +35,7 @@ class PdfAttachmentsExtractor(AbstractAttachmentsExtractor):
                 f_dict = filenames[data_index].getObject()
                 f_data = f_dict["/EF"]["/F"].getData()
                 attachments.append((name, f_data))
-        attachments = self._content2attach_file(content=attachments, tmpdir=os.path.dirname(file_path), need_content_analysis=False, parameters=parameters)
+        attachments_dir = get_param_attachments_dir(parameters, file_path)
+        need_content_analysis = get_param_need_content_analysis(parameters)
+        attachments = self._content2attach_file(content=attachments, tmpdir=attachments_dir, need_content_analysis=need_content_analysis, parameters=parameters)
         return attachments

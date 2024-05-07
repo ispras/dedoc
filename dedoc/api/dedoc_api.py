@@ -73,7 +73,12 @@ async def upload(file: UploadFile = File(...), query_params: QueryParameters = D
 
     return_format = str(parameters.get("return_format", "json")).lower()
     if return_format == "html":
-        html_content = json2html(text="", paragraph=document_tree.content.structure, tables=document_tree.content.tables, tabs=0)
+        html_content = json2html(
+            text="",
+            paragraph=document_tree.content.structure,
+            tables=document_tree.content.tables,
+            attachments=document_tree.attachments, tabs=0
+        )
         return HTMLResponse(content=html_content)
     elif return_format == "plain_text":
         txt_content = json2txt(paragraph=document_tree.content.structure)
@@ -100,7 +105,14 @@ async def upload_example(file_name: str, return_format: Optional[str] = None) ->
     document_tree = manager.parse(file_path, parameters=parameters)
 
     if return_format == "html":
-        return HTMLResponse(content=json2html(text="", paragraph=document_tree.content.structure, tables=document_tree.content.tables, tabs=0))
+        html_page = json2html(
+            text="",
+            paragraph=document_tree.content.structure,
+            tables=document_tree.content.tables,
+            attachments=document_tree.attachments,
+            tabs=0
+        )
+        return HTMLResponse(content=html_page)
     return ORJSONResponse(content=document_tree.to_api_schema().model_dump(), status_code=200)
 
 

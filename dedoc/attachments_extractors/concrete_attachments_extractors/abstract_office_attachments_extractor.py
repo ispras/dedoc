@@ -8,6 +8,7 @@ from charset_normalizer import from_bytes
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
+from dedoc.utils.parameter_utils import get_param_need_content_analysis
 
 
 class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
@@ -96,6 +97,6 @@ class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
 
                     # TODO process any ole files except \x01Ole10Native and PDF (looks like impossible task)
 
-            need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+            need_content_analysis = get_param_need_content_analysis(parameters)
             attachments = self._content2attach_file(content=result, tmpdir=tmpdir, need_content_analysis=need_content_analysis, parameters=parameters)
             return attachments

@@ -11,6 +11,7 @@ from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_offic
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.utils.parameter_utils import get_param_need_content_analysis
 from dedoc.utils.utils import get_mime_extension
 
 
@@ -45,7 +46,7 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
         try:
             with zipfile.ZipFile(os.path.join(tmpdir, filename), "r") as zfile:
                 diagram_attachments = self.__extract_diagrams(zfile)
-                need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+                need_content_analysis = get_param_need_content_analysis(parameters)
                 result += self._content2attach_file(content=diagram_attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis,
                                                     parameters=parameters)
 

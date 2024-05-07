@@ -34,7 +34,8 @@ from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
 from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
-from dedoc.utils.parameter_utils import get_param_page_slice, get_param_pdf_with_txt_layer, get_param_with_attachments
+from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis, get_param_page_slice, get_param_pdf_with_txt_layer, \
+    get_param_with_attachments
 from dedoc.utils.pdf_utils import get_pdf_page_count
 from dedoc.utils.utils import calculate_file_hash, get_mime_extension, get_unique_name
 
@@ -94,9 +95,8 @@ class PdfTabbyReader(PdfBaseReader):
     def __extract(self, path: str, parameters: dict, warnings: list)\
             -> Tuple[List[LineWithMeta], List[Table], List[ScanTable], List[PdfImageAttachment], Optional[dict]]:
         all_lines, all_tables, all_tables_on_images, all_attached_images = [], [], [], []
+        with_attachments = get_param_with_attachments(parameters)
         document_metadata = None
-        attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = os.path.dirname(path) if attachments_dir is None else attachments_dir
 
         file_hash = calculate_file_hash(path=path)
         page_count = get_pdf_page_count(path)
@@ -131,7 +131,7 @@ class PdfTabbyReader(PdfBaseReader):
                 all_tables.extend(page_tables)
                 all_tables_on_images.extend(table_on_images)
 
-            attached_images = self.__get_attached_images(page=page, attachments_dir=attachments_dir)
+            attached_images = self.__get_attached_images(page=page, parameters=parameters, path=path) if with_attachments else []
             if attached_images:
                 all_attached_images.extend(attached_images)
 
@@ -178,7 +178,10 @@ class PdfTabbyReader(PdfBaseReader):
 
         return tables, tables_on_image
 
-    def __get_attached_images(self, page: dict, attachments_dir: str) -> List[PdfImageAttachment]:
+    def __get_attached_images(self, page: dict, parameters: dict, path: str) -> List[PdfImageAttachment]:
+        attachments_dir = get_param_attachments_dir(parameters, path)
+        need_content_analysis = get_param_need_content_analysis(parameters)
+
         image_attachment_list = []
         for image_dict in page["images"]:
             image_location = Location(
@@ -193,7 +196,7 @@ class PdfTabbyReader(PdfBaseReader):
             image_attachment = PdfImageAttachment(
                 original_name=image_dict["original_name"],
                 tmp_file_path=tmp_file_path,
-                need_content_analysis=False,
+                need_content_analysis=need_content_analysis,
                 uid=f"attach_{uuid.uuid4()}",
                 location=image_location
             )
