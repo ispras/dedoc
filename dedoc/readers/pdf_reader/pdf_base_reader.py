@@ -42,6 +42,7 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "last_page",
     "need_binarization",
     "table_type",
+    "with_attachments",
     "attachments_dir",
     "need_content_analysis"
 ])
@@ -84,6 +85,7 @@ class PdfBaseReader(BaseReader):
             last_page=last_page,
             need_binarization=param_utils.get_param_need_binarization(parameters),
             table_type=param_utils.get_param_table_type(parameters),
+            with_attachments=param_utils.get_param_with_attachments(parameters),
             attachments_dir=param_utils.get_param_attachments_dir(parameters, file_path),
             need_content_analysis=param_utils.get_param_need_content_analysis(parameters)
         )
@@ -91,7 +93,7 @@ class PdfBaseReader(BaseReader):
         lines, scan_tables, attachments, warnings, metadata = self._parse_document(file_path, params_for_parse)
         tables = [scan_table.to_table() for scan_table in scan_tables]
 
-        if param_utils.get_param_with_attachments(parameters) and self.attachment_extractor.can_extract(file_path):
+        if params_for_parse.with_attachments and self.attachment_extractor.can_extract(file_path):
             attachments += self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
 
         result = UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=warnings, metadata=metadata)

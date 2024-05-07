@@ -95,6 +95,7 @@ class PdfTabbyReader(PdfBaseReader):
     def __extract(self, path: str, parameters: dict, warnings: list)\
             -> Tuple[List[LineWithMeta], List[Table], List[ScanTable], List[PdfImageAttachment], Optional[dict]]:
         all_lines, all_tables, all_tables_on_images, all_attached_images = [], [], [], []
+        with_attachments = get_param_with_attachments(parameters)
         document_metadata = None
 
         file_hash = calculate_file_hash(path=path)
@@ -130,7 +131,7 @@ class PdfTabbyReader(PdfBaseReader):
                 all_tables.extend(page_tables)
                 all_tables_on_images.extend(table_on_images)
 
-            attached_images = self.__get_attached_images(page=page, parameters=parameters, path=path)
+            attached_images = self.__get_attached_images(page=page, parameters=parameters, path=path) if with_attachments else []
             if attached_images:
                 all_attached_images.extend(attached_images)
 

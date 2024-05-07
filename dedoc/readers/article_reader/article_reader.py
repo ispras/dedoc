@@ -28,7 +28,11 @@ class ArticleReader(BaseReader):
 
     def __init__(self, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
-        self.grobid_url = f"http://{os.environ.get('GROBID_HOST', 'localhost')}:{os.environ.get('GROBID_PORT', '8070')}"
+        grobid_url = os.environ.get("GROBID_URL", "")
+        if grobid_url:
+            self.grobid_url = grobid_url
+        else:
+            self.grobid_url = f"http://{os.environ.get('GROBID_HOST', 'localhost')}:{os.environ.get('GROBID_PORT', '8070')}"
         self.url = f"{self.grobid_url}/api/processFulltextDocument"
         self.grobid_is_alive = False
         self.__update_grobid_alive(self.grobid_url, max_attempts=self.config.get("grobid_max_connection_attempts", 3))
@@ -401,8 +405,8 @@ class ArticleReader(BaseReader):
                 page_image = np.array(convert_from_path(file_path, first_page=page_number, last_page=page_number)[0])
 
             if page_number != prev_page_number:
-                self.logger.warning("The figure is located on several pages (handle only the first page)")
-                break  # we don't handle multi-page images
+                self.logger.warning("The figure is located on several pages: handle only the first page (we don't handle multi-page images)")
+                break
 
             coords = [float(i) for i in coords[1:]]
             page_size = page_sizes[page_number - 1]

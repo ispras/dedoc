@@ -100,7 +100,7 @@ class PdfminerExtractor:
             elif isinstance(lobj, LTTextLineHorizontal):
                 lobjs_textline.append(lobj)
 
-            elif isinstance(lobj, LTFigure) and not page_broken:
+            elif isinstance(lobj, LTFigure) and not page_broken and parameters.with_attachments:
                 attachment = self.__extract_image(parameters, height, image_page, k_h, k_w, lobj, page_number)
                 if attachment is not None:
                     images.append(attachment)
