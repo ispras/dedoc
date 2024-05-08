@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.html_reader.html_reader import HtmlReader
 from dedoc.utils import supported_image_types
@@ -23,10 +24,9 @@ class MhtmlReader(BaseReader):
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
-        self.mhtml_extensions = [".mhtml", ".mht"]
-        self.mhtml_extensions += [f"{extension}.gz" for extension in self.mhtml_extensions]
-        self.mhtml_extensions = tuple(self.mhtml_extensions)
         self.html_reader = HtmlReader(config=self.config)
+        self._recognized_extensions = recognized_extensions.mhtml_like_format
+        self._recognized_mimes = recognized_mimes.mhtml_like_format
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
@@ -34,7 +34,10 @@ class MhtmlReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return extension.lower().endswith(tuple(self.mhtml_extensions))
+        # this code differs from BaseReader because .eml and .mhtml files have the same mime type
+        if extension:
+            return extension.lower() in self._recognized_extensions
+        return mime in self._recognized_mimes
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

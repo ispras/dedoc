@@ -16,7 +16,6 @@ from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.co
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
 from dedoc.utils import supported_image_types
 from dedoc.utils.parameter_utils import get_path_param
-from dedoc.utils.utils import get_mime_extension
 
 
 class PdfImageReader(PdfBaseReader):
@@ -48,16 +47,9 @@ class PdfImageReader(PdfBaseReader):
                                                                           checkpoint_path=get_config()["resources_path"], config=self.config)
         self.binarizer = AdaptiveBinarizer()
         self.ocr = OCRLineExtractor(config=self.config)
-
-    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
-        """
-        Check if the document extension is suitable for this reader, i.e. it has .pdf extension, or it is an image.
-        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
-        You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
-        """
-        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return mime in recognized_mimes.pdf_like_format or mime in recognized_mimes.image_like_format or \
-            file_path.lower().endswith(tuple(recognized_extensions.image_like_format)) or extension.lower().replace(".", "") in supported_image_types
+        supported_image_extensions = [ext for ext in supported_image_types if ext.startswith(".")]
+        self._recognized_extensions = recognized_extensions.pdf_like_format + recognized_extensions.image_like_format + supported_image_extensions
+        self._recognized_mimes = recognized_mimes.pdf_like_format + recognized_mimes.image_like_format
 
     def _process_one_page(self,
                           image: np.ndarray,

@@ -14,11 +14,10 @@ from dedoc.data_structures import Annotation, AttachAnnotation, AttachedFile, Ce
 from dedoc.data_structures.concrete_annotations.reference_annotation import ReferenceAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_mimes
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
 from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_document_type, get_param_need_content_analysis, get_param_with_attachments
-from dedoc.utils.utils import get_mime_extension
 
 
 class ArticleReader(BaseReader):
@@ -36,6 +35,8 @@ class ArticleReader(BaseReader):
         self.url = f"{self.grobid_url}/api/processFulltextDocument"
         self.grobid_is_alive = False
         self.__update_grobid_alive(self.grobid_url, max_attempts=self.config.get("grobid_max_connection_attempts", 3))
+        self._recognized_extensions = recognized_extensions.pdf_like_format
+        self._recognized_mimes = recognized_mimes.pdf_like_format
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -96,8 +97,7 @@ class ArticleReader(BaseReader):
         if not self.grobid_is_alive:
             return False
 
-        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return mime in recognized_mimes.pdf_like_format and extension.lower() == ".pdf"
+        return super().can_read(file_path=file_path, mime=mime, extension=extension)
 
     def __update_grobid_alive(self, grobid_url: str, max_attempts: int = 2) -> None:
         if self.grobid_is_alive:

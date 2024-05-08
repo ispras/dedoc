@@ -11,6 +11,8 @@ import shutil
 import time
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, TypeVar
 
+import magic
+import puremagic
 import requests
 from Levenshtein._levenshtein import ratio
 from charset_normalizer import from_bytes
@@ -140,6 +142,17 @@ def save_data_to_unique_file(directory: str, filename: str, binary_data: bytes) 
 
 def get_file_mime_type(path: str) -> str:
     return mimetypes.guess_type(path)[0] or "application/octet-stream"
+
+
+def get_file_mime_by_content(path: str) -> str:
+    mime = magic.from_file(path, mime=True)
+
+    if mime == "application/octet-stream":  # for files with mime="image/x-sun-raster"
+        try:
+            mime = puremagic.from_file(path, mime=True)
+        except puremagic.main.PureError:
+            pass
+    return mime
 
 
 def get_extensions_by_mime(mime: str) -> List[str]:

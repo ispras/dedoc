@@ -64,9 +64,9 @@ def _get_manager_config(config: dict) -> dict:
         DocxReader(config=config),
         ExcelReader(config=config),
         PptxReader(config=config),
+        RawTextReader(config=config),
         CSVReader(config=config),
         HtmlReader(config=config),
-        RawTextReader(config=config),
         NoteReader(config=config),
         JsonReader(config=config),
         ArchiveReader(config=config),
@@ -74,8 +74,8 @@ def _get_manager_config(config: dict) -> dict:
         PdfTabbyReader(config=config),
         PdfTxtlayerReader(config=config),
         PdfImageReader(config=config),
-        MhtmlReader(config=config),
-        EmailReader(config=config)
+        EmailReader(config=config),
+        MhtmlReader(config=config)
     ]
 
     metadata_extractors = [

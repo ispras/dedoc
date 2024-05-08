@@ -27,7 +27,7 @@ from dedoc.readers.pdf_reader.utils.header_footers_analysis import footer_header
 from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
 from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
 from dedoc.utils.pdf_utils import get_pdf_page_count
-from dedoc.utils.utils import flatten
+from dedoc.utils.utils import flatten, get_file_mime_by_content
 from dedoc.utils.utils import get_file_mime_type, splitext_
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
@@ -61,6 +61,8 @@ class PdfBaseReader(BaseReader):
         self.attachment_extractor = PDFAttachmentsExtractor(config=self.config)
         self.linker = LineObjectLinker(config=self.config)
         self.paragraph_extractor = ScanParagraphClassifierExtractor(config=self.config)
+        self._recognized_extensions = recognized_extensions.pdf_like_format
+        self._recognized_mimes = recognized_mimes.pdf_like_format
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -155,6 +157,7 @@ class PdfBaseReader(BaseReader):
 
     def _get_images(self, path: str, page_from: int, page_to: int) -> Iterator[np.ndarray]:
         mime = get_file_mime_type(path)
+        mime = get_file_mime_by_content(path) if mime == "application/octet-stream" else mime
         if mime in recognized_mimes.pdf_like_format:
             yield from self._split_pdf2image(path, page_from, page_to)
         elif mime in recognized_mimes.image_like_format or path.endswith(tuple(recognized_extensions.image_like_format)):

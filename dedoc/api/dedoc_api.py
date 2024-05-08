@@ -3,6 +3,7 @@ import importlib
 import json
 import os
 import tempfile
+import traceback
 from typing import Optional
 
 import uvicorn
@@ -118,6 +119,7 @@ async def upload_example(file_name: str, return_format: Optional[str] = None) ->
 
 @app.exception_handler(DedocError)
 async def exception_handler(request: Request, exc: DedocError) -> Response:
+    logger.error(f"Exception {exc}\n{traceback.format_exc()}")
     result = {"message": exc.msg}
     if exc.filename:
         result["file_name"] = exc.filename

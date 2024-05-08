@@ -14,6 +14,7 @@ from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.html_reader.html_reader import HtmlReader
 from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
@@ -28,6 +29,8 @@ class EmailReader(BaseReader):
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
         self.html_reader = HtmlReader(config=self.config)
+        self._recognized_extensions = recognized_extensions.eml_like_format
+        self._recognized_mimes = recognized_mimes.eml_like_format
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
@@ -35,7 +38,10 @@ class EmailReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return file_path.lower().endswith(".eml") or mime == "message/rfc822"
+        # this code differs from BaseReader because .eml and .mhtml files have the same mime type
+        if extension:
+            return extension.lower() in self._recognized_extensions
+        return mime in self._recognized_mimes
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

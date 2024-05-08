@@ -1,10 +1,10 @@
 import os
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils.utils import get_mime_extension
+from dedoc.utils.utils import get_file_mime_by_content, get_mime_extension
 
 
 class ReaderComposition(object):
@@ -32,12 +32,32 @@ class ReaderComposition(object):
         file_name = os.path.basename(file_path)
         mime, extension = get_mime_extension(file_path=file_path)
 
-        for reader in self.readers:
-            if reader.can_read(file_path=file_path, mime=mime, extension=extension, parameters=parameters):
-                unstructured_document = reader.read(file_path=file_path, parameters=parameters)
-                return unstructured_document
+        # firstly, try to read file using its original extension
+        document, exception = self.__call_readers(file_path=file_path, parameters=parameters, mime=mime, extension=extension)
+        if document is not None:
+            return document
 
-        raise BadFileFormatError(
+        # secondly, try to read file using mime obtained by file's content
+        mime = get_file_mime_by_content(file_path)
+        document, second_exception = self.__call_readers(file_path=file_path, parameters=parameters, mime=mime, extension="")
+        if document is not None:
+            return document
+
+        exception = exception or second_exception or BadFileFormatError(
             msg=f"No one can read file: name = {file_name}, extension = {extension}, mime = {mime}",
             msg_api=f"Unsupported file format {mime} of the input file {file_name}"
         )
+        raise exception
+
+    def __call_readers(self, file_path: str, parameters: Optional[dict], mime: str, extension: str)\
+            -> Tuple[Optional[UnstructuredDocument], Optional[BadFileFormatError]]:
+        for reader in self.readers:
+            if reader.can_read(file_path=file_path, mime=mime, extension=extension, parameters=parameters):
+                try:
+                    unstructured_document = reader.read(file_path=file_path, parameters=parameters)
+                except BadFileFormatError as e:
+                    return None, e
+
+                return unstructured_document, None
+
+        return None, None

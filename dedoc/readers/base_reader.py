@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.utils.utils import get_mime_extension
 
 
 class BaseReader(ABC):
@@ -21,8 +22,9 @@ class BaseReader(ABC):
         """
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
+        self._recognized_extensions = []
+        self._recognized_mimes = []
 
-    @abstractmethod
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
         Check if this reader can handle the given file.
@@ -35,7 +37,8 @@ class BaseReader(ABC):
 
         :return: True if this reader can handle the file, False otherwise
         """
-        pass
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        return extension.lower() in self._recognized_extensions or mime in self._recognized_mimes
 
     @abstractmethod
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
