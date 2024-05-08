@@ -1,5 +1,6 @@
-import csv
 from typing import List, Optional, Tuple
+
+import pandas as pd
 
 from dedoc.data_structures import LineMetadata, LineWithMeta
 from dedoc.data_structures.cell_with_meta import CellWithMeta
@@ -39,16 +40,14 @@ class CSVReader(BaseReader):
         if delimiter is None:
             delimiter = "\t" if file_path.endswith(".tsv") else self.default_separator
         encoding, encoding_warning = self.__get_encoding(file_path, parameters)
-        with open(file_path, errors="ignore", encoding=encoding) as file:
-            csv_reader = csv.reader(file, delimiter=delimiter)
-            data = list(csv_reader)
+        df = pd.read_csv(file_path, sep=delimiter, header=None, encoding=encoding)
         table_metadata = TableMetadata(page_id=0)
         cells_with_meta = []
         line_id = 0
-        for row in data:
+        for ind in df.index:
             row_lines = []
-            for cell in row:
-                row_lines.append(CellWithMeta(lines=[LineWithMeta(line=cell, metadata=LineMetadata(page_id=0, line_id=line_id))]))
+            for cell in df.loc[ind]:
+                row_lines.append(CellWithMeta(lines=[LineWithMeta(line=str(cell), metadata=LineMetadata(page_id=0, line_id=line_id))]))
                 line_id += 1
             cells_with_meta.append(row_lines)
 

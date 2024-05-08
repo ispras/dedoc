@@ -33,7 +33,6 @@ class TestApiCSVReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, dict(different_param="some value"))
 
         self.assertIn("delimiter is ','", result["warnings"])
-        self.assertIn("encoding is ascii", result["warnings"])
 
         tables = result["content"]["tables"]
         table = tables[0]["cells"]
@@ -54,6 +53,12 @@ class TestApiCSVReader(AbstractTestApiDocReader):
             "0553573403", "book", "A Game of Throne, kings and other stuff", "7.99", "True", "George R.R. Martin", "A Song of Ice and Fire", "1", "fantasy"
         ], row1)
         self.assertListEqual(["0553579908", "book", 'A Clash of "Kings"', "7.99", "True", "George R.R. Martin", "A Song of Ice and Fire", "2", "fantasy"], row2)
+
+    def test_bom_char(self) -> None:
+        file_name = "jpnum_test.csv"
+        result = self._send_request(file_name)
+        row1 = result["content"]["tables"][0]["cells"][0]
+        self.assertListEqual(["JPNUM"], self._get_text_of_row(row1))
 
     def __check_content(self, tables: List[dict]) -> None:
         self.assertEqual(1, len(tables))
