@@ -100,14 +100,14 @@ def _get_manager_config(config: dict) -> dict:
     }
 
     return dict(
-        converter=ConverterComposition(converters=converters),
-        reader=ReaderComposition(readers=readers),
-        structure_extractor=StructureExtractorComposition(extractors=structure_extractors, default_key="other"),
+        converter=ConverterComposition(converters=converters, config=config),
+        reader=ReaderComposition(readers=readers, config=config),
+        structure_extractor=StructureExtractorComposition(extractors=structure_extractors, default_key="other", config=config),
         structure_constructor=StructureConstructorComposition(
             constructors={"linear": LinearConstructor(), "tree": TreeConstructor()},
             default_constructor=TreeConstructor()
         ),
-        document_metadata_extractor=MetadataExtractorComposition(extractors=metadata_extractors),
+        document_metadata_extractor=MetadataExtractorComposition(extractors=metadata_extractors, config=config),
         attachments_handler=AttachmentsHandler(config=config)
     )
 

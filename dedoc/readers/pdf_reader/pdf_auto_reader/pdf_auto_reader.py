@@ -6,14 +6,13 @@ from typing import Optional
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_mimes
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_detector import TxtLayerDetector
 from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 from dedoc.utils.parameter_utils import get_param_page_slice, get_param_pdf_with_txt_layer
-from dedoc.utils.utils import get_mime_extension
 
 
 class PdfAutoReader(BaseReader):
@@ -37,6 +36,8 @@ class PdfAutoReader(BaseReader):
         self.pdf_tabby_reader = PdfTabbyReader(config=self.config)
         self.pdf_image_reader = PdfImageReader(config=self.config)
         self.txtlayer_detector = TxtLayerDetector(pdf_reader=self.pdf_tabby_reader, config=self.config)
+        self._recognized_extensions = recognized_extensions.pdf_like_format
+        self._recognized_mimes = recognized_mimes.pdf_like_format
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
@@ -47,12 +48,7 @@ class PdfAutoReader(BaseReader):
         It is recommended to use `pdf_with_text_layer=auto_tabby` because it's faster and allows to get better results.
         You can look to :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
-        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        if not (mime in recognized_mimes.pdf_like_format or extension.lower() == ".pdf"):
-            return False
-
-        parameters = {} if parameters is None else parameters
-        return get_param_pdf_with_txt_layer(parameters) in ("auto", "auto_tabby")
+        return super().can_read(file_path=file_path, mime=mime, extension=extension) and get_param_pdf_with_txt_layer(parameters) in ("auto", "auto_tabby")
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

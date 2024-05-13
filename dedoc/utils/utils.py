@@ -9,7 +9,7 @@ import random
 import re
 import shutil
 import time
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, TypeVar
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, TypeVar
 
 import magic
 import puremagic
@@ -147,7 +147,7 @@ def get_file_mime_type(path: str) -> str:
 def get_file_mime_by_content(path: str) -> str:
     mime = magic.from_file(path, mime=True)
 
-    if mime == "application/octet-stream":  # for files with mime="image/x-sun-raster"
+    if mime == "application/octet-stream":  # for files with mime in {"image/x-sun-raster", "image/x-ms-bmp"}
         try:
             mime = puremagic.from_file(path, mime=True)
         except puremagic.main.PureError:
@@ -159,7 +159,7 @@ def get_extensions_by_mime(mime: str) -> List[str]:
     return mimetypes.guess_all_extensions(mime)
 
 
-def get_extensions_by_mimes(mimes: List[str]) -> List[str]:
+def get_extensions_by_mimes(mimes: Set[str]) -> List[str]:
     exts = []
     for mime in mimes:
         exts.extend(get_extensions_by_mime(mime))

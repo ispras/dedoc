@@ -22,8 +22,8 @@ class BaseReader(ABC):
         """
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
-        self._recognized_extensions = []
-        self._recognized_mimes = []
+        self._recognized_extensions = {}
+        self._recognized_mimes = {}
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """

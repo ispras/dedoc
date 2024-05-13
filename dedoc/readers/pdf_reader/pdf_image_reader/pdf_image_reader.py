@@ -47,9 +47,9 @@ class PdfImageReader(PdfBaseReader):
                                                                           checkpoint_path=get_config()["resources_path"], config=self.config)
         self.binarizer = AdaptiveBinarizer()
         self.ocr = OCRLineExtractor(config=self.config)
-        supported_image_extensions = [ext for ext in supported_image_types if ext.startswith(".")]
-        self._recognized_extensions = recognized_extensions.pdf_like_format + recognized_extensions.image_like_format + supported_image_extensions
-        self._recognized_mimes = recognized_mimes.pdf_like_format + recognized_mimes.image_like_format
+        supported_image_extensions = {ext for ext in supported_image_types if ext.startswith(".")}
+        self._recognized_extensions = recognized_extensions.pdf_like_format.union(recognized_extensions.image_like_format).union(supported_image_extensions)
+        self._recognized_mimes = recognized_mimes.pdf_like_format.union(recognized_mimes.image_like_format)
 
     def _process_one_page(self,
                           image: np.ndarray,

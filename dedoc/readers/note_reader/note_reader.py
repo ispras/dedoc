@@ -15,7 +15,7 @@ class NoteReader(BaseReader):
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
-        self._recognized_extensions = [".note.pickle"]
+        self._recognized_extensions = {".note.pickle"}
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

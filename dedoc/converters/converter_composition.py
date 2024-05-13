@@ -1,3 +1,4 @@
+import logging
 import os
 from stat import S_IREAD, S_IRGRP, S_IROTH
 from typing import List, Optional
@@ -13,11 +14,14 @@ class ConverterComposition(object):
     The first suitable converter is used (the one whose method :meth:`~dedoc.converters.AbstractConverter.can_convert` returns True), \
     so the order of converters is important.
     """
-    def __init__(self, converters: List[AbstractConverter]) -> None:
+    def __init__(self, converters: List[AbstractConverter], *, config: Optional[dict] = None) -> None:
         """
         :param converters: the list of converters that have methods can_convert() and convert(), \
         they are used for files converting into specified formats
+        :param config: configuration dictionary, e.g. logger for logging
         """
+        self.config = {} if config is None else config
+        self.logger = self.config.get("logger", logging.getLogger())
         self.converters = converters
 
     def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:

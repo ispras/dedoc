@@ -157,10 +157,10 @@ class PdfBaseReader(BaseReader):
 
     def _get_images(self, path: str, page_from: int, page_to: int) -> Iterator[np.ndarray]:
         mime = get_file_mime_type(path)
-        mime = get_file_mime_by_content(path) if mime == "application/octet-stream" else mime
+        mime = get_file_mime_by_content(path) if mime not in self._recognized_mimes else mime
         if mime in recognized_mimes.pdf_like_format:
             yield from self._split_pdf2image(path, page_from, page_to)
-        elif mime in recognized_mimes.image_like_format or path.endswith(tuple(recognized_extensions.image_like_format)):
+        elif mime in recognized_mimes.image_like_format or path.lower().endswith(tuple(recognized_extensions.image_like_format)):
             image = cv2.imread(path)
             if image is None:
                 raise BadFileFormatError(f"seems file {os.path.basename(path)} not an image")

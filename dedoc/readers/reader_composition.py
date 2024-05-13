@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import List, Optional, Tuple
 
@@ -14,10 +15,13 @@ class ReaderComposition(object):
     The first suitable reader is used for parsing (the one whose method :meth:`~dedoc.readers.BaseReader.can_read` returns True), \
     so the order of the given readers is important.
     """
-    def __init__(self, readers: List[BaseReader]) -> None:
+    def __init__(self, readers: List[BaseReader], *, config: Optional[dict] = None) -> None:
         """
         :param readers: the list of readers for documents of different formats that will be used for parsing
+        :param config: configuration dictionary, e.g. logger for logging
         """
+        self.config = {} if config is None else config
+        self.logger = self.config.get("logger", logging.getLogger())
         self.readers = readers
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
@@ -36,16 +40,21 @@ class ReaderComposition(object):
         document, exception = self.__call_readers(file_path=file_path, parameters=parameters, mime=mime, extension=extension)
         if document is not None:
             return document
+        self.logger.warning(f'Could not read file with mime = "{mime}", extension = "{extension}", try to detect file mime by its content')
 
         # secondly, try to read file using mime obtained by file's content
         mime = get_file_mime_by_content(file_path)
+        warning_message = f'Detected file mime = "{mime}"'
+        self.logger.warning(warning_message)
+
         document, second_exception = self.__call_readers(file_path=file_path, parameters=parameters, mime=mime, extension="")
         if document is not None:
+            document.warnings.append(warning_message)
             return document
 
         exception = exception or second_exception or BadFileFormatError(
-            msg=f"No one can read file: name = {file_name}, extension = {extension}, mime = {mime}",
-            msg_api=f"Unsupported file format {mime} of the input file {file_name}"
+            msg=f'No one can read file: name = "{file_name}", extension = "{extension}", mime = "{mime}"',
+            msg_api=f'Unsupported file mime "{mime}" of the input file "{file_name}"'
         )
         raise exception
 

@@ -1,3 +1,4 @@
+import logging
 import os.path
 from typing import List, Optional
 
@@ -11,10 +12,13 @@ class MetadataExtractorComposition:
     The first suitable extractor is used (the one whose method :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` \
     returns True), so the order of extractors is important.
     """
-    def __init__(self, extractors: List[AbstractMetadataExtractor]) -> None:
+    def __init__(self, extractors: List[AbstractMetadataExtractor], *, config: Optional[dict] = None) -> None:
         """
         :param extractors: the list of extractors with methods can_extract() and extract() to extract metadata from file
+        :param config: configuration dictionary, e.g. logger for logging
         """
+        self.config = {} if config is None else config
+        self.logger = self.config.get("logger", logging.getLogger())
         self.extractors = extractors
 
     def extract(self,
