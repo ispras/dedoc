@@ -6,10 +6,11 @@ import docx
 from docx.opc.exceptions import PackageNotFoundError
 
 from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
-class DocxMetadataExtractor(BaseMetadataExtractor):
+class DocxMetadataExtractor(AbstractMetadataExtractor):
     """
     This class is used to extract metadata from docx documents.
     It expands metadata retrieved by :class:`~dedoc.metadata_extractors.BaseMetadataExtractor`.
@@ -26,6 +27,7 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
+        self.base_extractor = BaseMetadataExtractor(config=config)
         self._recognized_extensions = recognized_extensions.docx_like_format
         self._recognized_mimes = recognized_mimes.docx_like_format
 
@@ -41,7 +43,9 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
         parameters = {} if parameters is None else parameters
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
 
-        base_fields = super().extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters)
+        base_fields = self.base_extractor.extract(
+            file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters
+        )
         docx_fields = self._get_docx_fields(os.path.join(file_dir, converted_filename))
 
         result = {**base_fields, **docx_fields}

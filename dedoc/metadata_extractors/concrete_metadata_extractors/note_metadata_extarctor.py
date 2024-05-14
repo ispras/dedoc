@@ -3,10 +3,10 @@ import pickle
 from typing import Optional
 
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
-from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
+from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 
 
-class NoteMetadataExtractor(BaseMetadataExtractor):
+class NoteMetadataExtractor(AbstractMetadataExtractor):
     """
     This class is used to extract metadata from documents with extension .note.pickle.
     It expands metadata retrieved by :class:`~dedoc.metadata_extractors.BaseMetadataExtractor`.

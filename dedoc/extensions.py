@@ -79,7 +79,8 @@ recognized_mimes = Extensions(
     eml_like_format={"message/rfc822"},
     mhtml_like_format={"message/rfc822"},
     archive_like_format={
-        "application/zip", "application/x-gzip", "application/x-tar", "application/x-rar-compressed", "application/rar", "application/x-7z-compressed"
+        "application/zip", "application/x-gzip", "application/gzip", "application/x-tar", "application/x-rar-compressed", "application/rar",
+        "application/x-rar", "application/x-7z-compressed"
     },
     image_like_format={"image/png"},
     pdf_like_format={"application/pdf"},
@@ -87,6 +88,23 @@ recognized_mimes = Extensions(
     txt_like_format={"text/plain"},
     json_like_format={"application/json"}
 )
+
+
+mime2extension = {
+    "application/vnd.ms-excel": ".xls", "application/vnd.oasis.opendocument.spreadsheet": ".ods",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx", "application/rtf": ".rtf", "application/vnd.oasis.opendocument.text": ".odt",
+    "text/rtf": ".rtf", "application/msword": ".doc", "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+    "application/vnd.ms-powerpoint": ".ppt", "application/vnd.oasis.opendocument.presentation": ".odp",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": ".pptx", "text/html": ".html", "message/rfc822": ".eml",
+    "application/x-gzip": ".gz", "application/gzip": ".gz", "application/x-rar-compressed": ".rar", "application/rar": ".rar", "application/x-tar": ".tar",
+    "application/x-rar": ".rar", "application/x-7z-compressed": ".7z", "application/zip": ".zip", "image/x-ms-bmp": ".bmp", "image/sgi": ".sgi",
+    "image/jpeg": ".jpg", "image/x-jp2": ".jp2", "image/x-portable-graymap": ".pgm", "image/x-pict": ".pic", "image/gif": ".gif", "image/x-sgi": ".sgi",
+    "image/x-sun-raster": ".ras", "image/x-eps": ".eps", "image/bmp": ".bmp", "image/x-portable-bitmap": ".pbm", "image/webp": ".webp",
+    "application/postscript": ".eps", "image/jpg": ".jpg", "image/x-jp2-codestream": "jp2", "image/x-portable-pixmap": ".ppm", "image/jp2": ".jp2",
+    "image/dib": ".dib", "image/x-pcx": ".pcx", "image/tiff": ".tiff", "image/x-cmu-raster": ".ras", "image/ras": ".ras",
+    "image/x-portable-anymap": ".pnm", "image/png": ".png", "image/vnd.djvu": ".djvu", "application/pdf": ".pdf", "text/tab-separated-values": ".tsv",
+    "application/csv": ".csv", "text/csv": ".csv", "application/xml": ".xml", "text/xml": ".xml", "text/plain": ".txt", "application/json": ".json"
+}
 
 
 def get_image_extensions() -> List[str]:

@@ -20,9 +20,6 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         - time when the file was last modified.
     """
 
-    def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
-
     def can_extract(self,
                     file_path: str,
                     converted_filename: Optional[str] = None,

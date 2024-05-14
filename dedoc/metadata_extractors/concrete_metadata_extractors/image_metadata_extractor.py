@@ -7,10 +7,11 @@ from PIL import ExifTags, Image
 from dateutil import parser
 
 from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
-class ImageMetadataExtractor(BaseMetadataExtractor):
+class ImageMetadataExtractor(AbstractMetadataExtractor):
     """
     This class is used to extract metadata from images.
     It expands metadata retrieved by :class:`~dedoc.metadata_extractors.BaseMetadataExtractor`.
@@ -48,6 +49,7 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
             "SubjectDistanceRange": ("subject_distance_range", self.__parse_int),
             "UserComment": ("user_comment", self.__encode_exif)
         }
+        self.base_extractor = BaseMetadataExtractor(config=config)
         self._recognized_extensions = recognized_extensions.image_like_format
         self._recognized_mimes = recognized_mimes.image_like_format
 
@@ -61,7 +63,9 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
         """
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
-        base_fields = super().extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters)
+        base_fields = self.base_extractor.extract(
+            file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters
+        )
 
         exif_fields = self._get_exif(os.path.join(file_dir, converted_filename))
         result = {**base_fields, **exif_fields}
