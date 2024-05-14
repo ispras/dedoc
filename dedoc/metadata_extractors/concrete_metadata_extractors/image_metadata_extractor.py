@@ -6,6 +6,7 @@ import piexif
 from PIL import ExifTags, Image
 from dateutil import parser
 
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
@@ -47,18 +48,8 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
             "SubjectDistanceRange": ("subject_distance_range", self.__parse_int),
             "UserComment": ("user_comment", self.__encode_exif)
         }
-
-    def can_extract(self,
-                    file_path: str,
-                    converted_filename: Optional[str] = None,
-                    original_filename: Optional[str] = None,
-                    parameters: Optional[dict] = None) -> bool:
-        """
-        Check if the document has image-like extension (".png", ".jpg", ".jpeg").
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
-        """
-        file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
-        return converted_filename.lower().endswith((".png", ".jpg", ".jpeg"))
+        self._recognized_extensions = recognized_extensions.image_like_format
+        self._recognized_mimes = recognized_mimes.image_like_format
 
     def extract(self,
                 file_path: str,

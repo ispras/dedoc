@@ -3,27 +3,18 @@ from typing import Optional
 
 from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
 from dedoc.extensions import converted_extensions, converted_mimes
-from dedoc.utils.utils import get_mime_extension, splitext_
+from dedoc.utils.utils import splitext_
 
 
 class DocxConverter(AbstractConverter):
     """
-    Converts docx-like documents into DOCX using the soffice application.
+    Converts docx-like documents (.doc, .rtf, .odt) into DOCX using the soffice application.
     Look to the :class:`~dedoc.converters.AbstractConverter` documentation to get the information about the methods' parameters.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
-
-    def can_convert(self,
-                    file_path: Optional[str] = None,
-                    extension: Optional[str] = None,
-                    mime: Optional[str] = None,
-                    parameters: Optional[dict] = None) -> bool:
-        """
-        Checks if the document is docx-like, e.g. it has .doc, .rtf or .odt extension.
-        """
-        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return extension.lower() in converted_extensions.docx_like_format or mime in converted_mimes.docx_like_format
+        self._converted_extensions = converted_extensions.docx_like_format
+        self._converted_mimes = converted_mimes.docx_like_format
 
     def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:
         """

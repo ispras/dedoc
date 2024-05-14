@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from dedoc.common.exceptions.conversion_error import ConversionError
+from dedoc.utils.utils import get_mime_extension
 
 
 class AbstractConverter(ABC):
@@ -19,8 +20,9 @@ class AbstractConverter(ABC):
         self.period_checking = 0.05
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
+        self._converted_extensions = {}
+        self._converted_mimes = {}
 
-    @abstractmethod
     def can_convert(self,
                     file_path: Optional[str] = None,
                     extension: Optional[str] = None,
@@ -36,7 +38,8 @@ class AbstractConverter(ABC):
         :param parameters: any additional parameters for the given document
         :return: the indicator of possibility to convert this file
         """
-        pass
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        return extension.lower() in self._converted_extensions or mime in self._converted_mimes
 
     @abstractmethod
     def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:

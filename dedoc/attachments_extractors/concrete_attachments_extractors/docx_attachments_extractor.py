@@ -12,7 +12,6 @@ from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.utils.parameter_utils import get_param_need_content_analysis
-from dedoc.utils.utils import get_mime_extension
 
 
 class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
@@ -21,17 +20,8 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
-
-    def can_extract(self,
-                    file_path: Optional[str] = None,
-                    extension: Optional[str] = None,
-                    mime: Optional[str] = None,
-                    parameters: Optional[dict] = None) -> bool:
-        """
-        Checks if this extractor can get attachments from the document (it should have .docx extension)
-        """
-        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return extension.lower() in recognized_extensions.docx_like_format or mime in recognized_mimes.docx_like_format
+        self._recognized_extensions = recognized_extensions.docx_like_format
+        self._recognized_mimes = recognized_mimes.docx_like_format
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
         """

@@ -2,16 +2,18 @@ import logging
 import os.path
 import shutil
 import tempfile
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 from dedoc.api.api_args import QueryParameters
+from dedoc.common.exceptions.bad_file_error import BadFileFormatError
+from dedoc.common.exceptions.conversion_error import ConversionError
 from dedoc.common.exceptions.dedoc_error import DedocError
 from dedoc.config import get_config
 from dedoc.data_structures import ParsedDocument, UnstructuredDocument
 from dedoc.manager_config import get_manager_config
 from dedoc.metadata_extractors import BaseMetadataExtractor
 from dedoc.utils.train_dataset_utils import get_path_original_documents, save_line_with_meta
-from dedoc.utils.utils import get_unique_name
+from dedoc.utils.utils import get_file_mime_by_content, get_mime_extension, get_unique_name
 
 
 class DedocManager:
@@ -95,19 +97,10 @@ class DedocManager:
             tmp_file_path = os.path.join(tmp_dir, unique_filename)
             shutil.copy(file_path, tmp_file_path)
 
-            # Step 1 - Converting
-            converted_file_path = self.converter.convert(tmp_file_path)
-            self.logger.info(f"Finish conversion {file_name} -> {os.path.basename(converted_file_path)}")
-
-            # Step 2 - Reading content
-            unstructured_document = self.reader.read(file_path=converted_file_path, parameters=parameters)
-            self.logger.info(f"Finish parse file {file_name}")
-
-            # Step 3 - Adding meta-information
-            metadata = self.document_metadata_extractor.extract(file_path=tmp_file_path, converted_filename=os.path.basename(converted_file_path),
-                                                                original_filename=file_name, parameters=parameters)
-            unstructured_document.metadata = {**unstructured_document.metadata, **metadata}
-            self.logger.info(f"Add metadata of file {file_name}")
+            # Steps 1-3 - Converting, Reading content and Adding meta-information
+            converted_file_path, unstructured_document = self.__parse_with_mime_auto_detection(
+                file_name=file_name, parameters=parameters, tmp_file_path=tmp_file_path
+            )
 
             # Step 4 - Extract structure
             unstructured_document = self.structure_extractor.extract(unstructured_document, parameters)
@@ -128,6 +121,37 @@ class DedocManager:
             self.logger.info(f"Finish handle {file_name}")
         return parsed_document
 
+    def __parse_with_mime_auto_detection(self, tmp_file_path: str, file_name: str, parameters: Optional[dict]) -> Tuple[str, UnstructuredDocument]:
+        mime, extension = get_mime_extension(file_path=tmp_file_path)
+
+        # Converting
+        converted_file_path, converted_mime, converted_extension = self.__convert_with_mime_auto_detection(
+            file_path=tmp_file_path, file_name=file_name, parameters=parameters, extension=extension, mime=mime
+        )
+        self.logger.info(f"Finish conversion {file_name} -> {os.path.basename(converted_file_path)}")
+
+        # Reading content and Adding meta-information
+        try:
+            unstructured_document, read_mime, read_extension = self.__read_with_mime_auto_detection(
+                file_path=tmp_file_path, file_name=file_name, converted_file_path=converted_file_path, parameters=parameters,
+                extension=converted_extension, mime=converted_mime
+            )
+        except BadFileFormatError as e:
+            converted_mime = get_file_mime_by_content(tmp_file_path)
+            self.logger.warning(f"Reading error ({e}). Try to convert and read file {file_name} one more time.")
+            converted_file_path, converted_mime, converted_extension = self.__convert_with_mime_auto_detection(
+                file_path=tmp_file_path, file_name=file_name, parameters=parameters, extension="", mime=converted_mime
+            )
+            unstructured_document, read_mime, read_extension = self.__read_with_mime_auto_detection(
+                file_path=tmp_file_path, file_name=file_name, converted_file_path=converted_file_path, parameters=parameters,
+                extension=converted_extension, mime=converted_mime
+            )
+        self.logger.info(f"Finish parse file {file_name}")
+
+        if read_mime != mime:
+            unstructured_document.warnings.append(f'File has incorrect extension "{extension}". Detected file mime = "{read_mime}"')
+        return converted_file_path, unstructured_document
+
     def __init_parameters(self, file_path: str, parameters: Optional[dict]) -> dict:
         parameters = {} if parameters is None else parameters
         result_parameters = {}
@@ -139,6 +163,73 @@ class DedocManager:
         result_parameters["attachments_dir"] = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
 
         return result_parameters
+
+    def __read_with_mime_auto_detection(self, file_path: str, converted_file_path: str, file_name: str, parameters: Optional[dict], extension: str, mime: str)\
+            -> Tuple[UnstructuredDocument, str, str]:
+        """
+        :return: parsed document with metadata, mime, extension
+        """
+        # firstly, try to read file using its original extension
+        document, exception = self.__read_file(
+            file_path=file_path, converted_file_path=converted_file_path, file_name=file_name, parameters=parameters, mime=mime, extension=extension
+        )
+        if document is not None:
+            return document, mime, extension
+
+        # secondly, try to read file using mime obtained by file's content
+        detected_mime = get_file_mime_by_content(converted_file_path)
+        self.logger.warning(f'Could not read file {file_name} with mime = "{mime}", extension = "{extension}". Detected file mime = "{detected_mime}"')
+        document, second_exception = self.__read_file(
+            file_path=file_path, converted_file_path=converted_file_path, file_name=file_name, parameters=parameters, mime=detected_mime, extension=""
+        )
+        if document is not None:
+            return document, detected_mime, ""
+
+        exception = exception or second_exception or BadFileFormatError(
+            msg=f'No one can read file: name = "{file_name}", mime = "{mime}" ("{detected_mime}")',
+            msg_api=f'Unsupported file mime "{mime}" ("{detected_mime}") of the input file "{file_name}"'
+        )
+        raise exception
+
+    def __convert_with_mime_auto_detection(self, file_path: str, file_name: str, parameters: Optional[dict], extension: str, mime: str) -> Tuple[str, str, str]:
+        """
+        :return: converted file path, mime, extension
+        """
+        converted_file_path, exception = self.__convert_file(file_path=file_path, parameters=parameters, mime=mime, extension=extension)
+        if converted_file_path is not None:
+            return converted_file_path, mime, extension
+
+        detected_mime = get_file_mime_by_content(file_path)
+        self.logger.warning(f'Could not convert file {file_name} with mime = "{mime}", extension = "{extension}". Detected file mime = "{detected_mime}"')
+        converted_file_path, second_exception = self.__convert_file(file_path=file_path, parameters=parameters, mime=detected_mime, extension="")
+        if converted_file_path is not None:
+            return converted_file_path, get_file_mime_by_content(converted_file_path), ""
+
+        exception = exception or second_exception or ConversionError(
+            msg=f'No one can convert file: name = "{file_name}", mime = "{mime}" ("{detected_mime}")',
+            msg_api=f'Unsupported file mime "{mime}" ("{detected_mime}") of the input file "{file_name}"'
+        )
+        raise exception
+
+    def __convert_file(self, file_path: str, parameters: Optional[dict], extension: str, mime: str) -> Tuple[Optional[str], Optional[ConversionError]]:
+        try:
+            converted_file_path = self.converter.convert(file_path, parameters=parameters, mime=mime, extension=extension)
+        except ConversionError as e:
+            return None, e
+
+        return converted_file_path, None
+
+    def __read_file(self, file_path: str, converted_file_path: str, file_name: str, parameters: Optional[dict], extension: str, mime: str)\
+            -> Tuple[Optional[UnstructuredDocument], Optional[DedocError]]:
+        try:
+            unstructured_document = self.reader.read(file_path=converted_file_path, parameters=parameters, mime=mime, extension=extension)
+            metadata = self.document_metadata_extractor.extract(file_path=file_path, converted_filename=os.path.basename(converted_file_path),
+                                                                original_filename=file_name, parameters=parameters, mime=mime, extension=extension)
+            unstructured_document.metadata = {**unstructured_document.metadata, **metadata}
+        except BadFileFormatError as e:
+            return None, e
+
+        return unstructured_document, None
 
     def __save(self, file_path: str, classified_document: UnstructuredDocument) -> None:
         self.logger.info(f'Save document lines to {self.config["intermediate_data_path"]}')

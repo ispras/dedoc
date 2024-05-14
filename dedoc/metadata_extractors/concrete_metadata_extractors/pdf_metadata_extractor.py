@@ -4,6 +4,7 @@ from typing import Optional
 from PyPDF2 import PdfFileReader
 from PyPDF2.utils import PdfReadError
 
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.utils.utils import convert_datetime
 
@@ -26,6 +27,8 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
+        self._recognized_extensions = recognized_extensions.pdf_like_format
+        self._recognized_mimes = recognized_mimes.pdf_like_format
         self.keys = {
             "/Producer": "producer",
             "/Creator": "creator",
@@ -39,18 +42,6 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
             "/CreationDate": "creation_date",
             "/ModDate": "modification_date",
         }
-
-    def can_extract(self,
-                    file_path: str,
-                    converted_filename: Optional[str] = None,
-                    original_filename: Optional[str] = None,
-                    parameters: Optional[dict] = None) -> bool:
-        """
-        Check if the document has .pdf extension.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
-        """
-        file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
-        return converted_filename.lower().endswith(".pdf")
 
     def extract(self,
                 file_path: str,

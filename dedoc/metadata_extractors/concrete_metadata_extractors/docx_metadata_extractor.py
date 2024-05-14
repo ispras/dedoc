@@ -5,6 +5,7 @@ from typing import Optional
 import docx
 from docx.opc.exceptions import PackageNotFoundError
 
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
@@ -25,18 +26,8 @@ class DocxMetadataExtractor(BaseMetadataExtractor):
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
-
-    def can_extract(self,
-                    file_path: str,
-                    converted_filename: Optional[str] = None,
-                    original_filename: Optional[str] = None,
-                    parameters: Optional[dict] = None) -> bool:
-        """
-        Check if the document has .docx extension.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
-        """
-        file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
-        return converted_filename.lower().endswith("docx")
+        self._recognized_extensions = recognized_extensions.docx_like_format
+        self._recognized_mimes = recognized_mimes.docx_like_format
 
     def extract(self,
                 file_path: str,

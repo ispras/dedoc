@@ -21,7 +21,9 @@ class NoteMetadataExtractor(BaseMetadataExtractor):
                     file_path: str,
                     converted_filename: Optional[str] = None,
                     original_filename: Optional[str] = None,
-                    parameters: Optional[dict] = None) -> bool:
+                    parameters: Optional[dict] = None,
+                    mime: Optional[str] = None,
+                    extension: Optional[str] = None) -> bool:
         """
         Check if the document has .note.pickle extension.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.

@@ -6,7 +6,7 @@ from typing import List, Optional, Tuple
 
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.utils.parameter_utils import get_param_attachments_dir
-from dedoc.utils.utils import save_data_to_unique_file
+from dedoc.utils.utils import get_mime_extension, save_data_to_unique_file
 
 
 class AbstractAttachmentsExtractor(ABC):
@@ -19,8 +19,9 @@ class AbstractAttachmentsExtractor(ABC):
         """
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
+        self._recognized_extensions = {}
+        self._recognized_mimes = {}
 
-    @abstractmethod
     def can_extract(self,
                     file_path: Optional[str] = None,
                     extension: Optional[str] = None,
@@ -36,7 +37,8 @@ class AbstractAttachmentsExtractor(ABC):
         :param parameters: any additional parameters for the given document
         :return: the indicator of possibility to get attachments of this file
         """
-        pass
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
+        return extension.lower() in self._recognized_extensions or mime in self._recognized_mimes
 
     @abstractmethod
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
