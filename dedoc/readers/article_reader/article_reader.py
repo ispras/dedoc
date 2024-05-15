@@ -26,7 +26,7 @@ class ArticleReader(BaseReader):
     """
 
     def __init__(self, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
         grobid_url = os.environ.get("GROBID_URL", "")
         if grobid_url:
             self.grobid_url = grobid_url
@@ -35,8 +35,6 @@ class ArticleReader(BaseReader):
         self.url = f"{self.grobid_url}/api/processFulltextDocument"
         self.grobid_is_alive = False
         self.__update_grobid_alive(self.grobid_url, max_attempts=self.config.get("grobid_max_connection_attempts", 3))
-        self._recognized_extensions = recognized_extensions.pdf_like_format
-        self._recognized_mimes = recognized_mimes.pdf_like_format
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

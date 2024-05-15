@@ -23,10 +23,8 @@ class RawTextReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.txt_like_format, recognized_mimes=recognized_mimes.txt_like_format)
         self.space_regexp = re.compile(r"^\s+")
-        self._recognized_extensions = recognized_extensions.txt_like_format
-        self._recognized_mimes = recognized_mimes.txt_like_format
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
@@ -36,8 +34,8 @@ class RawTextReader(BaseReader):
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         # this code differs from BaseReader because other formats can have text/plain mime type
         if extension:
-            return extension.lower() in self._recognized_extensions
-        return mime in self._recognized_mimes
+            return extension.lower() in self.__recognized_extensions
+        return mime in self.__recognized_mimes
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

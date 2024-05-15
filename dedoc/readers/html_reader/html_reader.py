@@ -25,11 +25,9 @@ class HtmlReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.html_like_format, recognized_mimes=recognized_mimes.html_like_format)
         self.postprocessor = HtmlLinePostprocessing()
         self.tag_annotation_parser = HtmlTagAnnotationParser()
-        self._recognized_extensions = recognized_extensions.html_like_format
-        self._recognized_mimes = recognized_mimes.html_like_format
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

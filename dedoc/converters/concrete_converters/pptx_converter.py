@@ -12,9 +12,7 @@ class PptxConverter(AbstractConverter):
     Look to the :class:`~dedoc.converters.AbstractConverter` documentation to get the information about the methods' parameters.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
-        self._converted_extensions = converted_extensions.pptx_like_format
-        self._converted_mimes = converted_mimes.pptx_like_format
+        super().__init__(config=config, converted_extensions=converted_extensions.pptx_like_format, converted_mimes=converted_mimes.pptx_like_format)
 
     def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:
         """

@@ -23,9 +23,7 @@ class ArchiveReader(BaseReader):
     Documents with the following extensions can be parsed: .zip, .tar, .tar.gz, .rar, .7z.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
-        self._recognized_extensions = recognized_extensions.archive_like_format
-        self._recognized_mimes = recognized_mimes.archive_like_format
+        super().__init__(config=config, recognized_extensions=recognized_extensions.archive_like_format, recognized_mimes=recognized_mimes.archive_like_format)
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

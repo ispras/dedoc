@@ -19,9 +19,7 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
     Extract attachments from docx files.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
-        self._recognized_extensions = recognized_extensions.docx_like_format
-        self._recognized_mimes = recognized_mimes.docx_like_format
+        super().__init__(config=config, recognized_extensions=recognized_extensions.docx_like_format, recognized_mimes=recognized_mimes.docx_like_format)
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
         """

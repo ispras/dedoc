@@ -24,10 +24,8 @@ class ExcelReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.excel_like_format, recognized_mimes=recognized_mimes.excel_like_format)
         self.attachment_extractor = ExcelAttachmentsExtractor(config=self.config)
-        self._recognized_extensions = recognized_extensions.excel_like_format
-        self._recognized_mimes = recognized_mimes.excel_like_format
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

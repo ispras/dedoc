@@ -20,10 +20,8 @@ class JsonReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.json_like_format, recognized_mimes=recognized_mimes.json_like_format)
         self.attachment_extractor = JsonAttachmentsExtractor(config=self.config)
-        self._recognized_extensions = recognized_extensions.json_like_format
-        self._recognized_mimes = recognized_mimes.json_like_format
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

@@ -1,7 +1,7 @@
 import os
 import zipfile
 from abc import ABC
-from typing import List, Optional, Tuple
+from typing import List, Optional, Set, Tuple
 
 import olefile
 from charset_normalizer import from_bytes
@@ -15,8 +15,8 @@ class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
     """
     Extract attachments from files of Microsoft Office format like docx, pptx, xlsx.
     """
-    def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+    def __init__(self, *, config: Optional[dict] = None, recognized_extensions: Optional[Set[str]] = None, recognized_mimes: Optional[Set[str]] = None) -> None:
+        super().__init__(config=config, recognized_extensions=recognized_extensions, recognized_mimes=recognized_mimes)
 
     def __parse_ole_contents(self, stream: bytes) -> Tuple[str, bytes]:
         """

@@ -31,13 +31,11 @@ class PdfAutoReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
         self.pdf_txtlayer_reader = PdfTxtlayerReader(config=self.config)
         self.pdf_tabby_reader = PdfTabbyReader(config=self.config)
         self.pdf_image_reader = PdfImageReader(config=self.config)
         self.txtlayer_detector = TxtLayerDetector(pdf_reader=self.pdf_tabby_reader, config=self.config)
-        self._recognized_extensions = recognized_extensions.pdf_like_format
-        self._recognized_mimes = recognized_mimes.pdf_like_format
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """

@@ -2,7 +2,7 @@ import logging
 import os
 import subprocess
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Set
 
 from dedoc.common.exceptions.conversion_error import ConversionError
 from dedoc.utils.utils import get_mime_extension
@@ -12,16 +12,18 @@ class AbstractConverter(ABC):
     """
     This class provides the common methods for all converters: can_convert() and convert().
     """
-    def __init__(self, *, config: Optional[dict] = None) -> None:
+    def __init__(self, *, config: Optional[dict] = None, converted_extensions: Optional[Set[str]] = None, converted_mimes: Optional[Set[str]] = None) -> None:
         """
         :param config: configuration of the converter, e.g. logger for logging
+        :param converted_extensions: set of supported files extensions with a dot, for example {.doc, .pdf}
+        :param converted_mimes: set of supported MIME types of files
         """
         self.timeout = 60
         self.period_checking = 0.05
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
-        self._converted_extensions = {}
-        self._converted_mimes = {}
+        self.__converted_extensions = {} if converted_extensions is None else converted_extensions
+        self.__converted_mimes = {} if converted_mimes is None else converted_mimes
 
     def can_convert(self,
                     file_path: Optional[str] = None,
@@ -39,7 +41,7 @@ class AbstractConverter(ABC):
         :return: the indicator of possibility to convert this file
         """
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return extension.lower() in self._converted_extensions or mime in self._converted_mimes
+        return extension.lower() in self.__converted_extensions or mime in self.__converted_mimes
 
     @abstractmethod
     def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:

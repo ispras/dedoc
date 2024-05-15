@@ -27,10 +27,8 @@ class PdfMetadataExtractor(AbstractMetadataExtractor):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
         self.base_extractor = BaseMetadataExtractor(config=config)
-        self._recognized_extensions = recognized_extensions.pdf_like_format
-        self._recognized_mimes = recognized_mimes.pdf_like_format
         self.keys = {
             "/Producer": "producer",
             "/Creator": "creator",

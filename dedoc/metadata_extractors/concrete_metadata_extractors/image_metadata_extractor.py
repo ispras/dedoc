@@ -31,7 +31,7 @@ class ImageMetadataExtractor(AbstractMetadataExtractor):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.image_like_format, recognized_mimes=recognized_mimes.image_like_format)
         self.keys = {
             "DateTime": ("date_time", self.__parse_date),
             "DateTimeDigitized": ("date_time_digitized", self.__parse_date),
@@ -50,8 +50,6 @@ class ImageMetadataExtractor(AbstractMetadataExtractor):
             "UserComment": ("user_comment", self.__encode_exif)
         }
         self.base_extractor = BaseMetadataExtractor(config=config)
-        self._recognized_extensions = recognized_extensions.image_like_format
-        self._recognized_mimes = recognized_mimes.image_like_format
 
     def extract(self,
                 file_path: str,

@@ -25,10 +25,8 @@ class PptxReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.pptx_like_format, recognized_mimes=recognized_mimes.pptx_like_format)
         self.attachments_extractor = PptxAttachmentsExtractor(config=self.config)
-        self._recognized_extensions = recognized_extensions.pptx_like_format
-        self._recognized_mimes = recognized_mimes.pptx_like_format
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
