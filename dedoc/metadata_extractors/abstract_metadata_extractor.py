@@ -18,8 +18,8 @@ class AbstractMetadataExtractor(ABC):
         """
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
-        self.__recognized_extensions = {} if recognized_extensions is None else recognized_extensions
-        self.__recognized_mimes = {} if recognized_mimes is None else recognized_mimes
+        self._recognized_extensions = {} if recognized_extensions is None else recognized_extensions
+        self._recognized_mimes = {} if recognized_mimes is None else recognized_mimes
 
     def can_extract(self,
                     file_path: str,
@@ -44,7 +44,7 @@ class AbstractMetadataExtractor(ABC):
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
         converted_file_path = os.path.join(file_dir, converted_filename)
         mime, extension = get_mime_extension(file_path=converted_file_path, mime=mime, extension=extension)
-        return extension.lower() in self.__recognized_extensions or mime in self.__recognized_mimes
+        return extension.lower() in self._recognized_extensions or mime in self._recognized_mimes
 
     @abstractmethod
     def extract(self,

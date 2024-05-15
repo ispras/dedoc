@@ -155,7 +155,7 @@ class PdfBaseReader(BaseReader):
 
     def _get_images(self, path: str, page_from: int, page_to: int) -> Iterator[np.ndarray]:
         mime = get_file_mime_type(path)
-        mime = get_file_mime_by_content(path) if mime not in self.__recognized_mimes else mime
+        mime = get_file_mime_by_content(path) if mime not in self._recognized_mimes else mime
         if mime in mimes.pdf_like_format:
             yield from self._split_pdf2image(path, page_from, page_to)
         elif mime in mimes.image_like_format or path.lower().endswith(tuple(extensions.image_like_format)):

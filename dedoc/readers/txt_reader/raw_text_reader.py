@@ -34,8 +34,8 @@ class RawTextReader(BaseReader):
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         # this code differs from BaseReader because other formats can have text/plain mime type
         if extension:
-            return extension.lower() in self.__recognized_extensions
-        return mime in self.__recognized_mimes
+            return extension.lower() in self._recognized_extensions
+        return mime in self._recognized_mimes
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

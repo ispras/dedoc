@@ -77,7 +77,9 @@ class TestApiJSONReader(AbstractTestApiDocReader):
 
     def test_broken(self) -> None:
         file_name = "broken.json"
-        self._send_request(file_name, expected_code=415)
+        result = self._send_request(file_name, expected_code=200)
+        warnings = [warning for warning in result["warnings"] if warning.startswith("Incorrect extension")]
+        self.assertEqual(len(warnings), 1)
 
     def test_json_attachments2(self) -> None:
         file_name = "test2.json"

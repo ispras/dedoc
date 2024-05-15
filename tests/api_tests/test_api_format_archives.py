@@ -69,7 +69,7 @@ class TestApiArchiveReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, self.parameters)
         attachs = result["attachments"]
 
-        self.assertEqual(len(attachs), 6)
+        self.assertEqual(len(attachs), 7)
         unsupported = [att for att in attachs if att["metadata"]["file_name"] == "file.bin"][0]["metadata"]
         self.assertEqual(unsupported["file_type"], "application/octet-stream")
 

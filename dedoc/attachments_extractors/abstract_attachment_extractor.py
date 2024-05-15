@@ -21,8 +21,8 @@ class AbstractAttachmentsExtractor(ABC):
         """
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
-        self.__recognized_extensions = {} if recognized_extensions is None else recognized_extensions
-        self.__recognized_mimes = {} if recognized_mimes is None else recognized_mimes
+        self._recognized_extensions = {} if recognized_extensions is None else recognized_extensions
+        self._recognized_mimes = {} if recognized_mimes is None else recognized_mimes
 
     def can_extract(self,
                     file_path: Optional[str] = None,
@@ -40,7 +40,7 @@ class AbstractAttachmentsExtractor(ABC):
         :return: the indicator of possibility to get attachments of this file
         """
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return extension.lower() in self.__recognized_extensions or mime in self.__recognized_mimes
+        return extension.lower() in self._recognized_extensions or mime in self._recognized_mimes
 
     @abstractmethod
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:

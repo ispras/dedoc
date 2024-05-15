@@ -22,8 +22,8 @@ class AbstractConverter(ABC):
         self.period_checking = 0.05
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
-        self.__converted_extensions = {} if converted_extensions is None else converted_extensions
-        self.__converted_mimes = {} if converted_mimes is None else converted_mimes
+        self._converted_extensions = {} if converted_extensions is None else converted_extensions
+        self._converted_mimes = {} if converted_mimes is None else converted_mimes
 
     def can_convert(self,
                     file_path: Optional[str] = None,
@@ -41,7 +41,7 @@ class AbstractConverter(ABC):
         :return: the indicator of possibility to convert this file
         """
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return extension.lower() in self.__converted_extensions or mime in self.__converted_mimes
+        return extension.lower() in self._converted_extensions or mime in self._converted_mimes
 
     @abstractmethod
     def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:

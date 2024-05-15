@@ -2,8 +2,9 @@ import os
 from typing import Optional
 
 import cv2
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
+from dedoc.common.exceptions.conversion_error import ConversionError
 from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
 from dedoc.extensions import converted_extensions, converted_mimes
 from dedoc.utils.utils import splitext_
@@ -29,7 +30,10 @@ class PNGConverter(AbstractConverter):
             img = cv2.imread(file_path)
             cv2.imwrite(converted_file_path, img)
         else:
-            img = Image.open(file_path)
+            try:
+                img = Image.open(file_path)
+            except UnidentifiedImageError as e:
+                raise ConversionError(msg=f"Could not convert file {file_name} ({e})")
             img.save(converted_file_path)
 
         return converted_file_path

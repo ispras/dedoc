@@ -158,7 +158,7 @@ class DedocManager:
     def __parse_file(self, file_path: str, file_name: str, parameters: Optional[dict], extension: str, mime: str) -> Tuple[str, UnstructuredDocument]:
         converted_file_path = self.converter.convert(file_path, parameters=parameters, mime=mime, extension=extension)
         if converted_file_path != file_path:
-            mime, extension = get_mime_extension(file_path=file_path)
+            mime, extension = get_mime_extension(file_path=converted_file_path)
 
         unstructured_document = self.reader.read(file_path=converted_file_path, parameters=parameters, mime=mime, extension=extension)
         metadata = self.document_metadata_extractor.extract(file_path=file_path, converted_filename=os.path.basename(converted_file_path),
