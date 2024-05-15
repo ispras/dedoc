@@ -6,10 +6,12 @@ import piexif
 from PIL import ExifTags, Image
 from dateutil import parser
 
+from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
 
-class ImageMetadataExtractor(BaseMetadataExtractor):
+class ImageMetadataExtractor(AbstractMetadataExtractor):
     """
     This class is used to extract metadata from images.
     It expands metadata retrieved by :class:`~dedoc.metadata_extractors.BaseMetadataExtractor`.
@@ -29,7 +31,7 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.image_like_format, recognized_mimes=recognized_mimes.image_like_format)
         self.keys = {
             "DateTime": ("date_time", self.__parse_date),
             "DateTimeDigitized": ("date_time_digitized", self.__parse_date),
@@ -47,18 +49,7 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
             "SubjectDistanceRange": ("subject_distance_range", self.__parse_int),
             "UserComment": ("user_comment", self.__encode_exif)
         }
-
-    def can_extract(self,
-                    file_path: str,
-                    converted_filename: Optional[str] = None,
-                    original_filename: Optional[str] = None,
-                    parameters: Optional[dict] = None) -> bool:
-        """
-        Check if the document has image-like extension (".png", ".jpg", ".jpeg").
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
-        """
-        file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
-        return converted_filename.lower().endswith((".png", ".jpg", ".jpeg"))
+        self.base_extractor = BaseMetadataExtractor(config=config)
 
     def extract(self,
                 file_path: str,
@@ -70,7 +61,9 @@ class ImageMetadataExtractor(BaseMetadataExtractor):
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
         """
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
-        base_fields = super().extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters)
+        base_fields = self.base_extractor.extract(
+            file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters
+        )
 
         exif_fields = self._get_exif(os.path.join(file_dir, converted_filename))
         result = {**base_fields, **exif_fields}

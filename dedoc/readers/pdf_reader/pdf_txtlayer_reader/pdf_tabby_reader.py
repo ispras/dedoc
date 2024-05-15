@@ -26,7 +26,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_mimes
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
@@ -37,7 +37,7 @@ from dedoc.structure_extractors.feature_extractors.list_features.list_utils impo
 from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis, get_param_page_slice, get_param_pdf_with_txt_layer, \
     get_param_with_attachments
 from dedoc.utils.pdf_utils import get_pdf_page_count
-from dedoc.utils.utils import calculate_file_hash, get_mime_extension, get_unique_name
+from dedoc.utils.utils import calculate_file_hash, get_unique_name
 
 
 class PdfTabbyReader(PdfBaseReader):
@@ -51,7 +51,7 @@ class PdfTabbyReader(PdfBaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
         self.tabby_java_version = "2.0.0"
         self.jar_name = "ispras_tbl_extr.jar"
         self.jar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "tabbypdf", "jars"))
@@ -67,8 +67,7 @@ class PdfTabbyReader(PdfBaseReader):
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
-        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return (mime in recognized_mimes.pdf_like_format or extension.lower().endswith("pdf")) and get_param_pdf_with_txt_layer(parameters) == "tabby"
+        return super().can_read(file_path=file_path, mime=mime, extension=extension) and get_param_pdf_with_txt_layer(parameters) == "tabby"
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

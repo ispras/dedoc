@@ -482,7 +482,7 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
 
         # source html-document had "Статья 16^1"
         node = self._get_by_tree_path(document_tree, "0.0.0.0.15")
-        self.assertEqual("Статья 161. Переход к рассмотрению дела по правилам гражданского судопроизводства", node["text"].strip())
+        self.assertEqual("Статья 161. Переход к рассмотрению дела по правилам гражданского судопроизводства", node["text"].split("\n")[0].strip())
         self.assertEqual("article", node["metadata"]["paragraph_type"])
 
     def test_law_html_with_table(self) -> None:
@@ -535,7 +535,7 @@ class TestLawApiDocReader(AbstractTestApiDocReader):
         self.__test_law_tree_sanity(document_tree)
 
         cellar = self._get_by_tree_path(document_tree, "0.1")
-        self.assertEqual("Торбеевского муниципального ра", cellar["text"][:30])
+        self.assertEqual("Глава Краснопольского сельског", cellar["text"][:30])
         self.assertEqual("cellar", cellar["metadata"]["paragraph_type"])
 
         application1 = self._get_by_tree_path(document_tree, "0.2")

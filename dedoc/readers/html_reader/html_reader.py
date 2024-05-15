@@ -11,30 +11,23 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.html_reader.html_line_postprocessing import HtmlLinePostprocessing
 from dedoc.readers.html_reader.html_tag_annotation_parser import HtmlTagAnnotationParser
 from dedoc.readers.html_reader.html_tags import HtmlTags
-from dedoc.utils.utils import calculate_file_hash, get_mime_extension
+from dedoc.utils.utils import calculate_file_hash
 
 
 class HtmlReader(BaseReader):
     """
-    This reader allows to handle documents with the following extensions: .html, .shtml
+    This reader allows to handle documents with the following extensions: .htm, .html, .shtml
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.html_like_format, recognized_mimes=recognized_mimes.html_like_format)
         self.postprocessor = HtmlLinePostprocessing()
         self.tag_annotation_parser = HtmlTagAnnotationParser()
-
-    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
-        """
-        Check if the document extension is suitable for this reader.
-        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
-        """
-        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return extension.lower() in [".html", ".shtml"] or mime in ["text/html"]
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
