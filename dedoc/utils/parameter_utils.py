@@ -175,6 +175,6 @@ def get_param_attachments_dir(parameters: Optional[dict], file_path: str) -> str
     parameters = {} if parameters is None else parameters
 
     attachments_dir = parameters.get("attachments_dir", None)
-    attachments_dir = default_dir if attachments_dir is None else attachments_dir
+    attachments_dir = attachments_dir if attachments_dir else default_dir
     os.makedirs(attachments_dir, exist_ok=True)
     return attachments_dir
