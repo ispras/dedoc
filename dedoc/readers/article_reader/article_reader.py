@@ -34,7 +34,6 @@ class ArticleReader(BaseReader):
             self.grobid_url = f"http://{os.environ.get('GROBID_HOST', 'localhost')}:{os.environ.get('GROBID_PORT', '8070')}"
         self.url = f"{self.grobid_url}/api/processFulltextDocument"
         self.grobid_is_alive = False
-        self.__update_grobid_alive(self.grobid_url, max_attempts=self.config.get("grobid_max_connection_attempts", 3))
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -91,7 +90,7 @@ class ArticleReader(BaseReader):
         if get_param_document_type(parameters) != "article":
             return False
 
-        self.__update_grobid_alive(self.grobid_url, max_attempts=1)
+        self.__update_grobid_alive(self.grobid_url, max_attempts=self.config.get("grobid_max_connection_attempts", 3))
         if not self.grobid_is_alive:
             return False
 
