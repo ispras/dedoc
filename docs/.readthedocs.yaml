@@ -4,6 +4,8 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.9"
+  apt_packages:
+    - libmagic1
 
 sphinx:
    builder: html
