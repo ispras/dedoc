@@ -1,14 +1,17 @@
 from typing import Dict, Iterator, List, Optional, Set
 
-from dedoc.data_structures import LineMetadata
+from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
 from dedoc.data_structures.concrete_annotations.reference_annotation import ReferenceAnnotation
 from dedoc.data_structures.concrete_annotations.strike_annotation import StrikeAnnotation
 from dedoc.data_structures.concrete_annotations.subscript_annotation import SubscriptAnnotation
 from dedoc.data_structures.concrete_annotations.superscript_annotation import SuperscriptAnnotation
+from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.tree_node import TreeNode
 
@@ -110,14 +113,19 @@ def __add_vertical_line(depths: Set[int], space: List[str]) -> str:
     return "".join(space)
 
 
-def json2html(text: str, paragraph: TreeNode, tables: Optional[List[Table]], tabs: int = 0, table2id: Dict[str, int] = None) -> str:
-    if tables is None:
-        tables = []
+def json2html(text: str,
+              paragraph: TreeNode,
+              tables: Optional[List[Table]],
+              attachments: Optional[List[ParsedDocument]],
+              tabs: int = 0,
+              table2id: Dict[str, int] = None,
+              attach2id: Dict[str, int] = None) -> str:
+    tables = [] if tables is None else tables
+    attachments = [] if attachments is None else attachments
+    table2id = {table.metadata.uid: table_id for table_id, table in enumerate(tables)} if table2id is None else table2id
+    attach2id = {attachment.metadata.uid: attachment_id for attachment_id, attachment in enumerate(attachments)} if attach2id is None else attach2id
 
-    if table2id is None:
-        table2id = {table.metadata.uid: table_id for table_id, table in enumerate(tables)}
-
-    ptext = __annotations2html(paragraph, table2id, tabs=tabs)
+    ptext = __annotations2html(paragraph=paragraph, table2id=table2id, attach2id=attach2id, tabs=tabs)
 
     if paragraph.metadata.hierarchy_level.line_type in [HierarchyLevel.header, HierarchyLevel.root]:
         ptext = f"<strong>{ptext.strip()}</strong>"
@@ -132,13 +140,20 @@ def json2html(text: str, paragraph: TreeNode, tables: Optional[List[Table]], tab
     text += ptext
 
     for subparagraph in paragraph.subparagraphs:
-        text = json2html(text=text, paragraph=subparagraph, tables=None, tabs=tabs + 4, table2id=table2id)
+        text = json2html(text=text, paragraph=subparagraph, tables=None, attachments=None, tabs=tabs + 4, table2id=table2id, attach2id=attach2id)
 
     if tables is not None and len(tables) > 0:
         text += "<h3> Tables: </h3>"
         for table in tables:
             text += table2html(table, table2id)
             text += "<p>&nbsp;</p>"
+
+    if attachments is not None and len(attachments) > 0:
+        text += "<h3> Attachments: </h3>"
+        for attachment_id, attachment in enumerate(attachments):
+            attachment_text = json2html(text="", paragraph=attachment.content.structure, tables=attachment.content.tables, attachments=attachment.attachments)
+            text += f'<div id="{attachment.metadata.uid}"><h4>attachment {attachment_id} ({attachment.metadata.file_name}):</h4>{attachment_text}</div>'
+
     return text
 
 
@@ -161,7 +176,7 @@ def __value2tag(name: str, value: str) -> str:
     if name == UnderlinedAnnotation.name:
         return "u"
 
-    if name == ReferenceAnnotation.name:
+    if name in (AttachAnnotation.name, TableAnnotation.name, ReferenceAnnotation.name):
         return "a"
 
     if value.startswith("heading "):
@@ -171,7 +186,7 @@ def __value2tag(name: str, value: str) -> str:
     return value
 
 
-def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int], tabs: int = 0) -> str:
+def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int], attach2id: Dict[str, int], tabs: int = 0) -> str:
     indexes = dict()
 
     for annotation in paragraph.annotations:
@@ -184,7 +199,7 @@ def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int], tabs: int 
                             SubscriptAnnotation.name,
                             SuperscriptAnnotation.name,
                             UnderlinedAnnotation.name]
-        check_annotations = bool_annotations + ["table", "reference"]
+        check_annotations = bool_annotations + [TableAnnotation.name, ReferenceAnnotation.name, AttachAnnotation.name]
         if name not in check_annotations and not value.startswith("heading "):
             continue
         elif name in bool_annotations and annotation.value == "False":
@@ -193,9 +208,11 @@ def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int], tabs: int 
         tag = __value2tag(name, value)
         indexes.setdefault(annotation.start, "")
         indexes.setdefault(annotation.end, "")
-        if name == "table":
-            indexes[annotation.end] += f' (<a href="#{tag}">table {table2id[tag]}</a>)'
-        elif name == "reference":
+        if name == TableAnnotation.name:
+            indexes[annotation.end] += f' (<{tag} href="#{value}">table {table2id[value]}</{tag}>)'
+        elif name == AttachAnnotation.name:
+            indexes[annotation.end] += f' (<{tag} href="#{value}">attachment {attach2id[value]}</{tag}>)'
+        elif name == ReferenceAnnotation.name:
             indexes[annotation.start] += f'<{tag} href="#{value}">'
             indexes[annotation.end] = f"</{tag}>" + indexes[annotation.end]
         else:
@@ -230,7 +247,7 @@ def table2html(table: Table, table2id: Dict[str, int]) -> str:
                 subparagraphs=[],
                 parent=None
             )
-            text += f' colspan="{cell.colspan}" rowspan="{cell.rowspan}">{__annotations2html(cell_node, {})}</td>\n'
+            text += f' colspan="{cell.colspan}" rowspan="{cell.rowspan}">{__annotations2html(cell_node, {}, {})}</td>\n'
 
         text += "</tr>\n"
     text += "</tbody>\n</table>"

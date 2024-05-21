@@ -39,6 +39,12 @@ def get_param_with_attachments(parameters: Optional[dict]) -> bool:
     return str(parameters.get("with_attachments", "false")).lower() == "true"
 
 
+def get_param_need_content_analysis(parameters: Optional[dict]) -> bool:
+    if parameters is None:
+        return False
+    return str(parameters.get("need_content_analysis", "false")).lower() == "true"
+
+
 def get_param_need_header_footers_analysis(parameters: Optional[dict]) -> bool:
     if parameters is None:
         return False
@@ -162,3 +168,13 @@ def get_path_param(parameters: Optional[dict], path_key: str) -> str:
 
     os.makedirs(path_value, exist_ok=True)
     return path_value
+
+
+def get_param_attachments_dir(parameters: Optional[dict], file_path: str) -> str:
+    default_dir = os.path.dirname(file_path) if os.path.isfile(file_path) else file_path
+    parameters = {} if parameters is None else parameters
+
+    attachments_dir = parameters.get("attachments_dir", None)
+    attachments_dir = attachments_dir if attachments_dir else default_dir
+    os.makedirs(attachments_dir, exist_ok=True)
+    return attachments_dir

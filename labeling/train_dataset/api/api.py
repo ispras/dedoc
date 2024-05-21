@@ -18,19 +18,14 @@ from dedoc.utils.train_dataset_utils import get_path_original_documents
 from dedoc.utils.utils import calculate_file_hash
 from train_dataset.api.async_archive_handler import AsyncHandler
 from train_dataset.taskers.concrete_taskers.filtered_line_label_tasker import FilteredLineLabelTasker
-from train_dataset.taskers.concrete_taskers.header_footer_tasker import HeaderFooterTasker
 from train_dataset.taskers.concrete_taskers.line_label_tasker import LineLabelTasker
-from train_dataset.taskers.concrete_taskers.table_tasker import TableTasker
 from train_dataset.taskers.tasker import Tasker
 
 
 @dataclass
 class TrainDatasetParameters(QueryParameters):
     type_of_task: Optional[str] = Form("law_classifier",
-                                       enum=[
-                                           "law_classifier", "tz_classifier", "diploma_classifier", "header_classifier", "paragraph_classifier",
-                                           "tables_classifier"
-                                       ],
+                                       enum=["law_classifier", "tz_classifier", "diploma_classifier", "paragraph_classifier"],
                                        description="Type of the task to create")
     task_size: Optional[str] = Form("250", description="Maximum number of images in one task")
 
@@ -125,17 +120,7 @@ taskers = {
         tmp_dir=UPLOAD_FOLDER,
         progress_bar=progress_bar,
         item2label=lambda t: label2label_diploma.get(t["_metadata"]["hierarchy_level"]["line_type"], "raw_text"),
-        config=config),
-    "header_classifier": HeaderFooterTasker(
-        path2lines=path2lines,
-        path2docs=get_path_original_documents(config),
-        manifest_path=os.path.join(train_resources_path, "header", "manifest.pdf"),
-        config_path=os.path.join(train_resources_path, "header", "config.json"),
-        tmp_dir=UPLOAD_FOLDER,
-        progress_bar=progress_bar,
-        item2label=lambda t: "text",
-        config=config),
-    "tables_classifier": TableTasker()
+        config=config)
 }
 
 tasker = Tasker(line_info_path=os.path.join(config["intermediate_data_path"], "lines.jsonlines"),

@@ -20,23 +20,25 @@ class ReaderComposition(object):
         """
         self.readers = readers
 
-    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
+    def read(self, file_path: str, parameters: Optional[dict] = None, extension: Optional[str] = None, mime: Optional[str] = None) -> UnstructuredDocument:
         """
         Get intermediate representation for the document of any format which one of the available readers can parse.
         If there is no suitable reader for the given document, the BadFileFormatException will be raised.
 
         :param file_path: path of the file to be parsed
         :param parameters: dict with additional parameters for document readers, see :ref:`parameters_description` for more details
+        :param extension: file extension, for example .doc or .pdf
+        :param mime: MIME type of file
         :return: intermediate representation of the document with lines, tables and attachments
         """
-        file_name = os.path.basename(file_path)
-        mime, extension = get_mime_extension(file_path=file_path)
+        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
 
         for reader in self.readers:
             if reader.can_read(file_path=file_path, mime=mime, extension=extension, parameters=parameters):
                 unstructured_document = reader.read(file_path=file_path, parameters=parameters)
                 return unstructured_document
 
+        file_name = os.path.basename(file_path)
         raise BadFileFormatError(
             msg=f"No one can read file: name = {file_name}, extension = {extension}, mime = {mime}",
             msg_api=f"Unsupported file format {mime} of the input file {file_name}"

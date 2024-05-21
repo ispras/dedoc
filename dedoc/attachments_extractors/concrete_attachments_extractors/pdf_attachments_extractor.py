@@ -9,8 +9,9 @@ from PyPDF2.utils import PdfReadError
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.extensions import recognized_mimes
-from dedoc.utils.utils import convert_datetime, get_mime_extension, get_unique_name
+from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
+from dedoc.utils.utils import convert_datetime, get_unique_name
 
 
 class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
@@ -18,18 +19,7 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
     Extract attachments from pdf files.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
-
-    def can_extract(self,
-                    file_path: Optional[str] = None,
-                    extension: Optional[str] = None,
-                    mime: Optional[str] = None,
-                    parameters: Optional[dict] = None) -> bool:
-        """
-        Checks if this extractor can get attachments from the document (it should have .pdf extension)
-        """
-        mime, _ = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return mime in recognized_mimes.pdf_like_format
+        super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
         """
@@ -39,9 +29,9 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
         the methods' parameters.
         """
         parameters = {} if parameters is None else parameters
-        tmpdir, filename = os.path.split(file_path)
+        filename = os.path.basename(file_path)
 
-        with open(os.path.join(tmpdir, filename), "rb") as handler:
+        with open(file_path, "rb") as handler:
             try:
                 reader = PyPDF2.PdfFileReader(handler)
             except Exception as e:
@@ -57,8 +47,9 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
             except PdfReadError:
                 self.logger.warning(f"{filename} is broken")
 
-        need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
-        return self._content2attach_file(content=attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis, parameters=parameters)
+        need_content_analysis = get_param_need_content_analysis(parameters)
+        attachments_dir = get_param_attachments_dir(parameters, file_path)
+        return self._content2attach_file(content=attachments, tmpdir=attachments_dir, need_content_analysis=need_content_analysis, parameters=parameters)
 
     def __get_notes(self, page: PageObject) -> List[Tuple[str, bytes]]:
         attachments = []

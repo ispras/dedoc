@@ -11,7 +11,7 @@ from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_offic
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.extensions import recognized_extensions, recognized_mimes
-from dedoc.utils.utils import get_mime_extension
+from dedoc.utils.parameter_utils import get_param_need_content_analysis
 
 
 class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
@@ -19,18 +19,7 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
     Extract attachments from docx files.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
-
-    def can_extract(self,
-                    file_path: Optional[str] = None,
-                    extension: Optional[str] = None,
-                    mime: Optional[str] = None,
-                    parameters: Optional[dict] = None) -> bool:
-        """
-        Checks if this extractor can get attachments from the document (it should have .docx extension)
-        """
-        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return extension.lower() in recognized_extensions.docx_like_format or mime in recognized_mimes.docx_like_format
+        super().__init__(config=config, recognized_extensions=recognized_extensions.docx_like_format, recognized_mimes=recognized_mimes.docx_like_format)
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
         """
@@ -45,7 +34,7 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
         try:
             with zipfile.ZipFile(os.path.join(tmpdir, filename), "r") as zfile:
                 diagram_attachments = self.__extract_diagrams(zfile)
-                need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+                need_content_analysis = get_param_need_content_analysis(parameters)
                 result += self._content2attach_file(content=diagram_attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis,
                                                     parameters=parameters)
 

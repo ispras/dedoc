@@ -1,7 +1,6 @@
-import logging
 import os
 from base64 import b64encode
-from typing import Optional, Tuple
+from typing import Optional
 
 from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 from dedoc.utils.utils import get_file_mime_type
@@ -21,18 +20,13 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         - time when the file was last modified.
     """
 
-    def __init__(self, *, config: Optional[dict] = None) -> None:
-        """
-        :param config: configuration of the extractor, e.g. logger for logging
-        """
-        self.config = {} if config is None else config
-        self.logger = self.config.get("logger", logging.getLogger())
-
     def can_extract(self,
                     file_path: str,
                     converted_filename: Optional[str] = None,
                     original_filename: Optional[str] = None,
-                    parameters: Optional[dict] = None) -> bool:
+                    parameters: Optional[dict] = None,
+                    mime: Optional[str] = None,
+                    extension: Optional[str] = None) -> bool:
         """
         This extractor can handle any file so the method always returns True.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
@@ -72,10 +66,3 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         }
 
         return meta
-
-    def _get_names(self, file_path: str, converted_filename: Optional[str], original_filename: Optional[str]) -> Tuple[str, str, str, str]:
-        file_dir, file_name = os.path.split(file_path)
-        converted_filename = file_name if converted_filename is None else converted_filename
-        original_filename = file_name if original_filename is None else original_filename
-
-        return file_dir, file_name, converted_filename, original_filename

@@ -1,10 +1,12 @@
 # Dedoc
 
+[![PyPI version](https://badge.fury.io/py/dedoc.svg)](https://badge.fury.io/py/dedoc)
 [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 [![Documentation Status](https://readthedocs.org/projects/dedoc/badge/?version=latest)](https://dedoc.readthedocs.io/en/latest/?badge=latest)
 [![GitHub release](https://img.shields.io/github/release/ispras/dedoc.svg)](https://github.com/ispras/dedoc/releases/)
 [![Demo dedoc-readme.hf.space](https://img.shields.io/website-up-down-green-red/https/huggingface.co/spaces/dedoc/README.svg)](https://dedoc-readme.hf.space)
 [![Docker Hub](https://img.shields.io/docker/pulls/dedocproject/dedoc.svg)](https://hub.docker.com/r/dedocproject/dedoc/ "Docker Pulls")
+[![CI tests](https://github.com/ispras/dedoc/workflows/CI/badge.svg)](https://github.com/ispras/dedoc/actions)
 
 ![Dedoc](https://github.com/ispras/dedoc/raw/master/dedoc_logo.png)
 

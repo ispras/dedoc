@@ -57,7 +57,9 @@ class TestApiDocReader(AbstractTestApiDocReader):
 
     def test_broken_conversion(self) -> None:
         file_name = "broken.odt"
-        _ = self._send_request(file_name, expected_code=415)
+        result = self._send_request(file_name, expected_code=200)
+        warnings = [warning for warning in result["warnings"] if warning.startswith("Incorrect extension")]
+        self.assertEqual(len(warnings), 1)
 
     def test_footnotes(self) -> None:
         file_name = "example_footnote_endnote.docx"

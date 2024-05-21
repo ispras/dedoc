@@ -1,21 +1,22 @@
 import os
 import zipfile
 from abc import ABC
-from typing import List, Optional, Tuple
+from typing import List, Optional, Set, Tuple
 
 import olefile
 from charset_normalizer import from_bytes
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
+from dedoc.utils.parameter_utils import get_param_need_content_analysis
 
 
 class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
     """
     Extract attachments from files of Microsoft Office format like docx, pptx, xlsx.
     """
-    def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+    def __init__(self, *, config: Optional[dict] = None, recognized_extensions: Optional[Set[str]] = None, recognized_mimes: Optional[Set[str]] = None) -> None:
+        super().__init__(config=config, recognized_extensions=recognized_extensions, recognized_mimes=recognized_mimes)
 
     def __parse_ole_contents(self, stream: bytes) -> Tuple[str, bytes]:
         """
@@ -96,6 +97,6 @@ class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
 
                     # TODO process any ole files except \x01Ole10Native and PDF (looks like impossible task)
 
-            need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+            need_content_analysis = get_param_need_content_analysis(parameters)
             attachments = self._content2attach_file(content=result, tmpdir=tmpdir, need_content_analysis=need_content_analysis, parameters=parameters)
             return attachments

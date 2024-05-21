@@ -13,7 +13,8 @@ from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils.utils import get_file_mime_type, get_mime_extension, save_data_to_unique_file
+from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis, get_param_with_attachments
+from dedoc.utils.utils import get_file_mime_type, save_data_to_unique_file
 
 
 class ArchiveReader(BaseReader):
@@ -22,15 +23,7 @@ class ArchiveReader(BaseReader):
     Documents with the following extensions can be parsed: .zip, .tar, .tar.gz, .rar, .7z.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
-
-    def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
-        """
-        Check if the document extension is suitable for this reader.
-        Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
-        """
-        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return extension.lower() in recognized_extensions.archive_like_format or mime in recognized_mimes.archive_like_format
+        super().__init__(config=config, recognized_extensions=recognized_extensions.archive_like_format, recognized_mimes=recognized_mimes.archive_like_format)
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -39,14 +32,12 @@ class ArchiveReader(BaseReader):
         """
         parameters = {} if parameters is None else parameters
 
-        with_attachments = str(parameters.get("with_attachments", "false")).lower() == "true"
+        with_attachments = get_param_with_attachments(parameters)
         if not with_attachments:
             return UnstructuredDocument(lines=[], tables=[], attachments=[])
 
-        attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
-
-        need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+        attachments_dir = get_param_attachments_dir(parameters, file_path)
+        need_content_analysis = get_param_need_content_analysis(parameters)
         attachments = self.__get_attachments(path=file_path, tmp_dir=attachments_dir, need_content_analysis=need_content_analysis)
         return UnstructuredDocument(lines=[], tables=[], attachments=attachments)
 

@@ -4,11 +4,13 @@ from typing import Optional
 from PyPDF2 import PdfFileReader
 from PyPDF2.utils import PdfReadError
 
+from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.utils.utils import convert_datetime
 
 
-class PdfMetadataExtractor(BaseMetadataExtractor):
+class PdfMetadataExtractor(AbstractMetadataExtractor):
     """
     This class is used to extract metadata from pdf documents.
     It expands metadata retrieved by :class:`~dedoc.metadata_extractors.BaseMetadataExtractor`.
@@ -25,7 +27,8 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
+        self.base_extractor = BaseMetadataExtractor(config=config)
         self.keys = {
             "/Producer": "producer",
             "/Creator": "creator",
@@ -40,18 +43,6 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
             "/ModDate": "modification_date",
         }
 
-    def can_extract(self,
-                    file_path: str,
-                    converted_filename: Optional[str] = None,
-                    original_filename: Optional[str] = None,
-                    parameters: Optional[dict] = None) -> bool:
-        """
-        Check if the document has .pdf extension.
-        Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` documentation to get the information about parameters.
-        """
-        file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
-        return converted_filename.lower().endswith(".pdf")
-
     def extract(self,
                 file_path: str,
                 converted_filename: Optional[str] = None,
@@ -62,7 +53,9 @@ class PdfMetadataExtractor(BaseMetadataExtractor):
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
         """
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
-        base_fields = super().extract(file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters)
+        base_fields = self.base_extractor.extract(
+            file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters
+        )
         pdf_fields = self._get_pdf_info(os.path.join(file_dir, converted_filename))
         result = {**base_fields, **pdf_fields}
         return result

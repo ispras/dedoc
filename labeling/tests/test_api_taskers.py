@@ -32,12 +32,6 @@ class TestApiTaskers(unittest.TestCase):
     def test_filtered_line_label_tasker(self) -> None:
         self.__test_any_tasker(data=dict(type_of_task="diploma_classifier", document_type="diploma"), archive_name="diploma_archive.zip")
 
-    def test_header_footer_tasker(self) -> None:
-        self.__test_any_tasker(data=dict(type_of_task="header_classifier"), archive_name="archive.zip")
-
-    def test_table_tasker(self) -> None:
-        self.__test_any_tasker(data=dict(type_of_task="tables_classifier"), archive_name="tables_archive.zip", test_original_documents=False)
-
     def __test_any_tasker(self, data: dict, archive_name: str, test_original_documents: bool = True) -> None:
         task_uid = self._send_archive(archive_name, data=data)
         with tempfile.TemporaryDirectory() as tmp_dir:

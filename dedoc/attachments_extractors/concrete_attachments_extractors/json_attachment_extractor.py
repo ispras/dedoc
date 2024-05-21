@@ -4,7 +4,8 @@ from typing import List, Optional
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.utils.utils import get_mime_extension
+from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.utils.parameter_utils import get_param_need_content_analysis
 
 
 class JsonAttachmentsExtractor(AbstractAttachmentsExtractor):
@@ -12,18 +13,7 @@ class JsonAttachmentsExtractor(AbstractAttachmentsExtractor):
     Extract attachments from json files.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
-
-    def can_extract(self,
-                    file_path: Optional[str] = None,
-                    extension: Optional[str] = None,
-                    mime: Optional[str] = None,
-                    parameters: Optional[dict] = None) -> bool:
-        """
-        Checks if this extractor can get attachments from the document (it should have .json extension)
-        """
-        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return extension.lower().endswith(".json")
+        super().__init__(config=config, recognized_extensions=recognized_extensions.json_like_format, recognized_mimes=recognized_mimes.json_like_format)
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
         """
@@ -68,7 +58,7 @@ class JsonAttachmentsExtractor(AbstractAttachmentsExtractor):
 
             attachments.append((attached_filename, binary_data))
 
-        need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+        need_content_analysis = get_param_need_content_analysis(parameters)
         return self._content2attach_file(content=attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis, parameters=parameters)
 
     def __get_value_by_keys(self, data: dict, keys: List[str]) -> dict:

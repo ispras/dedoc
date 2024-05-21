@@ -115,6 +115,22 @@ class TestApiImageRefs(AbstractTestApiDocReader):
         self.assertEqual(len(attach_annotations), 1)
         self.assertIn(attach_annotations[0]["value"], attachment_uids)
 
+    def test_pdf_article_images_refs(self) -> None:
+        file_name = "../pdf_with_text_layer/article.pdf"
+        result = self._send_request(file_name, dict(with_attachments=True, document_type="article", structure_type="linear"))
+
+        attachment_uids = {attachment["metadata"]["uid"] for attachment in result["attachments"]}
+        self.assertEqual(len(attachment_uids), 18)
+
+        attach_annotations_uids = set()
+        for subparagraph in result["content"]["structure"]["subparagraphs"]:
+            for annotation in subparagraph["annotations"]:
+                if annotation["name"] == AttachAnnotation.name:
+                    attach_annotations_uids.add(annotation["value"])
+
+        self.assertTrue(attach_annotations_uids)
+        self.assertTrue(attach_annotations_uids.issubset(attachment_uids))
+
     def __check_image_paragraph(self, image_paragraph: dict, image_uid: str) -> None:
         text = image_paragraph["text"]
         image_annotations = image_paragraph["annotations"]

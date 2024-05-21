@@ -3,14 +3,13 @@ from typing import List, Optional, Tuple
 import numpy as np
 from dedocutils.data_structures import BBox
 
-from dedoc.extensions import recognized_mimes
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_extractor import PdfminerExtractor
 from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
-from dedoc.utils.utils import get_mime_extension
 
 
 class PdfTxtlayerReader(PdfBaseReader):
@@ -22,7 +21,7 @@ class PdfTxtlayerReader(PdfBaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
         self.extractor_layer = PdfminerExtractor(config=self.config)
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
@@ -34,8 +33,7 @@ class PdfTxtlayerReader(PdfBaseReader):
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
-        mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return (mime in recognized_mimes.pdf_like_format or extension.lower().endswith("pdf")) and get_param_pdf_with_txt_layer(parameters) == "true"
+        return super().can_read(file_path=file_path, mime=mime, extension=extension) and get_param_pdf_with_txt_layer(parameters) == "true"
 
     def _process_one_page(self,
                           image: np.ndarray,
@@ -55,7 +53,7 @@ class PdfTxtlayerReader(PdfBaseReader):
         else:
             tables = []
 
-        page = self.extractor_layer.extract_text_layer(path=path, page_number=page_number, attachments_dir=parameters.attachments_dir)
+        page = self.extractor_layer.extract_text_layer(path=path, page_number=page_number, parameters=parameters)
         if page is None:
             return [], [], [], []
         unreadable_blocks = [location.bbox for table in tables for location in table.locations]

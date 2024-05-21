@@ -2,7 +2,7 @@ import math
 import os
 from abc import abstractmethod
 from collections import namedtuple
-from typing import Iterator, List, Optional, Tuple
+from typing import Iterator, List, Optional, Set, Tuple
 
 import cv2
 import numpy as np
@@ -15,7 +15,7 @@ from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachment
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions, recognized_mimes
+from dedoc.extensions import recognized_extensions as extensions, recognized_mimes as mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
@@ -27,7 +27,7 @@ from dedoc.readers.pdf_reader.utils.header_footers_analysis import footer_header
 from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
 from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
 from dedoc.utils.pdf_utils import get_pdf_page_count
-from dedoc.utils.utils import flatten
+from dedoc.utils.utils import flatten, get_file_mime_by_content
 from dedoc.utils.utils import get_file_mime_type, splitext_
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
@@ -42,7 +42,9 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "last_page",
     "need_binarization",
     "table_type",
-    "attachments_dir"
+    "with_attachments",
+    "attachments_dir",
+    "need_content_analysis"
 ])
 
 
@@ -51,8 +53,8 @@ class PdfBaseReader(BaseReader):
     Base class for pdf documents parsing.
     """
 
-    def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+    def __init__(self, *, config: Optional[dict] = None, recognized_extensions: Optional[Set[str]] = None, recognized_mimes: Optional[Set[str]] = None) -> None:
+        super().__init__(config=config, recognized_extensions=recognized_extensions, recognized_mimes=recognized_mimes)
         self.config["n_jobs"] = self.config.get("n_jobs", 1)
         self.table_recognizer = TableRecognizer(config=self.config)
         self.metadata_extractor = LineMetadataExtractor(config=self.config)
@@ -70,8 +72,6 @@ class PdfBaseReader(BaseReader):
         """
         parameters = {} if parameters is None else parameters
         first_page, last_page = param_utils.get_param_page_slice(parameters)
-        attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
 
         params_for_parse = ParametersForParseDoc(
             language=param_utils.get_param_language(parameters),
@@ -85,13 +85,15 @@ class PdfBaseReader(BaseReader):
             last_page=last_page,
             need_binarization=param_utils.get_param_need_binarization(parameters),
             table_type=param_utils.get_param_table_type(parameters),
-            attachments_dir=attachments_dir
+            with_attachments=param_utils.get_param_with_attachments(parameters),
+            attachments_dir=param_utils.get_param_attachments_dir(parameters, file_path),
+            need_content_analysis=param_utils.get_param_need_content_analysis(parameters)
         )
 
         lines, scan_tables, attachments, warnings, metadata = self._parse_document(file_path, params_for_parse)
         tables = [scan_table.to_table() for scan_table in scan_tables]
 
-        if param_utils.get_param_with_attachments(parameters) and self.attachment_extractor.can_extract(file_path):
+        if params_for_parse.with_attachments and self.attachment_extractor.can_extract(file_path):
             attachments += self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
 
         result = UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=warnings, metadata=metadata)
@@ -153,9 +155,10 @@ class PdfBaseReader(BaseReader):
 
     def _get_images(self, path: str, page_from: int, page_to: int) -> Iterator[np.ndarray]:
         mime = get_file_mime_type(path)
-        if mime in recognized_mimes.pdf_like_format:
+        mime = get_file_mime_by_content(path) if mime not in self._recognized_mimes else mime
+        if mime in mimes.pdf_like_format:
             yield from self._split_pdf2image(path, page_from, page_to)
-        elif mime in recognized_mimes.image_like_format or path.endswith(tuple(recognized_extensions.image_like_format)):
+        elif mime in mimes.image_like_format or path.lower().endswith(tuple(extensions.image_like_format)):
             image = cv2.imread(path)
             if image is None:
                 raise BadFileFormatError(f"seems file {os.path.basename(path)} not an image")

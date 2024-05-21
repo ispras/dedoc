@@ -1,7 +1,18 @@
 Changelog
 =========
 
-v2.2.1 (2023-05-03)
+v2.2.2 (2024-05-21)
+-------------------
+Release note: `v2.2.2 <https://github.com/ispras/dedoc/releases/tag/v2.2.2>`_
+
+* Added images extraction to `ArticleReader`.
+* Added attachments and references to them in the HTML output representation (return_format="html").
+* Fixed functionality of parameter `need_content_analysis`.
+* Fixed `CSVReader` (exclude BOM character from the output).
+* Added handling files with wrong extension or without extension to `DedocManager` (detect file type by its content).
+* Update `README.md`.
+
+v2.2.1 (2024-05-03)
 -------------------
 Release note: `v2.2.1 <https://github.com/ispras/dedoc/releases/tag/v2.2.1>`_
 
@@ -11,7 +22,7 @@ Release note: `v2.2.1 <https://github.com/ispras/dedoc/releases/tag/v2.2.1>`_
 * Removed `other_fields` from `LineMetadata` and `DocumentMetadata`.
 * Update `README.md`.
 
-v2.2 (2023-04-17)
+v2.2 (2024-04-17)
 -----------------
 Release note: `v2.2 <https://github.com/ispras/dedoc/releases/tag/v2.2>`_
 

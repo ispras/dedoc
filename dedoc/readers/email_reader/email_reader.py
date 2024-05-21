@@ -14,8 +14,10 @@ from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.html_reader.html_reader import HtmlReader
+from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
 from dedoc.utils.utils import get_mime_extension, get_unique_name, save_data_to_unique_file
 
 
@@ -25,7 +27,7 @@ class EmailReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        super().__init__(config=config)
+        super().__init__(config=config, recognized_extensions=recognized_extensions.eml_like_format, recognized_mimes=recognized_mimes.eml_like_format)
         self.html_reader = HtmlReader(config=self.config)
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
@@ -34,7 +36,10 @@ class EmailReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
-        return file_path.lower().endswith(".eml") or mime == "message/rfc822"
+        # this code differs from BaseReader because .eml and .mhtml files have the same mime type
+        if extension:
+            return extension.lower() in self._recognized_extensions
+        return mime in self._recognized_mimes
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -46,8 +51,7 @@ class EmailReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
-        attachments_dir = parameters.get("attachments_dir", None)
-        attachments_dir = os.path.dirname(file_path) if attachments_dir is None else attachments_dir
+        attachments_dir = get_param_attachments_dir(parameters, file_path)
 
         with open(file_path, "rb") as f:
             msg = email.message_from_binary_file(f)
@@ -62,7 +66,7 @@ class EmailReader(BaseReader):
         with open(header_file_path, "w", encoding="utf-8") as f:
             json.dump(all_header_fields, f, ensure_ascii=False, indent=4)
 
-        need_content_analysis = str(parameters.get("need_content_analysis", "false")).lower() == "true"
+        need_content_analysis = get_param_need_content_analysis(parameters)
         attachments.append(AttachedFile(original_name=header_filename,
                                         tmp_file_path=header_file_path,
                                         uid=f"attach_{uuid.uuid1()}",
