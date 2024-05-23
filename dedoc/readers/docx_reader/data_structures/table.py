@@ -21,6 +21,7 @@ class DocxTable:
         self.xml = xml
         self.paragraph_maker = paragraph_maker
         self.__uid = hashlib.md5(xml.encode()).hexdigest()
+        self.tag_key = "w"
 
     @property
     def uid(self) -> str:
@@ -32,27 +33,27 @@ class DocxTable:
         """
         # tbl -- table; tr -- table row, tc -- table cell
         # delete tables inside tables
-        for tbl in self.xml.find_all("w:tbl"):
+        for tbl in self.xml.find_all(f"{self.tag_key}:tbl"):
             tbl.extract()
 
-        rows = self.xml.find_all("w:tr")
+        rows = self.xml.find_all(f"{self.tag_key}:tr")
         cell_list, rowspan_start_info = [], {}
 
         for row_index, row in enumerate(rows):
-            cells = row.find_all("w:tc")
+            cells = row.find_all(f"{self.tag_key}:tc")
             cell_row_list, cell_ind = [], 0
 
             for cell in cells:
                 # gridSpan tag describes number of horizontally merged cells
-                grid_span = int(cell.gridSpan["w:val"]) if cell.gridSpan else 1
+                grid_span = int(cell.gridSpan[f"{self.tag_key}:val"]) if cell.gridSpan else 1
 
                 # get lines with meta of the cell
-                cell_lines = self.__get_cell_lines(cell)
+                cell_lines = self._get_cell_lines(cell)
 
                 # vmerge tag for vertically merged set of cells (or horizontally split cells)
                 # attribute val may be "restart" or "continue" ("continue" if omitted)
                 if cell.vMerge:
-                    value = cell.vMerge.get("w:val", "continue")
+                    value = cell.vMerge.get(f"{self.tag_key}:val", "continue")
                     if value == "continue":
                         cell_lines = cell_list[-1][cell_ind].lines
                         cell_row_list.append(CellWithMeta(lines=cell_lines, colspan=1, rowspan=1, invisible=True))
@@ -75,11 +76,11 @@ class DocxTable:
 
         return Table(cells=cell_list, metadata=TableMetadata(page_id=None, uid=self.uid))
 
-    def __get_cell_lines(self, cell: Tag) -> List[LineWithMeta]:
+    def _get_cell_lines(self, cell: Tag) -> List[LineWithMeta]:
         paragraph_list: List[Paragraph] = []
         lines: List[LineWithMeta] = []
 
-        for paragraph_id, paragraph_xml in enumerate(cell.find_all("w:p")):
+        for paragraph_id, paragraph_xml in enumerate(cell.find_all(f"{self.tag_key}:p")):
             paragraph = self.paragraph_maker.make_paragraph(paragraph_xml=paragraph_xml, paragraph_list=paragraph_list)
             paragraph_list.append(paragraph)
             lines.append(LineWithMetaConverter(paragraph, paragraph_id).line)
