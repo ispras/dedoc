@@ -1,27 +1,58 @@
-from typing import List
+import hashlib
 
 from bs4 import Tag
 
-from dedoc.data_structures import LineWithMeta, Table
-from dedoc.readers.docx_reader.data_structures.table import DocxTable
-from dedoc.readers.pptx_reader.paragraph import PptxParagraph
+from dedoc.data_structures import CellWithMeta, Table, TableMetadata
+from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
+from dedoc.readers.pptx_reader.shape import PptxShape
 
 
-class PptxTable(DocxTable):
-
-    def __init__(self, xml: Tag, page_id: int) -> None:
-        super().__init__(xml=xml, paragraph_maker=None)
-        self.tag_key = "a"
+class PptxTable:
+    def __init__(self, xml: Tag, page_id: int, numbering_extractor: NumberingExtractor) -> None:
+        """
+        Contains information about table properties.
+        :param xml: BeautifulSoup tree with table properties
+        """
+        self.xml = xml
         self.page_id = page_id
+        self.numbering_extractor = numbering_extractor
+        self.__uid = hashlib.md5(xml.encode()).hexdigest()
+
+    @property
+    def uid(self) -> str:
+        return self.__uid
 
     def to_table(self) -> Table:
-        table = super().to_table()
-        table.metadata.page_id = self.page_id
-        return table
+        """
+        Converts xml file with table to Table class
+        """
+        # tbl -- table; tr -- table row, tc -- table cell
+        # delete tables inside tables
+        for tbl in self.xml.find_all("a:tbl"):
+            tbl.extract()
 
-    def _get_cell_lines(self, cell: Tag) -> List[LineWithMeta]:
-        cell_lines = []
+        rows = self.xml.find_all("a:tr")
+        cell_list = []
 
-        for line_id, paragraph_xml in enumerate(cell.find_all(f"{self.tag_key}:p")):
-            cell_lines.append(PptxParagraph(paragraph_xml).get_line_with_meta(line_id=line_id, page_id=self.page_id))
-        return cell_lines
+        for row in rows:
+            cells = row.find_all("a:tc")
+            col_index = 0
+            cell_row_list = []
+
+            for cell in cells:
+                if int(cell.get("vMerge", 0)):  # vertical merge
+                    cell_with_meta = CellWithMeta(lines=cell_list[-1][col_index].lines, colspan=1, rowspan=1, invisible=True)
+                elif int(cell.get("hMerge", 0)):  # horizontal merge
+                    cell_with_meta = CellWithMeta(lines=cell_row_list[-1].lines, colspan=1, rowspan=1, invisible=True)
+                else:
+                    colspan = int(cell.get("gridSpan", 1))  # gridSpan attribute describes number of horizontally merged cells
+                    rowspan = int(cell.get("rowSpan", 1))  # rowSpan attribute for vertically merged set of cells (or horizontally split cells)
+                    lines = PptxShape(xml=cell, page_id=self.page_id, numbering_extractor=self.numbering_extractor, init_line_id=0).get_lines()
+                    cell_with_meta = CellWithMeta(lines=lines, colspan=colspan, rowspan=rowspan, invisible=False)
+
+                cell_row_list.append(cell_with_meta)
+                col_index += 1
+
+            cell_list.append(cell_row_list)
+
+        return Table(cells=cell_list, metadata=TableMetadata(page_id=self.page_id, uid=self.uid))

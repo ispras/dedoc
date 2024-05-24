@@ -13,7 +13,8 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.readers.pptx_reader.paragraph import PptxParagraph
+from dedoc.readers.pptx_reader.numbering_extractor import NumberingExtractor
+from dedoc.readers.pptx_reader.shape import PptxShape
 from dedoc.readers.pptx_reader.table import PptxTable
 from dedoc.utils.parameter_utils import get_param_with_attachments
 
@@ -27,6 +28,7 @@ class PptxReader(BaseReader):
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config, recognized_extensions=recognized_extensions.pptx_like_format, recognized_mimes=recognized_mimes.pptx_like_format)
         self.attachments_extractor = PptxAttachmentsExtractor(config=self.config)
+        self.numbering_extractor = NumberingExtractor()
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -44,21 +46,20 @@ class PptxReader(BaseReader):
 
         for slide_id, slide_xml in enumerate(slide_xml_list):
             shape_tree_xml = slide_xml.spTree
-            line_id = 0
 
             for tag in shape_tree_xml:
                 if tag.name == "sp":
                     if not tag.txBody:
                         continue
 
-                    for paragraph_xml in tag.txBody.find_all("a:p"):
-                        lines.append(PptxParagraph(paragraph_xml).get_line_with_meta(page_id=slide_id, line_id=line_id))
-                        line_id += 1
+                    shape = PptxShape(tag, page_id=slide_id, init_line_id=len(lines), numbering_extractor=self.numbering_extractor)
+                    lines.extend(shape.get_lines())
+
                 elif tag.tbl:
-                    self.__add_table(lines=lines, tables=tables, page_id=slide_id, table_xml=tag.tbl, line_id=line_id)
+                    self.__add_table(lines=lines, tables=tables, page_id=slide_id, table_xml=tag.tbl)
                 elif tag.name == "pic" and tag.blip:
                     if len(lines) == 0:
-                        lines.append(LineWithMeta(line="", metadata=LineMetadata(page_id=slide_id, line_id=line_id)))
+                        lines.append(LineWithMeta(line="", metadata=LineMetadata(page_id=slide_id, line_id=0)))
                     image_rel_id = str(slide_id) + tag.blip.get("r:embed", "")
                     self.__add_attach_annotation(lines[-1], image_rel_id, attachment_name2uid, images_rels)
 
@@ -95,11 +96,11 @@ class PptxReader(BaseReader):
 
         return images_rels
 
-    def __add_table(self, lines: List[LineWithMeta], tables: List[Table], page_id: int, line_id: int, table_xml: Tag) -> None:
-        table = PptxTable(table_xml, page_id).to_table()
+    def __add_table(self, lines: List[LineWithMeta], tables: List[Table], page_id: int, table_xml: Tag) -> None:
+        table = PptxTable(table_xml, page_id, self.numbering_extractor).to_table()
 
         if len(lines) == 0:
-            lines.append(LineWithMeta(line="", metadata=LineMetadata(page_id=page_id, line_id=line_id)))
+            lines.append(LineWithMeta(line="", metadata=LineMetadata(page_id=page_id, line_id=0)))
         lines[-1].annotations.append(TableAnnotation(start=0, end=len(lines[-1]), name=table.metadata.uid))
         tables.append(table)
 

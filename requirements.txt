@@ -24,6 +24,7 @@ python-Levenshtein==0.12.2
 python-logstash-async>=2.5.0,<=2.7.0
 python-magic<1.0
 python-multipart==0.0.6
+python-docx==0.8.11
 rarfile==4.0
 requests>=2.22.0
 roman>=3.3,<4.0
