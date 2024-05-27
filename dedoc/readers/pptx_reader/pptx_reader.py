@@ -1,12 +1,9 @@
-import os
-import re
 import zipfile
 from typing import Dict, List, Optional
 
 from bs4 import BeautifulSoup, Tag
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.pptx_attachments_extractor import PptxAttachmentsExtractor
-from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures import AttachAnnotation, Table, TableAnnotation
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -14,8 +11,10 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pptx_reader.numbering_extractor import NumberingExtractor
+from dedoc.readers.pptx_reader.properties_extractor import PropertiesExtractor
 from dedoc.readers.pptx_reader.shape import PptxShape
 from dedoc.readers.pptx_reader.table import PptxTable
+from dedoc.utils.office_utils import get_bs_from_zip
 from dedoc.utils.parameter_utils import get_param_with_attachments
 
 
@@ -39,6 +38,7 @@ class PptxReader(BaseReader):
         attachments = self.attachments_extractor.extract(file_path=file_path, parameters=parameters) if with_attachments else []
         attachment_name2uid = {attachment.original_name: attachment.uid for attachment in attachments}
         images_rels = self.__get_slide_images_rels(file_path)
+        properties_extractor = PropertiesExtractor(file_path)
 
         slide_xml_list = self.__get_slides_bs(file_path, xml_prefix="ppt/slides/slide")
         lines = []
@@ -52,11 +52,12 @@ class PptxReader(BaseReader):
                     if not tag.txBody:
                         continue
 
-                    shape = PptxShape(tag, page_id=slide_id, init_line_id=len(lines), numbering_extractor=self.numbering_extractor)
+                    shape = PptxShape(tag, page_id=slide_id, init_line_id=len(lines), numbering_extractor=self.numbering_extractor,
+                                      properties_extractor=properties_extractor)
                     lines.extend(shape.get_lines())
 
                 elif tag.tbl:
-                    self.__add_table(lines=lines, tables=tables, page_id=slide_id, table_xml=tag.tbl)
+                    self.__add_table(lines=lines, tables=tables, page_id=slide_id, table_xml=tag.tbl, properties_extractor=properties_extractor)
                 elif tag.name == "pic" and tag.blip:
                     if len(lines) == 0:
                         lines.append(LineWithMeta(line="", metadata=LineMetadata(page_id=slide_id, line_id=0)))
@@ -66,19 +67,10 @@ class PptxReader(BaseReader):
         return UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=[])
 
     def __get_slides_bs(self, path: str, xml_prefix: str) -> List[BeautifulSoup]:
-        slides_bs_list = []
-        try:
-            with zipfile.ZipFile(path) as document:
-                for file_name in document.namelist():
-                    if not file_name.startswith(xml_prefix):
-                        continue
-                    content = document.read(file_name)
-                    content = re.sub(br"\n[\t ]*", b"", content)
-                    slides_bs_list.append(BeautifulSoup(content, "xml"))
+        with zipfile.ZipFile(path) as document:
+            xml_names = document.namelist()
 
-        except zipfile.BadZipFile:
-            raise BadFileFormatError(f"Bad pptx file:\n file_name = {os.path.basename(path)}. Seems pptx is broken")
-
+        slides_bs_list = [get_bs_from_zip(path, file_name) for file_name in xml_names if file_name.startswith(xml_prefix)]
         return slides_bs_list
 
     def __get_slide_images_rels(self, path: str) -> Dict[str, str]:
@@ -96,8 +88,8 @@ class PptxReader(BaseReader):
 
         return images_rels
 
-    def __add_table(self, lines: List[LineWithMeta], tables: List[Table], page_id: int, table_xml: Tag) -> None:
-        table = PptxTable(table_xml, page_id, self.numbering_extractor).to_table()
+    def __add_table(self, lines: List[LineWithMeta], tables: List[Table], page_id: int, table_xml: Tag, properties_extractor: PropertiesExtractor) -> None:
+        table = PptxTable(table_xml, page_id, self.numbering_extractor, properties_extractor).to_table()
 
         if len(lines) == 0:
             lines.append(LineWithMeta(line="", metadata=LineMetadata(page_id=page_id, line_id=0)))
