@@ -1,3 +1,4 @@
+import base64
 import dataclasses
 import importlib
 import json
@@ -62,6 +63,12 @@ def _get_static_file_path(request: Request) -> str:
     return os.path.abspath(os.path.join(directory, file))
 
 
+def __add_base64_info_to_attachments(document_tree: ParsedDocument, attachments_dir: str) -> None:
+    for attachment in document_tree.attachments:
+        with open(os.path.join(attachments_dir, attachment.metadata.temporary_file_name), "rb") as attachment_file:
+            attachment.metadata.add_attribute("base64", base64.b64encode(attachment_file.read()).decode("utf-8"))
+
+
 @app.post("/upload", response_model=ParsedDocument)
 async def upload(file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:  # noqa
     parameters = dataclasses.asdict(query_params)
@@ -70,10 +77,12 @@ async def upload(file: UploadFile = File(...), query_params: QueryParameters = D
 
     with tempfile.TemporaryDirectory() as tmpdir:
         file_path = save_upload_file(file, tmpdir)
-        document_tree = manager.parse(file_path, parameters=dict(parameters))
+        document_tree = manager.parse(file_path, parameters={**dict(parameters), "attachments_dir": tmpdir})
 
     return_format = str(parameters.get("return_format", "json")).lower()
     if return_format == "html":
+        __add_base64_info_to_attachments(document_tree, tmpdir)
+
         html_content = json2html(
             text="",
             paragraph=document_tree.content.structure,

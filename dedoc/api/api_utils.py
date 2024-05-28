@@ -14,6 +14,7 @@ from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.tree_node import TreeNode
+from dedoc.extensions import converted_mimes, recognized_mimes
 
 
 def __prettify_text(text: str) -> Iterator[str]:
@@ -152,7 +153,16 @@ def json2html(text: str,
         text += "<h3> Attachments: </h3>"
         for attachment_id, attachment in enumerate(attachments):
             attachment_text = json2html(text="", paragraph=attachment.content.structure, tables=attachment.content.tables, attachments=attachment.attachments)
-            text += f'<div id="{attachment.metadata.uid}"><h4>attachment {attachment_id} ({attachment.metadata.file_name}):</h4>{attachment_text}</div>'
+            attachment_base64 = f'data:{attachment.metadata.file_type};base64, {attachment.metadata.base64}"'
+            attachment_link = f'<a href="{attachment_base64}" download="{attachment.metadata.file_name}">{attachment.metadata.file_name}</a>'
+            is_image = attachment.metadata.file_type in recognized_mimes.image_like_format.union(converted_mimes.image_like_format)
+            attachment_image = f'<img src="{attachment_base64}">' if is_image else ""
+
+            text += f"""<div id="{attachment.metadata.uid}">
+                <h4>attachment {attachment_id} ({attachment_link}):</h4>
+                {attachment_image}
+                {attachment_text}
+            </div>"""
 
     return text
 
@@ -193,12 +203,9 @@ def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int], attach2id:
         name = annotation.name
         value = annotation.value
 
-        bool_annotations = [BoldAnnotation.name,
-                            ItalicAnnotation.name,
-                            StrikeAnnotation.name,
-                            SubscriptAnnotation.name,
-                            SuperscriptAnnotation.name,
-                            UnderlinedAnnotation.name]
+        bool_annotations = [
+            BoldAnnotation.name, ItalicAnnotation.name, StrikeAnnotation.name, SubscriptAnnotation.name, SuperscriptAnnotation.name, UnderlinedAnnotation.name
+        ]
         check_annotations = bool_annotations + [TableAnnotation.name, ReferenceAnnotation.name, AttachAnnotation.name]
         if name not in check_annotations and not value.startswith("heading "):
             continue
