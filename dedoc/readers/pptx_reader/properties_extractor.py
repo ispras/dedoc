@@ -4,6 +4,8 @@ from typing import Dict, Optional
 
 from bs4 import Tag
 
+from dedoc.utils.office_utils import get_bs_from_zip
+
 
 @dataclass
 class Properties:
@@ -23,13 +25,13 @@ class PropertiesExtractor:
     Properties hierarchy:
 
     - Run and paragraph properties (slide.xml)
-    - Slide layout properties (slideLayout.xml)
-    - Master slide properties (slideMaster.xml)
+    - Slide layout properties (slideLayout.xml) TODO
+    - Master slide properties (slideMaster.xml) TODO
     - Presentation default properties (presentation.xml -> defaultTextStyle)
     """
     def __init__(self, file_path: str) -> None:
         self.alignment_mapping = dict(l="left", r="right", ctr="center", just="both", dist="both", justLow="both", thaiDist="both")
-        self.lvl2properties = self.__get_properties_mapping(file_path)
+        self.lvl2default_properties = self.__get_default_properties_mapping(file_path)
 
     def get_properties(self, xml: Tag, level: int, properties: Optional[Properties] = None) -> Properties:
         """
@@ -38,39 +40,83 @@ class PropertiesExtractor:
             <a:rPr i="1" lang="ru" sz="1800">
             <a:rPr baseline="30000" lang="ru" sz="1800">
         """
-        new_properties = deepcopy(properties) or self.lvl2properties.get(level, Properties())
+        properties = properties or self.lvl2default_properties.get(level, Properties())
+        new_properties = deepcopy(properties)
         if not xml:
             return new_properties
 
+        self.__update_properties(xml, new_properties)
+        return new_properties
+
+    def __update_properties(self, xml: Tag, properties: Properties) -> None:
         if int(xml.get("b", "0")):
-            new_properties.bold = True
+            properties.bold = True
         if int(xml.get("i", "0")):
-            new_properties.italic = True
+            properties.italic = True
 
         underlined = xml.get("u", "none").lower()
         if underlined != "none":
-            new_properties.underlined = True
+            properties.underlined = True
 
         strike = xml.get("strike", "nostrike").lower()
         if strike != "nostrike":
-            new_properties.strike = True
+            properties.strike = True
 
         size = xml.get("sz")
         if size:
-            new_properties.size = float(size) / 100
+            properties.size = float(size) / 100
 
         baseline = xml.get("baseline")
         if baseline:
             if float(baseline) < 0:
-                new_properties.subscript = True
+                properties.subscript = True
             else:
-                new_properties.superscript = True
+                properties.superscript = True
 
+        self.__update_alignment(xml, properties)
+
+    def __update_alignment(self, xml: Tag, properties: Properties) -> None:
         alignment = xml.get("algn")
         if alignment and alignment in self.alignment_mapping:
-            new_properties.alignment = self.alignment_mapping[alignment]
+            properties.alignment = self.alignment_mapping[alignment]
 
-        return new_properties
+    def __get_default_properties_mapping(self, file_path: str) -> Dict[int, Properties]:
+        lvl2properties = {}
 
-    def __get_properties_mapping(self, file_path: str) -> Dict[int, Properties]:
-        pass
+        presentation_xml = get_bs_from_zip(file_path, "ppt/presentation.xml")
+        default_style = presentation_xml.defaultTextStyle
+        if not default_style:
+            return lvl2properties
+
+        # lvl1pPr - lvl9pPr
+        for i in range(1, 10):
+            level_xml = getattr(default_style, f"lvl{i}pPr")
+            if level_xml:
+                self.__update_level_properties(level_xml, lvl2properties)
+        return lvl2properties
+
+    def __update_level_properties(self, xml: Tag, lvl2properties: Dict[int, Properties]) -> None:
+        """
+        Example:
+            <a:lvl1pPr lvl="0" marR="0" rtl="0" algn="l">
+                <a:lnSpc><a:spcPct val="100000"/></a:lnSpc>
+                <a:spcBef><a:spcPts val="0"/></a:spcBef>
+                <a:spcAft><a:spcPts val="0"/></a:spcAft>
+                <a:buClr><a:srgbClr val="000000"/></a:buClr>
+                <a:buFont typeface="Arial"/>
+                <a:defRPr b="0" i="0" sz="1400" u="none" cap="none" strike="noStrike">
+                    <a:solidFill><a:srgbClr val="000000"/></a:solidFill>
+                    <a:latin typeface="Arial"/>
+                    <a:ea typeface="Arial"/>
+                    <a:cs typeface="Arial"/>
+                    <a:sym typeface="Arial"/>
+                </a:defRPr>
+            </a:lvl1pPr>
+        """
+        level = int(xml.get("lvl", "0")) + 1
+        level_properties = lvl2properties.get(level, Properties())
+        self.__update_alignment(xml, level_properties)
+        if xml.defRPr:
+            self.__update_properties(xml.defRPr, level_properties)
+
+        lvl2properties[level] = level_properties

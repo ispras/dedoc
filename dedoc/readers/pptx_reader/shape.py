@@ -10,15 +10,19 @@ from dedoc.readers.pptx_reader.properties_extractor import PropertiesExtractor
 
 
 class PptxShape:
-    def __init__(self, xml: Tag, page_id: int, init_line_id: int, numbering_extractor: NumberingExtractor, properties_extractor: PropertiesExtractor) -> None:
+    def __init__(self, xml: Tag, page_id: int, init_line_id: int, numbering_extractor: NumberingExtractor, properties_extractor: PropertiesExtractor,
+                 is_title: bool = False) -> None:
         self.xml = xml
         self.page_id = page_id
         self.init_line_id = init_line_id
         self.numbering_extractor = numbering_extractor
         self.properties_extractor = properties_extractor
-        self.is_title = False
+        self.is_title = is_title
 
     def get_lines(self) -> List[LineWithMeta]:
+        if not self.xml.get_text().strip():
+            return []
+
         if self.xml.ph and "title" in self.xml.ph.get("type", "").lower():
             self.is_title = True
 

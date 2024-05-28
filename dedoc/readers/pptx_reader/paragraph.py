@@ -12,7 +12,7 @@ class PptxParagraph:
     def __init__(self, xml: Tag, numbering_extractor: NumberingExtractor, properties_extractor: PropertiesExtractor) -> None:
         self.xml = xml
         self.numbered_list_type = self.xml.buAutoNum.get("type", "arabicPeriod") if self.xml.buAutoNum else None
-        self.level = int(self.xml.pPr.get("lvl", 0)) + 1
+        self.level = int(self.xml.pPr.get("lvl", 0)) + 1 if self.xml.pPr else 1
         self.numbering_extractor = numbering_extractor
         self.properties_extractor = properties_extractor
         self.annotation_merger = AnnotationMerger()

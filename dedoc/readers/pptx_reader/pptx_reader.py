@@ -40,21 +40,25 @@ class PptxReader(BaseReader):
         images_rels = self.__get_slide_images_rels(file_path)
         properties_extractor = PropertiesExtractor(file_path)
 
-        slide_xml_list = self.__get_slides_bs(file_path, xml_prefix="ppt/slides/slide")
+        slide_xml_list = self.__get_slides_bs(file_path, xml_prefix="ppt/slides/slide", xml_postfix=".xml")
         lines = []
         tables = []
 
         for slide_id, slide_xml in enumerate(slide_xml_list):
             shape_tree_xml = slide_xml.spTree
 
+            is_first_shape = True
             for tag in shape_tree_xml:
                 if tag.name == "sp":
                     if not tag.txBody:
                         continue
 
                     shape = PptxShape(tag, page_id=slide_id, init_line_id=len(lines), numbering_extractor=self.numbering_extractor,
-                                      properties_extractor=properties_extractor)
-                    lines.extend(shape.get_lines())
+                                      properties_extractor=properties_extractor, is_title=is_first_shape)
+                    shape_lines = shape.get_lines()
+                    lines.extend(shape_lines)
+                    if is_first_shape and len(shape_lines) > 0:
+                        is_first_shape = False
 
                 elif tag.tbl:
                     self.__add_table(lines=lines, tables=tables, page_id=slide_id, table_xml=tag.tbl, properties_extractor=properties_extractor)
@@ -66,18 +70,19 @@ class PptxReader(BaseReader):
 
         return UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=[])
 
-    def __get_slides_bs(self, path: str, xml_prefix: str) -> List[BeautifulSoup]:
+    def __get_slides_bs(self, path: str, xml_prefix: str, xml_postfix: str) -> List[BeautifulSoup]:
         with zipfile.ZipFile(path) as document:
             xml_names = document.namelist()
-
-        slides_bs_list = [get_bs_from_zip(path, file_name) for file_name in xml_names if file_name.startswith(xml_prefix)]
+        filtered_names = [file_name for file_name in xml_names if file_name.startswith(xml_prefix) and file_name.endswith(xml_postfix)]
+        sorted_names = sorted(filtered_names, key=lambda x: int(x[len(xml_prefix):-len(xml_postfix)]))
+        slides_bs_list = [get_bs_from_zip(path, file_name) for file_name in sorted_names]
         return slides_bs_list
 
     def __get_slide_images_rels(self, path: str) -> Dict[str, str]:
         """
         return mapping: {image Id -> image name}
         """
-        rels_xml_list = self.__get_slides_bs(path, xml_prefix="ppt/slides/_rels/slide")
+        rels_xml_list = self.__get_slides_bs(path, xml_prefix="ppt/slides/_rels/slide", xml_postfix=".xml.rels")
         images_dir = "../media/"
 
         images_rels = dict()
