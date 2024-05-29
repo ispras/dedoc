@@ -75,37 +75,45 @@ async def upload(file: UploadFile = File(...), query_params: QueryParameters = D
     if not file or file.filename == "":
         raise MissingFileError("Error: Missing content in request_post file parameter", version=dedoc.__version__)
 
+    return_format = str(parameters.get("return_format", "json")).lower()
+
     with tempfile.TemporaryDirectory() as tmpdir:
         file_path = save_upload_file(file, tmpdir)
         document_tree = manager.parse(file_path, parameters={**dict(parameters), "attachments_dir": tmpdir})
 
-    return_format = str(parameters.get("return_format", "json")).lower()
-    if return_format == "html":
-        __add_base64_info_to_attachments(document_tree, tmpdir)
+        if return_format == "html":
+            __add_base64_info_to_attachments(document_tree, tmpdir)
 
+    if return_format == "html":
         html_content = json2html(
             text="",
             paragraph=document_tree.content.structure,
             tables=document_tree.content.tables,
-            attachments=document_tree.attachments, tabs=0
+            attachments=document_tree.attachments,
+            tabs=0
         )
         return HTMLResponse(content=html_content)
-    elif return_format == "plain_text":
+
+    if return_format == "plain_text":
         txt_content = json2txt(paragraph=document_tree.content.structure)
         return PlainTextResponse(content=txt_content)
-    elif return_format == "tree":
+
+    if return_format == "tree":
         html_content = json2tree(paragraph=document_tree.content.structure)
         return HTMLResponse(content=html_content)
-    elif return_format == "ujson":
+
+    if return_format == "ujson":
         return UJSONResponse(content=document_tree.to_api_schema().model_dump())
-    elif return_format == "collapsed_tree":
+
+    if return_format == "collapsed_tree":
         html_content = json2collapsed_tree(paragraph=document_tree.content.structure)
         return HTMLResponse(content=html_content)
-    elif return_format == "pretty_json":
+
+    if return_format == "pretty_json":
         return PlainTextResponse(content=json.dumps(document_tree.to_api_schema().model_dump(), ensure_ascii=False, indent=2))
-    else:
-        logger.info(f"Send result. File {file.filename} with parameters {parameters}")
-        return ORJSONResponse(content=document_tree.to_api_schema().model_dump())
+
+    logger.info(f"Send result. File {file.filename} with parameters {parameters}")
+    return ORJSONResponse(content=document_tree.to_api_schema().model_dump())
 
 
 @app.get("/upload_example")
