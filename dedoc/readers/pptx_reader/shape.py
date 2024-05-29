@@ -28,13 +28,18 @@ class PptxShape:
 
         lines = []
         numbering2shift = defaultdict(int)
+        prev_list_level = None
 
         for line_id, paragraph_xml in enumerate(self.xml.find_all("a:p")):
             paragraph = PptxParagraph(paragraph_xml, self.numbering_extractor, self.properties_extractor)
 
             if paragraph.numbered_list_type:
+                if prev_list_level and paragraph.level > prev_list_level:
+                    numbering2shift[(paragraph.numbered_list_type, paragraph.level)] = 0
+
                 shift = numbering2shift[(paragraph.numbered_list_type, paragraph.level)]
                 numbering2shift[(paragraph.numbered_list_type, paragraph.level)] += 1
+                prev_list_level = paragraph.level
             else:
                 shift = 0
 

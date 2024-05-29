@@ -83,7 +83,7 @@ class PropertiesExtractor:
     def __get_default_properties_mapping(self, file_path: str) -> Dict[int, Properties]:
         lvl2properties = {}
 
-        presentation_xml = get_bs_from_zip(file_path, "ppt/presentation.xml")
+        presentation_xml = get_bs_from_zip(file_path, "ppt/presentation.xml", remove_spaces=True)
         default_style = presentation_xml.defaultTextStyle
         if not default_style:
             return lvl2properties

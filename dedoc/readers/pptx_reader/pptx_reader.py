@@ -75,7 +75,7 @@ class PptxReader(BaseReader):
             xml_names = document.namelist()
         filtered_names = [file_name for file_name in xml_names if file_name.startswith(xml_prefix) and file_name.endswith(xml_postfix)]
         sorted_names = sorted(filtered_names, key=lambda x: int(x[len(xml_prefix):-len(xml_postfix)]))
-        slides_bs_list = [get_bs_from_zip(path, file_name) for file_name in sorted_names]
+        slides_bs_list = [get_bs_from_zip(path, file_name, remove_spaces=True) for file_name in sorted_names]
         return slides_bs_list
 
     def __get_slide_images_rels(self, path: str) -> Dict[str, str]:
