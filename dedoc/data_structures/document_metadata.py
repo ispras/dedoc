@@ -1,5 +1,5 @@
 import uuid
-from typing import Dict, Union
+from typing import Any, Dict, Union
 
 from dedoc.api.schema.document_metadata import DocumentMetadata as ApiDocumentMetadata
 from dedoc.data_structures.serializable import Serializable
@@ -38,8 +38,11 @@ class DocumentMetadata(Serializable):
         self.access_time = access_time
         self.file_type = file_type
         for key, value in kwargs.items():
-            setattr(self, key, value)
+            self.add_attribute(key, value)
         self.uid = f"doc_uid_auto_{uuid.uuid1()}" if uid is None else uid
+
+    def add_attribute(self, key: str, value: Any) -> None:  # noqa
+        setattr(self, key, value)
 
     def to_api_schema(self) -> ApiDocumentMetadata:
         return ApiDocumentMetadata(**vars(self))
