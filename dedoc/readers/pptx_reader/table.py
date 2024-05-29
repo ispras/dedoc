@@ -9,6 +9,9 @@ from dedoc.readers.pptx_reader.shape import PptxShape
 
 
 class PptxTable:
+    """
+    This class corresponds to the table (tag <a:tbl>) in the slides xml files.
+    """
     def __init__(self, xml: Tag, page_id: int, numbering_extractor: NumberingExtractor, properties_extractor: PropertiesExtractor) -> None:
         """
         Contains information about table properties.

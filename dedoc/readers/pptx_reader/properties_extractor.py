@@ -22,6 +22,8 @@ class Properties:
 
 class PropertiesExtractor:
     """
+    This class allows to extract some text formatting properties (see class Properties)
+
     Properties hierarchy:
 
     - Run and paragraph properties (slide.xml)

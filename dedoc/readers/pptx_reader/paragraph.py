@@ -8,7 +8,9 @@ from dedoc.utils.annotation_merger import AnnotationMerger
 
 
 class PptxParagraph:
-
+    """
+    This class corresponds to one textual paragraph of some entity, e.g. shape or table cell (tag <a:p>).
+    """
     def __init__(self, xml: Tag, numbering_extractor: NumberingExtractor, properties_extractor: PropertiesExtractor) -> None:
         self.xml = xml
         self.numbered_list_type = self.xml.buAutoNum.get("type", "arabicPeriod") if self.xml.buAutoNum else None

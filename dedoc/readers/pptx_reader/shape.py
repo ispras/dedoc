@@ -10,6 +10,9 @@ from dedoc.readers.pptx_reader.properties_extractor import PropertiesExtractor
 
 
 class PptxShape:
+    """
+    This class corresponds to one textual block of the presentation (tag <a:sp>).
+    """
     def __init__(self, xml: Tag, page_id: int, init_line_id: int, numbering_extractor: NumberingExtractor, properties_extractor: PropertiesExtractor,
                  is_title: bool = False) -> None:
         self.xml = xml

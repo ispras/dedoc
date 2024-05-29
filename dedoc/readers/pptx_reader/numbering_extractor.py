@@ -1,8 +1,10 @@
 class NumberingExtractor:
     """
-    Mapping according to the ST_TextAutonumberScheme
+    This class is used to compute numbering text for list items.
+    For example: "1.", (i), "○"
     """
     def __init__(self) -> None:
+        # Mapping according to the ST_TextAutonumberScheme
         # NOTE we ignore chinese, japanese, hindi, thai
         self.numbering_types = dict(
             arabic="1",  # 1, 2, 3, ..., 10, 11, 12, ...
