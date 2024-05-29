@@ -17,7 +17,6 @@ class QueryParameters:
     need_content_analysis: str = Form("false", enum=["true", "false"], description="Enable parsing contents of the attached files")
     recursion_deep_attachments: str = Form("10", description="Depth on which nested attachments will be parsed if need_content_analysis=true")
     return_base64: str = Form("false", enum=["true", "false"], description="Save attached images to the document metadata in base64 format")
-    attachments_dir: Optional[str] = Form(None, description="Path to the directory where to save files' attachments")
 
     # tables handling
     need_pdf_table_analysis: str = Form("true", enum=["true", "false"], description="Enable table recognition for pdf")
