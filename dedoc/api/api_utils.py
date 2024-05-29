@@ -149,13 +149,15 @@ def json2html(text: str,
             text += table2html(table, table2id)
             text += "<p>&nbsp;</p>"
 
+    image_mimes = recognized_mimes.image_like_format.union(converted_mimes.image_like_format)
+
     if attachments is not None and len(attachments) > 0:
         text += "<h3> Attachments: </h3>"
         for attachment_id, attachment in enumerate(attachments):
             attachment_text = json2html(text="", paragraph=attachment.content.structure, tables=attachment.content.tables, attachments=attachment.attachments)
-            attachment_base64 = f'data:{attachment.metadata.file_type};base64, {attachment.metadata.base64}"'
+            attachment_base64 = f'data:{attachment.metadata.file_type};base64,{attachment.metadata.base64}"'
             attachment_link = f'<a href="{attachment_base64}" download="{attachment.metadata.file_name}">{attachment.metadata.file_name}</a>'
-            is_image = attachment.metadata.file_type in recognized_mimes.image_like_format.union(converted_mimes.image_like_format)
+            is_image = attachment.metadata.file_type in image_mimes
             attachment_image = f'<img src="{attachment_base64}">' if is_image else ""
 
             text += f"""<div id="{attachment.metadata.uid}">
