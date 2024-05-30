@@ -23,7 +23,7 @@ class ArticleStructureExtractor(AbstractStructureExtractor):
         :class:`~dedoc.structure_extractors.AbstractStructureExtractor`.
         """
         for line in document.lines:
-            if line.metadata.tag_hierarchy_level is None:
+            if line.metadata.tag_hierarchy_level is None or line.metadata.tag_hierarchy_level.is_unknown():
                 line.metadata.tag_hierarchy_level = HierarchyLevel.create_raw_text()
             else:
                 line.metadata.hierarchy_level = line.metadata.tag_hierarchy_level

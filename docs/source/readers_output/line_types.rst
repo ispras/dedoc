@@ -28,6 +28,12 @@ Below the readers are enlisted that can return non-empty ``hierarchy_level_tag``
      - `+`
      - `-`
 
+   * - :class:`~dedoc.readers.PptxReader`
+     - `+`
+     - `+`
+     - `+`
+     - `-`
+
    * - :class:`~dedoc.readers.HtmlReader`, :class:`~dedoc.readers.MhtmlReader`, :class:`~dedoc.readers.EmailReader`
      - `+`
      - `+`

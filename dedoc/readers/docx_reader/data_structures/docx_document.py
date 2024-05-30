@@ -1,14 +1,11 @@
 import hashlib
 import logging
-import os
 import re
-import zipfile
 from collections import defaultdict
-from typing import List, Optional
+from typing import List
 
 from bs4 import BeautifulSoup, Tag
 
-from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
@@ -19,6 +16,7 @@ from dedoc.readers.docx_reader.footnote_extractor import FootnoteExtractor
 from dedoc.readers.docx_reader.line_with_meta_converter import LineWithMetaConverter
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
+from dedoc.utils.office_utils import get_bs_from_zip
 from dedoc.utils.utils import calculate_file_hash
 
 
@@ -28,8 +26,8 @@ class DocxDocument:
         self.path = path
         self.attachment_name2uid = {attachment.original_name: attachment.uid for attachment in attachments}
 
-        self.document_bs_tree = self.__get_bs_tree("word/document.xml")
-        self.document_bs_tree = self.__get_bs_tree("word/document2.xml") if self.document_bs_tree is None else self.document_bs_tree
+        self.document_bs_tree = get_bs_from_zip(self.path, "word/document.xml")
+        self.document_bs_tree = get_bs_from_zip(self.path, "word/document2.xml") if self.document_bs_tree is None else self.document_bs_tree
         self.body = self.document_bs_tree.body if self.document_bs_tree else None
         self.paragraph_maker = self.__get_paragraph_maker()
 
@@ -39,8 +37,8 @@ class DocxDocument:
         self.lines = self.__get_lines()
 
     def __get_paragraph_maker(self) -> ParagraphMaker:
-        styles_extractor = StylesExtractor(self.__get_bs_tree("word/styles.xml"), self.logger)
-        num_tree = self.__get_bs_tree("word/numbering.xml")
+        styles_extractor = StylesExtractor(get_bs_from_zip(self.path, "word/styles.xml"), self.logger)
+        num_tree = get_bs_from_zip(self.path, "word/numbering.xml")
         numbering_extractor = NumberingExtractor(num_tree, styles_extractor) if num_tree else None
         styles_extractor.numbering_extractor = numbering_extractor
 
@@ -49,8 +47,8 @@ class DocxDocument:
             path_hash=calculate_file_hash(path=self.path),
             styles_extractor=styles_extractor,
             numbering_extractor=numbering_extractor,
-            footnote_extractor=FootnoteExtractor(self.__get_bs_tree("word/footnotes.xml")),
-            endnote_extractor=FootnoteExtractor(self.__get_bs_tree("word/endnotes.xml"), key="endnote")
+            footnote_extractor=FootnoteExtractor(get_bs_from_zip(self.path, "word/footnotes.xml")),
+            endnote_extractor=FootnoteExtractor(get_bs_from_zip(self.path, "word/endnotes.xml"), key="endnote")
         )
 
     def __get_lines(self) -> List[LineWithMeta]:
@@ -120,23 +118,6 @@ class DocxDocument:
 
         return lines_with_meta
 
-    def __get_bs_tree(self, filename: str) -> Optional[BeautifulSoup]:
-        """
-        Gets xml bs tree from the given file inside the self.path.
-        :param filename: name of file to extract the tree
-        :return: BeautifulSoup tree or None if file wasn't found
-        """
-        try:
-            with zipfile.ZipFile(self.path) as document:
-                content = document.read(filename)
-                content = re.sub(br"\n[\t ]*", b"", content)
-                soup = BeautifulSoup(content, "xml")
-                return soup
-        except KeyError:
-            return None
-        except zipfile.BadZipFile:
-            raise BadFileFormatError(f"Bad docx file:\n file_name = {os.path.basename(self.path)}. Seems docx is broken")
-
     def __handle_table_xml(self, xml: Tag, table_refs: dict) -> None:
         table = DocxTable(xml, self.paragraph_maker)
         self.tables.append(table.to_table())
@@ -150,9 +131,9 @@ class DocxDocument:
             table_refs[len(self.paragraph_list) - 1].append(table_uid)
 
     def __handle_images_xml(self, xmls: List[Tag], image_refs: dict) -> None:
-        rels = self.__get_bs_tree("word/_rels/document.xml.rels")
+        rels = get_bs_from_zip(self.path, "word/_rels/document.xml.rels")
         if rels is None:
-            rels = self.__get_bs_tree("word/_rels/document2.xml.rels")
+            rels = get_bs_from_zip(self.path, "word/_rels/document2.xml.rels")
 
         images_rels = dict()
         for rel in rels.find_all("Relationship"):
