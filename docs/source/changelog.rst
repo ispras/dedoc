@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v2.2.3 (2024-06-05)
+-------------------
+Release note: `v2.2.3 <https://github.com/ispras/dedoc/releases/tag/v2.2.3>`_
+
+* Show attached images and added ability to download attached files in the HTML output representation (API usage, return_format="html").
+* Added hierarchy level information and annotations to `PptxReader`.
+
 v2.2.2 (2024-05-21)
 -------------------
 Release note: `v2.2.2 <https://github.com/ispras/dedoc/releases/tag/v2.2.2>`_

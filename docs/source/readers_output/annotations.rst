@@ -11,11 +11,12 @@ Below the readers are enlisted that can return non-empty list of annotations for
 .. _table_annotations:
 
 .. list-table:: Annotations returned by each reader
-   :widths: 20 10 10 10 10 10 10 10
+   :widths: 20 10 10 10 10 10 10 10 10
    :class: tight-table
 
    * - **Annotation**
      - :class:`~dedoc.readers.DocxReader`
+     - :class:`~dedoc.readers.PptxReader`
      - :class:`~dedoc.readers.HtmlReader`, :class:`~dedoc.readers.MhtmlReader`, :class:`~dedoc.readers.EmailReader`
      - :class:`~dedoc.readers.RawTextReader`
      - :class:`~dedoc.readers.PdfImageReader`
@@ -24,6 +25,7 @@ Below the readers are enlisted that can return non-empty list of annotations for
      - :class:`~dedoc.readers.ArticleReader`
 
    * - :class:`~dedoc.data_structures.AttachAnnotation`
+     - `+`
      - `+`
      - `-`
      - `-`
@@ -34,6 +36,7 @@ Below the readers are enlisted that can return non-empty list of annotations for
 
    * - :class:`~dedoc.data_structures.TableAnnotation`
      - `+`
+     - `+`
      - `-`
      - `-`
      - `+`
@@ -43,6 +46,7 @@ Below the readers are enlisted that can return non-empty list of annotations for
 
    * - :class:`~dedoc.data_structures.LinkedTextAnnotation`
      - `+`
+     - `-`
      - `+`
      - `-`
      - `-`
@@ -54,12 +58,14 @@ Below the readers are enlisted that can return non-empty list of annotations for
      - `-`
      - `-`
      - `-`
+     - `-`
      - `+`
      - `+`
      - `+`
      - `-`
 
    * - :class:`~dedoc.data_structures.AlignmentAnnotation`
+     - `+`
      - `+`
      - `+`
      - `-`
@@ -71,6 +77,7 @@ Below the readers are enlisted that can return non-empty list of annotations for
    * - :class:`~dedoc.data_structures.IndentationAnnotation`
      - `+`
      - `-`
+     - `-`
      - `+`
      - `+`
      - `+`
@@ -80,6 +87,7 @@ Below the readers are enlisted that can return non-empty list of annotations for
    * - :class:`~dedoc.data_structures.SpacingAnnotation`
      - `+`
      - `-`
+     - `-`
      - `+`
      - `+`
      - `+`
@@ -87,6 +95,7 @@ Below the readers are enlisted that can return non-empty list of annotations for
      - `-`
 
    * - :class:`~dedoc.data_structures.BoldAnnotation`
+     - `+`
      - `+`
      - `+`
      - `-`
@@ -98,6 +107,7 @@ Below the readers are enlisted that can return non-empty list of annotations for
    * - :class:`~dedoc.data_structures.ItalicAnnotation`
      - `+`
      - `+`
+     - `+`
      - `-`
      - `-`
      - `+`
@@ -105,6 +115,7 @@ Below the readers are enlisted that can return non-empty list of annotations for
      - `-`
 
    * - :class:`~dedoc.data_structures.UnderlinedAnnotation`
+     - `+`
      - `+`
      - `+`
      - `-`
@@ -116,6 +127,7 @@ Below the readers are enlisted that can return non-empty list of annotations for
    * - :class:`~dedoc.data_structures.StrikeAnnotation`
      - `+`
      - `+`
+     - `+`
      - `-`
      - `-`
      - `-`
@@ -125,6 +137,7 @@ Below the readers are enlisted that can return non-empty list of annotations for
    * - :class:`~dedoc.data_structures.SubscriptAnnotation`
      - `+`
      - `+`
+     - `+`
      - `-`
      - `-`
      - `-`
@@ -132,6 +145,7 @@ Below the readers are enlisted that can return non-empty list of annotations for
      - `-`
 
    * - :class:`~dedoc.data_structures.SuperscriptAnnotation`
+     - `+`
      - `+`
      - `+`
      - `-`
@@ -144,12 +158,14 @@ Below the readers are enlisted that can return non-empty list of annotations for
      - `-`
      - `-`
      - `-`
+     - `-`
      - `+`
      - `-`
      - `+`
      - `-`
 
    * - :class:`~dedoc.data_structures.SizeAnnotation`
+     - `+`
      - `+`
      - `+`
      - `-`
@@ -160,6 +176,7 @@ Below the readers are enlisted that can return non-empty list of annotations for
 
    * - :class:`~dedoc.data_structures.StyleAnnotation`
      - `+`
+     - `-`
      - `+`
      - `-`
      - `-`
@@ -171,12 +188,14 @@ Below the readers are enlisted that can return non-empty list of annotations for
      - `-`
      - `-`
      - `-`
+     - `-`
      - `+`
      - `-`
      - `-`
      - `-`
 
    * - :class:`~dedoc.data_structures.ReferenceAnnotation`
+     - `-`
      - `-`
      - `-`
      - `-`
