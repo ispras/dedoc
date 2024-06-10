@@ -54,7 +54,7 @@ class PairedFeatureExtractor(AbstractFeatureExtractor):
         stack = []
 
         for line in document:
-            while len(stack) > 0 and self.__compare_lines(stack[-1], line, get_feature, std) <= 0:  # noqa
+            while len(stack) > 0 and self.__compare_lines(stack[-1], line, get_feature, std) <= 0:
                 stack.pop()
             result.append(len(stack))
             stack.append(line)

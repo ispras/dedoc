@@ -1,2 +1,2 @@
-from .dedoc_manager import DedocManager  # noqa
-from .version import __version__  # noqa
+from .dedoc_manager import DedocManager
+from .version import __version__

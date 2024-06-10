@@ -11,7 +11,7 @@
 # Source: https://github.com/ibm-aur-nlp/PubTabNet
 
 from collections import deque
-from typing import Optional
+from typing import Iterable, Optional
 
 import distance
 from apted import APTED, Config
@@ -21,7 +21,7 @@ from tqdm import tqdm
 
 
 class TableTree(Tree):
-    def __init__(self, tag: str, colspan=None, rowspan=None, content=None, visible=None, *children):  # noqa
+    def __init__(self, tag: str, colspan: int = None, rowspan: int = None, content: Iterable[str] = None, visible: bool = None, *children: "TableTree") -> None:
         self.tag = tag
         self.colspan = colspan
         self.rowspan = rowspan
@@ -44,13 +44,13 @@ class TableTree(Tree):
 
 class CustomConfig(Config):
     @staticmethod
-    def maximum(*sequences):  # noqa
+    def maximum(*sequences: str) -> int:
         """
         Get maximum possible value
         """
         return max(map(len, sequences))
 
-    def normalized_distance(self, *sequences) -> float:  # noqa
+    def normalized_distance(self, *sequences: str) -> float:
         """
         Get distance from 0 to 1
         """

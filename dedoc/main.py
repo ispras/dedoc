@@ -1,4 +1,4 @@
-from dedoc.api.dedoc_api import get_api, run_api  # noqa
+from dedoc.api.dedoc_api import get_api, run_api
 from dedoc.config import Configuration
 
 

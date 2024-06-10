@@ -90,7 +90,7 @@ class TreeConstructor(AbstractStructureConstructor):
     def __create_list_line(line: LineWithMeta) -> LineWithMeta:
         hierarchy_level = HierarchyLevel(
             level_1=line.metadata.hierarchy_level.level_1,
-            level_2=line.metadata.hierarchy_level.level_2 - 0.5,  # noqa  it is intentionaly for lists
+            level_2=line.metadata.hierarchy_level.level_2 - 0.5,
             line_type="list",
             can_be_multiline=False
         )

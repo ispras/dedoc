@@ -4,11 +4,12 @@ from bs4 import Tag
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.properties_extractor import change_caps
+from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 
 
 class Run(BaseProperties):
 
-    def __init__(self, properties: Optional[BaseProperties], styles_extractor: "StylesExtractor") -> None:  # noqa
+    def __init__(self, properties: Optional["BaseProperties"], styles_extractor: "StylesExtractor") -> None:
         """
         Contains information about run properties.
         :param properties: Paragraph or Run for copying its properties

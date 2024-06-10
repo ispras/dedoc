@@ -3,7 +3,7 @@ from typing import Optional
 
 class BaseProperties:
 
-    def __init__(self, properties: Optional["BaseProperties"] = None) -> None:  # noqa
+    def __init__(self, properties: Optional["BaseProperties"] = None) -> None:
         """
         Contains style properties for paragraphs and runs.
         :param properties: Paragraph or Run for copying its properties

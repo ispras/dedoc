@@ -7,6 +7,7 @@ import numpy as np
 from dedocutils.data_structures import BBox
 
 from dedoc.data_structures import BBoxAnnotation, ConfidenceAnnotation, LineMetadata, LineWithMeta
+from dedoc.readers.pdf_reader.data_classes.tables.table_tree import TableTree
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_page.ocr_page import OcrPage
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_utils import get_text_with_bbox_from_cells
@@ -21,7 +22,7 @@ class OCRCellExtractor:
         self.line_extractor = OCRLineExtractor(config=config)
         self.logger = config.get("logger", logging.getLogger())
 
-    def get_cells_text(self, page_image: np.ndarray, tree_nodes: List["TableTree"], language: str) -> List[List[LineWithMeta]]:  # noqa
+    def get_cells_text(self, page_image: np.ndarray, tree_nodes: List["TableTree"], language: str) -> List[List[LineWithMeta]]:
         for node in tree_nodes:
             node.set_crop_text_box(page_image)
 
@@ -62,7 +63,8 @@ class OCRCellExtractor:
 
         return self.__create_lines_with_meta(tree_nodes, originalbox_to_fastocrbox, page_image)
 
-    def __handle_one_batch(self, src_image: np.ndarray, tree_table_nodes: List["TableTree"], num_batch: int, language: str = "rus") -> Tuple[OcrPage, List[BBox]]: # noqa
+    def __handle_one_batch(self, src_image: np.ndarray, tree_table_nodes: List["TableTree"], num_batch: int, language: str = "rus") \
+            -> Tuple[OcrPage, List[BBox]]:
         concatenated, chunk_boxes = self.__concat_images(src_image=src_image, tree_table_nodes=tree_table_nodes)
         if self.config.get("debug_mode", False):
             debug_dir = os.path.join(get_path_param(self.config, "path_debug"), "debug_tables", "batches")
@@ -73,7 +75,7 @@ class OCRCellExtractor:
 
         return ocr_result, chunk_boxes
 
-    def __concat_images(self, src_image: np.ndarray, tree_table_nodes: List["TableTree"]) -> Tuple[np.ndarray, List[BBox]]:  # noqa
+    def __concat_images(self, src_image: np.ndarray, tree_table_nodes: List["TableTree"]) -> Tuple[np.ndarray, List[BBox]]:
         space = 10
         width = max((tree_node.crop_text_box.width + space for tree_node in tree_table_nodes))
         height = sum((tree_node.crop_text_box.height + space for tree_node in tree_table_nodes))
@@ -103,7 +105,7 @@ class OCRCellExtractor:
         assert len(chunk_boxes) == len(tree_table_nodes)
         return stacked_image, chunk_boxes
 
-    def __nodes2batch(self, tree_nodes: List["TableTree"]) -> Iterator[List["TableTree"]]:  # noqa
+    def __nodes2batch(self, tree_nodes: List["TableTree"]) -> Iterator[List["TableTree"]]:
         batch = []
         width = 0
         height = 0
@@ -120,7 +122,8 @@ class OCRCellExtractor:
         if len(batch) > 0:
             yield batch
 
-    def __create_lines_with_meta(self, tree_nodes: List["TableTree"], original_box_to_fast_ocr_box: dict, original_image: np.ndarray) -> List[List[LineWithMeta]]:  # noqa
+    def __create_lines_with_meta(self, tree_nodes: List["TableTree"], original_box_to_fast_ocr_box: dict, original_image: np.ndarray) \
+            -> List[List[LineWithMeta]]:
         nodes_lines = []
 
         for node in tree_nodes:

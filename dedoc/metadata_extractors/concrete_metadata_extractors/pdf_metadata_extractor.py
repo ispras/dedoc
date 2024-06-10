@@ -84,7 +84,7 @@ class PdfMetadataExtractor(AbstractMetadataExtractor):
                 elif key in self.keys_date:
                     try:
                         date = convert_datetime(value)
-                    except:  # noqa
+                    except Exception:
                         date = None
                     if date is not None:
                         result[self.keys_date[key]] = date

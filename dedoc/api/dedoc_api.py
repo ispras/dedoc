@@ -70,7 +70,7 @@ def __add_base64_info_to_attachments(document_tree: ParsedDocument, attachments_
 
 
 @app.post("/upload", response_model=ParsedDocument)
-async def upload(file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:  # noqa
+async def upload(file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:
     parameters = dataclasses.asdict(query_params)
     if not file or file.filename == "":
         raise MissingFileError("Error: Missing content in request_post file parameter", version=dedoc.__version__)

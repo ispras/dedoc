@@ -149,7 +149,7 @@ def handle_archive() -> Response:
 
 
 @app.post("/upload_archive")
-def upload_archive(file: UploadFile = File(...), query_params: TrainDatasetParameters = Depends()) -> Response:  # noqa
+def upload_archive(file: UploadFile = File(...), query_params: TrainDatasetParameters = Depends()) -> Response:
     """
     Run the whole pipeline of task making.
     """

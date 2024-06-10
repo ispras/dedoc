@@ -90,7 +90,7 @@ def calc_accuracy_by_classes(testloader: DataLoader, classes: List, classifier: 
                 class_correct[columns_i] += orientation_bool_predict
                 class_total[columns_i] += 1
                 if not orientation_bool_predict or not columns_bool_predict:
-                    print( # noqa
+                    print(
                         f'{data["image_name"][i]} predict as \norientation: {classes[2 + orientation_predicted[i]]} \ncolumns: {classes[columns_predicted[i]]}'
                     )
 

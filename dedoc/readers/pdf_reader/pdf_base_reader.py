@@ -179,7 +179,7 @@ class PdfBaseReader(BaseReader):
             while (images is None or len(images) > 0) and left <= min(page_to, page_count):
                 right = left + step
                 # for convert_from_path function first_page should start from 1, last_page is included to the result
-                images = convert_from_path(path, first_page=left, last_page=right)  # noqa
+                images = convert_from_path(path, first_page=left, last_page=right)
                 # in logging we include both ends of the pages interval, numeration starts with 1
                 self.logger.info(f"Get page from {left} to {min(right, page_count)} of {page_count} file {os.path.basename(path)}")
                 for image in images:

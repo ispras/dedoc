@@ -46,7 +46,7 @@ class CorrectTextGenerator:
                 article_text_fixed = re.sub(self.meta, "", article_text_fixed)
                 article_text_fixed = re.sub(self.symbols, "", article_text_fixed)
                 article_text_fixed = re.sub(r"\n+", "\n", article_text_fixed)
-            except:  # noqa
+            except Exception:
                 article_text_fixed = ""
 
         return article_text_fixed
