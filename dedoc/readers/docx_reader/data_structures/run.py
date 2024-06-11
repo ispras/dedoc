@@ -8,7 +8,7 @@ from dedoc.readers.docx_reader.properties_extractor import change_caps
 
 class Run(BaseProperties):
 
-    def __init__(self, properties: Optional["BaseProperties"], styles_extractor: "StylesExtractor") -> None:  # noqa
+    def __init__(self, properties: Optional[BaseProperties], styles_extractor: "StylesExtractor") -> None:  # noqa
         """
         Contains information about run properties.
         :param properties: Paragraph or Run for copying its properties
