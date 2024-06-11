@@ -20,7 +20,7 @@ class AnyLetterPrefix(LinePrefix):
 
     regexp = re.compile(r"^\s*\w\)")
 
-    def predecessor(self, other: "LinePrefix") -> bool:
+    def predecessor(self, other: LinePrefix) -> bool:
         return isinstance(other, AnyLetterPrefix)
 
     @staticmethod

@@ -29,7 +29,7 @@ class LetterPrefix(LinePrefix):
         else:
             return ord(letter)
 
-    def predecessor(self, other: "LinePrefix") -> bool:
+    def predecessor(self, other: LinePrefix) -> bool:
         return isinstance(other, LetterPrefix) and 1 >= (self.order - other.order) > 0
 
     @staticmethod
