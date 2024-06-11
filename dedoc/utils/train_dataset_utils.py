@@ -32,7 +32,7 @@ def _get_images_path(config: dict, document_name: str) -> str:
     return images_path
 
 
-def save_line_with_meta(lines: List["LineWithMeta"], original_document: str, *, config: dict) -> None:
+def save_line_with_meta(lines: List[LineWithMeta], original_document: str, *, config: dict) -> None:
     __create_images_path(config)
 
     # merge lines with the same bbox
@@ -47,7 +47,7 @@ def save_line_with_meta(lines: List["LineWithMeta"], original_document: str, *, 
             out.write("\n")
 
 
-def __postprocess_lines(lines: List["LineWithMeta"]) -> List["LineWithMeta"]:
+def __postprocess_lines(lines: List[LineWithMeta]) -> List[LineWithMeta]:
     postprocessed_lines = []
     prev_bbox = None
     for line in lines:

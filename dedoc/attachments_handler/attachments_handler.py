@@ -30,7 +30,7 @@ class AttachmentsHandler:
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
 
-    def handle_attachments(self, document_parser: "DedocManager", document: UnstructuredDocument, parameters: dict) -> List[ParsedDocument]:
+    def handle_attachments(self, document_parser: DedocManager, document: UnstructuredDocument, parameters: dict) -> List[ParsedDocument]:
         """
         Handle attachments of the document in the intermediate representation.
 
@@ -77,7 +77,7 @@ class AttachmentsHandler:
             attachments.append(parsed_file)
         return attachments
 
-    def __get_empty_document(self, document_parser: "DedocManager", attachment: AttachedFile, parameters: dict) -> ParsedDocument:
+    def __get_empty_document(self, document_parser: DedocManager, attachment: AttachedFile, parameters: dict) -> ParsedDocument:
         metadata = document_parser.document_metadata_extractor.extract(
             file_path=attachment.get_filename_in_path(),
             original_filename=attachment.get_original_filename(),

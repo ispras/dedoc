@@ -21,7 +21,8 @@ from tqdm import tqdm
 
 
 class TableTree(Tree):
-    def __init__(self, tag: str, colspan: int = None, rowspan: int = None, content: Iterable[str] = None, visible: bool = None, *children: "TableTree") -> None:
+    def __init__(self, tag: str, colspan: Optional[int], rowspan: Optional[int], content: Optional[str], visible: Optional[bool], *children: "TableTree") \
+            -> None:
         self.tag = tag
         self.colspan = colspan
         self.rowspan = rowspan
@@ -44,13 +45,13 @@ class TableTree(Tree):
 
 class CustomConfig(Config):
     @staticmethod
-    def maximum(*sequences: str) -> int:
+    def maximum(*sequences: Iterable[str]) -> int:
         """
         Get maximum possible value
         """
         return max(map(len, sequences))
 
-    def normalized_distance(self, *sequences: str) -> float:
+    def normalized_distance(self, *sequences: Iterable[str]) -> float:
         """
         Get distance from 0 to 1
         """
