@@ -120,11 +120,19 @@ def json2html(text: str,
               attachments: Optional[List[ParsedDocument]],
               tabs: int = 0,
               table2id: Dict[str, int] = None,
-              attach2id: Dict[str, int] = None) -> str:
+              attach2id: Dict[str, int] = None,
+              prev_page_id: Optional[List[int]] = None) -> str:
+    if prev_page_id is None:
+        prev_page_id = [0]
+
     tables = [] if tables is None else tables
     attachments = [] if attachments is None else attachments
     table2id = {table.metadata.uid: table_id for table_id, table in enumerate(tables)} if table2id is None else table2id
     attach2id = {attachment.metadata.uid: attachment_id for attachment_id, attachment in enumerate(attachments)} if attach2id is None else attach2id
+
+    if paragraph.metadata.page_id != prev_page_id[0]:
+        text += f"<center><small><b>Page {prev_page_id[0] + 1}</b></small></center><hr>"
+        prev_page_id[0] = paragraph.metadata.page_id
 
     ptext = __annotations2html(paragraph=paragraph, table2id=table2id, attach2id=attach2id, tabs=tabs)
 
@@ -141,7 +149,8 @@ def json2html(text: str,
     text += ptext
 
     for subparagraph in paragraph.subparagraphs:
-        text = json2html(text=text, paragraph=subparagraph, tables=None, attachments=None, tabs=tabs + 4, table2id=table2id, attach2id=attach2id)
+        text = json2html(text=text, paragraph=subparagraph, tables=None, attachments=None, tabs=tabs + 4, table2id=table2id, attach2id=attach2id,
+                         prev_page_id=prev_page_id)
 
     if tables is not None and len(tables) > 0:
         text += "<h3> Tables: </h3>"
