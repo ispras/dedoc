@@ -3,7 +3,6 @@ from typing import List, Optional
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_office_attachments_extractor import AbstractOfficeAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.extensions import recognized_extensions, recognized_mimes
 
 
 class PptxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
@@ -11,6 +10,7 @@ class PptxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
     Extract attachments from pptx files.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import recognized_extensions, recognized_mimes
         super().__init__(config=config, recognized_extensions=recognized_extensions.pptx_like_format, recognized_mimes=recognized_mimes.pptx_like_format)
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:

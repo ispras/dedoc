@@ -1,10 +1,7 @@
-from copy import deepcopy
 from dataclasses import dataclass
 from typing import Dict, Optional
 
 from bs4 import Tag
-
-from dedoc.utils.office_utils import get_bs_from_zip
 
 
 @dataclass
@@ -42,6 +39,8 @@ class PropertiesExtractor:
             <a:rPr i="1" lang="ru" sz="1800">
             <a:rPr baseline="30000" lang="ru" sz="1800">
         """
+        from copy import deepcopy
+
         properties = properties or self.lvl2default_properties.get(level, Properties())
         new_properties = deepcopy(properties)
         if not xml:
@@ -83,6 +82,8 @@ class PropertiesExtractor:
             properties.alignment = self.alignment_mapping[alignment]
 
     def __get_default_properties_mapping(self, file_path: str) -> Dict[int, Properties]:
+        from dedoc.utils.office_utils import get_bs_from_zip
+
         lvl2properties = {}
 
         presentation_xml = get_bs_from_zip(file_path, "ppt/presentation.xml", remove_spaces=True)

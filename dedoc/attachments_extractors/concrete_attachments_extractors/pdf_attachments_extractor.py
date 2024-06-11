@@ -1,17 +1,9 @@
-import json
-import os
-import uuid
 from typing import List, Optional, Tuple
 
-import PyPDF2
-from PyPDF2.pdf import PageObject
-from PyPDF2.utils import PdfReadError
+from PyPDF2.pdf import PageObject, PdfFileReader
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.extensions import recognized_extensions, recognized_mimes
-from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
-from dedoc.utils.utils import convert_datetime, get_unique_name
 
 
 class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
@@ -19,6 +11,7 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
     Extract attachments from pdf files.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import recognized_extensions, recognized_mimes
         super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
@@ -28,12 +21,16 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
         Look to the :class:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor` documentation to get the information about \
         the methods' parameters.
         """
+        import os
+        from PyPDF2.utils import PdfReadError
+        from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
+
         parameters = {} if parameters is None else parameters
         filename = os.path.basename(file_path)
 
         with open(file_path, "rb") as handler:
             try:
-                reader = PyPDF2.PdfFileReader(handler)
+                reader = PdfFileReader(handler)
             except Exception as e:
                 self.logger.warning(f"can't handle {filename}, get {e}")
                 return []
@@ -52,6 +49,8 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
         return self._content2attach_file(content=attachments, tmpdir=attachments_dir, need_content_analysis=need_content_analysis, parameters=parameters)
 
     def __get_notes(self, page: PageObject) -> List[Tuple[str, bytes]]:
+        from dedoc.utils.utils import convert_datetime
+
         attachments = []
         if "/Annots" in page.keys():
             for annot in page["/Annots"]:
@@ -72,7 +71,7 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
                     attachments.append((name, bytes(content)))
         return attachments
 
-    def __get_page_level_attachments(self, reader: PyPDF2.PdfFileReader) -> List[Tuple[str, bytes]]:
+    def __get_page_level_attachments(self, reader: PdfFileReader) -> List[Tuple[str, bytes]]:
         cnt_page = reader.getNumPages()
         attachments = []
         for i in range(cnt_page):
@@ -82,12 +81,14 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
 
         return attachments
 
-    def __get_root_attachments(self, reader: PyPDF2.PdfFileReader) -> List[Tuple[str, bytes]]:
+    def __get_root_attachments(self, reader: PdfFileReader) -> List[Tuple[str, bytes]]:
         """
         Retrieves the file attachments of the PDF as a dictionary of file names and the file data as a bytestring.
 
         :return: dictionary of filenames and bytestrings
         """
+        import uuid
+
         attachments = []
         catalog = reader.trailer["/Root"]
         if "/Names" in catalog.keys() and "/EmbeddedFiles" in catalog["/Names"].keys() and "/Names" in catalog["/Names"]["/EmbeddedFiles"].keys():
@@ -104,6 +105,9 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
         return attachments
 
     def __create_note(self, content: str, modified_time: int, created_time: int, author: str, size: int = None) -> [str, bytes]:
+        import json
+        from dedoc.utils.utils import get_unique_name
+
         filename = get_unique_name("note.json")
         note_dict = {
             "content": content,

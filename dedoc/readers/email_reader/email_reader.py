@@ -1,24 +1,10 @@
-import email
-import json
-import mimetypes
-import os
-import re
-import uuid
-from email.header import decode_header
 from email.message import Message
-from tempfile import NamedTemporaryFile
 from typing import List, Optional
 
-from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.readers.html_reader.html_reader import HtmlReader
-from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
-from dedoc.utils.utils import get_mime_extension, get_unique_name, save_data_to_unique_file
 
 
 class EmailReader(BaseReader):
@@ -27,6 +13,8 @@ class EmailReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import recognized_extensions, recognized_mimes
+        from dedoc.readers.html_reader.html_reader import HtmlReader
         super().__init__(config=config, recognized_extensions=recognized_extensions.eml_like_format, recognized_mimes=recognized_mimes.eml_like_format)
         self.html_reader = HtmlReader(config=self.config)
 
@@ -35,6 +23,7 @@ class EmailReader(BaseReader):
         Check if the document extension or mime is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        from dedoc.utils.utils import get_mime_extension
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         # this code differs from BaseReader because .eml and .mhtml files have the same mime type
         if extension:
@@ -50,6 +39,14 @@ class EmailReader(BaseReader):
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
+        import email
+        import json
+        import os
+        import uuid
+        from dedoc.data_structures.attached_file import AttachedFile
+        from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
+        from dedoc.utils.utils import get_unique_name
+
         parameters = {} if parameters is None else parameters
         attachments_dir = get_param_attachments_dir(parameters, file_path)
 
@@ -108,6 +105,12 @@ class EmailReader(BaseReader):
         return UnstructuredDocument(lines=lines, tables=tables, attachments=attachments)
 
     def __add_attachment(self, message: Message, attachments_dir: str, attachments: list, need_content_analysis: bool) -> None:
+        import mimetypes
+        import os
+        import uuid
+        from dedoc.data_structures.attached_file import AttachedFile
+        from dedoc.utils.utils import save_data_to_unique_file
+
         content_type = message.get_content_type()
         payload = message.get_payload(decode=True)
 
@@ -133,6 +136,8 @@ class EmailReader(BaseReader):
                                         need_content_analysis=need_content_analysis))
 
     def __add_content_from_html(self, message: Message, lines: list, tables: list, parameters: dict) -> None:
+        from tempfile import NamedTemporaryFile
+
         payload = message.get_payload(decode=True)
         if payload is None:
             return
@@ -153,6 +158,8 @@ class EmailReader(BaseReader):
         file.close()
 
     def __add_text_content(self, message: Message, lines: list) -> None:
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+
         payload = message.get_payload(decode=True)
         if payload is None:
             return
@@ -168,11 +175,15 @@ class EmailReader(BaseReader):
                                       annotations=[]))
 
     def __fix_filename(self, filename: str) -> str:
+        import re
+
         filename = re.sub(r"[<>:\"/\\|?*]", "_", filename)
         filename = re.sub(r"\s+", " ", filename)
         return filename
 
     def __get_decoded(self, text: str) -> str:
+        from email.header import decode_header
+
         part = []
         for letter, encode in decode_header(text):
             if isinstance(letter, bytes):
@@ -188,6 +199,8 @@ class EmailReader(BaseReader):
         return LineWithMeta(line=text, metadata=line_metadata)
 
     def __get_main_fields(self, message: Message) -> List[LineWithMeta]:
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+
         lines = list()
         line_metadata = LineMetadata(tag_hierarchy_level=HierarchyLevel(0, 0, False, "root"), page_id=0, line_id=0)
         lines.append(self.__get_field(message, "subject", line_metadata))

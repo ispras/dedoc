@@ -1,34 +1,16 @@
-import math
-import os
 from abc import abstractmethod
 from collections import namedtuple
 from typing import Iterator, List, Optional, Set, Tuple
 
-import cv2
-import numpy as np
-from joblib import Parallel, delayed
-from pdf2image import convert_from_path
-from pdf2image.exceptions import PDFPageCountError, PDFSyntaxError
+from numpy import ndarray
 
-import dedoc.utils.parameter_utils as param_utils
-from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions as extensions, recognized_mimes as mimes
 from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
-from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import TableRecognizer
-from dedoc.readers.pdf_reader.utils.header_footers_analysis import footer_header_analysis
-from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
-from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
-from dedoc.utils.pdf_utils import get_pdf_page_count
-from dedoc.utils.utils import flatten, get_file_mime_by_content
-from dedoc.utils.utils import get_file_mime_type, splitext_
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "orient_analysis_cells",
@@ -55,6 +37,13 @@ class PdfBaseReader(BaseReader):
 
     def __init__(self, *, config: Optional[dict] = None, recognized_extensions: Optional[Set[str]] = None, recognized_mimes: Optional[Set[str]] = None) -> None:
         super().__init__(config=config, recognized_extensions=recognized_extensions, recognized_mimes=recognized_mimes)
+
+        from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
+        from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
+        from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import TableRecognizer
+        from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
+        from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
+
         self.config["n_jobs"] = self.config.get("n_jobs", 1)
         self.table_recognizer = TableRecognizer(config=self.config)
         self.metadata_extractor = LineMetadataExtractor(config=self.config)
@@ -70,6 +59,8 @@ class PdfBaseReader(BaseReader):
 
         You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
+        import dedoc.utils.parameter_utils as param_utils
+
         parameters = {} if parameters is None else parameters
         first_page, last_page = param_utils.get_param_page_slice(parameters)
 
@@ -101,6 +92,13 @@ class PdfBaseReader(BaseReader):
 
     def _parse_document(self, path: str, parameters: ParametersForParseDoc) -> (
             Tuple)[List[LineWithMeta], List[ScanTable], List[PdfImageAttachment], List[str], Optional[dict]]:
+        import math
+        from joblib import Parallel, delayed
+        from dedoc.readers.pdf_reader.utils.header_footers_analysis import footer_header_analysis
+        from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
+        from dedoc.utils.pdf_utils import get_pdf_page_count
+        from dedoc.utils.utils import flatten
+
         first_page = 0 if parameters.first_page is None or parameters.first_page < 0 else parameters.first_page
         last_page = math.inf if parameters.last_page is None else parameters.last_page
         images = self._get_images(path, first_page, last_page)
@@ -142,7 +140,7 @@ class PdfBaseReader(BaseReader):
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
     @abstractmethod
-    def _process_one_page(self, image: np.ndarray, parameters: ParametersForParseDoc, page_number: int, path: str) \
+    def _process_one_page(self, image: ndarray, parameters: ParametersForParseDoc, page_number: int, path: str) \
             -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]]:
         """
             function parses image and returns:
@@ -153,7 +151,13 @@ class PdfBaseReader(BaseReader):
         """
         pass
 
-    def _get_images(self, path: str, page_from: int, page_to: int) -> Iterator[np.ndarray]:
+    def _get_images(self, path: str, page_from: int, page_to: int) -> Iterator[ndarray]:
+        import os
+        import cv2
+        from dedoc.extensions import recognized_extensions as extensions, recognized_mimes as mimes
+        from dedoc.utils.utils import get_file_mime_by_content
+        from dedoc.utils.utils import get_file_mime_type, splitext_
+
         mime = get_file_mime_type(path)
         mime = get_file_mime_by_content(path) if mime not in self._recognized_mimes else mime
         if mime in mimes.pdf_like_format:
@@ -166,9 +170,16 @@ class PdfBaseReader(BaseReader):
         else:
             raise BadFileFormatError(f"Unsupported input format: {splitext_(path)[1]}")
 
-    def _split_pdf2image(self, path: str, page_from: int, page_to: int) -> Iterator[np.ndarray]:
+    def _split_pdf2image(self, path: str, page_from: int, page_to: int) -> Iterator[ndarray]:
         if page_from >= page_to:
             return
+
+        import math
+        import os
+        import numpy as np
+        from pdf2image import convert_from_path
+        from pdf2image.exceptions import PDFPageCountError, PDFSyntaxError
+        from dedoc.utils.pdf_utils import get_pdf_page_count
 
         try:
             page_count = get_pdf_page_count(path)
@@ -190,24 +201,30 @@ class PdfBaseReader(BaseReader):
         except (PDFPageCountError, PDFSyntaxError) as error:
             raise BadFileFormatError(f"Bad pdf file:\n file_name = {os.path.basename(path)} \n exception = {error.args}")
 
-    def _convert_to_gray(self, image: np.ndarray) -> np.ndarray:
+    def _convert_to_gray(self, image: ndarray) -> ndarray:
+        import cv2
+        import numpy as np
+
         gray_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
         gray_image = self._binarization(gray_image)
         return gray_image
 
-    def _binarization(self, gray_image: np.ndarray) -> np.ndarray:
+    def _binarization(self, gray_image: ndarray) -> ndarray:
+        import numpy as np
+
         if gray_image.mean() < 220:  # filter black and white image
             binary_mask = gray_image >= np.quantile(gray_image, 0.05)
             gray_image[binary_mask] = 255
         return gray_image
 
     def eval_tables_by_batch(self,
-                             batch: Iterator[np.ndarray],
+                             batch: Iterator[ndarray],
                              page_number_begin: int,
                              language: str,
                              orient_analysis_cells: bool = False,
                              orient_cell_angle: int = 270,
-                             table_type: str = "") -> Tuple[List[np.ndarray], List[ScanTable]]:
+                             table_type: str = "") -> Tuple[List[ndarray], List[ScanTable]]:
+        from joblib import Parallel, delayed
 
         result_batch = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.table_recognizer.recognize_tables_from_image)(
             image, page_number_begin + i, language, orient_analysis_cells, orient_cell_angle, table_type) for i, image in enumerate(batch))

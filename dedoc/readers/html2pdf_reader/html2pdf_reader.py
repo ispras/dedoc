@@ -1,28 +1,25 @@
-import os
-import re
-from copy import deepcopy
-from tempfile import TemporaryDirectory
 from typing import Dict, Optional, Tuple
-from uuid import uuid1
 
 from bs4 import BeautifulSoup
-from weasyprint import HTML
 
-from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.html_reader.html_reader import HtmlReader
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
-from dedoc.utils.utils import calculate_file_hash
 
 
 class Html2PdfReader(HtmlReader):
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
+        from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
         self.pdf_reader = PdfTxtlayerReader(config=self.config)
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        import os
+        from copy import deepcopy
+        from tempfile import TemporaryDirectory
+        from weasyprint import HTML
+
         parameters = {} if parameters is None else parameters
         with TemporaryDirectory() as tmp_dir:
             modified_path, tables = self._modify_html(file_path, tmp_dir)
@@ -36,6 +33,8 @@ class Html2PdfReader(HtmlReader):
         return self._add_tables(document=unstructured_document, tables=tables)
 
     def _add_tables(self, document: UnstructuredDocument, tables: Dict[str, Table]) -> UnstructuredDocument:
+        from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
+
         lines = []
         tables_result = []
         previous_line = None
@@ -54,6 +53,8 @@ class Html2PdfReader(HtmlReader):
         return UnstructuredDocument(lines=lines, tables=tables_result, attachments=document.attachments)
 
     def _handle_tables(self, soup: BeautifulSoup, path_hash: str) -> dict:
+        from uuid import uuid1
+
         tables = {}
         for table_tag in soup.find_all("table"):
             table_uid = f"table_{uuid1()}"
@@ -75,6 +76,8 @@ class Html2PdfReader(HtmlReader):
          html-code: <span>1.1) lalala</span>
          view: "1.1) lalala"
         """
+        import re
+
         supers = soup.find_all(["span", "p"], {"style": re.compile("vertical-align:super")})
 
         for super_element in supers:
@@ -86,6 +89,9 @@ class Html2PdfReader(HtmlReader):
                 super_element.decompose()
 
     def _modify_html(self, path: str, tmp_dir: str) -> Tuple[str, dict]:
+        import os
+        from dedoc.utils.utils import calculate_file_hash
+
         with open(path, encoding="utf-8") as f:
             soup = BeautifulSoup(f.read(), "html.parser")
 

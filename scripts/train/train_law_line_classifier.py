@@ -2,8 +2,9 @@ import logging
 import os
 from typing import Optional
 
-from dedoc.config import _config as config
+from dedoc.config import get_config
 from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import roman_regexp
 from scripts.train.trainers.xgboost_line_classifier_trainer import XGBoostLineClassifierTrainer
 from train_dataset.data_structures.line_with_label import LineWithLabel
 
@@ -36,6 +37,7 @@ path_out = os.path.join(resources_path, f"{classifier_name}.pkl.gz")
 path_scores = os.path.join(resources_path, "benchmarks", f"{classifier_name}_scores.json")
 path_feature_importances = os.path.join(resources_path, "feature_importances", f"{classifier_name}_feature_importances.xlsx")
 
+config = get_config()
 feature_extractor = LawTextFeatures(text_features_only=txt_classifier)
 classifier_parameters = dict(learning_rate=0.8,
                              n_estimators=300,
@@ -49,7 +51,7 @@ def get_sample_weight(line: LineWithLabel) -> int:
     label = transform_labels(line.label)
     class_weight = {"structure_unit": 5, "header": 0.2, "raw_text": 0.5}.get(label, 1)
     text_with_upper = line.line.strip()
-    regexps = LawTextFeatures.named_regexp + [LawTextFeatures.roman_regexp]
+    regexps = LawTextFeatures.named_regexp + [roman_regexp]
     application_regexp = LawTextFeatures.regexp_application_begin
     regexp_weight = 50 if any([regexp.match(text_with_upper) for regexp in regexps]) else 1
     application_weight = 3000 if application_regexp.match(text_with_upper.lower()) else 1

@@ -8,7 +8,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_features_extractor import ListFeaturesExtractor
 from dedoc.structure_extractors.feature_extractors.utils_feature_extractor import normalization_by_min_max
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_year
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_year, roman_regexp
 
 
 class LawTextFeatures(AbstractFeatureExtractor):
@@ -18,7 +18,6 @@ class LawTextFeatures(AbstractFeatureExtractor):
     named_regexp = [
         re.compile(r"^(Статья|(Г|г)лава|ГЛАВА|ЧАСТЬ|Часть|Раздел|РАЗДЕЛ|\$|§)\s*((\d+\.*)+|[IVXХxхviУП]{1,3}\.?)\s*")
     ]
-    roman_regexp = re.compile(r"\s*(I|Г|T|Т|II|П|III|Ш|ТУ|TУ|IV|V|У|VI|УТ|УT|VII|УТТ|VIII|I[XХ]|[XХ]|[XХ]I|[XХ]II)\.\s+")
     regexp_application_begin = re.compile(
         r"^(\'|\")?(((П|п)риложение)|((У|у)твержден)[оаы]?){1}(( )*([№nN]?( )*(\d){1,3})?( )*)"
         r"((к распоряжению)|(к постановлению)|(к приказу))?\s*$"
@@ -37,7 +36,7 @@ class LawTextFeatures(AbstractFeatureExtractor):
     def __init__(self, text_features_only: bool = False) -> None:
         super().__init__()
 
-        self.regexps_start = self.regexps_items + self.regexps_subitem + [self.roman_regexp]
+        self.regexps_start = self.regexps_items + self.regexps_subitem + [roman_regexp]
         self.text_features_only = text_features_only
 
     def parameters(self) -> dict:
@@ -140,7 +139,7 @@ class LawTextFeatures(AbstractFeatureExtractor):
                 bracket_cnt = max(0, bracket_cnt - 1)
         yield "bracket_num", bracket_cnt
 
-        if self.roman_regexp.match(line.line) and len(line.line.strip()) > 3:
+        if roman_regexp.match(line.line) and len(line.line.strip()) > 3:
             yield "roman_regexp", 1
         else:
             yield "roman_regexp", 0

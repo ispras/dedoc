@@ -1,7 +1,6 @@
 from collections import namedtuple
 from typing import List
 
-from dedoc.utils.utils import get_extensions_by_mimes
 
 Extensions = namedtuple("Parts", [
     "excel_like_format",
@@ -125,6 +124,8 @@ mime2extension = {
 
 
 def get_image_extensions() -> List[str]:
+    from dedoc.utils.utils import get_extensions_by_mimes
+
     image_extensions = get_extensions_by_mimes(converted_mimes.image_like_format)
     image_extensions.extend(get_extensions_by_mimes(recognized_mimes.image_like_format))
     image_extensions.extend(converted_extensions.image_like_format)

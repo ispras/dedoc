@@ -1,13 +1,9 @@
-import re
-from copy import deepcopy
 from typing import List, Optional, Sized, Union
-from uuid import uuid1
 
 from dedoc.api.schema.line_with_meta import LineWithMeta as ApiLineWithMeta
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.serializable import Serializable
-from dedoc.utils.annotation_merger import AnnotationMerger
 
 
 class LineWithMeta(Sized, Serializable):
@@ -24,6 +20,7 @@ class LineWithMeta(Sized, Serializable):
         :param annotations: metadata that refers to some part of the text, for example, font size, font type, etc.
         :param uid: unique identifier of the line
         """
+        from uuid import uuid1
 
         self._line = line
         self._metadata = LineMetadata(page_id=0, line_id=None) if metadata is None else metadata
@@ -43,6 +40,8 @@ class LineWithMeta(Sized, Serializable):
         :param delimiter: delimiter to insert between lines
         :return: merged line
         """
+        from copy import deepcopy
+
         if len(lines) == 0:
             return LineWithMeta("")
 
@@ -65,6 +64,8 @@ class LineWithMeta(Sized, Serializable):
         :param sep: separator for splitting
         :return: list of split lines
         """
+        import re
+
         if not sep:
             raise ValueError("empty separator")
         borders = set()
@@ -140,6 +141,8 @@ class LineWithMeta(Sized, Serializable):
                 f"tagHL={self.metadata.tag_hierarchy_level.level_1, self.metadata.tag_hierarchy_level.level_2, self.metadata.tag_hierarchy_level.line_type})")
 
     def __add__(self, other: Union["LineWithMeta", str]) -> "LineWithMeta":
+        from dedoc.utils.annotation_merger import AnnotationMerger
+
         assert isinstance(other, (LineWithMeta, str))
         if len(other) == 0:
             return self

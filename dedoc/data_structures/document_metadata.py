@@ -1,4 +1,3 @@
-import uuid
 from typing import Dict, Union
 
 from dedoc.api.schema.document_metadata import DocumentMetadata as ApiDocumentMetadata
@@ -30,6 +29,8 @@ class DocumentMetadata(Serializable):
         :param access_time: time of the last access to the file in unixtime
         :param file_type: mime type of the file
         """
+        import uuid
+
         self.file_name = file_name
         self.temporary_file_name = temporary_file_name
         self.size = size

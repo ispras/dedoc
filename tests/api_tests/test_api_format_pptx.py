@@ -1,6 +1,6 @@
 import os
 
-from dedoc.data_structures import TableAnnotation
+from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 

@@ -1,20 +1,9 @@
-import os
-import tarfile
-import uuid
-import zipfile
-import zlib
 from typing import IO, Iterator, List, Optional
-
-import py7zlib
-import rarfile
 
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis, get_param_with_attachments
-from dedoc.utils.utils import get_file_mime_type, save_data_to_unique_file
 
 
 class ArchiveReader(BaseReader):
@@ -23,6 +12,7 @@ class ArchiveReader(BaseReader):
     Documents with the following extensions can be parsed: .zip, .tar, .tar.gz, .rar, .7z.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import recognized_extensions, recognized_mimes
         super().__init__(config=config, recognized_extensions=recognized_extensions.archive_like_format, recognized_mimes=recognized_mimes.archive_like_format)
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
@@ -30,6 +20,8 @@ class ArchiveReader(BaseReader):
         The method return empty content of archive, all content will be placed inside attachments.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
+        from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis, get_param_with_attachments
+
         parameters = {} if parameters is None else parameters
 
         with_attachments = get_param_with_attachments(parameters)
@@ -42,6 +34,11 @@ class ArchiveReader(BaseReader):
         return UnstructuredDocument(lines=[], tables=[], attachments=attachments)
 
     def __get_attachments(self, path: str, tmp_dir: str, need_content_analysis: bool) -> List[AttachedFile]:
+        import rarfile
+        import tarfile
+        import zipfile
+        from dedoc.utils.utils import get_file_mime_type
+
         mime = get_file_mime_type(path)
         if zipfile.is_zipfile(path) and mime == "application/zip":
             return list(self.__read_zip_archive(path=path, tmp_dir=tmp_dir, need_content_analysis=need_content_analysis))
@@ -55,6 +52,9 @@ class ArchiveReader(BaseReader):
         raise BadFileFormatError(f"bad archive {path}")
 
     def __read_zip_archive(self, path: str, tmp_dir: str, need_content_analysis: bool) -> Iterator[AttachedFile]:
+        import zipfile
+        import zlib
+
         try:
             with zipfile.ZipFile(path, "r") as arch_file:
                 names = [member.filename for member in arch_file.infolist() if member.file_size > 0]
@@ -66,6 +66,8 @@ class ArchiveReader(BaseReader):
             raise BadFileFormatError(f"Can't read file {path} ({e})")
 
     def __read_tar_archive(self, path: str, tmp_dir: str, need_content_analysis: bool) -> Iterator[AttachedFile]:
+        import tarfile
+
         with tarfile.open(path, "r") as arch_file:
             names = [member.name for member in arch_file.getmembers() if member.isfile()]
             for name in names:
@@ -74,6 +76,8 @@ class ArchiveReader(BaseReader):
                 file.close()
 
     def __read_rar_archive(self, path: str, tmp_dir: str, need_content_analysis: bool) -> Iterator[AttachedFile]:
+        import rarfile
+
         with rarfile.RarFile(path, "r") as arch_file:
             names = [item.filename for item in arch_file.infolist() if item.compress_size > 0]
             for name in names:
@@ -81,6 +85,8 @@ class ArchiveReader(BaseReader):
                     yield self.__save_archive_file(tmp_dir=tmp_dir, file_name=name, file=file, need_content_analysis=need_content_analysis)
 
     def __read_7z_archive(self, path: str, tmp_dir: str, need_content_analysis: bool) -> Iterator[AttachedFile]:
+        import py7zlib
+
         with open(path, "rb") as content:
             arch_file = py7zlib.Archive7z(content)
             names = arch_file.getnames()
@@ -89,6 +95,10 @@ class ArchiveReader(BaseReader):
                 yield self.__save_archive_file(tmp_dir=tmp_dir, file_name=name, file=file, need_content_analysis=need_content_analysis)
 
     def __save_archive_file(self, tmp_dir: str, file_name: str, file: IO[bytes], need_content_analysis: bool) -> AttachedFile:
+        import os
+        import uuid
+        from dedoc.utils.utils import save_data_to_unique_file
+
         file_name = os.path.basename(file_name)
         binary_data = file.read()
         if isinstance(binary_data, str):

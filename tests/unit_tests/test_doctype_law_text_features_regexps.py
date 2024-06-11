@@ -1,16 +1,17 @@
 import unittest
 
 from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import roman_regexp
 
 
 class TestLawTextFeaturesRegexps(unittest.TestCase):
     features = LawTextFeatures()
 
     def test_roman_regexp(self) -> None:
-        self.assertTrue(self.features.roman_regexp.fullmatch("    XI. "))
-        self.assertTrue(self.features.roman_regexp.fullmatch("      ") is None)
-        self.assertTrue(self.features.roman_regexp.fullmatch("    XI.") is None)
-        self.assertTrue(self.features.roman_regexp.fullmatch("\tIII. "))
+        self.assertTrue(roman_regexp.fullmatch("    XI. "))
+        self.assertTrue(roman_regexp.fullmatch("      ") is None)
+        self.assertTrue(roman_regexp.fullmatch("    XI.") is None)
+        self.assertTrue(roman_regexp.fullmatch("\tIII. "))
 
     def test_application_beginnings_with_regexp(self) -> None:
         self.assertTrue(self.features.regexp_application_begin.fullmatch("приложение"))

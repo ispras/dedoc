@@ -1,14 +1,10 @@
-import re
 from abc import ABC
-from collections import OrderedDict
 from enum import Enum
 from typing import Dict, Iterable, List, Optional
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
-from dedoc.structure_extractors.concrete_structure_extractors.foiv_law_structure_extractor import FoivLawStructureExtractor
-from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
 
 
 class LawDocType(Enum):
@@ -129,6 +125,8 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
         Search for type N in first lines.
         Roud robin type search for each line batch.
         """
+        import re
+
         first_lines = self.__create_line_batches(lines, batch_size=self.hat_batch_size, batch_count=self.hat_batch_count)
 
         # Hack for ЗАКОН ... КОДЕКС ...
@@ -151,6 +149,9 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
         return None
 
     def __get_extractor_by_type(self, doc_type: Optional[LawDocType]) -> AbstractStructureExtractor:
+        from dedoc.structure_extractors.concrete_structure_extractors.foiv_law_structure_extractor import FoivLawStructureExtractor
+        from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
+
         if doc_type is None:
             self.logger.info(f"Dynamic document type not found, using base: {LawStructureExtractor.document_type}")
             return self.extractors[LawStructureExtractor.document_type]
@@ -199,6 +200,8 @@ class ClassifyingLawStructureExtractor(AbstractStructureExtractor, ABC):
         return batch_lines
 
     def __text_clean(self, text: str) -> str:
+        from collections import OrderedDict
+
         bad_characters = OrderedDict({"\u0438\u0306": "й", "\u0439\u0306": "й", "\u0418\u0306": "Й", "\u0419\u0306": "Й"})
         for bad_c, good_c in bad_characters.items():
             text = text.replace(bad_c, good_c)

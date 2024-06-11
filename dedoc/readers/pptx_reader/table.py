@@ -2,7 +2,9 @@ import hashlib
 
 from bs4 import Tag
 
-from dedoc.data_structures import CellWithMeta, Table, TableMetadata
+from dedoc.data_structures.cell_with_meta import CellWithMeta
+from dedoc.data_structures.table import Table
+from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.pptx_reader.properties_extractor import PropertiesExtractor
 from dedoc.readers.pptx_reader.shape import PptxShape

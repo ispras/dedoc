@@ -1,22 +1,12 @@
 import datetime
-import difflib
-import gzip
-import hashlib
 import json
 import mimetypes
 import os
-import random
 import re
 import shutil
 import time
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Set, Tuple, TypeVar
 
-import magic
-import puremagic
-import requests
-from Levenshtein._levenshtein import ratio
-from charset_normalizer import from_bytes
-from dateutil.parser import parse
 from fastapi import UploadFile
 
 from dedoc.data_structures.document_content import DocumentContent
@@ -106,6 +96,8 @@ def get_unique_name(filename: str) -> str:
     """
     Return a unique name by template [timestamp]_[random number 0..1000][extension]
     """
+    import random
+
     _, ext = splitext_(filename)
     ts = int(time.time())
     rnd = random.randint(0, 1000)
@@ -145,6 +137,9 @@ def get_file_mime_type(path: str) -> str:
 
 
 def get_file_mime_by_content(path: str) -> str:
+    import magic
+    import puremagic
+
     mime = magic.from_file(path, mime=True)
 
     if mime == "application/octet-stream":  # for files with mime in {"image/x-sun-raster", "image/x-ms-bmp"}
@@ -175,6 +170,8 @@ def special_match(strg: str, regular_pattern: str = r"[^.?!,:;'\"\n\r ]") -> boo
 
 
 def calculate_file_hash(path: str) -> str:
+    import hashlib
+
     with open(path, "rb") as file:
         file_hash = hashlib.md5()
         chunk = file.read(8192)
@@ -200,6 +197,9 @@ def get_encoding(path: str, default: str = None) -> Optional[str]:
     """
     try to define encoding of the given file
     """
+    import gzip
+    from charset_normalizer import from_bytes
+
     try:
         if path.endswith(".gz"):
             with gzip.open(path, "r") as file:
@@ -215,6 +215,8 @@ def get_encoding(path: str, default: str = None) -> Optional[str]:
 
 def similarity(s1: str, s2: str) -> float:
     """string similarity"""
+    import difflib
+
     normalized1 = s1.lower()
     normalized2 = s2.lower()
     matcher = difflib.SequenceMatcher(None, normalized1, normalized2)
@@ -222,6 +224,8 @@ def similarity(s1: str, s2: str) -> float:
 
 
 def similarity_levenshtein(str1: str, str2: str) -> float:
+    from Levenshtein._levenshtein import ratio
+
     str1 = str1.lower()
     str2 = str2.lower()
     return ratio(str1, str2)
@@ -233,6 +237,8 @@ def convert_datetime(time_string: str) -> int:
     :param time_str: string of time in ISO/IEC 8824 format (D:YYYYMMDDHHmmSSOHH'mm'). Example: "D:20210202145619+00'16'"
     :return: UnixTime (type: int)
     """
+    from dateutil.parser import parse
+
     # convert utc-part OHH'mm' into iso-format ±HHMM[SS[.ffffff]] 'D:20191028113639Z'
     # description of time-format can see
     # https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf, page 160
@@ -261,6 +267,8 @@ def check_filename_length(filename: str) -> str:
 
 
 def send_file(host: str, file_name: str, file_path: str, parameters: dict) -> Dict[str, Any]:
+    import requests
+
     with open(file_path, "rb") as file:
         # file we want to parse
         files = {"file": (file_name, file)}

@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from dedocutils.data_structures import BBox
 
 
@@ -16,6 +14,8 @@ class WordWithBBox:
         return self.__str__()
 
     def to_dict(self) -> dict:
+        from collections import OrderedDict
+
         res = OrderedDict()
         res["bbox"] = self.bbox.to_dict()
         res["text"] = self.text

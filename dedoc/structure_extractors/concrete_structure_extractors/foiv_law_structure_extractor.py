@@ -2,12 +2,6 @@ from typing import List, Optional
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.concrete_structure_extractors.abstract_law_structure_extractor import AbstractLawStructureExtractor
-from dedoc.structure_extractors.hierarchy_level_builders.header_builder.header_hierarchy_level_builder import HeaderHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.law_builders.application_builder.application_foiv_hierarchy_level_builder import \
-    ApplicationFoivHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.body_foiv_hierarchy_level_builder import BodyFoivHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.law_builders.cellar_builder import CellarHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_foiv_item
 
 
 class FoivLawStructureExtractor(AbstractLawStructureExtractor):
@@ -19,7 +13,16 @@ class FoivLawStructureExtractor(AbstractLawStructureExtractor):
     document_type = "foiv_law"
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number
         super().__init__(config=config)
+
+        from dedoc.structure_extractors.hierarchy_level_builders.header_builder.header_hierarchy_level_builder import HeaderHierarchyLevelBuilder
+        from dedoc.structure_extractors.hierarchy_level_builders.law_builders.application_builder.application_foiv_hierarchy_level_builder import \
+            ApplicationFoivHierarchyLevelBuilder
+        from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_builder.body_foiv_hierarchy_level_builder import \
+            BodyFoivHierarchyLevelBuilder
+        from dedoc.structure_extractors.hierarchy_level_builders.law_builders.cellar_builder import CellarHierarchyLevelBuilder
+
         self.hierarchy_level_builders = [
             HeaderHierarchyLevelBuilder(),
             BodyFoivHierarchyLevelBuilder(),
@@ -33,6 +36,7 @@ class FoivLawStructureExtractor(AbstractLawStructureExtractor):
         self.hl_type = "foiv"
 
     def _postprocess_lines(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:
+        from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_foiv_item
         return self._postprocess(lines=lines,
                                  paragraph_type=["item", "subitem", "subitem"],
                                  regexps=[regexps_foiv_item, self.regexps_subitem_with_number, self.regexps_subitem_with_char],

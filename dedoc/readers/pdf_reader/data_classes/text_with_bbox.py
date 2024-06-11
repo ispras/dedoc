@@ -1,6 +1,4 @@
-from collections import OrderedDict
 from typing import List, Optional
-from uuid import uuid1
 
 from dedocutils.data_structures import BBox
 
@@ -18,6 +16,8 @@ class TextWithBBox:
                  uid: Optional[str] = None,
                  label: Optional[str] = None,
                  annotations: List[Annotation] = None) -> None:
+        from uuid import uuid1
+
         self.bbox = bbox
         self.page_num = page_num
         self.line_num = line_num
@@ -37,6 +37,8 @@ class TextWithBBox:
         return self.__str__()
 
     def to_dict(self) -> dict:
+        from collections import OrderedDict
+
         res = OrderedDict()
         res["uid"] = self.uid
         res["_uid"] = self.uid

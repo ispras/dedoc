@@ -1,10 +1,8 @@
-import os
 from typing import List, Optional
 
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils.utils import get_mime_extension
 
 
 class ReaderComposition(object):
@@ -31,6 +29,9 @@ class ReaderComposition(object):
         :param mime: MIME type of file
         :return: intermediate representation of the document with lines, tables and attachments
         """
+        import os
+        from dedoc.utils.utils import get_mime_extension
+
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
 
         for reader in self.readers:

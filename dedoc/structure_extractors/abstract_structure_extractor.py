@@ -1,12 +1,7 @@
-import logging
 from abc import ABC, abstractmethod
-from copy import deepcopy
 from typing import List, Optional
 
 from dedoc.data_structures.annotation import Annotation
-from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
-from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 
@@ -26,6 +21,8 @@ class AbstractStructureExtractor(ABC):
         """
         :param config: configuration of the extractor, e.g. logger for logging
         """
+        import logging
+
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
 
@@ -54,6 +51,9 @@ class AbstractStructureExtractor(ABC):
         :param excluding_regexps: list of filtering garbage regular pattern according to list of paragraph types
         :return: new post-processed list of LineWithMeta
         """
+        from copy import deepcopy
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+
         if self.config.get("labeling_mode", False):
             return lines
 
@@ -95,6 +95,9 @@ class AbstractStructureExtractor(ABC):
 
     @staticmethod
     def _select_annotations(annotations: List[Annotation], start: int, end: int) -> List[Annotation]:
+        from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
+        from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
+
         assert start <= end
         res = []
         for annotation in annotations:

@@ -1,15 +1,10 @@
-import os
-import re
 from typing import Dict, List, Optional, Tuple, Union
 
-import pandas as pd
+from pandas import DataFrame
 
-from dedoc.config import get_config
-from dedoc.data_structures import HierarchyLevel, LineWithMeta, UnstructuredDocument
-from dedoc.structure_extractors import AbstractStructureExtractor
-from dedoc.structure_extractors.feature_extractors.fintoc_feature_extractor import FintocFeatureExtractor
-from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor
-from dedoc.structure_extractors.line_type_classifiers.fintoc_classifier import FintocClassifier
+from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
 
 
 class FintocStructureExtractor(AbstractStructureExtractor):
@@ -25,7 +20,14 @@ class FintocStructureExtractor(AbstractStructureExtractor):
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
-        from dedoc.readers import PdfTxtlayerReader  # to exclude circular imports
+        import os
+        import re
+        from dedoc.config import get_config
+        from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader  # to exclude circular imports
+        from dedoc.structure_extractors.feature_extractors.fintoc_feature_extractor import FintocFeatureExtractor
+        from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor
+        from dedoc.structure_extractors.line_type_classifiers.fintoc_classifier import FintocClassifier
+
         self.pdf_reader = PdfTxtlayerReader(config=self.config)
         self.toc_extractor = TOCFeatureExtractor()
         self.features_extractor = FintocFeatureExtractor()
@@ -54,6 +56,8 @@ class FintocStructureExtractor(AbstractStructureExtractor):
         :param file_path: path to the file on disk.
         :return: document content with added additional information about title/non-title lines and hierarchy levels of titles.
         """
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+
         parameters = {} if parameters is None else parameters
         language = self.__get_param_language(parameters=parameters)
 
@@ -87,7 +91,7 @@ class FintocStructureExtractor(AbstractStructureExtractor):
             self.logger.warning(f"Language {language} is not supported by this extractor. Use default language (en)")
         return "en"
 
-    def get_features(self, documents_dict: Dict[str, List[LineWithMeta]]) -> Tuple[pd.DataFrame, List[List[LineWithMeta]]]:
+    def get_features(self, documents_dict: Dict[str, List[LineWithMeta]]) -> Tuple[DataFrame, List[List[LineWithMeta]]]:
         toc_lines, documents = [], []
         for file_path, document_lines in documents_dict.items():
             toc_lines.append(self.__get_toc(file_path=file_path))
@@ -109,6 +113,8 @@ class FintocStructureExtractor(AbstractStructureExtractor):
         """
         Try to get TOC from PDF automatically. If TOC wasn't extracted automatically, it is extracted using regular expressions.
         """
+        import os
+
         if file_path is None or not file_path.lower().endswith(".pdf"):
             return []
 
@@ -122,6 +128,8 @@ class FintocStructureExtractor(AbstractStructureExtractor):
         return self.toc_extractor.get_toc(lines)
 
     def __get_automatic_toc(self, path: str) -> List[Dict[str, Union[LineWithMeta, str]]]:
+        import os
+
         result = []
         with os.popen(f'pdftocio -p "{path}"') as out:
             toc = out.readlines()

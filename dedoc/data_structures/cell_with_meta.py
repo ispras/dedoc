@@ -1,7 +1,5 @@
 from typing import List
 
-import numpy as np
-
 from dedoc.api.schema.cell_with_meta import CellWithMeta as ApiCellWithMeta
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -44,5 +42,7 @@ class CellWithMeta(Serializable):
         return CellWithMeta(lines=cell.lines, colspan=cell.colspan, rowspan=cell.rowspan, invisible=cell.invisible)
 
     def to_api_schema(self) -> ApiCellWithMeta:
+        import numpy as np
+
         lines = [line.to_api_schema() for line in self.lines]
         return ApiCellWithMeta(lines=lines, colspan=int(np.int8(self.colspan)), rowspan=int(np.int8(self.rowspan)), invisible=self.invisible)

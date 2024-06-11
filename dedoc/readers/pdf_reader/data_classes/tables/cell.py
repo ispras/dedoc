@@ -1,9 +1,7 @@
-import uuid
 from typing import List, Optional
 
 from dedocutils.data_structures import BBox
 
-from dedoc.data_structures import BBoxAnnotation
 from dedoc.data_structures.annotation import Annotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 
@@ -44,6 +42,7 @@ class Cell:
                  rotated_angle: int = 0,
                  uid: str = None,
                  contour_coord: Optional[BBox] = None) -> None:
+        import uuid
 
         assert x_top_left <= x_bottom_right
         assert y_top_left <= y_bottom_right
@@ -72,6 +71,8 @@ class Cell:
         return LineWithMeta.join(self.lines, delimiter="\n").annotations
 
     def change_lines_boxes_page_width_height(self, new_page_width: int, new_page_height: int) -> None:
+        from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
+
         for i_line, _ in enumerate(self.lines):
             for i_ann, annotation in enumerate(self.lines[i_line].annotations):
                 if annotation.name != "bounding box":

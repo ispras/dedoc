@@ -1,6 +1,3 @@
-import json
-from collections import OrderedDict
-
 from dedoc.data_structures.annotation import Annotation
 
 
@@ -18,6 +15,9 @@ class ColorAnnotation(Annotation):
         :param green: mean value of the green color component in the pixels that are not white in the given bounding box
         :param blue: mean value of the blue color component in the pixels that are not white in the given bounding box
         """
+        import json
+        from collections import OrderedDict
+
         assert red >= 0
         assert green >= 0
         assert blue >= 0

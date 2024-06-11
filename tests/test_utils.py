@@ -1,10 +1,11 @@
-import importlib
 import os
 import signal
+from copy import deepcopy
 from typing import Any, List, Optional, Union
 
 from dedocutils.data_structures import BBox
 
+from dedoc.config import get_config
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
@@ -24,11 +25,7 @@ def get_by_tree_path(tree: dict, path: Union[List[int], str]) -> dict:
 
 
 def get_test_config() -> dict:
-    config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../dedoc/config.py"))
-    spec = importlib.util.spec_from_file_location("config_module", config_path)
-    config_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(config_module)
-    config = config_module._config
+    config = deepcopy(get_config())
     return config
 
 

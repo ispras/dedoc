@@ -7,8 +7,11 @@ from typing import List
 from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
 from dedoc.attachments_extractors.concrete_attachments_extractors.pptx_attachments_extractor import PptxAttachmentsExtractor
 from dedoc.dedoc_manager import DedocManager
-from dedoc.readers import ArchiveReader, PdfTabbyReader, PdfTxtlayerReader, PptxReader
+from dedoc.readers.archive_reader.archive_reader import ArchiveReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
+from dedoc.readers.pptx_reader.pptx_reader import PptxReader
 from tests.test_utils import get_test_config
 
 

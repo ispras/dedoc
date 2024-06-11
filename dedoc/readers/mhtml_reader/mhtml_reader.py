@@ -1,20 +1,8 @@
-import email
-import gzip
-import os
-import uuid
 from typing import List, Optional, Tuple
-from urllib.parse import urlparse
-
-from bs4 import BeautifulSoup
 
 from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.readers.html_reader.html_reader import HtmlReader
-from dedoc.utils import supported_image_types
-from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
-from dedoc.utils.utils import check_filename_length, get_encoding, get_mime_extension, save_data_to_unique_file
 
 
 class MhtmlReader(BaseReader):
@@ -23,6 +11,9 @@ class MhtmlReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import recognized_extensions, recognized_mimes
+        from dedoc.readers.html_reader.html_reader import HtmlReader
+
         super().__init__(config=config, recognized_extensions=recognized_extensions.mhtml_like_format, recognized_mimes=recognized_mimes.mhtml_like_format)
         self.html_reader = HtmlReader(config=self.config)
 
@@ -31,6 +22,8 @@ class MhtmlReader(BaseReader):
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        from dedoc.utils.utils import get_mime_extension
+
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         # this code differs from BaseReader because .eml and .mhtml files have the same mime type
         if extension:
@@ -43,6 +36,8 @@ class MhtmlReader(BaseReader):
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
+        from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
+
         parameters = {} if parameters is None else parameters
         attachments_dir = get_param_attachments_dir(parameters, file_path)
 
@@ -70,6 +65,12 @@ class MhtmlReader(BaseReader):
         return UnstructuredDocument(tables=tables, lines=lines, attachments=attachments)
 
     def __extract_files(self, path: str, save_dir: str) -> Tuple[List[str], List[str]]:
+        import email
+        import gzip
+        import os
+        from urllib.parse import urlparse
+        from dedoc.utils.utils import check_filename_length, save_data_to_unique_file
+
         names_list = []
         original_names_list = []
         if path.endswith(".gz"):
@@ -97,6 +98,10 @@ class MhtmlReader(BaseReader):
         return names_list, original_names_list
 
     def __find_html(self, names_list: List[str]) -> List[str]:
+        from bs4 import BeautifulSoup
+        from dedoc.utils import supported_image_types
+        from dedoc.utils.utils import get_encoding
+
         html_list = []
         for file_name in names_list:
             extension = file_name.split(".")[-1]
@@ -114,6 +119,10 @@ class MhtmlReader(BaseReader):
         return html_list
 
     def __get_attachments(self, save_dir: str, tmp_names_list: List[str], original_names_list: List[str], need_content_analysis: bool) -> List[AttachedFile]:
+        import os
+        import uuid
+        from dedoc.utils import supported_image_types
+
         attachments = []
         for tmp_file_name, original_file_name in zip(tmp_names_list, original_names_list):
             *_, extension = tmp_file_name.rsplit(".", maxsplit=1)

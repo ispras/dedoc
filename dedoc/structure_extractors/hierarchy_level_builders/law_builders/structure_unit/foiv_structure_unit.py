@@ -1,9 +1,8 @@
 from typing import Optional, Tuple
 
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.structure_unit.abstract_structure_unit import AbstractStructureUnit
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_foiv_item, regexps_item_with_bracket, regexps_subitem
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_foiv_item, regexps_item_with_bracket, regexps_subitem, roman_regexp
 
 
 class FoivStructureUnitBuilder(AbstractStructureUnit):
@@ -13,7 +12,7 @@ class FoivStructureUnitBuilder(AbstractStructureUnit):
     regexps_subitem_with_number = regexps_item_with_bracket
 
     def structure_unit(self, text: str, init_hl_depth: int, previous_hl: Optional[HierarchyLevel]) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:
-        if text.lower().startswith("глава") or LawTextFeatures.roman_regexp.match(text):
+        if text.lower().startswith("глава") or roman_regexp.match(text):
             hl = HierarchyLevel(init_hl_depth + 4, 0, True, "chapter")
             return hl, hl
 

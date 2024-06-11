@@ -1,4 +1,3 @@
-import json
 from typing import Tuple
 
 from dedocutils.data_structures import BBox
@@ -20,6 +19,8 @@ class BBoxAnnotation(Annotation):
         :param page_width: width of original image with this bbox
         :param page_height: height of original image with this bbox
         """
+        import json
+
         if not isinstance(value, BBox):
             raise ValueError("the value of bounding box annotation should be instance of BBox")
 
@@ -30,6 +31,8 @@ class BBoxAnnotation(Annotation):
         """
         Returns: BBox object, page_width, page_height
         """
+        import json
+
         bbox_dict = json.loads(value)
         bbox = BBox(x_top_left=int(bbox_dict["x_top_left"] * bbox_dict["page_width"]),
                     y_top_left=int(bbox_dict["y_top_left"] * bbox_dict["page_height"]),

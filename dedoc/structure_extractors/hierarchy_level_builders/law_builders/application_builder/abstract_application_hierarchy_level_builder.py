@@ -8,7 +8,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
 from dedoc.structure_extractors.hierarchy_level_builders.abstract_hierarchy_level_builder import AbstractHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.structure_unit.abstract_structure_unit import AbstractStructureUnit
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_item_with_bracket, regexps_number
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_item_with_bracket, regexps_number, roman_regexp
 
 
 class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
@@ -16,6 +16,7 @@ class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, ab
     regexps_item = regexps_item_with_bracket
     regexps_part = regexps_number
     regexp_application_begin = LawTextFeatures.regexp_application_begin
+    roman_regexp = roman_regexp
 
     @property
     @abc.abstractmethod
@@ -63,7 +64,7 @@ class AbstractApplicationHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, ab
             label = "application"
         if label == "raw_text" and LawTextFeatures.regexp_application_begin.match(text):
             label = "application"
-        if (label == "application" or label == "raw_text") and LawTextFeatures.roman_regexp.match(text):
+        if (label == "application" or label == "raw_text") and roman_regexp.match(text):
             label = "structure_unit"
 
         if label == "structure_unit":

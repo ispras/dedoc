@@ -1,9 +1,5 @@
-import os
-import pickle
 from typing import Optional
 
-from dedoc.common.exceptions.bad_file_error import BadFileFormatError
-from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
 
@@ -21,6 +17,10 @@ class NoteReader(BaseReader):
         The method return document content with all document's lines.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
+        import os
+        import pickle
+        from dedoc.common.exceptions.bad_file_error import BadFileFormatError
+        from dedoc.data_structures.line_with_meta import LineWithMeta
 
         try:
             with open(file_path, "rb") as infile:

@@ -3,8 +3,8 @@ from typing import List
 
 from bs4 import Tag
 
-from dedoc.data_structures import LineWithMeta
 from dedoc.data_structures.cell_with_meta import CellWithMeta
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph

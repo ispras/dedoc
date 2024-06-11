@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Optional
 
-from dedoc.config import _config as config
+from dedoc.config import get_config
 from dedoc.structure_extractors.feature_extractors.diploma_feature_extractor import DiplomaFeatureExtractor
 from scripts.train.trainers.xgboost_line_classifier_trainer import XGBoostLineClassifierTrainer
 
@@ -16,6 +16,7 @@ def skip_labels(label: str) -> Optional[str]:
 
 
 classifier_name = "diploma_classifier"
+config = get_config()
 
 clf_resources_path = os.path.join(os.path.expanduser("~"), ".cache", "dedoc", "resources", "line_type_classifiers")
 os.makedirs(clf_resources_path, exist_ok=True)

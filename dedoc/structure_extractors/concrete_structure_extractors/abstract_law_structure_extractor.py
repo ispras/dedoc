@@ -1,16 +1,10 @@
-import os
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
 
-from dedoc.config import get_config
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_mimes
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
-from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
-from dedoc.structure_extractors.hierarchy_level_builders.law_builders.stub_hierarchy_level_builder import StubHierarchyLevelBuilder
-from dedoc.structure_extractors.line_type_classifiers.law_classifier import LawLineTypeClassifier
 
 
 class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
@@ -25,6 +19,12 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
         :param config: some configuration for document parsing
         """
         super().__init__(config=config)
+        import os
+        from dedoc.config import get_config
+
+        from dedoc.structure_extractors.hierarchy_level_builders.law_builders.stub_hierarchy_level_builder import StubHierarchyLevelBuilder
+        from dedoc.structure_extractors.line_type_classifiers.law_classifier import LawLineTypeClassifier
+
         path = os.path.join(get_config()["resources_path"], "line_type_classifiers")
         self.classifier = LawLineTypeClassifier(classifier_type="law", path=os.path.join(path, "law_classifier.pkl.gz"), config=self.config)
         self.txt_classifier = LawLineTypeClassifier(classifier_type="law_txt", path=os.path.join(path, "law_txt_classifier.pkl.gz"), config=self.config)
@@ -39,6 +39,8 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
         To get the information about the method's parameters look at the documentation of the class \
         :class:`~dedoc.structure_extractors.AbstractStructureExtractor`.
         """
+        from dedoc.extensions import recognized_mimes
+
         if document.metadata.get("file_type") in recognized_mimes.txt_like_format:
             document.lines = self.__preprocess_lines(document.lines)
             predictions = self.txt_classifier.predict(document.lines)
@@ -173,8 +175,10 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
         return result
 
     def _postprocess_roman(self, hierarchy_level: HierarchyLevel, line: LineWithMeta) -> LineWithMeta:
-        if hierarchy_level.line_type == "subsection" and LawTextFeatures.roman_regexp.match(line.line):
-            match = LawTextFeatures.roman_regexp.match(line.line)
+        from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import roman_regexp
+
+        if hierarchy_level.line_type == "subsection" and roman_regexp.match(line.line):
+            match = roman_regexp.match(line.line)
             prefix = line.line[match.start(): match.end()]
             suffix = line.line[match.end():]
             symbols = [("T", "I"), ("Т", "I"), ("У", "V"), ("П", "II"), ("Ш", "III"), ("Г", "I")]
