@@ -7,6 +7,8 @@ inline-quotes = "
 application-import-names = dedoc, tests, scripts, train_dataset
 import-order-style = pycharm
 
+extend-immutable-calls = File, Depends
+
 exclude =
     .git,
     __pycache__,

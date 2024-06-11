@@ -209,7 +209,7 @@ def get_encoding(path: str, default: str = None) -> Optional[str]:
                 blob = file.read()
         dammit = from_bytes(blob)
         return dammit.best().encoding
-    except:  # noqa  ignore exception and return default encoding
+    except Exception:
         return default
 
 

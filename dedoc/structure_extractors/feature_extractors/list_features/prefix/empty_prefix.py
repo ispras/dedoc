@@ -11,7 +11,7 @@ class EmptyPrefix(LinePrefix):
     def __init__(self, prefix: str = None, indent: float = 0) -> None:
         super().__init__("", indent=indent)
 
-    def predecessor(self, other: "LinePrefix") -> bool:
+    def predecessor(self, other: LinePrefix) -> bool:
         return False
 
     @staticmethod

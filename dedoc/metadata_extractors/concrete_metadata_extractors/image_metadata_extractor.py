@@ -109,6 +109,6 @@ class ImageMetadataExtractor(AbstractMetadataExtractor):
             encoded_dict = {k: v for k, v in encoded_dict.items() if k is not None if v is not None}
             image.close()
             return encoded_dict
-        except Exception as e:  # noqa
+        except Exception as e:
             self.logger.debug(e)
             return {"broken_image": True}

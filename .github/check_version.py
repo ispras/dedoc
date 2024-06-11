@@ -23,7 +23,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print(f"Old version: {args.old_version}, new version: {args.new_version}, "
-          f"branch: {args.branch}, tag: {args.tag}, pre_release: {args.pre_release}")  # noqa
+          f"branch: {args.branch}, tag: {args.tag}, pre_release: {args.pre_release}")
 
     master_version_pattern = re.compile(r"^\d+\.\d+(\.\d+)?$")
     develop_version_pattern = re.compile(r"^\d+\.\d+\.\d+rc\d+$")
@@ -43,4 +43,4 @@ if __name__ == "__main__":
         is_correct_version(args.new_version, args.tag, args.old_version, master_version_pattern)
         assert args.pre_release != "true", "Pre-releases are not allowed on master"
 
-    print("Version is correct")  # noqa
+    print("Version is correct")

@@ -23,10 +23,10 @@ class LawLineTypeClassifier(AbstractPickledLineTypeClassifier):
             return []
 
         features = self.feature_extractor.transform([lines])
-        labels_probability = self.classifier.predict_proba(features)  # noqa
+        labels_probability = self.classifier.predict_proba(features)
 
         # mark lines inside quotes as raw_text
-        inside_quotes = np.array(LawTextFeatures()._inside_quotes(lines), dtype=bool)  # noqa
+        inside_quotes = np.array(LawTextFeatures()._inside_quotes(lines), dtype=bool)
         raw_text_id = list(self.classifier.classes_).index("raw_text")
         labels_probability[inside_quotes, raw_text_id] = 1
         labels = [self.classifier.classes_[label_id] for label_id in labels_probability.argmax(1)]

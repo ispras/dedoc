@@ -40,7 +40,7 @@ class CellWithMeta(Serializable):
         return LineWithMeta.join(lines=self.lines, delimiter="\n").annotations
 
     @staticmethod
-    def create_from_cell(cell: "Cell") -> "CellWithMeta": # noqa
+    def create_from_cell(cell: "CellWithMeta") -> "CellWithMeta":
         return CellWithMeta(lines=cell.lines, colspan=cell.colspan, rowspan=cell.rowspan, invisible=cell.invisible)
 
     def to_api_schema(self) -> ApiCellWithMeta:
