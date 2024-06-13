@@ -5,7 +5,7 @@ from typing import List
 import numpy as np
 from PIL import Image
 
-from dedoc.data_structures import LineWithMeta
+from dedoc.data_structures.line_with_meta import LineWithMeta
 
 
 def __to_pil(image: np.ndarray) -> Image:
