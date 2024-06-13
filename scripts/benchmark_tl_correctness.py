@@ -14,6 +14,15 @@ path_result = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "res
 os.makedirs(path_result, exist_ok=True)
 path_result = os.path.join(path_result, "benchmarks_tl_correctness.json")
 
+"""
+Experiments are available -> https://github.com/alexander1999-hub/txt_layer_correctness/tree/main :
+    * generating synthetic incorrect text
+    * compare different classification models
+    * compare different input textual feature: TF-IDF and custom features
+    * compare on real data of correct/incorrect texts with GT using Levenstein (available on Confluence -> dataset page)
+Here (in this script) we calculate an accuracy of selected model (XGboost on custom features) on real data without GT. Data are pdfs with textual layer)
+"""
+
 host = "http://localhost:1231"
 param_dist_errors = namedtuple("Param", ("total_file_size", "total_incorrect_files", "failed"))
 
