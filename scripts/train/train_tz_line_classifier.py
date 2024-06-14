@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Optional
 
-from dedoc.config import _config as config
+from dedoc.config import get_config
 from dedoc.structure_extractors.feature_extractors.tz_feature_extractor import TzTextFeatures
 from scripts.train.trainers.xgboost_line_classifier_trainer import XGBoostLineClassifierTrainer
 
@@ -15,6 +15,7 @@ def skip_labels(label: str) -> Optional[str]:
 
 txt_classifier = True
 classifier_name = "tz_txt_classifier" if txt_classifier else "tz_classifier"
+config = get_config()
 
 resources_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources"))
 assert os.path.isdir(resources_path)

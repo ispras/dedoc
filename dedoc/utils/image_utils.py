@@ -1,12 +1,9 @@
 from copy import deepcopy
 from typing import List, Tuple
 
-import PIL
-import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 from dedocutils.data_structures import BBox
-from scipy.ndimage import maximum_filter
 
 
 def get_highest_pixel_frequency(image: np.ndarray) -> int:
@@ -18,7 +15,7 @@ def get_highest_pixel_frequency(image: np.ndarray) -> int:
     return color
 
 
-def get_bbox_from_image(image: Image, bbox: BBox, resize: Tuple[int, int] = (300, 15)) -> PIL:
+def get_bbox_from_image(image: Image.Image, bbox: BBox, resize: Tuple[int, int] = (300, 15)) -> Image.Image:
     """
     take image and bbox and crop bbox from this image, resize it if necessary and return.
     @param image: pil image
@@ -29,7 +26,7 @@ def get_bbox_from_image(image: Image, bbox: BBox, resize: Tuple[int, int] = (300
     """
     rectangle = (bbox.x_top_left, bbox.y_top_left, bbox.x_bottom_right, bbox.y_bottom_right)
     if isinstance(image, np.ndarray):
-        image = PIL.Image.fromarray(image)
+        image = Image.fromarray(image)
     cropped = image.crop(rectangle)
     if resize is not None:
         cropped = cropped.resize((300, 15)).convert("RGB")
@@ -41,6 +38,8 @@ def rotate_image(image: np.ndarray, angle: float, color_bound: Tuple[int, int, i
     Rotates an image (angle in degrees) and expands image to avoid cropping (do bounds of color_bound)
     Changes width and height of image (image.shape != rotated_image.shape)
     """
+    import cv2
+
     height, width = image.shape[:2]
     image_center = (width / 2, height / 2)
     rotation_mat = cv2.getRotationMatrix2D(image_center, angle, 1.)
@@ -64,6 +63,9 @@ def crop_image_text(image: np.ndarray) -> BBox:
     @param image: original image
     @return: cropped image
     """
+    import cv2
+    from scipy.ndimage import maximum_filter
+
     im_height, im_width = image.shape[0], image.shape[1]
     edges = cv2.Canny(image, 100, 200)
     edges = maximum_filter(edges, (10, 10))
@@ -79,7 +81,7 @@ def crop_image_text(image: np.ndarray) -> BBox:
         return BBox(x_top_left=0, y_top_left=0, width=im_width, height=im_height)
 
 
-def draw_rectangle(image: PIL.Image, x_top_left: int, y_top_left: int, width: int, height: int, color: Tuple[int, int, int] = (0, 0, 0)) -> np.ndarray:
+def draw_rectangle(image: Image.Image, x_top_left: int, y_top_left: int, width: int, height: int, color: Tuple[int, int, int] = (0, 0, 0)) -> np.ndarray:
     if color == "black":
         color = (0, 0, 0)
     source_img = deepcopy(image).convert("RGBA")
@@ -94,7 +96,7 @@ def draw_rectangle(image: PIL.Image, x_top_left: int, y_top_left: int, width: in
     return np.array(source_img)
 
 
-def get_concat_v(images: List[Image.Image]) -> Image:
+def get_concat_v(images: List[Image.Image]) -> Image.Image:
     if len(images) == 1:
         return images[0]
     width = max((image.width for image in images))

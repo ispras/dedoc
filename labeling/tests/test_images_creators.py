@@ -12,8 +12,10 @@ from dedoc.converters.converter_composition import ConverterComposition
 from dedoc.dedoc_manager import DedocManager
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
-from dedoc.readers import PdfImageReader, PdfTabbyReader, PdfTxtlayerReader
 from dedoc.readers.docx_reader.docx_reader import DocxReader
+from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 from dedoc.readers.reader_composition import ReaderComposition
 from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
 from dedoc.structure_constructors.concrete_structure_constructors.tree_constructor import TreeConstructor

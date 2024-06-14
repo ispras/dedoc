@@ -1,20 +1,11 @@
-import logging
-import os.path
-import shutil
-import tempfile
 from typing import Dict, Optional, Tuple
 
 from dedoc.api.api_args import QueryParameters
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.common.exceptions.conversion_error import ConversionError
 from dedoc.common.exceptions.dedoc_error import DedocError
-from dedoc.config import get_config
-from dedoc.data_structures import ParsedDocument, UnstructuredDocument
-from dedoc.extensions import mime2extension
-from dedoc.manager_config import get_manager_config
-from dedoc.metadata_extractors import BaseMetadataExtractor
-from dedoc.utils.train_dataset_utils import get_path_original_documents, save_line_with_meta
-from dedoc.utils.utils import get_file_mime_by_content, get_mime_extension, get_unique_name
+from dedoc.data_structures.parsed_document import ParsedDocument
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
 
 
 class DedocManager:
@@ -42,6 +33,11 @@ class DedocManager:
             - document_metadata_extractor (:class:`~dedoc.metadata_extractors.MetadataExtractorComposition`)
             - attachments_handler (:class:`~dedoc.attachments_handler.AttachmentsHandler`)
         """
+        import logging
+
+        from dedoc.config import get_config
+        from dedoc.manager_config import get_manager_config
+
         self.config = get_config() if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
         manager_config = get_manager_config(self.config) if manager_config is None else manager_config
@@ -69,12 +65,16 @@ class DedocManager:
         :param parameters: any parameters, specify how to parse file, see :ref:`parameters_description` for more details
         :return: parsed document
         """
+        import os.path
+
         parameters = self.__init_parameters(file_path, parameters)
         self.logger.info(f"Get file {os.path.basename(file_path)} with parameters {parameters}")
 
         try:
             return self.__parse_no_error_handling(file_path=file_path, parameters=parameters)
         except DedocError as e:
+            from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
+
             file_dir, file_name = os.path.split(file_path)
             e.filename = file_name
             e.metadata = BaseMetadataExtractor._get_base_meta_information(directory=file_dir, filename=file_name, name_actual=file_name)
@@ -88,6 +88,11 @@ class DedocManager:
         :param parameters: any parameters, specify how to parse file
         :return: parsed document
         """
+        import os.path
+        import shutil
+        import tempfile
+        from dedoc.utils.utils import get_unique_name
+
         if not os.path.isfile(path=file_path):
             raise FileNotFoundError(file_path)
         self.logger.info(f"Start handle {file_path}")
@@ -124,6 +129,8 @@ class DedocManager:
         return parsed_document
 
     def __init_parameters(self, file_path: str, parameters: Optional[dict]) -> dict:
+        import os.path
+
         parameters = {} if parameters is None else parameters
         result_parameters = {}
 
@@ -136,6 +143,10 @@ class DedocManager:
         return result_parameters
 
     def __read_with_mime_auto_detection(self, file_path: str, file_name: str, parameters: Optional[dict]) -> Tuple[str, UnstructuredDocument]:
+        import os.path
+        from dedoc.extensions import mime2extension
+        from dedoc.utils.utils import get_file_mime_by_content, get_mime_extension
+
         # firstly, try to read file using its original extension
         mime, extension = get_mime_extension(file_path=file_path)
         try:
@@ -156,6 +167,9 @@ class DedocManager:
         return converted_file_path, document
 
     def __parse_file(self, file_path: str, file_name: str, parameters: Optional[dict], extension: str, mime: str) -> Tuple[str, UnstructuredDocument]:
+        import os.path
+        from dedoc.utils.utils import get_mime_extension
+
         converted_file_path = self.converter.convert(file_path, parameters=parameters, mime=mime, extension=extension)
         if converted_file_path != file_path:
             mime, extension = get_mime_extension(file_path=converted_file_path)
@@ -168,6 +182,10 @@ class DedocManager:
         return converted_file_path, unstructured_document
 
     def __save(self, file_path: str, classified_document: UnstructuredDocument) -> None:
+        import os.path
+        import shutil
+        from dedoc.utils.train_dataset_utils import get_path_original_documents, save_line_with_meta
+
         self.logger.info(f'Save document lines to {self.config["intermediate_data_path"]}')
         save_line_with_meta(lines=classified_document.lines, config=self.config, original_document=os.path.basename(file_path))
         shutil.copy(file_path, os.path.join(get_path_original_documents(self.config), os.path.basename(file_path)))

@@ -1,43 +1,18 @@
-import json
-import math
-import os
-import shutil
-import subprocess
-import uuid
 from typing import List, Optional, Tuple
 
-import numpy as np
 from dedocutils.data_structures import BBox
+from numpy import ndarray
 
 from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
 from dedoc.common.exceptions.tabby_pdf_error import TabbyPdfError
-from dedoc.data_structures.cell_with_meta import CellWithMeta
-from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
-from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
-from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
-from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
-from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
-from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
-from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
-from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
-from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
-from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
-from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
-from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
-from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis, get_param_page_slice, get_param_pdf_with_txt_layer, \
-    get_param_with_attachments
-from dedoc.utils.pdf_utils import get_pdf_page_count
-from dedoc.utils.utils import calculate_file_hash, get_unique_name
 
 
 class PdfTabbyReader(PdfBaseReader):
@@ -51,6 +26,9 @@ class PdfTabbyReader(PdfBaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        import os
+        from dedoc.extensions import recognized_extensions, recognized_mimes
+
         super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
         self.tabby_java_version = "2.0.0"
         self.jar_name = "ispras_tbl_extr.jar"
@@ -67,6 +45,7 @@ class PdfTabbyReader(PdfBaseReader):
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
         return super().can_read(file_path=file_path, mime=mime, extension=extension) and get_param_pdf_with_txt_layer(parameters) == "tabby"
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
@@ -77,6 +56,7 @@ class PdfTabbyReader(PdfBaseReader):
 
         You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
+        from dedoc.utils.parameter_utils import get_param_with_attachments
         parameters = {} if parameters is None else parameters
         warnings = []
         lines, tables, tables_on_images, attachments, document_metadata = self.__extract(path=file_path, parameters=parameters, warnings=warnings)
@@ -93,6 +73,11 @@ class PdfTabbyReader(PdfBaseReader):
 
     def __extract(self, path: str, parameters: dict, warnings: list)\
             -> Tuple[List[LineWithMeta], List[Table], List[ScanTable], List[PdfImageAttachment], Optional[dict]]:
+        import math
+        from dedoc.utils.pdf_utils import get_pdf_page_count
+        from dedoc.utils.utils import calculate_file_hash
+        from dedoc.utils.parameter_utils import get_param_page_slice, get_param_with_attachments
+
         all_lines, all_tables, all_tables_on_images, all_attached_images = [], [], [], []
         with_attachments = get_param_with_attachments(parameters)
         document_metadata = None
@@ -137,6 +122,12 @@ class PdfTabbyReader(PdfBaseReader):
         return all_lines, all_tables, all_tables_on_images, all_attached_images, document_metadata
 
     def __get_tables(self, page: dict) -> Tuple[List[Table], List[ScanTable]]:
+        import uuid
+        from dedoc.data_structures.cell_with_meta import CellWithMeta
+        from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
+        from dedoc.data_structures.line_metadata import LineMetadata
+        from dedoc.data_structures.table_metadata import TableMetadata
+
         tables = []
         tables_on_image = []
         page_number = page["number"]
@@ -178,6 +169,13 @@ class PdfTabbyReader(PdfBaseReader):
         return tables, tables_on_image
 
     def __get_attached_images(self, page: dict, parameters: dict, path: str) -> List[PdfImageAttachment]:
+        import os
+        import shutil
+        import uuid
+        from dedoc.readers.pdf_reader.data_classes.tables.location import Location
+        from dedoc.utils.utils import get_unique_name
+        from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
+
         attachments_dir = get_param_attachments_dir(parameters, path)
         need_content_analysis = get_param_need_content_analysis(parameters)
 
@@ -204,6 +202,17 @@ class PdfTabbyReader(PdfBaseReader):
         return image_attachment_list
 
     def __get_lines_with_location(self, page: dict, file_hash: str) -> List[LineWithLocation]:
+        from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
+        from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
+        from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
+        from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
+        from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
+        from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
+        from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
+        from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
+        from dedoc.data_structures.line_metadata import LineMetadata
+        from dedoc.readers.pdf_reader.data_classes.tables.location import Location
+
         lines = []
         page_number, page_width, page_height = page["number"], int(page["width"]), int(page["height"])
         prev_line = None
@@ -260,6 +269,9 @@ class PdfTabbyReader(PdfBaseReader):
         return lines
 
     def __get_tag(self, line: LineWithMeta, prev_line: Optional[LineWithMeta], line_type: str) -> HierarchyLevel:
+        from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
+        from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
+
         if line_type == HierarchyLevel.header:
             header_level = get_dotted_item_depth(line.line)
             header_level = header_level if header_level != -1 else 1
@@ -271,9 +283,12 @@ class PdfTabbyReader(PdfBaseReader):
         return HierarchyLevel(None, None, True, line_type)
 
     def __jar_path(self) -> str:
+        import os
         return os.environ.get("TABBY_JAR", self.default_config["JAR_PATH"])
 
     def __run(self, path: str = None, encoding: str = "utf-8", start_page: int = None, end_page: int = None) -> bytes:
+        import subprocess
+
         args = ["java"] + ["-jar", self.__jar_path(), "-i", path]
         if start_page is not None and end_page is not None:
             args += ["-sp", str(start_page), "-ep", str(end_page)]
@@ -288,13 +303,15 @@ class PdfTabbyReader(PdfBaseReader):
             raise TabbyPdfError(e.stderr.decode(encoding))
 
     def __process_pdf(self, path: str, start_page: int = None, end_page: int = None) -> dict:
+        import json
+
         output = self.__run(path=path, start_page=start_page, end_page=end_page)
         response = output.decode("UTF-8")
         document = json.loads(response) if response else {}
         return document
 
     def _process_one_page(self,
-                          image: np.ndarray,
+                          image: ndarray,
                           parameters: ParametersForParseDoc,
                           page_number: int,
                           path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]]:

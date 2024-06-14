@@ -1,16 +1,8 @@
-import os
-import re
 from typing import List, Optional
 
-from dedoc.config import get_config
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
-from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor
-from dedoc.structure_extractors.hierarchy_level_builders.diploma_builder.body_builder import DiplomaBodyBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.header_builder.header_hierarchy_level_builder import HeaderHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.toc_builder.toc_builder import TocBuilder
-from dedoc.structure_extractors.line_type_classifiers.diploma_classifier import DiplomaLineTypeClassifier
 
 
 class DiplomaStructureExtractor(AbstractStructureExtractor):
@@ -26,6 +18,15 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
         :param config: some configuration for document parsing
         """
         super().__init__(config=config)
+        import os
+        import re
+        from dedoc.config import get_config
+        from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor
+        from dedoc.structure_extractors.hierarchy_level_builders.diploma_builder.body_builder import DiplomaBodyBuilder
+        from dedoc.structure_extractors.hierarchy_level_builders.header_builder.header_hierarchy_level_builder import HeaderHierarchyLevelBuilder
+        from dedoc.structure_extractors.hierarchy_level_builders.toc_builder.toc_builder import TocBuilder
+        from dedoc.structure_extractors.line_type_classifiers.diploma_classifier import DiplomaLineTypeClassifier
+
         self.toc_extractor = TOCFeatureExtractor()
         self.header_builder = HeaderHierarchyLevelBuilder()
         self.toc_builder = TocBuilder()

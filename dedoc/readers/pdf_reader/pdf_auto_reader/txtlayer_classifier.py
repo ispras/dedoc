@@ -7,7 +7,7 @@ from typing import List
 from xgboost import XGBClassifier
 
 from dedoc.config import get_config
-from dedoc.data_structures import LineWithMeta
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.download_models import download_from_hub
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_feature_extractor import TxtlayerFeatureExtractor
 from dedoc.utils.parameter_utils import get_param_gpu_available

@@ -3,7 +3,7 @@ from typing import List
 
 from bs4 import Tag
 
-from dedoc.data_structures import LineWithMeta
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pptx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.pptx_reader.paragraph import PptxParagraph
 from dedoc.readers.pptx_reader.properties_extractor import PropertiesExtractor

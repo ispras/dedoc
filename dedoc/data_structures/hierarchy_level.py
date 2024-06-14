@@ -1,8 +1,6 @@
 from functools import total_ordering
 from typing import Optional
 
-import numpy as np
-
 
 @total_ordering
 class HierarchyLevel:
@@ -89,6 +87,8 @@ class HierarchyLevel:
         return f"HierarchyLevel(level_1={self.level_1}, level_2={self.level_2}, can_be_multiline={self.can_be_multiline}, line_type={self.line_type})"
 
     def __to_number(self, x: Optional[int]) -> int:
+        import numpy as np
+
         return np.inf if x is None else x
 
     def is_raw_text(self) -> bool:

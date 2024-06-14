@@ -1,18 +1,7 @@
-import copy
-import os
-from itertools import chain
 from typing import Optional
 
-from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
-from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_detector import TxtLayerDetector
-from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
-from dedoc.utils.parameter_utils import get_param_page_slice, get_param_pdf_with_txt_layer
 
 
 class PdfAutoReader(BaseReader):
@@ -31,7 +20,14 @@ class PdfAutoReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import recognized_extensions, recognized_mimes
+        from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_detector import TxtLayerDetector
+        from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
+        from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
+        from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
+
         super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
+
         self.pdf_txtlayer_reader = PdfTxtlayerReader(config=self.config)
         self.pdf_tabby_reader = PdfTabbyReader(config=self.config)
         self.pdf_image_reader = PdfImageReader(config=self.config)
@@ -46,6 +42,7 @@ class PdfAutoReader(BaseReader):
         It is recommended to use `pdf_with_text_layer=auto_tabby` because it's faster and allows to get better results.
         You can look to :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
+        from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
         return super().can_read(file_path=file_path, mime=mime, extension=extension) and get_param_pdf_with_txt_layer(parameters) in ("auto", "auto_tabby")
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
@@ -70,12 +67,17 @@ class PdfAutoReader(BaseReader):
         return result
 
     def __handle_incorrect_text_layer(self, parameters_copy: dict, path: str, warnings: list) -> UnstructuredDocument:
+        import os
+
         self.logger.info(f"Assume document {os.path.basename(path)} has incorrect textual layer")
         warnings.append("Assume document has incorrect textual layer")
         result = self.pdf_image_reader.read(file_path=path, parameters=parameters_copy)
         return result
 
     def __handle_correct_text_layer(self, is_first_page_correct: bool, parameters: dict, path: str, warnings: list) -> UnstructuredDocument:
+        import os
+        from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
+
         self.logger.info(f"Assume document {os.path.basename(path)} has a correct textual layer")
         warnings.append("Assume document has a correct textual layer")
         recognized_first_page = None
@@ -99,6 +101,9 @@ class PdfAutoReader(BaseReader):
         return result
 
     def __preparing_first_page_parameters(self, parameters: dict) -> dict:
+        import copy
+        from dedoc.utils.parameter_utils import get_param_page_slice
+
         first_page, last_page = get_param_page_slice(parameters)
         # calculate indexes for the first page parsing
         first_page_index = 0 if first_page is None else first_page
@@ -111,6 +116,8 @@ class PdfAutoReader(BaseReader):
         return scan_parameters
 
     def __preparing_other_pages_parameters(self, parameters: dict) -> dict:
+        from dedoc.utils.parameter_utils import get_param_page_slice
+
         first_page, last_page = get_param_page_slice(parameters)
         # parameters for reading pages from the second page
         first_page_index = 1 if first_page is None else first_page
@@ -120,6 +127,10 @@ class PdfAutoReader(BaseReader):
         return parameters
 
     def __merge_documents(self, first: UnstructuredDocument, second: UnstructuredDocument) -> UnstructuredDocument:
+        from itertools import chain
+        from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
+        from dedoc.data_structures.line_with_meta import LineWithMeta
+
         tables = first.tables
         dropped_tables = set()
         for table in second.tables:

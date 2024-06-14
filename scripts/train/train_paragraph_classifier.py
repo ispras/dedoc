@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Optional
 
-from dedoc.config import _config as config
+from dedoc.config import get_config
 from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.paragraph_features import ParagraphFeatureExtractor
 from scripts.train.trainers.xgboost_line_classifier_trainer import XGBoostLineClassifierTrainer
 
@@ -21,6 +21,7 @@ path_out = os.path.join(resources_path, f"{classifier_name}.pkl.gz")
 path_scores = os.path.join(resources_path, "benchmarks", f"{classifier_name}_scores.json")
 path_feature_importances = os.path.join(resources_path, "feature_importances", f"{classifier_name}_feature_importances.xlsx")
 
+config = get_config()
 feature_extractor = ParagraphFeatureExtractor(config=config)
 
 classifier_parameters = dict(learning_rate=0.6,

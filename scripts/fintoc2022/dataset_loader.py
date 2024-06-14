@@ -13,7 +13,8 @@ import wget
 from Levenshtein._levenshtein import ratio
 
 from dedoc.config import get_config
-from dedoc.readers import PdfTabbyReader, PdfTxtlayerReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 from train_dataset.data_structures.line_with_label import LineWithLabel
 
 

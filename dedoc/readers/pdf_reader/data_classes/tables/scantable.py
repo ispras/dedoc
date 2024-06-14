@@ -1,11 +1,10 @@
-import copy
-from collections import OrderedDict
 from typing import Any, List
 
-import numpy as np
 from dedocutils.data_structures import BBox
 
-from dedoc.data_structures import CellWithMeta, Table, TableMetadata
+from dedoc.data_structures.cell_with_meta import CellWithMeta
+from dedoc.data_structures.table import Table
+from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 
@@ -63,6 +62,9 @@ class ScanTable:
 
     @staticmethod
     def get_attributes_cell(matrix_cells: List[List[Cell]]) -> (List[int], List[List[Cell]], int):
+        import copy
+        import numpy as np
+
         required_columns = []
         for j in range(0, len(matrix_cells[0])):
             if matrix_cells[0][j].is_attribute_required:
@@ -94,6 +96,8 @@ class ScanTable:
         return self.name
 
     def to_dict(self) -> dict:
+        from collections import OrderedDict
+
         data_text = ScanTable.get_cells_text(self.matrix_cells)
 
         res = OrderedDict()

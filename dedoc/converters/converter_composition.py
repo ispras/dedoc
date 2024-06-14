@@ -1,9 +1,6 @@
-import os
-from stat import S_IREAD, S_IRGRP, S_IROTH
 from typing import List, Optional
 
 from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
-from dedoc.utils.utils import get_mime_extension
 
 
 class ConverterComposition:
@@ -30,6 +27,10 @@ class ConverterComposition:
         :param mime: MIME type of file
         :return: path of converted file if conversion was executed else path of the original file
         """
+        import os
+        from stat import S_IREAD, S_IRGRP, S_IROTH
+        from dedoc.utils.utils import get_mime_extension
+
         mime, extension = get_mime_extension(file_path=file_path, extension=extension, mime=mime)
         converted_file_path = file_path
 

@@ -6,7 +6,6 @@ from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.serializable import Serializable
-from dedoc.utils.annotation_merger import AnnotationMerger
 
 
 class TreeNode(Serializable):
@@ -115,6 +114,8 @@ class TreeNode(Serializable):
         return node
 
     def merge_annotations(self) -> None:
+        from dedoc.utils.annotation_merger import AnnotationMerger
+
         root = self.get_root()
         stack = [root]
         merger = AnnotationMerger()

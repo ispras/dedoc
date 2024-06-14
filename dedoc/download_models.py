@@ -1,10 +1,4 @@
 """Downloading models in advance inside the docker container."""
-import os
-import shutil
-
-from huggingface_hub import hf_hub_download
-
-from dedoc.config import get_config
 
 """
 These are versions of the models that are used at the current moment - hashes of commits from https://huggingface.co/dedoc.
@@ -21,12 +15,18 @@ model_hash_dict = dict(
 
 
 def download_from_hub(out_dir: str, out_name: str, repo_name: str, hub_name: str) -> None:
+    import os
+    import shutil
+    from huggingface_hub import hf_hub_download
+
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.realpath(hf_hub_download(repo_id=f"dedoc/{repo_name}", filename=hub_name, revision=model_hash_dict[repo_name]))
     shutil.move(path, os.path.join(out_dir, out_name))
 
 
 def download(resources_path: str) -> None:
+    import os
+
     download_from_hub(out_dir=resources_path, out_name="txtlayer_classifier.pkl.gz", repo_name="txtlayer_classifier", hub_name="model.pkl.gz")
 
     download_from_hub(out_dir=resources_path,
@@ -53,5 +53,7 @@ def download(resources_path: str) -> None:
 
 
 if __name__ == "__main__":
+    from dedoc.config import get_config
+
     resources_path = get_config()["resources_path"]
     download(resources_path)

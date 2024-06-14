@@ -4,7 +4,7 @@ import unittest
 from tempfile import TemporaryDirectory
 
 from dedoc.config import get_config
-from dedoc.data_structures import SizeAnnotation
+from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.metadata_extractors.concrete_metadata_extractors.docx_metadata_extractor import DocxMetadataExtractor
 from dedoc.readers.docx_reader.docx_reader import DocxReader

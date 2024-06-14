@@ -2,15 +2,14 @@ import json
 import os
 from typing import List
 
-import PIL
 import numpy as np
-from PIL.Image import Image
+from PIL import Image
 
-from dedoc.data_structures import LineWithMeta
+from dedoc.data_structures.line_with_meta import LineWithMeta
 
 
 def __to_pil(image: np.ndarray) -> Image:
-    return PIL.Image.fromarray(image)
+    return Image.fromarray(image)
 
 
 def __create_images_path(config: dict) -> None:

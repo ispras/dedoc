@@ -1,8 +1,8 @@
 from typing import List, Optional
 
-from dedoc.data_structures import HierarchyLevel, UnstructuredDocument
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.structure_extractors import AbstractStructureExtractor
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
 
 
 class ArticleStructureExtractor(AbstractStructureExtractor):
@@ -22,6 +22,8 @@ class ArticleStructureExtractor(AbstractStructureExtractor):
         To get the information about the method's parameters look at the documentation of the class \
         :class:`~dedoc.structure_extractors.AbstractStructureExtractor`.
         """
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+
         for line in document.lines:
             if line.metadata.tag_hierarchy_level is None or line.metadata.tag_hierarchy_level.is_unknown():
                 line.metadata.tag_hierarchy_level = HierarchyLevel.create_raw_text()

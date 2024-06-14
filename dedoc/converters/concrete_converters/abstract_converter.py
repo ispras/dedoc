@@ -1,11 +1,7 @@
-import logging
-import os
-import subprocess
 from abc import ABC, abstractmethod
 from typing import List, Optional, Set
 
 from dedoc.common.exceptions.conversion_error import ConversionError
-from dedoc.utils.utils import get_mime_extension
 
 
 class AbstractConverter(ABC):
@@ -18,6 +14,8 @@ class AbstractConverter(ABC):
         :param converted_extensions: set of supported files extensions with a dot, for example {.doc, .pdf}
         :param converted_mimes: set of supported MIME types of files
         """
+        import logging
+
         self.timeout = 60
         self.period_checking = 0.05
         self.config = {} if config is None else config
@@ -40,6 +38,8 @@ class AbstractConverter(ABC):
         :param parameters: any additional parameters for the given document
         :return: the indicator of possibility to convert this file
         """
+        from dedoc.utils.utils import get_mime_extension
+
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in self._converted_extensions or mime in self._converted_mimes
 
@@ -58,6 +58,9 @@ class AbstractConverter(ABC):
         pass
 
     def _run_subprocess(self, command: List[str], filename: str, expected_path: str) -> None:
+        import os
+        import subprocess
+
         try:
             conversion_results = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=self.timeout)
             error_message = conversion_results.stderr.decode().strip()

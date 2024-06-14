@@ -15,6 +15,7 @@ repos:
             flake8-import-order==0.18.2,
             flake8-multiline-containers==0.0.19,
             flake8-print==5.0.0,
+            flake8-tidy-imports==4.10.0,
             flake8-quotes==3.3.2,
             flake8-use-fstring==1.4,
             pycodestyle==2.9.0,

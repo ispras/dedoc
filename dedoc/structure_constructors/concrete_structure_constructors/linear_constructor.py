@@ -1,9 +1,6 @@
 from typing import Optional
 
-from dedoc.data_structures.document_content import DocumentContent
-from dedoc.data_structures.document_metadata import DocumentMetadata
 from dedoc.data_structures.parsed_document import ParsedDocument
-from dedoc.data_structures.tree_node import TreeNode
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_constructors.abstract_structure_constructor import AbstractStructureConstructor
 
@@ -19,6 +16,10 @@ class LinearConstructor(AbstractStructureConstructor):
         Build the linear structure representation for the given document intermediate representation.
         To get the information about the parameters look at the documentation of :class:`~dedoc.structure_constructors.AbstractStructureConstructor`.
         """
+        from dedoc.data_structures.document_content import DocumentContent
+        from dedoc.data_structures.document_metadata import DocumentMetadata
+        from dedoc.data_structures.tree_node import TreeNode
+
         lines = document.lines
         tree = TreeNode.create(lines=[])
         for line in lines:

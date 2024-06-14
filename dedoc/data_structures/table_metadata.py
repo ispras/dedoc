@@ -1,4 +1,3 @@
-import uuid
 from typing import Optional
 
 from dedoc.api.schema.table_metadata import TableMetadata as ApiTableMetadata
@@ -16,6 +15,8 @@ class TableMetadata(Serializable):
         :param rotated_angle: value of the rotation angle by which the table was rotated during recognition
         :param title: table's title
         """
+        import uuid
+
         self.page_id = page_id
         self.uid = str(uuid.uuid4()) if not uid else uid
         self.rotated_angle = rotated_angle

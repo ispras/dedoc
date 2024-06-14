@@ -1,14 +1,8 @@
-import os
-import zipfile
 from abc import ABC
 from typing import List, Optional, Set, Tuple
 
-import olefile
-from charset_normalizer import from_bytes
-
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.utils.parameter_utils import get_param_need_content_analysis
 
 
 class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
@@ -25,6 +19,8 @@ class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
         :param stream: binary content of olefile
         :return: tuple of (name of original file and binary file content)
         """
+        from charset_normalizer import from_bytes
+
         # original filename in ANSI starts at byte 7 and is null terminated
         stream = stream[6:]
 
@@ -65,6 +61,11 @@ class AbstractOfficeAttachmentsExtractor(AbstractAttachmentsExtractor, ABC):
         return filename, contents
 
     def _get_attachments(self, tmpdir: str, filename: str, parameters: dict, attachments_dir: str) -> List[AttachedFile]:
+        import olefile
+        import os
+        import zipfile
+        from dedoc.utils.parameter_utils import get_param_need_content_analysis
+
         result = []
 
         with zipfile.ZipFile(os.path.join(tmpdir, filename), "r") as zfile:

@@ -1,7 +1,16 @@
 from bs4 import Tag
 
-from dedoc.data_structures import AlignmentAnnotation, BoldAnnotation, HierarchyLevel, ItalicAnnotation, LineMetadata, LineWithMeta, SizeAnnotation, \
-    StrikeAnnotation, SubscriptAnnotation, SuperscriptAnnotation, UnderlinedAnnotation
+from dedoc.data_structures.concrete_annotations.alignment_annotation import AlignmentAnnotation
+from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
+from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
+from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
+from dedoc.data_structures.concrete_annotations.strike_annotation import StrikeAnnotation
+from dedoc.data_structures.concrete_annotations.subscript_annotation import SubscriptAnnotation
+from dedoc.data_structures.concrete_annotations.superscript_annotation import SuperscriptAnnotation
+from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
+from dedoc.data_structures.hierarchy_level import HierarchyLevel
+from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pptx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.pptx_reader.properties_extractor import PropertiesExtractor
 from dedoc.utils.annotation_merger import AnnotationMerger

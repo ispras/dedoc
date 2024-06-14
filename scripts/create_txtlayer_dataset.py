@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-from dedoc.readers import PdfImageReader
+from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
 
 
 class CorrectTextGenerator:

@@ -1,21 +1,11 @@
-import os
-from datetime import datetime
 from typing import List, Optional, Tuple
 
-import cv2
-import numpy as np
-from dedocutils.preprocessing import AdaptiveBinarizer, SkewCorrector
+from numpy import ndarray
 
-from dedoc.config import get_config
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
-from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
-from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
-from dedoc.utils import supported_image_types
-from dedoc.utils.parameter_utils import get_path_param
 
 
 class PdfImageReader(PdfBaseReader):
@@ -41,6 +31,13 @@ class PdfImageReader(PdfBaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedocutils.preprocessing import AdaptiveBinarizer, SkewCorrector
+        from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
+        from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
+        from dedoc.config import get_config
+        from dedoc.extensions import recognized_extensions, recognized_mimes
+        from dedoc.utils import supported_image_types
+
         supported_image_extensions = {ext for ext in supported_image_types if ext.startswith(".")}
         super().__init__(
             config=config,
@@ -54,10 +51,15 @@ class PdfImageReader(PdfBaseReader):
         self.ocr = OCRLineExtractor(config=self.config)
 
     def _process_one_page(self,
-                          image: np.ndarray,
+                          image: ndarray,
                           parameters: ParametersForParseDoc,
                           page_number: int,
                           path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]]:
+        import os
+        from datetime import datetime
+        import cv2
+        from dedoc.utils.parameter_utils import get_path_param
+
         #  --- Step 1: correct orientation and detect column count ---
         rotated_image, is_one_column_document, angle = self._detect_column_count_and_orientation(image, parameters)
         if self.config.get("debug_mode", False):
@@ -89,7 +91,7 @@ class PdfImageReader(PdfBaseReader):
         lines = self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page)
         return lines, tables, page.attachments, [angle]
 
-    def _detect_column_count_and_orientation(self, image: np.ndarray, parameters: ParametersForParseDoc) -> Tuple[np.ndarray, bool, float]:
+    def _detect_column_count_and_orientation(self, image: ndarray, parameters: ParametersForParseDoc) -> Tuple[ndarray, bool, float]:
         """
         Function :
             - detects the number of page columns
@@ -97,6 +99,11 @@ class PdfImageReader(PdfBaseReader):
             - rotates the page on detected angle
         Return: rotated_image and indicator if the page is one-column
         """
+        import os
+        from datetime import datetime
+        import cv2
+        from dedoc.utils.parameter_utils import get_path_param
+
         columns, angle = None, None
 
         if parameters.is_one_column_document is None or parameters.document_orientation is None:

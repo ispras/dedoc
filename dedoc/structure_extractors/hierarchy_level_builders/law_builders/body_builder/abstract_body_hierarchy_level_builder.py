@@ -6,10 +6,10 @@ from uuid import uuid1
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
 from dedoc.structure_extractors.hierarchy_level_builders.abstract_hierarchy_level_builder import AbstractHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.structure_unit.abstract_structure_unit import AbstractStructureUnit
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_item_with_bracket, regexps_number, regexps_subitem
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_item_with_bracket, regexps_number, \
+    regexps_subitem, roman_regexp
 
 
 class AbstractBodyHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
@@ -18,6 +18,7 @@ class AbstractBodyHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
     regexps_part = regexps_number
     ends_of_number = regexps_ends_of_number
     regexps_subitem = regexps_subitem
+    roman_regexp = roman_regexp
 
     @property
     @abc.abstractmethod
@@ -68,7 +69,7 @@ class AbstractBodyHierarchyLevelBuilder(AbstractHierarchyLevelBuilder, abc.ABC):
         if label == "header":
             label = "raw_text"
 
-        if (label in ("application", "raw_text", "cellar")) and LawTextFeatures.roman_regexp.match(text):
+        if (label in ("application", "raw_text", "cellar")) and self.roman_regexp.match(text):
             label = "structure_unit"
 
         if label == "structure_unit":
