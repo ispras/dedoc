@@ -15,12 +15,12 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
     from dedoc.structure_extractors.feature_extractors.list_features.prefix.bracket_prefix import BracketPrefix
     from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
     from dedoc.structure_extractors.feature_extractors.list_features.prefix.dotted_prefix import DottedPrefix
-    from dedoc.structure_extractors.feature_extractors.list_features.prefix.letter_prefix import LetterPrefix
+    from dedoc.structure_extractors.feature_extractors.list_features.prefix.any_letter_prefix import AnyLetterPrefix
     from dedoc.structure_extractors.feature_extractors.list_features.prefix.prefix import LinePrefix
 
     document_type = "other"
 
-    prefix_list: List[LinePrefix] = [DottedPrefix, BracketPrefix, LetterPrefix, BulletPrefix]
+    prefix_list: List[LinePrefix] = [DottedPrefix, BracketPrefix, AnyLetterPrefix, BulletPrefix]
 
     def extract(self, document: UnstructuredDocument, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -66,7 +66,7 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
         from dedoc.structure_extractors.feature_extractors.list_features.prefix.bracket_prefix import BracketPrefix
         from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
         from dedoc.structure_extractors.feature_extractors.list_features.prefix.dotted_prefix import DottedPrefix
-        from dedoc.structure_extractors.feature_extractors.list_features.prefix.letter_prefix import LetterPrefix
+        from dedoc.structure_extractors.feature_extractors.list_features.prefix.any_letter_prefix import AnyLetterPrefix
 
         prefix = get_prefix(DefaultStructureExtractor.prefix_list, line)
 
@@ -83,7 +83,7 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
                 return HierarchyLevel(4, 1, False, line_type=HierarchyLevel.list_item)  # here is russian and english letters
             return HierarchyLevel(3, 1, False, line_type=HierarchyLevel.list_item)
 
-        if prefix.name == LetterPrefix.name:  # list like a)
+        if prefix.name == AnyLetterPrefix.name:  # list like a)
             return HierarchyLevel(4, 1, False, line_type=HierarchyLevel.list_item)
 
         if prefix.name == BulletPrefix.name:  # bullet list
