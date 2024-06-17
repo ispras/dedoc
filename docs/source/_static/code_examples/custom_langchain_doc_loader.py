@@ -100,9 +100,7 @@ class DedocLoader(BaseLoader):
         self.file_path = file_path
         self.split = split
         self.parsing_params = {**parsing_params, **{"structure_type": "tree" if self.split == "node" else "linear"}}
-        self.parser = DedocParser(
-            manager_config=self.make_manager_config(),
-        )
+        self.parser = DedocParser(manager_config=self.make_manager_config())
 
     def make_manager_config(self) -> dict:  # noqa: C901
         try:
