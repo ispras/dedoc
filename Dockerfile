@@ -1,5 +1,7 @@
 ARG REPOSITORY="docker.io"
 FROM dedocproject/dedoc_p3.9_base:version_2023_08_28
+ARG LANGUAGES=""
+RUN for lang in $LANGUAGES; do apt install -y tesseract-ocr-$lang; done
 
 ENV PYTHONPATH "${PYTHONPATH}:/dedoc_root"
 ENV RESOURCES_PATH "/dedoc_root/resources"
