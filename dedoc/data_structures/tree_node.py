@@ -51,20 +51,18 @@ class TreeNode(Serializable):
         """
         page_id = 0 if len(lines) == 0 else min((line.metadata.page_id for line in lines))
         line_id = 0 if len(lines) == 0 else min((line.metadata.line_id for line in lines))
+        metadata = LineMetadata(page_id=page_id, line_id=line_id, hierarchy_level=HierarchyLevel.create_root())
 
         texts = (line.line for line in lines)
         annotations = []
         text_length = 0
         for line in lines:
             annotations.extend(TreeNode.__shift_annotations(line=line, text_length=text_length))
+            TreeNode.__add_additional_page_id(start=text_length, metadata=metadata, other_line=line)
+
             text_length += len(line.line)
         text = "".join(texts)
-        return TreeNode("0",
-                        text,
-                        annotations=annotations,
-                        metadata=LineMetadata(page_id=page_id, line_id=line_id, hierarchy_level=HierarchyLevel.create_root()),
-                        subparagraphs=[],
-                        parent=None)
+        return TreeNode("0", text, annotations=annotations, metadata=metadata, subparagraphs=[], parent=None)
 
     def add_child(self, line: LineWithMeta) -> "TreeNode":
         """
@@ -93,6 +91,7 @@ class TreeNode(Serializable):
         text_length = len(self.text)
         new_annotations = self.__shift_annotations(line, text_length)
 
+        self.__add_additional_page_id(start=len(self.text), metadata=self.metadata, other_line=line)
         self.text += line.line
         self.annotations.extend(new_annotations)
 
@@ -124,3 +123,30 @@ class TreeNode(Serializable):
             node.annotations = merger.merge_annotations(node.annotations, node.text)
             for sub_node in node.subparagraphs:
                 stack.append(sub_node)
+
+    @staticmethod
+    def __add_additional_page_id(start: int, metadata: LineMetadata, other_line: LineWithMeta) -> None:
+        """
+        Adds additional page_id metadata for multi-page nodes.
+
+        If node is located on several pages, its metadata will contain "additional_page_id" attribute with list of dicts:
+            {
+                start: start index of the text on the next page,
+                end: end index (not included),
+                page_id: page id, where this textual part (node_text[start:end]) is located
+            }
+        """
+        if metadata.page_id == other_line.metadata.page_id:
+            return
+
+        if hasattr(metadata, "additional_page_ids"):
+            last_page_id = metadata.additional_page_ids[-1]["page_id"]
+            if last_page_id == other_line.metadata.page_id:
+                metadata.additional_page_ids[-1]["end"] = start + len(other_line.line)
+                return
+
+        additional_page_id = {"start": start, "end": start + len(other_line.line), "page_id": other_line.metadata.page_id}
+        if hasattr(metadata, "additional_page_ids"):
+            metadata.additional_page_ids.append(additional_page_id)
+        else:
+            metadata.additional_page_ids = [additional_page_id]
