@@ -126,6 +126,16 @@ class TreeNode(Serializable):
 
     @staticmethod
     def __add_additional_page_id(start: int, metadata: LineMetadata, other_line: LineWithMeta) -> None:
+        """
+        Adds additional page_id metadata for multi-page nodes.
+
+        If node is located on several pages, its metadata will contain "additional_page_id" attribute with list of dicts:
+            {
+                start: start index of the text on the next page,
+                end: end index (not included),
+                page_id: page id, where this textual part (node_text[start:end]) is located
+            }
+        """
         if metadata.page_id == other_line.metadata.page_id:
             return
 
