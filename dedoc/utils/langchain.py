@@ -112,7 +112,7 @@ def make_manager_config(file_path: str, split: str, parsing_params: dict) -> dic
     parsing_params["structure_type"] = "linear" if split in ["line", "page", "document"] else "tree"
 
     manager_config = dict(
-        converter=ConverterComposition(converters=[converter]),
+        converter=ConverterComposition(converters=[converter] if converter else []),
         reader=ReaderComposition(readers=[reader]),
         structure_extractor=StructureExtractorComposition(extractors={"other": DefaultStructureExtractor()}, default_key="other"),
         structure_constructor=StructureConstructorComposition(constructors=constructors, default_constructor=default_constructor),
