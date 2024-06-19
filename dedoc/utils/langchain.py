@@ -1,14 +1,24 @@
+from collections import namedtuple
+from typing import Generator
+
+from dedoc.extensions import recognized_extensions, converted_extensions
+from dedoc.data_structures import TreeNode
+from dedoc.data_structures.parsed_document import ParsedDocument
+
+
+Document = namedtuple("Langchain document", [
+    "page_content",
+    "metadata"
+])
+supported_extensions = {format_group: {*recognized_extensions._asdict()[format_group], *converted_extensions._asdict()[format_group]} for format_group in recognized_extensions._asdict().keys()}  # noqa
+
+
 def make_manager_config(file_path: str, split: str, parsing_params: dict) -> dict:  # noqa: C901
-    from dedoc.extensions import recognized_extensions, converted_extensions
+    from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
     from dedoc.utils.utils import get_mime_extension
     from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 
     mime, extension = get_mime_extension(file_path=file_path)
-
-    supported_extensions = {}
-
-    for format_group in recognized_extensions._asdict().keys():
-        supported_extensions[format_group] = {*recognized_extensions._asdict()[format_group], *converted_extensions._asdict()[format_group]}
 
     if extension in supported_extensions["excel_like_format"]:
         from dedoc.converters.concrete_converters.excel_converter import ExcelConverter
@@ -47,25 +57,20 @@ def make_manager_config(file_path: str, split: str, parsing_params: dict) -> dic
         from dedoc.metadata_extractors.concrete_metadata_extractors.image_metadata_extractor import ImageMetadataExtractor
         converter, reader, metadata_extractor = PNGConverter(), PdfImageReader(), ImageMetadataExtractor()
     elif extension in supported_extensions["pdf_like_format"]:
-        if parsing_params.get("pdf_with_text_layer", None) == "true":
-            from dedoc.converters.concrete_converters.pdf_converter import PDFConverter
+        from dedoc.converters.concrete_converters.pdf_converter import PDFConverter
+        from dedoc.metadata_extractors.concrete_metadata_extractors.pdf_metadata_extractor import PdfMetadataExtractor
+        pdf_with_text_layer = get_param_pdf_with_txt_layer(parsing_params)
+        if pdf_with_text_layer == "true":
             from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
-            from dedoc.metadata_extractors.concrete_metadata_extractors.pdf_metadata_extractor import PdfMetadataExtractor
             converter, reader, metadata_extractor = PDFConverter(), PdfTxtlayerReader(), PdfMetadataExtractor()
-        if parsing_params.get("pdf_with_text_layer", None) == "tabby":
-            from dedoc.converters.concrete_converters.pdf_converter import PDFConverter
+        elif pdf_with_text_layer == "tabby":
             from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
-            from dedoc.metadata_extractors.concrete_metadata_extractors.pdf_metadata_extractor import PdfMetadataExtractor
             converter, reader, metadata_extractor = PDFConverter(), PdfTabbyReader(), PdfMetadataExtractor()
-        elif parsing_params.get("pdf_with_text_layer", None) == "false":
-            from dedoc.converters.concrete_converters.png_converter import PNGConverter
+        elif pdf_with_text_layer == "false":
             from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
-            from dedoc.metadata_extractors.concrete_metadata_extractors.pdf_metadata_extractor import PdfMetadataExtractor
-            converter, reader, metadata_extractor = PNGConverter(), PdfImageReader(), PdfMetadataExtractor()
-        elif parsing_params.get("pdf_with_text_layer", None) in ["auto", "auto_tabby", None]:
-            from dedoc.converters.concrete_converters.pdf_converter import PDFConverter
+            converter, reader, metadata_extractor = PDFConverter(), PdfImageReader(), PdfMetadataExtractor()
+        else:
             from dedoc.readers.pdf_reader.pdf_auto_reader.pdf_auto_reader import PdfAutoReader
-            from dedoc.metadata_extractors.concrete_metadata_extractors.pdf_metadata_extractor import PdfMetadataExtractor
             converter, reader, metadata_extractor = PDFConverter(), PdfAutoReader(), PdfMetadataExtractor()
     elif extension in supported_extensions["csv_like_format"]:
         from dedoc.readers.csv_reader.csv_reader import CSVReader
@@ -81,9 +86,9 @@ def make_manager_config(file_path: str, split: str, parsing_params: dict) -> dic
         from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
         converter, reader, metadata_extractor = None, JsonReader(), BaseMetadataExtractor()
     else:
-        raise BadFileFormatError(f'Could not read file {file_path} with mime = "{mime}", extension = "{extension}".')  # noqa: T201
+        raise BadFileFormatError(f'Could тnot find the suitable reader for the file цith mime = "{mime}", extension = "{extension}".')  # noqa: T201
 
-    if split in ["line", "page"]:
+    if split in ["line", "page", "document"]:
         from dedoc.structure_constructors.concrete_structure_constructors.linear_constructor import LinearConstructor
         constructors, default_constructor = {"linear": LinearConstructor()}, LinearConstructor()
     else:
@@ -103,6 +108,7 @@ def make_manager_config(file_path: str, split: str, parsing_params: dict) -> dic
     parsing_params["with_attachments"] = False
     parsing_params["need_content_analysis"] = False
     parsing_params["document_type"] = "other"
+    parsing_params["structure_type"] = "linear" if split in ["line", "page", "document"] else "tree"
 
     manager_config = dict(
         converter=ConverterComposition(converters=[converter]),
@@ -113,3 +119,40 @@ def make_manager_config(file_path: str, split: str, parsing_params: dict) -> dic
         attachments_handler=AttachmentsHandler()
     )
     return manager_config
+
+
+def parse_subparagraphs(self, doc_tree: TreeNode, doc_metadata: dict) -> Generator:
+    if len(doc_tree.subparagraphs) > 0:
+        for subparagraph in doc_tree.subparagraphs:
+            yield from parse_subparagraphs(doc_tree=subparagraph, doc_metadata=doc_metadata)
+    else:
+        yield Document(page_content=doc_tree.text, metadata={**doc_metadata, **vars(doc_tree.metadata)})
+
+
+def split_document(document_tree: ParsedDocument, split: str) -> Generator:
+    from dedoc.api.api_utils import json2txt
+    if split == "document":
+        text = json2txt(paragraph=document_tree.content.structure)
+        yield Document(page_content=text, metadata=vars(document_tree.metadata))
+    elif split == "page":
+        initial_page_id = document_tree.content.structure.subparagraphs[0].metadata.page_id
+        initial_page_text = ""
+        initial_page_metadata = vars(document_tree.metadata)
+        for node_index, node in enumerate(document_tree.content.structure.subparagraphs):
+            if node.metadata.page_id == initial_page_id:
+                initial_page_text += json2txt(node)
+                initial_page_metadata["page_id"] = initial_page_id
+                if node_index == len(document_tree.content.structure.subparagraphs) - 1:
+                    yield Document(page_content=initial_page_text, metadata=dict(initial_page_metadata))
+            else:
+                yield Document(page_content=initial_page_text, metadata=dict(initial_page_metadata))
+                initial_page_id = node.metadata.page_id
+                initial_page_text = json2txt(node)
+                initial_page_metadata["page_id"] = initial_page_id
+    elif split == "line":
+        initial_document_metadata = vars(document_tree.metadata)
+        for node in document_tree.content.structure.subparagraphs:
+            line_metadata = node.metadata
+            yield Document(page_content=json2txt(node), metadata={**initial_document_metadata, **vars(line_metadata)})
+    elif split == "node":
+        yield from parse_subparagraphs(doc_tree=document_tree.content.structure, doc_metadata=vars(document_tree.metadata))
