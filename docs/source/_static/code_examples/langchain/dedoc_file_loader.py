@@ -4,12 +4,18 @@ from langchain_core.document_loaders import BaseLoader
 from langchain_core.documents import Document
 
 
-class DedocLoader(BaseLoader):
+class DedocFileLoader(BaseLoader):
+    """
+    This loader allows you to use almost all the functionality of the Dedoc library.
+    Dedoc supports documents of different formats, including .pdf, .png, .docx, .txt, and many more.
+    More information is available at the link:
+    https://dedoc.readthedocs.io/en/latest/?badge=latest
+    """
     def __init__(  # noqa: FOL005
         self,
         file_path: str,
         split: Optional[str] = "document",
-        **kwargs
+        **kwargs: dict
     ) -> None:
         """Initialize with file path
         Args:
@@ -37,12 +43,15 @@ class DedocLoader(BaseLoader):
         self.parsing_params = {**kwargs, **{"structure_type": "tree" if self.split == "node" else "linear"}}
         try:
             from dedoc import DedocManager
-            from dedoc.utils.langchain import make_manager_config
         except ImportError:
             raise ImportError(
                 "`dedoc` package not found, please install it with `pip install dedoc`"
             )
-        self.dedoc_manager = DedocManager(manager_config=make_manager_config(file_path=self.file_path, parsing_params=self.parsing_params, split=self.split))
+        self.dedoc_manager = DedocManager(manager_config=self.make_config())
+
+    def make_config(self) -> dict:
+        from dedoc.utils.langchain import make_manager_config
+        return make_manager_config(file_path=self.file_path, parsing_params=self.parsing_params, split=self.split)
 
     def lazy_load(  # noqa: FOL005
         self,
