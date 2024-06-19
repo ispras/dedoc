@@ -26,8 +26,7 @@ parser.add_argument("-t", "--train", type=bool, help="run for train model", defa
 parser.add_argument("-s", "--checkpoint_save", help="Path to checkpoint for save or load", default=checkpoint_path_save)
 parser.add_argument("-l", "--checkpoint_load", help="Path to checkpoint for load", default=checkpoint_path_load)
 parser.add_argument("-f", "--from_checkpoint", type=bool, help="run for train model", default=True)
-parser.add_argument("-d", "--input_data_folder", help="Path to data with folders train or test",
-                    default="/home/ox/work/datasets/generate_dataset_orient_cls/generate_dataset_orient_classifier")
+parser.add_argument("-d", "--input_data_folder", help="Path to data with folders train or test")
 
 args = parser.parse_args()
 BATCH_SIZE = 1
@@ -195,7 +194,7 @@ def train_step(data_executor: DataLoaderImageOrient, classifier: ColumnsOrientat
 if __name__ == "__main__":
     config = get_config()
     data_executor = DataLoaderImageOrient()
-    net = ColumnsOrientationClassifier(on_gpu=True, checkpoint_path=checkpoint_path if not args.train else "", config=config)
+    net = ColumnsOrientationClassifier(on_gpu=ON_GPU, checkpoint_path=checkpoint_path if not args.train else "", config=config)
     if args.train:
         train_step(data_executor, net)
     else:

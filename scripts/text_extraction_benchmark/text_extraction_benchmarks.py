@@ -11,7 +11,7 @@ import wget
 from texttable import Texttable
 
 from dedoc.config import get_config
-from dedoc.readers import PdfImageReader
+from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
 from scripts.text_extraction_benchmark.analyze_ocr_errors import get_summary_symbol_error
 
 correction = Enum("Correction", ["SAGE_CORRECTION", "WITHOUT_CORRECTION"])
@@ -168,7 +168,7 @@ def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str, c
 
                         # 1 - call reader
                         language = "rus+eng" if dataset_name == "english-words" else "rus"
-                        text = _get_text_from_image(path=result_dir + "/" + imgs_path, language=language)
+                        text = _get_text_from_image(path=os.path.join(result_dir, imgs_path), language=language)
                         result_ocr_file.write(text)
                         result_ocr_file.close()
 

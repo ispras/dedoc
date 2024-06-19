@@ -4,6 +4,7 @@ from typing import List, Tuple
 
 from texttable import Texttable
 
+
 def __parse_ocr_errors(lines: List[str]) -> List:
     ocr_errors = []
     matched_errors = [(line_num, line) for line_num, line in enumerate(lines) if "Errors   Marked   Correct-Generated" in line][0]
@@ -14,6 +15,7 @@ def __parse_ocr_errors(lines: List[str]) -> List:
         ocr_errors.append([errors, chars[0], chars[1]])
 
     return ocr_errors
+
 
 def __parse_symbol_info(lines: List[str]) -> Tuple[List, int]:
     symbols_info = []
@@ -51,7 +53,7 @@ def get_summary_symbol_error(path_reports: str) -> Texttable:
         symbols_info, start_symbol_block_line = __parse_symbol_info(lines)
         ocr_errors = __parse_ocr_errors(lines[:start_symbol_block_line - 1])
 
-    # 3 - calculate ocr errors according to a symbol
+    # 3 - calculate ocr errors for a symbol
     ocr_errors_by_symbol = {}
     for symbol_info in symbols_info:
         ocr_errors_by_symbol[symbol_info[-1]] = []
