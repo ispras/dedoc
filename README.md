@@ -12,7 +12,7 @@
 ![Dedoc](https://github.com/ispras/dedoc/raw/master/dedoc_logo.png)
 
 Dedoc is an open universal system for converting documents to a unified output format. 
-It extracts a document’s logical structure and content, its tables, text formatting and metadata. 
+It extracts a document’s logical structure and content: tables, text formatting and metadata. 
 The document’s content is represented as a tree storing headings and lists of any level. 
 Dedoc can be integrated in a document contents and structure analysis system as a separate module.
 
@@ -23,14 +23,14 @@ Dedoc can be integrated in a document contents and structure analysis system as 
 Workflow description is given [`here`](https://dedoc.readthedocs.io/en/latest/?badge=latest#workflow)
 
 ## Features and advantages
-Dedoc is implemented in Python and works with semi-structured data formats (DOC/DOCX, ODT, XLS/XLSX, CSV, TXT, JSON) and none-structured data formats like images (PNG, JPG etc.), archives (ZIP, RAR etc.), PDF and HTML formats. 
+Dedoc is implemented in Python and works with semi-structured data formats (DOC/DOCX, ODT, XLS/XLSX, CSV, TXT, JSON) and unstructured data formats like images (PNG, JPG etc.), archives (ZIP, RAR etc.), PDF and HTML formats. 
 Document structure extraction is fully automatic regardless of input data type. 
 Metadata and text formatting are also extracted automatically. 
 
 In 2022, the system won a grant to support the development of promising AI projects from the [Innovation Assistance Foundation (Фонд содействия инновациям)](https://fasie.ru/).
 
 ## Dedoc provides:
-* Extensibility due to a flexible addition of new document formats and to an easy change of an output data format. 
+* Extensibility due to flexible addition of new document formats and easy change of an output data format. 
 * Support for extracting document structure out of nested documents having different formats. 
 * Extracting various text formatting features (indentation, font type, size, style etc.). 
 * Working with documents of various origin (statements of work, legal documents, technical reports, scientific papers) allowing flexible tuning for new domains. 
@@ -69,7 +69,7 @@ The system processes different document formats. The main formats are listed bel
 
 
 ## Impact
-This project may be useful as a first step of automatic document analysis pipeline (e.g. before the NLP part).
+This project may be useful as a first step of an automatic document analysis pipeline (e.g. before the NLP part).
 Dedoc is in demand for information analytic systems, information leak monitoring systems, as well as for natural language processing systems.
 The library is intended for application use by developers of systems for automatic analysis and structuring of electronic documents, including for further search in electronic documents. 
 
@@ -93,7 +93,7 @@ Relevant documentation of dedoc is available [here](https://dedoc.readthedocs.io
 
 # Installation instructions
 
-This project has REST Api and you can run it in Docker container.
+This project has a REST api and you can run it in Docker container.
 Also, dedoc can be installed as a library via `pip`.
 There are two ways to install and run dedoc as a web application or a library that are described below.
 
@@ -150,7 +150,7 @@ If you need to change some application settings, you may update `config.py` acco
 
 If you don't want to use docker for running the application, it's possible to run dedoc locally.
 However, it isn't suitable for any operating system (`Ubuntu 20+` is recommended) and
-there may be not enough machine's resources for its work.
+there may be not enough machine resources for its work.
 You should have `python` (`python3.8`, `python3.9` are recommended) and `pip` installed.
 Installation instructions via pip are available [here](https://dedoc.readthedocs.io/en/latest/getting_started/installation.html#install-dedoc-using-pip).
 
