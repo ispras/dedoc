@@ -230,6 +230,7 @@ For a document of unknown or unsupported domain there is an option to use defaul
    tutorials/add_new_doc_format
    tutorials/add_new_structure_type
    tutorials/creating_document_classes
+   tutorials/add_new_language
 
 
 .. toctree::

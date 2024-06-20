@@ -1,13 +1,7 @@
-import os
 from typing import Optional
 
-from PyPDF2 import PdfFileReader
-from PyPDF2.utils import PdfReadError
-
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
-from dedoc.utils.utils import convert_datetime
 
 
 class PdfMetadataExtractor(AbstractMetadataExtractor):
@@ -27,6 +21,7 @@ class PdfMetadataExtractor(AbstractMetadataExtractor):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import recognized_extensions, recognized_mimes
         super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
         self.base_extractor = BaseMetadataExtractor(config=config)
         self.keys = {
@@ -52,6 +47,8 @@ class PdfMetadataExtractor(AbstractMetadataExtractor):
         Add the predefined list of metadata for the pdf documents.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
         """
+        import os
+
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
         base_fields = self.base_extractor.extract(
             file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters
@@ -61,6 +58,9 @@ class PdfMetadataExtractor(AbstractMetadataExtractor):
         return result
 
     def _get_pdf_info(self, path: str) -> dict:
+        from PyPDF2 import PdfFileReader
+        from PyPDF2.utils import PdfReadError
+
         try:
             with open(path, "rb") as file:
                 document = PdfFileReader(file)
@@ -76,6 +76,8 @@ class PdfMetadataExtractor(AbstractMetadataExtractor):
             return {"broken_pdf": True}
 
     def __prettify_metadata(self, document_info: dict) -> dict:
+        from dedoc.utils.utils import convert_datetime
+
         result = {}
         for key, value in document_info.items():
             if isinstance(value, str) and len(value) > 0:
@@ -84,7 +86,7 @@ class PdfMetadataExtractor(AbstractMetadataExtractor):
                 elif key in self.keys_date:
                     try:
                         date = convert_datetime(value)
-                    except:  # noqa
+                    except Exception:
                         date = None
                     if date is not None:
                         result[self.keys_date[key]] = date

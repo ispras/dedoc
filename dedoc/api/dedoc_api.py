@@ -7,13 +7,12 @@ import tempfile
 import traceback
 from typing import Optional
 
-import uvicorn
 from fastapi import Depends, FastAPI, File, Request, Response, UploadFile
 from fastapi.responses import ORJSONResponse, UJSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse
 
-import dedoc
+import dedoc.version
 from dedoc.api.api_args import QueryParameters
 from dedoc.api.api_utils import json2collapsed_tree, json2html, json2tree, json2txt
 from dedoc.api.schema.parsed_document import ParsedDocument
@@ -53,7 +52,7 @@ def get_static_file(request: Request) -> Response:
 
 @app.get("/version")
 def get_version() -> Response:
-    return PlainTextResponse(dedoc.__version__)
+    return PlainTextResponse(dedoc.version.__version__)
 
 
 def _get_static_file_path(request: Request) -> str:
@@ -70,10 +69,10 @@ def __add_base64_info_to_attachments(document_tree: ParsedDocument, attachments_
 
 
 @app.post("/upload", response_model=ParsedDocument)
-async def upload(file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:  # noqa
+async def upload(file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:
     parameters = dataclasses.asdict(query_params)
     if not file or file.filename == "":
-        raise MissingFileError("Error: Missing content in request_post file parameter", version=dedoc.__version__)
+        raise MissingFileError("Error: Missing content in request_post file parameter", version=dedoc.version.__version__)
 
     return_format = str(parameters.get("return_format", "json")).lower()
 
@@ -152,4 +151,5 @@ def get_api() -> FastAPI:
 
 
 def run_api(app: FastAPI) -> None:
+    import uvicorn
     uvicorn.run(app=app, host="0.0.0.0", port=int(PORT))

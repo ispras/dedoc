@@ -9,7 +9,7 @@ import wget
 
 from dedoc.api.api_utils import table2html
 from dedoc.config import get_config
-from dedoc.readers import PdfImageReader
+from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import TableRecognizer
 from scripts.benchmark_table.metric import TEDS
 

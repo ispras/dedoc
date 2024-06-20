@@ -1,20 +1,9 @@
-import codecs
-import gzip
-import re
-import time
 from typing import Iterable, List, Optional, Tuple
-from unicodedata import normalize
 
 from dedoc.data_structures.concrete_annotations.indentation_annotation import IndentationAnnotation
-from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
-from dedoc.utils.utils import calculate_file_hash, get_encoding, get_mime_extension
 
 
 class RawTextReader(BaseReader):
@@ -23,6 +12,9 @@ class RawTextReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        import re
+        from dedoc.extensions import recognized_extensions, recognized_mimes
+
         super().__init__(config=config, recognized_extensions=recognized_extensions.txt_like_format, recognized_mimes=recognized_mimes.txt_like_format)
         self.space_regexp = re.compile(r"^\s+")
 
@@ -31,6 +23,8 @@ class RawTextReader(BaseReader):
         Check if the document extension is suitable for this reader.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        from dedoc.utils.utils import get_mime_extension
+
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         # this code differs from BaseReader because other formats can have text/plain mime type
         if extension:
@@ -50,12 +44,20 @@ class RawTextReader(BaseReader):
         return self._postprocess(result)
 
     def __get_encoding(self, path: str, parameters: dict) -> str:
+        from dedoc.utils.utils import get_encoding
+
         if parameters.get("encoding"):
             return parameters["encoding"]
         else:
             return get_encoding(path, "utf-8")
 
     def _get_lines_with_meta(self, path: str, encoding: str) -> List[LineWithMeta]:
+        import time
+        from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
+        from dedoc.data_structures.line_metadata import LineMetadata
+        from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
+        from dedoc.utils.utils import calculate_file_hash
+
         lines = []
         file_hash = calculate_file_hash(path=path)
         number_of_empty_lines = 0
@@ -86,6 +88,10 @@ class RawTextReader(BaseReader):
         return lines
 
     def __get_lines(self, path: str, encoding: str) -> Iterable[Tuple[int, str]]:
+        import codecs
+        import gzip
+        from unicodedata import normalize
+
         if path.lower().endswith("txt"):
             with codecs.open(path, errors="ignore", encoding=encoding) as file:
                 for line_id, line in enumerate(file):
@@ -107,6 +113,8 @@ class RawTextReader(BaseReader):
         return space_this.end() - space_this.start()
 
     def __is_paragraph(self, line: LineWithMeta, previous_line: Optional[LineWithMeta]) -> bool:
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+
         if not line.metadata.tag_hierarchy_level.can_be_multiline and \
                 line.metadata.tag_hierarchy_level.line_type not in (HierarchyLevel.raw_text, HierarchyLevel.unknown):
             return True

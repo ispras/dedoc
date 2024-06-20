@@ -23,7 +23,7 @@ class RomanPrefix(LinePrefix):
         super().__init__(prefix, indent=indent)
         self.prefix_num = roman.fromRoman(self.prefix[:-1].upper().strip())
 
-    def predecessor(self, other: "LinePrefix") -> bool:
+    def predecessor(self, other: LinePrefix) -> bool:
         return isinstance(other, RomanPrefix) and self.prefix_num == other.prefix_num + 1
 
     @staticmethod

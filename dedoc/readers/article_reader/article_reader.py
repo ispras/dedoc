@@ -1,23 +1,14 @@
-import math
-import os
-import time
-import uuid
 from typing import Dict, List, Optional, Tuple
 
-import cv2
-import numpy as np
-import requests
-from bs4 import BeautifulSoup, Tag
-from pdf2image import convert_from_path
+from bs4 import Tag
+from numpy import ndarray
 
-from dedoc.data_structures import Annotation, AttachAnnotation, AttachedFile, CellWithMeta, HierarchyLevel, LineMetadata, Table, TableAnnotation, TableMetadata
-from dedoc.data_structures.concrete_annotations.reference_annotation import ReferenceAnnotation
+from dedoc.data_structures.annotation import Annotation
+from dedoc.data_structures.attached_file import AttachedFile
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.data_structures.table import Table
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
-from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_document_type, get_param_need_content_analysis, get_param_with_attachments
 
 
 class ArticleReader(BaseReader):
@@ -26,7 +17,11 @@ class ArticleReader(BaseReader):
     """
 
     def __init__(self, config: Optional[dict] = None) -> None:
+        import os
+        from dedoc.extensions import recognized_extensions, recognized_mimes
+
         super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
+
         grobid_url = os.environ.get("GROBID_URL", "")
         if grobid_url:
             self.grobid_url = grobid_url
@@ -47,6 +42,9 @@ class ArticleReader(BaseReader):
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
+        import requests
+        from bs4 import BeautifulSoup
+
         with open(file_path, "rb") as file:
             files = {"input": file}
             try:
@@ -87,6 +85,8 @@ class ArticleReader(BaseReader):
 
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.can_read` to get information about the method's parameters.
         """
+        from dedoc.utils.parameter_utils import get_param_document_type
+
         if get_param_document_type(parameters) != "article":
             return False
 
@@ -97,6 +97,9 @@ class ArticleReader(BaseReader):
         return super().can_read(file_path=file_path, mime=mime, extension=extension)
 
     def __update_grobid_alive(self, grobid_url: str, max_attempts: int = 2) -> None:
+        import time
+        import requests
+
         if self.grobid_is_alive:
             return
 
@@ -127,6 +130,9 @@ class ArticleReader(BaseReader):
 
     def __create_line(self, text: str, hierarchy_level_id: Optional[int] = None, paragraph_type: Optional[str] = None,
                       annotations: Optional[List[Annotation]] = None, other_fields: Optional[Dict] = None) -> LineWithMeta:
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+        from dedoc.data_structures.line_metadata import LineMetadata
+
         # TODO check on improve
         if other_fields is None:
             other_fields = {}
@@ -214,6 +220,10 @@ class ArticleReader(BaseReader):
         return lines
 
     def __create_line_with_refs(self, content: List[Tuple[str, Tag]], bib2uid: dict, table2uid: dict, attachment2uid: dict) -> LineWithMeta:
+        from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
+        from dedoc.data_structures.concrete_annotations.reference_annotation import ReferenceAnnotation
+        from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
+
         text = ""
         start = 0
         annotations = []
@@ -258,6 +268,8 @@ class ArticleReader(BaseReader):
         return lines
 
     def __parse_section(self, section_tag: Tag, bib2uid: dict, table2uid: dict, attachment2uid: dict) -> List[LineWithMeta]:
+        from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
+
         lines = []
         number = section_tag.head.get("n") if section_tag.head else ""
         number = number + " " if number else ""
@@ -299,6 +311,9 @@ class ArticleReader(BaseReader):
                     </table>
                 </figure>
         """
+        from dedoc.data_structures.cell_with_meta import CellWithMeta
+        from dedoc.data_structures.table_metadata import TableMetadata
+
         tables = []
         table2uid = {}
 
@@ -349,6 +364,11 @@ class ArticleReader(BaseReader):
                 </facsimile>
         Documentation: https://grobid.readthedocs.io/en/latest/Coordinates-in-PDF/
         """
+        import os
+        import uuid
+        import cv2
+        from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis, get_param_with_attachments
+
         if not get_param_with_attachments(parameters):
             return [], {}
 
@@ -379,12 +399,16 @@ class ArticleReader(BaseReader):
 
         return attachments, attachment2uid
 
-    def __get_image(self, figure_tag: Tag, file_path: str, page_sizes: List[Tuple[float, float]]) -> Optional[np.ndarray]:
+    def __get_image(self, figure_tag: Tag, file_path: str, page_sizes: List[Tuple[float, float]]) -> Optional[ndarray]:
         """
         Crop the PDF page according to the figure's coordinates.
         Figure can consist of multiple sub-figures: we crop the union of all sub-figures.
         Example of the figure's coordinates: coords="3,151.56,211.52,312.23,7.89;3,136.68,115.84,338.92,75.24"
         """
+        import math
+        import numpy as np
+        from pdf2image import convert_from_path
+
         if figure_tag.graphic is None:
             return None
 

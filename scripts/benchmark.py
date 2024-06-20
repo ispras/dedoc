@@ -80,9 +80,10 @@ with TemporaryDirectory() as path_base:
         Task("pdf_tables", "pdf_tables", {}, get_pdf_page_count)
     ]
     print(tasks)
-    header = ["Dataset", "total_file_size", "total_files", "total_pages", # noqa
-         "total_time_raw", "throughput_raw", "mean_time_on_file_raw", "mean_time_cpu_on_page_raw",  # noqa
-         "total_time_indp_cpu", "throughput_indp_cpu", "mean_time_on_file_indp_cpu", "mean_time_cpu_on_page_indp_cpu"]  # noqa
+    header = [
+        "Dataset", "total_file_size", "total_files", "total_pages", "total_time_raw", "throughput_raw", "mean_time_on_file_raw", "mean_time_cpu_on_page_raw",
+        "total_time_indp_cpu", "throughput_indp_cpu", "mean_time_on_file_indp_cpu", "mean_time_cpu_on_page_indp_cpu"
+    ]
 
     df = pd.DataFrame(columns=header)
     for directory, name, parameters, page_func in tasks:

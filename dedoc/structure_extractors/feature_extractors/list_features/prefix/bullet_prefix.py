@@ -19,7 +19,7 @@ class BulletPrefix(LinePrefix):
 
     regexp = re.compile(r"^\s*(-|—|−|–|®|\.|•|\,|‚|©|⎯|°|\*|>|\| -|●|♣|①|▪|\*|\+)")
 
-    def predecessor(self, other: "LinePrefix") -> bool:
+    def predecessor(self, other: LinePrefix) -> bool:
         return isinstance(other, BulletPrefix) and self.prefix == other.prefix
 
     @staticmethod

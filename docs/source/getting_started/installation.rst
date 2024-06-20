@@ -160,7 +160,7 @@ Below are the instructions for installing the package ``virtualenvwrapper``:
 
 
 Install trusted torch (verified version)
-----------------------------------------------
+----------------------------------------
 
 You can install a trusted library ``torch`` (as a verified version of the library, verified by tools developed by the Ivannikov Institute for System Programming of the Russian Academy of Sciences).
 

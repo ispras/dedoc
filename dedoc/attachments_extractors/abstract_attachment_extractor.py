@@ -1,12 +1,7 @@
-import logging
-import os
-import uuid
 from abc import ABC, abstractmethod
 from typing import List, Optional, Set, Tuple
 
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.utils.parameter_utils import get_param_attachments_dir
-from dedoc.utils.utils import get_mime_extension, save_data_to_unique_file
 
 
 class AbstractAttachmentsExtractor(ABC):
@@ -19,6 +14,8 @@ class AbstractAttachmentsExtractor(ABC):
         :param recognized_extensions: set of supported files extensions with a dot, for example {.doc, .pdf}
         :param recognized_mimes: set of supported MIME types of files
         """
+        import logging
+
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
         self._recognized_extensions = {} if recognized_extensions is None else recognized_extensions
@@ -39,6 +36,7 @@ class AbstractAttachmentsExtractor(ABC):
         :param parameters: any additional parameters for the given document
         :return: the indicator of possibility to get attachments of this file
         """
+        from dedoc.utils.utils import get_mime_extension
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in self._recognized_extensions or mime in self._recognized_mimes
 
@@ -66,7 +64,13 @@ class AbstractAttachmentsExtractor(ABC):
         return str(parameters.get("with_attachments", "false")).lower() == "true"
 
     def _content2attach_file(self, content: List[Tuple[str, bytes]], tmpdir: str, need_content_analysis: bool, parameters: dict) -> List[AttachedFile]:
+        import os
+        import uuid
+        from dedoc.utils.parameter_utils import get_param_attachments_dir
+        from dedoc.utils.utils import save_data_to_unique_file
+
         attachments = []
+
         attachments_dir = get_param_attachments_dir(parameters, tmpdir)
 
         for original_name, contents in content:

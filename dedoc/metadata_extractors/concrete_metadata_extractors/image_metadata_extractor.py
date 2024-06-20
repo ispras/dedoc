@@ -1,12 +1,5 @@
-import math
-import os
 from typing import Optional, Union
 
-import piexif
-from PIL import ExifTags, Image
-from dateutil import parser
-
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
@@ -31,6 +24,7 @@ class ImageMetadataExtractor(AbstractMetadataExtractor):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import recognized_extensions, recognized_mimes
         super().__init__(config=config, recognized_extensions=recognized_extensions.image_like_format, recognized_mimes=recognized_mimes.image_like_format)
         self.keys = {
             "DateTime": ("date_time", self.__parse_date),
@@ -60,6 +54,8 @@ class ImageMetadataExtractor(AbstractMetadataExtractor):
         Add the predefined list of metadata for images.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
         """
+        import os
+
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
         base_fields = self.base_extractor.extract(
             file_path=file_path, converted_filename=converted_filename, original_filename=original_filename, parameters=parameters
@@ -85,6 +81,8 @@ class ImageMetadataExtractor(AbstractMetadataExtractor):
             return None
 
     def __parse_date(self, date_str: Union[str, bytes]) -> Optional[int]:
+        from dateutil import parser
+
         try:
             date_str = self.__encode_exif(date_str)
             date = parser.parse(date_str.replace(": ", ":"))
@@ -93,6 +91,8 @@ class ImageMetadataExtractor(AbstractMetadataExtractor):
             return None
 
     def __parse_float(self, exif: Union[str, bytes]) -> Optional[float]:
+        import math
+
         try:
             exif = self.__encode_exif(exif)
             result = float(exif)
@@ -101,6 +101,9 @@ class ImageMetadataExtractor(AbstractMetadataExtractor):
             return None
 
     def _get_exif(self, path: str) -> dict:
+        from PIL import ExifTags, Image
+        import piexif
+
         try:
             image = Image.open(path)
             exif_dict = piexif.load(image.info["exif"]).get("Exif", {}) if "exif" in image.info else {}
@@ -109,6 +112,6 @@ class ImageMetadataExtractor(AbstractMetadataExtractor):
             encoded_dict = {k: v for k, v in encoded_dict.items() if k is not None if v is not None}
             image.close()
             return encoded_dict
-        except Exception as e:  # noqa
+        except Exception as e:
             self.logger.debug(e)
             return {"broken_image": True}

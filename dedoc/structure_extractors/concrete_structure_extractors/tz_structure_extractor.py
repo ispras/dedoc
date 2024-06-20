@@ -1,16 +1,7 @@
-import os
 from typing import Optional
 
-from dedoc.config import get_config
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_mimes
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
-from dedoc.structure_extractors.hierarchy_level_builders.header_builder.header_hierarchy_level_builder import HeaderHierarchyLevelBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.toc_builder.toc_builder import TocBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.tz_builder.body_builder import TzBodyBuilder
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_number, regexps_subitem
-from dedoc.structure_extractors.line_type_classifiers.tz_classifier import TzLineTypeClassifier
 
 
 class TzStructureExtractor(AbstractStructureExtractor):
@@ -26,6 +17,14 @@ class TzStructureExtractor(AbstractStructureExtractor):
         :param config: some configuration for document parsing
         """
         super().__init__(config=config)
+
+        import os
+        from dedoc.config import get_config
+        from dedoc.structure_extractors.hierarchy_level_builders.header_builder.header_hierarchy_level_builder import HeaderHierarchyLevelBuilder
+        from dedoc.structure_extractors.hierarchy_level_builders.toc_builder.toc_builder import TocBuilder
+        from dedoc.structure_extractors.hierarchy_level_builders.tz_builder.body_builder import TzBodyBuilder
+        from dedoc.structure_extractors.line_type_classifiers.tz_classifier import TzLineTypeClassifier
+
         self.header_builder = HeaderHierarchyLevelBuilder()
         self.body_builder = TzBodyBuilder()
         self.toc_builder = TocBuilder()
@@ -39,6 +38,10 @@ class TzStructureExtractor(AbstractStructureExtractor):
         To get the information about the method's parameters look at the documentation of the class \
         :class:`~dedoc.structure_extractors.AbstractStructureExtractor`.
         """
+        from dedoc.extensions import recognized_mimes
+        from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_number, regexps_subitem
+        from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
+
         if document.metadata.get("file_type") in recognized_mimes.txt_like_format:
             predictions = self.txt_classifier.predict(document.lines)
         else:

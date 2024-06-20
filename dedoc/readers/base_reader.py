@@ -1,9 +1,7 @@
-import logging
 from abc import ABC, abstractmethod
 from typing import Optional, Set
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.utils.utils import get_mime_extension
 
 
 class BaseReader(ABC):
@@ -22,6 +20,8 @@ class BaseReader(ABC):
         :param recognized_extensions: set of supported files extensions with a dot, for example {.doc, .pdf}
         :param recognized_mimes: set of supported MIME types of files
         """
+        import logging
+
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
         self._recognized_extensions = {} if recognized_extensions is None else recognized_extensions
@@ -39,6 +39,8 @@ class BaseReader(ABC):
 
         :return: True if this reader can handle the file, False otherwise
         """
+        from dedoc.utils.utils import get_mime_extension
+
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return extension.lower() in self._recognized_extensions or mime in self._recognized_mimes
 

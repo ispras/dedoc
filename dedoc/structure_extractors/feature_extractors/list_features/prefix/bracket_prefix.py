@@ -18,7 +18,7 @@ class BracketPrefix(LinePrefix):
         super().__init__(prefix, indent=indent)
         self.prefix_num = int(self.prefix[:-1])
 
-    def predecessor(self, other: "LinePrefix") -> bool:
+    def predecessor(self, other: LinePrefix) -> bool:
         return isinstance(other, BracketPrefix) and self.prefix_num == other.prefix_num + 1
 
     @staticmethod

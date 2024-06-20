@@ -4,7 +4,7 @@ import unittest
 import cv2
 from dedocutils.data_structures import BBox
 
-from dedoc.data_structures import BoldAnnotation
+from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.readers.pdf_reader.data_classes.page_with_bboxes import PageWithBBox
 from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
 from dedoc.readers.pdf_reader.data_classes.word_with_bbox import WordWithBBox

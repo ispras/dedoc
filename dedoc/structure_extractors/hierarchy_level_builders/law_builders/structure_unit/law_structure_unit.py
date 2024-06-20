@@ -1,9 +1,9 @@
 from typing import Optional, Tuple
 
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
 from dedoc.structure_extractors.hierarchy_level_builders.law_builders.structure_unit.abstract_structure_unit import AbstractStructureUnit
-from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_foiv_item, regexps_item_with_bracket, regexps_subitem
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_foiv_item, regexps_item_with_bracket, \
+    regexps_subitem, roman_regexp
 
 
 class LawStructureUnitBuilder(AbstractStructureUnit):
@@ -12,6 +12,7 @@ class LawStructureUnitBuilder(AbstractStructureUnit):
     regexps_part = regexps_foiv_item
     ends_of_number = regexps_ends_of_number
     regexps_subitem = regexps_subitem
+    roman_regexp = roman_regexp
 
     def structure_unit(self, text: str, init_hl_depth: int, previous_hl: Optional[HierarchyLevel]) -> Tuple[HierarchyLevel, Optional[HierarchyLevel]]:
         if text.lower().startswith("часть"):
@@ -20,7 +21,7 @@ class LawStructureUnitBuilder(AbstractStructureUnit):
         if text.lower().startswith("раздел"):
             hl = HierarchyLevel(init_hl_depth + 2, 0, True, "section")  # 4
             return hl, hl
-        if LawTextFeatures.roman_regexp.match(text):  # match roman numbers
+        if self.roman_regexp.match(text):  # match roman numbers
             hl = HierarchyLevel(init_hl_depth + 3, 0, True, "subsection")  # 5
             return hl, hl
         if text.lower().startswith("глава"):

@@ -7,7 +7,7 @@ import os
 import pickle
 from collections import Counter, OrderedDict
 from statistics import mean
-from typing import Any, Callable, List, Optional
+from typing import Callable, List, Optional
 
 import numpy as np
 from sklearn.metrics import accuracy_score
@@ -28,7 +28,7 @@ class BaseClassifier(XGBClassifier):
     Base class for a classifier.
     See documentation of `XGBClassifier <https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.XGBClassifier>`_ to get more details.
     """
-    def __init__(self, **kwargs: Any) -> None:  # noqa
+    def __init__(self, **kwargs: dict) -> None:
         super().__init__(**kwargs)
 
 

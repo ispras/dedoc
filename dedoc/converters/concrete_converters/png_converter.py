@@ -1,13 +1,7 @@
-import os
 from typing import Optional
-
-import cv2
-from PIL import Image, UnidentifiedImageError
 
 from dedoc.common.exceptions.conversion_error import ConversionError
 from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
-from dedoc.extensions import converted_extensions, converted_mimes
-from dedoc.utils.utils import splitext_
 
 
 class PNGConverter(AbstractConverter):
@@ -16,12 +10,18 @@ class PNGConverter(AbstractConverter):
     Look to the :class:`~dedoc.converters.AbstractConverter` documentation to get the information about the methods' parameters.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import converted_extensions, converted_mimes
         super().__init__(config=config, converted_extensions=converted_extensions.image_like_format, converted_mimes=converted_mimes.image_like_format)
 
     def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:
         """
         Convert the image-like documents into files with .png extension.
         """
+        import os
+        import cv2
+        from PIL import Image, UnidentifiedImageError
+        from dedoc.utils.utils import splitext_
+
         file_dir, file_name = os.path.split(file_path)
         name_wo_ext, extension = splitext_(file_name)
         converted_file_path = os.path.join(file_dir, f"{name_wo_ext}.png")

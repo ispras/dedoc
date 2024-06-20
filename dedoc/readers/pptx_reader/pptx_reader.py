@@ -1,21 +1,12 @@
-import zipfile
 from typing import Dict, List, Optional
 
 from bs4 import BeautifulSoup, Tag
 
-from dedoc.attachments_extractors.concrete_attachments_extractors.pptx_attachments_extractor import PptxAttachmentsExtractor
-from dedoc.data_structures import AttachAnnotation, Table, TableAnnotation
-from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.data_structures.table import Table
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.readers.pptx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.pptx_reader.properties_extractor import PropertiesExtractor
-from dedoc.readers.pptx_reader.shape import PptxShape
-from dedoc.readers.pptx_reader.table import PptxTable
-from dedoc.utils.office_utils import get_bs_from_zip
-from dedoc.utils.parameter_utils import get_param_with_attachments
 
 
 class PptxReader(BaseReader):
@@ -25,6 +16,10 @@ class PptxReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.attachments_extractors.concrete_attachments_extractors.pptx_attachments_extractor import PptxAttachmentsExtractor
+        from dedoc.extensions import recognized_extensions, recognized_mimes
+        from dedoc.readers.pptx_reader.numbering_extractor import NumberingExtractor
+
         super().__init__(config=config, recognized_extensions=recognized_extensions.pptx_like_format, recognized_mimes=recognized_mimes.pptx_like_format)
         self.attachments_extractor = PptxAttachmentsExtractor(config=self.config)
         self.numbering_extractor = NumberingExtractor()
@@ -34,6 +29,10 @@ class PptxReader(BaseReader):
         The method return document content with all document's lines, tables and attachments.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
+        from dedoc.data_structures.line_metadata import LineMetadata
+        from dedoc.readers.pptx_reader.shape import PptxShape
+        from dedoc.utils.parameter_utils import get_param_with_attachments
+
         with_attachments = get_param_with_attachments(parameters)
         attachments = self.attachments_extractor.extract(file_path=file_path, parameters=parameters) if with_attachments else []
         attachment_name2uid = {attachment.original_name: attachment.uid for attachment in attachments}
@@ -71,6 +70,9 @@ class PptxReader(BaseReader):
         return UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=[])
 
     def __get_slides_bs(self, path: str, xml_prefix: str, xml_postfix: str) -> List[BeautifulSoup]:
+        import zipfile
+        from dedoc.utils.office_utils import get_bs_from_zip
+
         with zipfile.ZipFile(path) as document:
             xml_names = document.namelist()
         filtered_names = [file_name for file_name in xml_names if file_name.startswith(xml_prefix) and file_name.endswith(xml_postfix)]
@@ -94,6 +96,10 @@ class PptxReader(BaseReader):
         return images_rels
 
     def __add_table(self, lines: List[LineWithMeta], tables: List[Table], page_id: int, table_xml: Tag, properties_extractor: PropertiesExtractor) -> None:
+        from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
+        from dedoc.data_structures.line_metadata import LineMetadata
+        from dedoc.readers.pptx_reader.table import PptxTable
+
         table = PptxTable(table_xml, page_id, self.numbering_extractor, properties_extractor).to_table()
 
         if len(lines) == 0:
@@ -102,6 +108,8 @@ class PptxReader(BaseReader):
         tables.append(table)
 
     def __add_attach_annotation(self, line: LineWithMeta, image_rel_id: str, attachment_name2uid: dict, images_rels: dict) -> None:
+        from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
+
         try:
             image_name = images_rels[image_rel_id]
             image_uid = attachment_name2uid[image_name]

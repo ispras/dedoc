@@ -19,5 +19,5 @@ from .reader_composition import ReaderComposition
 from .txt_reader.raw_text_reader import RawTextReader
 
 __all__ = ['ArchiveReader', 'ArticleReader', 'BaseReader', 'CSVReader', 'DocxReader', 'EmailReader', 'ExcelReader', 'HtmlReader', 'JsonReader', 'MhtmlReader',
-           'NoteReader', 'PptxReader', 'ReaderComposition', 'RawTextReader',
-           'PdfBaseReader', 'PdfImageReader', 'PdfTabbyReader', 'PdfTxtlayerReader', 'PdfAutoReader']
+           'NoteReader', 'PptxReader', 'ReaderComposition', 'RawTextReader', 'PdfBaseReader', 'PdfImageReader', 'PdfTabbyReader', 'PdfTxtlayerReader',
+           'PdfAutoReader']

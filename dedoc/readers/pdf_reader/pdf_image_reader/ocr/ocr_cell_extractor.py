@@ -6,7 +6,10 @@ import cv2
 import numpy as np
 from dedocutils.data_structures import BBox
 
-from dedoc.data_structures import BBoxAnnotation, ConfidenceAnnotation, LineMetadata, LineWithMeta
+from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
+from dedoc.data_structures.concrete_annotations.confidence_annotation import ConfidenceAnnotation
+from dedoc.data_structures.line_metadata import LineMetadata
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_page.ocr_page import OcrPage
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_utils import get_text_with_bbox_from_cells
@@ -62,7 +65,8 @@ class OCRCellExtractor:
 
         return self.__create_lines_with_meta(tree_nodes, originalbox_to_fastocrbox, page_image)
 
-    def __handle_one_batch(self, src_image: np.ndarray, tree_table_nodes: List["TableTree"], num_batch: int, language: str = "rus") -> Tuple[OcrPage, List[BBox]]: # noqa
+    def __handle_one_batch(self, src_image: np.ndarray, tree_table_nodes: List["TableTree"], num_batch: int, language: str = "rus") \
+            -> Tuple[OcrPage, List[BBox]]:  # noqa
         concatenated, chunk_boxes = self.__concat_images(src_image=src_image, tree_table_nodes=tree_table_nodes)
         if self.config.get("debug_mode", False):
             debug_dir = os.path.join(get_path_param(self.config, "path_debug"), "debug_tables", "batches")
@@ -120,7 +124,8 @@ class OCRCellExtractor:
         if len(batch) > 0:
             yield batch
 
-    def __create_lines_with_meta(self, tree_nodes: List["TableTree"], original_box_to_fast_ocr_box: dict, original_image: np.ndarray) -> List[List[LineWithMeta]]:  # noqa
+    def __create_lines_with_meta(self, tree_nodes: List["TableTree"], original_box_to_fast_ocr_box: dict, original_image: np.ndarray) \
+            -> List[List[LineWithMeta]]:  # noqa
         nodes_lines = []
 
         for node in tree_nodes:

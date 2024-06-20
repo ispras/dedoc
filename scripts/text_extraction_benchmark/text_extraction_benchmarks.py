@@ -2,29 +2,28 @@ import os
 import re
 import time
 import zipfile
+from enum import Enum
 from typing import Dict, List, Tuple
 
-import cv2
 import numpy as np
 import pytesseract
 import wget
 from texttable import Texttable
 
 from dedoc.config import get_config
-from scripts.tesseract_benchmark.ocr_correction import correction, init_correction_step
-from scripts.tesseract_benchmark.text_blob_correction import TextBlobCorrector
+from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
+from scripts.text_extraction_benchmark.analyze_ocr_errors import get_summary_symbol_error
 
-WITHOUT_CORRECTION = ""
-SAGE_CORRECTION = "_sage-correction"
-TEXT_BLOB_CORRECTION = "_textblob-correction"
+correction = Enum("Correction", ["SAGE_CORRECTION", "WITHOUT_CORRECTION"])
 
-USE_CORRECTION_OCR = TEXT_BLOB_CORRECTION
+USE_CORRECTION_OCR = correction.WITHOUT_CORRECTION
+
+reader = PdfImageReader()
 
 
-def _call_tesseract(image: np.ndarray, language: str, psm: int = 3) -> str:
-    config = f"--psm {psm}"
-    text = pytesseract.image_to_string(image, lang=language, output_type=pytesseract.Output.DICT, config=config)["text"]
-    return text
+def _get_text_from_image(path: str, language: str) -> str:
+    document = reader.read(file_path=path, parameters={"language": language})
+    return document.get_text()
 
 
 def _init_statistics_by_dataset(statistics: Dict, dataset_name: str) -> Dict:
@@ -60,7 +59,6 @@ def _update_statistics_by_dataset(statistics: Dict, dataset: str, accuracy_path:
         acc_percent = re.findall(r"\d+\.\d+", matched[0])[0][:-1]
         statistic["Accuracy"].append(float(acc_percent))
         statistic["Amount of words"].append(word_cnt)
-
         statistic["ASCII_Spacing_Characters"] = _update_statistics_by_symbol_kind(statistic["ASCII_Spacing_Characters"], "ASCII Spacing Characters", lines)
         statistic["ASCII_Special_Symbols"] = _update_statistics_by_symbol_kind(statistic["ASCII_Special_Symbols"], "ASCII Special Symbols", lines)
         statistic["ASCII_Digits"] = _update_statistics_by_symbol_kind(statistic["ASCII_Digits"], "ASCII Digits", lines)
@@ -89,77 +87,8 @@ def _get_avg_by_dataset(statistics: Dict, dataset: str) -> List:
     ]
 
 
-def __parse_symbol_info(lines: List[str]) -> Tuple[List, int]:
-    symbols_info = []
-    matched_symbols = [(line_num, line) for line_num, line in enumerate(lines) if "Count   Missed   %Right" in line][-1]
-    start_block_line = matched_symbols[0]
-
-    for line in lines[start_block_line + 1:]:
-        # example line: "1187       11    99.07   {<\n>}"
-        row_values = [value.strip() for value in re.findall(r"\d+.\d*|{\S+|\W+}", line)]
-        row_values[-1] = row_values[-1][1:-1]  # get symbol value
-        symbols_info.append(row_values)
-    # Sort errors
-    symbols_info = sorted(symbols_info, key=lambda row: int(row[1]), reverse=True)  # by missed
-
-    return symbols_info, start_block_line
-
-
-def __parse_ocr_errors(lines: List[str]) -> List:
-    ocr_errors = []
-    matched_errors = [(line_num, line) for line_num, line in enumerate(lines) if "Errors   Marked   Correct-Generated" in line][0]
-    for line in lines[matched_errors[0] + 1:]:
-        # example line: " 2        0   { 6}-{б}"
-        errors = re.findall(r"(\d+)", line)[0]
-        chars = re.findall(r"{(.*)}-{(.*)}", line)[0]
-        ocr_errors.append([errors, chars[0], chars[1]])
-
-    return ocr_errors
-
-
-def __get_summary_symbol_error(path_reports: str) -> Texttable:
-    # 1 - call accsum for get summary of all reports
-    accuracy_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "accsum"))
-
-    if os.path.exists(f"{path_reports}/../accsum_report.txt"):
-        os.remove(f"{path_reports}/../accsum_report.txt")
-
-    file_reports = " ".join([os.path.join(path_reports, f) for f in os.listdir(path_reports) if os.path.isfile(os.path.join(path_reports, f))])
-
-    command = f"{accuracy_script_path} {file_reports} >> {path_reports}/../accsum_report.txt"
-    os.system(command)
-    accsum_report_path = os.path.join(path_reports, "..", "accsum_report.txt")
-
-    # 2 - parse report info
-    with open(accsum_report_path, "r") as f:
-        lines = f.readlines()
-
-        symbols_info, start_symbol_block_line = __parse_symbol_info(lines)
-        ocr_errors = __parse_ocr_errors(lines[:start_symbol_block_line - 1])
-
-    # 3 - calculate ocr errors according to a symbol
-    ocr_errors_by_symbol = {}
-    for symbol_info in symbols_info:
-        ocr_errors_by_symbol[symbol_info[-1]] = []
-        for ocr_err in ocr_errors:
-            if ocr_err[-1] == "" or len(ocr_err[-2]) > 3 or len(ocr_err[-1]) > 3:  # to ignore errors with long text (len > 3) or without text
-                continue
-            if symbol_info[-1] in ocr_err[-2]:
-                ocr_errors_by_symbol[symbol_info[-1]].append(f"{ocr_err[0]} & <{ocr_err[1]}> -> <{ocr_err[2]}>")
-
-    # 4 - create table with OCR errors
-    ocr_err_by_symbol_table = Texttable()
-    title = [["Symbol", "Cnt Errors & Correct-Generated"]]
-    ocr_err_by_symbol_table.add_rows(title)
-    for symbol, value in ocr_errors_by_symbol.items():
-        if len(value) != 0:
-            ocr_err_by_symbol_table.add_row([symbol, value])
-
-    return ocr_err_by_symbol_table
-
-
 def __create_statistic_tables(statistics: dict, accuracy_values: List) -> Tuple[Texttable, Texttable]:
-    accs = [["Dataset", "Image name", "--psm", "Amount of words", "Accuracy OCR"]]
+    accs = [["Dataset", "Image name", "OCR language", "Amount of words", "Accuracy OCR"]]
     accs_common = [
         [
             "Dataset", "ASCII_Spacing_Chars", "ASCII_Special_Symbols", "ASCII_Digits", "ASCII_Uppercase_Chars", "Latin1_Special_Symbols", "Cyrillic",
@@ -198,13 +127,9 @@ def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str, c
     result_dir = os.path.join(cache_dir, "result_ocr")
     os.makedirs(result_dir, exist_ok=True)
 
-    corrector, corrected_path = None, None
-    if USE_CORRECTION_OCR == SAGE_CORRECTION:
-        corrector, corrected_path = init_correction_step(cache_dir)
-    elif USE_CORRECTION_OCR == TEXT_BLOB_CORRECTION:
-        corrector = TextBlobCorrector()
-        corrected_path = os.path.join(cache_dir, "result_corrected")
-        os.makedirs(corrected_path, exist_ok=True)
+    if USE_CORRECTION_OCR == correction.SAGE_CORRECTION:
+        from scripts.text_extraction_benchmark.text_correction.sage_corrector import SageCorrector
+        corrector = SageCorrector(cache_dir=cache_dir, use_gpu=True)
 
     with zipfile.ZipFile(benchmark_data_path, "r") as arch_file:
         names_dirs = [member.filename for member in arch_file.infolist() if member.file_size > 0]
@@ -228,10 +153,10 @@ def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str, c
                     os.remove(accuracy_path)
 
                 tmp_gt_path = os.path.join(result_dir, f"{img_name}_gt.txt")
-                tmp_ocr_path = os.path.join(result_dir, f"{img_name}_ocr.txt")
+                result_ocr_filepath = os.path.join(result_dir, f"{img_name}_ocr.txt")
 
                 try:
-                    with arch_file.open(gt_path) as gt_file, open(tmp_gt_path, "wb") as tmp_gt_file, open(tmp_ocr_path, "w") as tmp_ocr_file:
+                    with arch_file.open(gt_path) as gt_file, open(tmp_gt_path, "wb") as tmp_gt_file, open(result_ocr_filepath, "w") as result_ocr_file:
 
                         gt_text = gt_file.read().decode("utf-8")
                         word_cnt = len(gt_text.split())
@@ -240,28 +165,27 @@ def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str, c
                         tmp_gt_file.close()
 
                         arch_file.extract(imgs_path, result_dir)
-                        image = cv2.imread(result_dir + "/" + imgs_path)
 
-                        # call ocr
-                        psm = 6 if dataset_name == "english-words" else 4
-                        text = _call_tesseract(image, "rus+eng", psm=psm)
-                        tmp_ocr_file.write(text)
-                        tmp_ocr_file.close()
+                        # 1 - call reader
+                        language = "rus+eng" if dataset_name == "english-words" else "rus"
+                        text = _get_text_from_image(path=os.path.join(result_dir, imgs_path), language=language)
+                        result_ocr_file.write(text)
+                        result_ocr_file.close()
 
-                        # call correction step
+                        # 2 - call correction step
                         time_b = time.time()
-                        if USE_CORRECTION_OCR in (SAGE_CORRECTION, TEXT_BLOB_CORRECTION):
-                            corrected_text = correction(corrector, text) if USE_CORRECTION_OCR == SAGE_CORRECTION else corrector.correct(text)
-                            tmp_corrected_path = os.path.join(corrected_path, f"{img_name}_ocr.txt")
-                            with open(tmp_corrected_path, "w") as tmp_corrected_file:
-                                tmp_corrected_file.write(corrected_text)
-                            calculate_accuracy_script(tmp_gt_path, tmp_corrected_path, accuracy_path)
-                        else:
-                            calculate_accuracy_script(tmp_gt_path, tmp_ocr_path, accuracy_path)
+                        if USE_CORRECTION_OCR == correction.SAGE_CORRECTION:
+                            corrected_text = corrector.correction(text)
 
+                            result_ocr_filepath = os.path.join(corrector.corrected_path, f"{img_name}_ocr.txt")
+                            with open(result_ocr_filepath, "w") as tmp_corrected_file:
+                                tmp_corrected_file.write(corrected_text)
                         correction_times.append(time.time() - time_b)
+
+                        # 3 - calculate accuracy from GTs and result texts
+                        calculate_accuracy_script(tmp_gt_path, result_ocr_filepath, accuracy_path)
                         statistics = _update_statistics_by_dataset(statistics, dataset_name, accuracy_path, word_cnt)
-                        accuracy_values.append([dataset_name, base_name, psm, word_cnt, statistics[dataset_name]["Accuracy"][-1]])
+                        accuracy_values.append([dataset_name, base_name, language, word_cnt, statistics[dataset_name]["Accuracy"][-1]])
 
                 except Exception as ex:
                     print(ex)
@@ -274,6 +198,7 @@ def __calculate_ocr_reports(cache_dir_accuracy: str, benchmark_data_path: str, c
 
 if __name__ == "__main__":
     base_zip = "data_tesseract_benchmarks"
+
     output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "benchmarks"))
     cache_dir = os.path.join(get_config()["intermediate_data_path"], "tesseract_data")
     os.makedirs(cache_dir, exist_ok=True)
@@ -282,7 +207,7 @@ if __name__ == "__main__":
 
     benchmark_data_path = os.path.join(cache_dir, f"{base_zip}.zip")
     if not os.path.isfile(benchmark_data_path):
-        wget.download("https://at.ispras.ru/owncloud/index.php/s/wMyKioKInYITpYT/download", benchmark_data_path)
+        wget.download("https://at.ispras.ru/owncloud/index.php/s/gByenPIMlo0K7Gf/download", benchmark_data_path)
         print(f"Benchmark data downloaded to {benchmark_data_path}")
     else:
         print(f"Use cached benchmark data from {benchmark_data_path}")
@@ -290,9 +215,9 @@ if __name__ == "__main__":
 
     table_common, table_accuracy_per_image = __calculate_ocr_reports(cache_dir_accuracy, benchmark_data_path, cache_dir)
 
-    table_errors = __get_summary_symbol_error(path_reports=cache_dir_accuracy)
+    table_errors = get_summary_symbol_error(path_reports=cache_dir_accuracy)
 
-    with open(os.path.join(output_dir, f"tesseract_benchmark{USE_CORRECTION_OCR}.txt"), "w") as res_file:
+    with open(os.path.join(output_dir, f"tesseract_benchmark_{USE_CORRECTION_OCR}.txt"), "w") as res_file:
         res_file.write(f"Tesseract version is {pytesseract.get_tesseract_version()}\n")
         res_file.write(f"Correction step: {USE_CORRECTION_OCR}\n")
         res_file.write("\nTable 1 - Accuracy for each file\n")

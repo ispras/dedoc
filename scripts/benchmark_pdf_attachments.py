@@ -8,10 +8,13 @@ from typing import Tuple
 
 import wget
 
-from dedoc.attachments_extractors import AbstractAttachmentsExtractor, PDFAttachmentsExtractor
+from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
+from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
 from dedoc.config import get_config
-from dedoc.data_structures import AttachedFile
-from dedoc.readers import BaseReader, PdfTabbyReader, PdfTxtlayerReader
+from dedoc.data_structures.attached_file import AttachedFile
+from dedoc.readers.base_reader import BaseReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 
 
 def get_reader_attachments(reader: BaseReader, input_dir: str, attachments_dir: str) -> dict:

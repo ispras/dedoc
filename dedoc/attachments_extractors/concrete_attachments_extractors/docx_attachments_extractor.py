@@ -1,17 +1,9 @@
-import hashlib
-import os
-import re
-import tempfile
-import zipfile
 from typing import List, Optional
-
-from bs4 import BeautifulSoup, Tag
+from zipfile import BadZipFile, ZipFile
 
 from dedoc.attachments_extractors.concrete_attachments_extractors.abstract_office_attachments_extractor import AbstractOfficeAttachmentsExtractor
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.extensions import recognized_extensions, recognized_mimes
-from dedoc.utils.parameter_utils import get_param_need_content_analysis
 
 
 class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
@@ -19,6 +11,7 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
     Extract attachments from docx files.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import recognized_extensions, recognized_mimes
         super().__init__(config=config, recognized_extensions=recognized_extensions.docx_like_format, recognized_mimes=recognized_mimes.docx_like_format)
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
@@ -28,11 +21,14 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
         Look to the :class:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor` documentation to get the information about \
         the methods' parameters.
         """
+        import os
+        from dedoc.utils.parameter_utils import get_param_need_content_analysis
+
         parameters = {} if parameters is None else parameters
         tmpdir, filename = os.path.split(file_path)
         result = []
         try:
-            with zipfile.ZipFile(os.path.join(tmpdir, filename), "r") as zfile:
+            with ZipFile(os.path.join(tmpdir, filename), "r") as zfile:
                 diagram_attachments = self.__extract_diagrams(zfile)
                 need_content_analysis = get_param_need_content_analysis(parameters)
                 result += self._content2attach_file(content=diagram_attachments, tmpdir=tmpdir, need_content_analysis=need_content_analysis,
@@ -40,17 +36,23 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
 
             result += self._get_attachments(tmpdir=tmpdir, filename=filename, parameters=parameters, attachments_dir="word")
 
-        except zipfile.BadZipFile:
+        except BadZipFile:
             raise BadFileFormatError(f"Bad docx file:\n file_name = {filename}. Seems docx is broken")
         return result
 
-    def __extract_diagrams(self, document: zipfile.ZipFile) -> List[tuple]:
+    def __extract_diagrams(self, document: ZipFile) -> List[tuple]:
         """
         Creates files for diagram: separate file for each paragraph with diagram.
 
         :param document: archive with docx document
         :returns: list of files with diagrams
         """
+        import hashlib
+        import os
+        import re
+        import tempfile
+        from bs4 import BeautifulSoup, Tag
+
         result = []
         try:
             content = document.read("word/document.xml")
@@ -85,7 +87,7 @@ class DocxAttachmentsExtractor(AbstractOfficeAttachmentsExtractor):
                 with open(f"{tmpdir}/word/document.xml", "w") as f:
                     f.write(doc_text)
                 diagram_name = f"{uid}.docx"
-                with zipfile.ZipFile(os.path.join(tmpdir, diagram_name), mode="w") as new_d:
+                with ZipFile(os.path.join(tmpdir, diagram_name), mode="w") as new_d:
                     for filename in namelist:
                         new_d.write(os.path.join(tmpdir, filename), arcname=filename)
                 with open(os.path.join(tmpdir, diagram_name), "rb") as f:

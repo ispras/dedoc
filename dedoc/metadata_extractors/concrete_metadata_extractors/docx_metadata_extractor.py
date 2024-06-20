@@ -1,11 +1,6 @@
-import os
 from datetime import datetime
 from typing import Optional
 
-import docx
-from docx.opc.exceptions import PackageNotFoundError
-
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
 from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
 
@@ -26,6 +21,8 @@ class DocxMetadataExtractor(AbstractMetadataExtractor):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import recognized_extensions, recognized_mimes
+
         super().__init__(config=config, recognized_extensions=recognized_extensions.docx_like_format, recognized_mimes=recognized_mimes.docx_like_format)
         self.base_extractor = BaseMetadataExtractor(config=config)
 
@@ -38,6 +35,8 @@ class DocxMetadataExtractor(AbstractMetadataExtractor):
         Add the predefined list of metadata for the docx documents.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
         """
+        import os
+
         parameters = {} if parameters is None else parameters
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
 
@@ -53,6 +52,10 @@ class DocxMetadataExtractor(AbstractMetadataExtractor):
         return None if date is None else int(date.timestamp())
 
     def _get_docx_fields(self, file_path: str) -> dict:
+        import docx
+        from docx.opc.exceptions import PackageNotFoundError
+        import os
+
         assert os.path.isfile(file_path)
         try:
             doc = docx.Document(file_path)

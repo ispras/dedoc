@@ -1,14 +1,10 @@
-import logging
 from collections import namedtuple
 from typing import List, Optional
 
-import cv2
-import numpy as np
 from dedocutils.data_structures import BBox
+from numpy import ndarray
 
-from dedoc.data_structures import LineWithMeta
-from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
-from dedoc.utils.image_utils import crop_image_text
+from dedoc.data_structures.line_with_meta import LineWithMeta
 
 """-------------------------------Таблица в виде дерева, полученная от OpenCV----------------------------------------"""
 ContourCell = namedtuple("ContourCell", ["id_con", "image"])
@@ -25,6 +21,8 @@ class TableTree(object):
     minimal_cell_avg_length_line = 10
 
     def __init__(self, *, config: dict) -> None:
+        import logging
+
         self.left = None
         self.right = None
         self.cell_box: Optional[BBox] = None  # [x_begin, y_begin, width, height]
@@ -36,7 +34,10 @@ class TableTree(object):
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
 
-    def set_text_into_tree(self, tree: "TableTree", src_image: np.ndarray, language: str = "rus", *, config: dict) -> None:
+    def set_text_into_tree(self, tree: "TableTree", src_image: ndarray, language: str = "rus", *, config: dict) -> None:
+        import logging
+        from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
+
         # get List of TableTree
         cur_depth = 0
         begin_depth = 2
@@ -60,7 +61,9 @@ class TableTree(object):
         for lines, tree in zip(lines_with_meta, trees):
             tree.lines = lines
 
-    def set_crop_text_box(self, page_image: np.ndarray) -> None:
+    def set_crop_text_box(self, page_image: ndarray) -> None:
+        from dedoc.utils.image_utils import crop_image_text
+
         cell_image = BBox.crop_image_by_box(page_image, self.cell_box)
         self.crop_text_box = crop_image_text(cell_image)
         # make crop_text_box'coordinates relative page_image
@@ -69,6 +72,8 @@ class TableTree(object):
 
     @staticmethod
     def parse_contours_to_tree(contours: List, hierarchy: List, *, config: dict) -> "TableTree":
+        import cv2
+
         table_tree = TableTree(config=config)
         table_tree.id_contours = 0
         if len(contours) == 0:
@@ -91,6 +96,8 @@ class TableTree(object):
             ch.print_tree(depth + 1)
 
     def __build_childs(self, cur: "TableTree", hierarchy: List, contours: List) -> "TableTree":
+        import cv2
+
         list_childs = []
         for i, h in enumerate(hierarchy[0]):
             if h[3] == cur.id_contours:

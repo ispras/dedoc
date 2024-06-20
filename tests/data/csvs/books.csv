@@ -8,4 +8,4 @@ id,cat,name,price,inStock,author,series_t,sequence_i,genre_s
 0441385532,book,Jhereg,7.95,false,Steven Brust,Vlad Taltos,1,fantasy
 0380014300,book,Nine Princes In Amber,6.99,true,Roger Zelazny,the Chronicles of Amber,1,fantasy
 0805080481,book,The Book of Three,5.99,true,Lloyd Alexander,The Chronicles of Prydain,1,fantasy
-080508049X,book,The Black Cauldron,5.99,true,Lloyd Alexander,The Chronicles of Prydain,2,fantasy
+080508049X,book,The Black Cauldron,5.99,true,,The Chronicles of Prydain,2,fantasy

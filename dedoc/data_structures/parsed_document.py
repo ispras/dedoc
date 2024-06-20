@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-import dedoc
 from dedoc.api.schema.parsed_document import ParsedDocument as ApiParsedDocument
 from dedoc.data_structures.document_content import DocumentContent
 from dedoc.data_structures.document_metadata import DocumentMetadata
@@ -36,7 +35,9 @@ class ParsedDocument(Serializable):
         self.metadata = metadata
 
     def to_api_schema(self) -> ApiParsedDocument:
+        import dedoc.version
+
         content = self.content.to_api_schema()
         metadata = self.metadata.to_api_schema()
         attachments = [attachment.to_api_schema() for attachment in self.attachments] if self.attachments is not None else []
-        return ApiParsedDocument(content=content, metadata=metadata, version=dedoc.__version__, warnings=self.warnings, attachments=attachments)
+        return ApiParsedDocument(content=content, metadata=metadata, version=dedoc.version.__version__, warnings=self.warnings, attachments=attachments)

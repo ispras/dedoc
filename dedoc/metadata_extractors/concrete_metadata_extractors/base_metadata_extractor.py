@@ -1,9 +1,6 @@
-import os
-from base64 import b64encode
 from typing import Optional
 
 from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
-from dedoc.utils.utils import get_file_mime_type
 
 
 class BaseMetadataExtractor(AbstractMetadataExtractor):
@@ -42,6 +39,9 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
         Gets the basic meta-information about the file.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
         """
+        from base64 import b64encode
+        import os
+
         parameters = {} if parameters is None else parameters
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
         meta_info = self._get_base_meta_information(file_dir, file_name, original_filename)
@@ -54,6 +54,9 @@ class BaseMetadataExtractor(AbstractMetadataExtractor):
 
     @staticmethod
     def _get_base_meta_information(directory: str, filename: str, name_actual: str) -> dict:
+        import os
+        from dedoc.utils.utils import get_file_mime_type
+
         (mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(os.path.join(directory, filename))
         meta = {
             "file_name": name_actual,

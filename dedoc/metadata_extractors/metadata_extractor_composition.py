@@ -1,4 +1,3 @@
-import os.path
 from typing import List, Optional
 
 from dedoc.metadata_extractors.abstract_metadata_extractor import AbstractMetadataExtractor
@@ -37,6 +36,8 @@ class MetadataExtractorComposition:
         :param mime: MIME type of file
         :return: dict with metadata information about the document
         """
+        import os.path
+
         for extractor in self.extractors:
             if extractor.can_extract(
                 file_path=file_path,

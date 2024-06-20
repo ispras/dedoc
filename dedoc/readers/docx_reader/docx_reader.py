@@ -1,13 +1,8 @@
 from typing import List, Optional
 
-from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.readers.docx_reader.data_structures.docx_document import DocxDocument
-from dedoc.utils.parameter_utils import get_param_with_attachments
 
 
 class DocxReader(BaseReader):
@@ -17,6 +12,9 @@ class DocxReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.attachments_extractors.concrete_attachments_extractors.docx_attachments_extractor import DocxAttachmentsExtractor
+        from dedoc.extensions import recognized_extensions, recognized_mimes
+
         super().__init__(config=config, recognized_extensions=recognized_extensions.docx_like_format, recognized_mimes=recognized_mimes.docx_like_format)
         self.attachment_extractor = DocxAttachmentsExtractor(config=self.config)
 
@@ -26,6 +24,9 @@ class DocxReader(BaseReader):
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
+        from dedoc.readers.docx_reader.data_structures.docx_document import DocxDocument
+        from dedoc.utils.parameter_utils import get_param_with_attachments
+
         with_attachments = get_param_with_attachments(parameters)
         attachments = self.attachment_extractor.extract(file_path=file_path, parameters=parameters) if with_attachments else []
 
@@ -34,6 +35,8 @@ class DocxReader(BaseReader):
         return UnstructuredDocument(lines=lines, tables=docx_document.tables, attachments=attachments, warnings=[])
 
     def __fix_lines(self, lines: List[LineWithMeta]) -> List[LineWithMeta]:
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+
         for i, line in enumerate(lines[1:]):
             if lines[i].metadata.tag_hierarchy_level != line.metadata.tag_hierarchy_level \
                     or lines[i].metadata.tag_hierarchy_level.line_type != HierarchyLevel.unknown \

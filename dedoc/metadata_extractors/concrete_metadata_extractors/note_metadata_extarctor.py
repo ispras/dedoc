@@ -1,5 +1,3 @@
-import os
-import pickle
 from typing import Optional
 
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
@@ -40,6 +38,9 @@ class NoteMetadataExtractor(AbstractMetadataExtractor):
         Add the predefined list of metadata for the .note.pickle documents.
         Look to the :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.extract` documentation to get the information about parameters.
         """
+        import os
+        import pickle
+
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
 
         try:

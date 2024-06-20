@@ -2,9 +2,10 @@ import copy
 from typing import List
 
 import numpy as np
-from dedocutils.data_structures import BBox
+from dedocutils.data_structures.bbox import BBox
 
-from dedoc.data_structures import ConfidenceAnnotation, LineWithMeta
+from dedoc.data_structures.concrete_annotations.confidence_annotation import ConfidenceAnnotation
+from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_utils import get_text_with_bbox_from_cells

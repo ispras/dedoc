@@ -1,15 +1,7 @@
 from typing import List, Optional, Tuple
 
-import pandas as pd
-
-from dedoc.data_structures import LineMetadata, LineWithMeta
-from dedoc.data_structures.cell_with_meta import CellWithMeta
-from dedoc.data_structures.table import Table
-from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.utils.utils import get_encoding
 
 
 class CSVReader(BaseReader):
@@ -18,6 +10,7 @@ class CSVReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import recognized_extensions, recognized_mimes
         super().__init__(config=config, recognized_extensions=recognized_extensions.csv_like_format, recognized_mimes=recognized_mimes.csv_like_format)
         self.default_separator = ","
 
@@ -27,19 +20,26 @@ class CSVReader(BaseReader):
         The lines and attachments remain empty.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
+        import pandas as pd
+        from dedoc.data_structures.line_metadata import LineMetadata
+        from dedoc.data_structures.line_with_meta import LineWithMeta
+        from dedoc.data_structures.cell_with_meta import CellWithMeta
+        from dedoc.data_structures.table import Table
+        from dedoc.data_structures.table_metadata import TableMetadata
+
         parameters = {} if parameters is None else parameters
         delimiter = parameters.get("delimiter")
         if delimiter is None:
             delimiter = "\t" if file_path.endswith(".tsv") else self.default_separator
         encoding, encoding_warning = self.__get_encoding(file_path, parameters)
-        df = pd.read_csv(file_path, sep=delimiter, header=None, encoding=encoding)
+        df = pd.read_csv(file_path, sep=delimiter, header=None, encoding=encoding, dtype="string", keep_default_na=False)
         table_metadata = TableMetadata(page_id=0)
         cells_with_meta = []
         line_id = 0
         for ind in df.index:
             row_lines = []
             for cell in df.loc[ind]:
-                row_lines.append(CellWithMeta(lines=[LineWithMeta(line=str(cell), metadata=LineMetadata(page_id=0, line_id=line_id))]))
+                row_lines.append(CellWithMeta(lines=[LineWithMeta(line=cell, metadata=LineMetadata(page_id=0, line_id=line_id))]))
                 line_id += 1
             cells_with_meta.append(row_lines)
 
@@ -49,6 +49,8 @@ class CSVReader(BaseReader):
         return UnstructuredDocument(lines=[], tables=tables, attachments=[], warnings=warnings)
 
     def __get_encoding(self, path: str, parameters: dict) -> Tuple[str, List[str]]:
+        from dedoc.utils.utils import get_encoding
+
         if parameters.get("encoding"):
             return parameters["encoding"], []
         else:

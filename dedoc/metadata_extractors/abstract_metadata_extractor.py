@@ -1,9 +1,5 @@
-import logging
-import os
 from abc import ABC, abstractmethod
 from typing import Optional, Set, Tuple
-
-from dedoc.utils.utils import get_mime_extension
 
 
 class AbstractMetadataExtractor(ABC):
@@ -16,6 +12,8 @@ class AbstractMetadataExtractor(ABC):
         :param recognized_extensions: set of supported files extensions with a dot, for example {.doc, .pdf}
         :param recognized_mimes: set of supported MIME types of files
         """
+        import logging
+
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
         self._recognized_extensions = {} if recognized_extensions is None else recognized_extensions
@@ -41,6 +39,9 @@ class AbstractMetadataExtractor(ABC):
         :param extension: file extension, for example .doc or .pdf
         :return: True if the extractor can handle the given file and False otherwise
         """
+        import os
+        from dedoc.utils.utils import get_mime_extension
+
         file_dir, file_name, converted_filename, original_filename = self._get_names(file_path, converted_filename, original_filename)
         converted_file_path = os.path.join(file_dir, converted_filename)
         mime, extension = get_mime_extension(file_path=converted_file_path, mime=mime, extension=extension)
@@ -66,6 +67,8 @@ class AbstractMetadataExtractor(ABC):
         pass
 
     def _get_names(self, file_path: str, converted_filename: Optional[str], original_filename: Optional[str]) -> Tuple[str, str, str, str]:
+        import os
+
         file_dir, file_name = os.path.split(file_path)
         converted_filename = file_name if converted_filename is None else converted_filename
         original_filename = file_name if original_filename is None else original_filename

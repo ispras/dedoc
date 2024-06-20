@@ -1,11 +1,7 @@
-import json
-import os
 from typing import List, Optional
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
-from dedoc.extensions import recognized_extensions, recognized_mimes
-from dedoc.utils.parameter_utils import get_param_need_content_analysis
 
 
 class JsonAttachmentsExtractor(AbstractAttachmentsExtractor):
@@ -13,6 +9,7 @@ class JsonAttachmentsExtractor(AbstractAttachmentsExtractor):
     Extract attachments from json files.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import recognized_extensions, recognized_mimes
         super().__init__(config=config, recognized_extensions=recognized_extensions.json_like_format, recognized_mimes=recognized_mimes.json_like_format)
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
@@ -32,6 +29,10 @@ class JsonAttachmentsExtractor(AbstractAttachmentsExtractor):
         Look to the :class:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor` documentation to get the information about \
         the methods' parameters.
         """
+        import json
+        import os
+        from dedoc.utils.parameter_utils import get_param_need_content_analysis
+
         parameters = {} if parameters is None else parameters
         tmpdir, filename = os.path.split(file_path)
         attachments = []

@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
+from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import roman_regexp
 
 
 class AbstractHierarchyLevelBuilder(abc.ABC):
@@ -39,8 +39,8 @@ class AbstractHierarchyLevelBuilder(abc.ABC):
 
     @staticmethod
     def _postprocess_roman(hierarchy_level: HierarchyLevel, line: LineWithMeta) -> LineWithMeta:
-        if hierarchy_level.line_type == "subsection" and LawTextFeatures.roman_regexp.match(line.line):
-            match = LawTextFeatures.roman_regexp.match(line.line)
+        if hierarchy_level.line_type == "subsection" and roman_regexp.match(line.line):
+            match = roman_regexp.match(line.line)
             prefix = line.line[match.start(): match.end()]
             suffix = line.line[match.end():]
             symbols = [("T", "I"), ("Т", "I"), ("У", "V"), ("П", "II"), ("Ш", "III"), ("Г", "I")]

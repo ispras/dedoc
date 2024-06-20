@@ -1,9 +1,6 @@
-import os
 from typing import Optional
 
 from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
-from dedoc.extensions import converted_extensions, converted_mimes
-from dedoc.utils.utils import splitext_
 
 
 class ExcelConverter(AbstractConverter):
@@ -12,12 +9,16 @@ class ExcelConverter(AbstractConverter):
     Look to the :class:`~dedoc.converters.AbstractConverter` documentation to get the information about the methods' parameters.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import converted_extensions, converted_mimes
         super().__init__(config=config, converted_extensions=converted_extensions.excel_like_format, converted_mimes=converted_mimes.excel_like_format)
 
     def convert(self, file_path: str, parameters: Optional[dict] = None) -> str:
         """
         Convert the xlsx-like documents into files with .xlsx extension using the soffice application.
         """
+        import os
+        from dedoc.utils.utils import splitext_
+
         file_dir, file_name = os.path.split(file_path)
         name_wo_ext, _ = splitext_(file_name)
         command = ["soffice", "--headless", "--convert-to", "xlsx", "--outdir", file_dir, file_path]

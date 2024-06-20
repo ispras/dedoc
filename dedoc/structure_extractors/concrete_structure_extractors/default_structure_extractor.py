@@ -4,12 +4,6 @@ from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
-from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_prefix
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.bracket_prefix import BracketPrefix
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.dotted_prefix import DottedPrefix
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.letter_prefix import LetterPrefix
-from dedoc.structure_extractors.feature_extractors.list_features.prefix.prefix import LinePrefix
 
 
 class DefaultStructureExtractor(AbstractStructureExtractor):
@@ -18,9 +12,15 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
 
     You can find the description of this type of structure in the section :ref:`other_structure`.
     """
+    from dedoc.structure_extractors.feature_extractors.list_features.prefix.bracket_prefix import BracketPrefix
+    from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
+    from dedoc.structure_extractors.feature_extractors.list_features.prefix.dotted_prefix import DottedPrefix
+    from dedoc.structure_extractors.feature_extractors.list_features.prefix.any_letter_prefix import AnyLetterPrefix
+    from dedoc.structure_extractors.feature_extractors.list_features.prefix.prefix import LinePrefix
+
     document_type = "other"
 
-    prefix_list: List[LinePrefix] = [DottedPrefix, BracketPrefix, LetterPrefix, BulletPrefix]
+    prefix_list: List[LinePrefix] = [DottedPrefix, BracketPrefix, AnyLetterPrefix, BulletPrefix]
 
     def extract(self, document: UnstructuredDocument, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -62,6 +62,12 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
 
     @staticmethod
     def get_hl_list_using_regexp(line: LineWithMeta, previous_line: Optional[LineWithMeta]) -> HierarchyLevel:
+        from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_prefix
+        from dedoc.structure_extractors.feature_extractors.list_features.prefix.bracket_prefix import BracketPrefix
+        from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
+        from dedoc.structure_extractors.feature_extractors.list_features.prefix.dotted_prefix import DottedPrefix
+        from dedoc.structure_extractors.feature_extractors.list_features.prefix.any_letter_prefix import AnyLetterPrefix
+
         prefix = get_prefix(DefaultStructureExtractor.prefix_list, line)
 
         # TODO dotted list without space after numbering, like "1.Some text"
@@ -77,7 +83,7 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
                 return HierarchyLevel(4, 1, False, line_type=HierarchyLevel.list_item)  # here is russian and english letters
             return HierarchyLevel(3, 1, False, line_type=HierarchyLevel.list_item)
 
-        if prefix.name == LetterPrefix.name:  # list like a)
+        if prefix.name == AnyLetterPrefix.name:  # list like a)
             return HierarchyLevel(4, 1, False, line_type=HierarchyLevel.list_item)
 
         if prefix.name == BulletPrefix.name:  # bullet list

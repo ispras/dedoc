@@ -1,22 +1,11 @@
-import hashlib
-import string
 from typing import List, Optional, Tuple, Union
 
 from bs4 import BeautifulSoup, Comment, Doctype, NavigableString, Tag
 
-from dedoc.data_structures.cell_with_meta import CellWithMeta
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.table import Table
-from dedoc.data_structures.table_metadata import TableMetadata
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
-from dedoc.readers.html_reader.html_line_postprocessing import HtmlLinePostprocessing
-from dedoc.readers.html_reader.html_tag_annotation_parser import HtmlTagAnnotationParser
-from dedoc.readers.html_reader.html_tags import HtmlTags
-from dedoc.utils.utils import calculate_file_hash
 
 
 class HtmlReader(BaseReader):
@@ -25,6 +14,10 @@ class HtmlReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.extensions import recognized_extensions, recognized_mimes
+        from dedoc.readers.html_reader.html_line_postprocessing import HtmlLinePostprocessing
+        from dedoc.readers.html_reader.html_tag_annotation_parser import HtmlTagAnnotationParser
+
         super().__init__(config=config, recognized_extensions=recognized_extensions.html_like_format, recognized_mimes=recognized_mimes.html_like_format)
         self.postprocessor = HtmlLinePostprocessing()
         self.tag_annotation_parser = HtmlTagAnnotationParser()
@@ -35,6 +28,8 @@ class HtmlReader(BaseReader):
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
+        from dedoc.utils.utils import calculate_file_hash
+
         parameters = {} if parameters is None else parameters
         with open(file_path, "rb") as f:
             soup = BeautifulSoup(f.read(), "html.parser")
@@ -52,6 +47,9 @@ class HtmlReader(BaseReader):
 
     def __handle_block(self, tag: Union[Tag], filepath_hash: str, handle_invisible_table: bool, table: Optional[bool] = False,
                        uid: Optional[str] = "") -> List[LineWithMeta]:
+        import hashlib
+        from dedoc.readers.html_reader.html_tags import HtmlTags
+
         tag_uid = hashlib.md5((uid + str(tag.name)).encode()).hexdigest()
         assert isinstance(tag, (Tag, str))
         if not self.__is_content_tag(tag, handle_invisible_table=handle_invisible_table):
@@ -80,6 +78,10 @@ class HtmlReader(BaseReader):
         return block_lines
 
     def __handle_single_tag(self, tag: Tag, filepath_hash: str, uid: str, table: Optional[bool] = False) -> List[LineWithMeta]:
+        import hashlib
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+        from dedoc.readers.html_reader.html_tags import HtmlTags
+
         text = self.__get_text(tag, table)
 
         if not text or text.isspace():
@@ -95,6 +97,8 @@ class HtmlReader(BaseReader):
 
     def __read_blocks(self, block: Tag, filepath_hash: str = "", handle_invisible_table: bool = False, table: Optional[bool] = False,
                       uid: Optional[str] = "") -> List[LineWithMeta]:
+        import hashlib
+
         tag_uid = hashlib.md5((filepath_hash + uid + str(block.name)).encode()).hexdigest()
         if not self.__is_content_tag(block, handle_invisible_table=handle_invisible_table):
             return []
@@ -108,6 +112,9 @@ class HtmlReader(BaseReader):
         return lines
 
     def _handle_text_line(self, block: str, filepath_hash: str, uid: str, ignore_space: bool = True) -> List[LineWithMeta]:
+        import hashlib
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+
         if not block.strip() and ignore_space:
             return []
         tag_uid = hashlib.md5((uid + block).encode()).hexdigest()
@@ -116,6 +123,9 @@ class HtmlReader(BaseReader):
 
     def __make_line(self, line: str, line_type: str, header_level: int = 0, uid: str = None, filepath_hash: str = None,
                     annotations: List = None) -> LineWithMeta:
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+        from dedoc.data_structures.line_metadata import LineMetadata
+
         if annotations is None:
             annotations = []
 
@@ -126,6 +136,10 @@ class HtmlReader(BaseReader):
         return LineWithMeta(line=line, metadata=metadata, annotations=annotations, uid=uid)
 
     def __get_li_header(self, list_type: str, index: int) -> LineWithMeta:
+        import string
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+        from dedoc.data_structures.line_metadata import LineMetadata
+
         end = ") " if list_type in ["a", "A"] else ". "
         if list_type == "":
             header = ""
@@ -146,6 +160,9 @@ class HtmlReader(BaseReader):
         return header_line
 
     def __read_list(self, lst: Tag, uid: str, filepath_hash: str, handle_invisible_table: bool) -> List[LineWithMeta]:
+        import hashlib
+        from dedoc.readers.html_reader.html_tags import HtmlTags
+
         tag_uid = hashlib.md5((uid + str(lst.name)).encode()).hexdigest()
         lines = []
         list_type = lst.get("type", "1" if lst.name in HtmlTags.ordered_list else "")
@@ -164,6 +181,8 @@ class HtmlReader(BaseReader):
         return lines
 
     def __handle_list_item(self, item: Tag, item_index: int, list_type: str, filepath_hash: str, uid: str, handle_invisible_table: bool) -> List[LineWithMeta]:
+        import hashlib
+
         tag_uid = hashlib.md5((uid + str(item.name)).encode()).hexdigest()
         lines = []
         header_line = self.__get_li_header(list_type=list_type, index=item_index)
@@ -195,6 +214,8 @@ class HtmlReader(BaseReader):
         @param handle_invisible_table: is invisibly table should be handled as table
         @return: True if tag is a content tag False otherwise.
         """
+        from dedoc.readers.html_reader.html_tags import HtmlTags
+
         if tag.name in HtmlTags.service_tags:
             return False
         if tag.name == "table" and not self._visible_table(tag, handle_invisible_table=handle_invisible_table):
@@ -202,6 +223,9 @@ class HtmlReader(BaseReader):
         return not isinstance(tag, Doctype) and not isinstance(tag, Comment)
 
     def __handle_invisible_table(self, block: Tag, filepath_hash: str, uid: str) -> List[LineWithMeta]:
+        import hashlib
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+
         result = []
         rows = self._read_table(block, filepath_hash).cells
         for row in rows:
@@ -213,6 +237,8 @@ class HtmlReader(BaseReader):
         return result
 
     def __clone_cell(self, el: Tuple[Tag, NavigableString]) -> Tuple[Tag, NavigableString]:
+        from dedoc.readers.html_reader.html_tags import HtmlTags
+
         if isinstance(el, NavigableString):
             return type(el)(el)
 
@@ -228,6 +254,8 @@ class HtmlReader(BaseReader):
         return copy
 
     def __split_table_cells(self, table: Tag, table_list: List[List[Tag]]) -> None:
+        from dedoc.readers.html_reader.html_tags import HtmlTags
+
         for row_index, row in enumerate(table.find_all(HtmlTags.table_rows)):
             for cell_index, cell in enumerate(row.find_all(HtmlTags.table_cells)):
                 cell_rowspan = int(cell.attrs.get("rowspan", 1))
@@ -239,6 +267,8 @@ class HtmlReader(BaseReader):
                         table_list[index][cell_index:cell_index] = [cell_copy] * cell_colspan
 
     def __fix_table(self, table: Tag) -> List[List[Tag]]:
+        from dedoc.readers.html_reader.html_tags import HtmlTags
+
         table_list = []
 
         # create table list
@@ -253,6 +283,9 @@ class HtmlReader(BaseReader):
         return table_list
 
     def _read_table(self, table: Tag, filepath_hash: str) -> Table:
+        from dedoc.data_structures.cell_with_meta import CellWithMeta
+        from dedoc.data_structures.table_metadata import TableMetadata
+
         cells_with_meta = []
         fixed_table = self.__fix_table(table)
 

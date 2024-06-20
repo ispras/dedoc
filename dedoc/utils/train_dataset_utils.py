@@ -2,13 +2,14 @@ import json
 import os
 from typing import List
 
-import PIL
 import numpy as np
-from PIL.Image import Image
+from PIL import Image
+
+from dedoc.data_structures.line_with_meta import LineWithMeta
 
 
 def __to_pil(image: np.ndarray) -> Image:
-    return PIL.Image.fromarray(image)
+    return Image.fromarray(image)
 
 
 def __create_images_path(config: dict) -> None:
@@ -30,7 +31,7 @@ def _get_images_path(config: dict, document_name: str) -> str:
     return images_path
 
 
-def save_line_with_meta(lines: List["LineWithMeta"], original_document: str, *, config: dict) -> None:  # noqa
+def save_line_with_meta(lines: List[LineWithMeta], original_document: str, *, config: dict) -> None:
     __create_images_path(config)
 
     # merge lines with the same bbox
@@ -45,7 +46,7 @@ def save_line_with_meta(lines: List["LineWithMeta"], original_document: str, *, 
             out.write("\n")
 
 
-def __postprocess_lines(lines: List["LineWithMeta"]) -> List["LineWithMeta"]:  # noqa
+def __postprocess_lines(lines: List[LineWithMeta]) -> List[LineWithMeta]:
     postprocessed_lines = []
     prev_bbox = None
     for line in lines:

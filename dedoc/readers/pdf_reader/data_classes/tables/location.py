@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from functools import total_ordering
 from typing import Any, Dict
 
@@ -14,6 +13,8 @@ class Location:
         self.rotated_angle = rotated_angle
 
     def to_dict(self) -> Dict[str, Any]:
+        from collections import OrderedDict
+
         res = OrderedDict()
         res["page_number"] = self.page_number
         res["bbox"] = self.bbox.to_dict()  # [x_begin, y_begin, width, height]

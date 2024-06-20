@@ -27,7 +27,7 @@ class TestLineObjectLinker(unittest.TestCase):
         line4 = create_line_by_coordinates(x_top_left=15, y_top_left=7, height=2, width=7, page=0)
         line5 = create_line_by_coordinates(x_top_left=2, y_top_left=1, height=2, width=9, page=1)
         lines = [line1, line2, line3, line4, line5]
-        self.metadata_extractor._LineMetadataExtractor__add_spacing_annotations(lines)  # noqa
+        self.metadata_extractor._LineMetadataExtractor__add_spacing_annotations(lines)
         self.assertEqual(self.metadata_extractor.default_spacing, self._get_spacing(line1))
         self.assertEqual(50, self._get_spacing(line2))
         self.assertEqual(self.metadata_extractor.default_spacing, self._get_spacing(line3))

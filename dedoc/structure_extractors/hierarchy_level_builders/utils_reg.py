@@ -17,3 +17,4 @@ regexps_ends_of_number = re.compile(r"([A-ZА-Яa-zа-яё]|\s|( )*)$")
 
 # others
 regexps_year = re.compile(r"(19\d\d|20\d\d)")
+roman_regexp = re.compile(r"\s*(I|Г|T|Т|II|П|III|Ш|ТУ|TУ|IV|V|У|VI|УТ|УT|VII|УТТ|VIII|I[XХ]|[XХ]|[XХ]I|[XХ]II)\.\s+")

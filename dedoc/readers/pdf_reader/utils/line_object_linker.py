@@ -57,7 +57,7 @@ class LineObjectLinker:
                 self.logger.warning(f"Unsupported page object type {page_object}")
                 if self.config.get("debug_mode", False):
                     raise Exception(f"Unsupported page object type {page_object}")
-            best_line.annotations.append(annotation)  # noqa
+            best_line.annotations.append(annotation)
         return lines
 
     def _add_lines(self, all_objects: List[Union[LineWithLocation, ScanTable, PdfImageAttachment]], lines_key: str, objects_with_line_candidate: dict) -> None:

@@ -1,6 +1,6 @@
 import os
 
-from dedoc.data_structures import AttachAnnotation
+from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 

@@ -1,9 +1,6 @@
 from typing import Optional
 
 from dedoc.converters.concrete_converters.abstract_converter import AbstractConverter
-from dedoc.converters.concrete_converters.png_converter import PNGConverter
-from dedoc.utils import supported_image_types
-from dedoc.utils.utils import get_mime_extension
 
 
 class BinaryConverter(AbstractConverter):
@@ -12,6 +9,7 @@ class BinaryConverter(AbstractConverter):
     Look to the :class:`~dedoc.converters.AbstractConverter` documentation to get the information about the methods' parameters.
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.converters.concrete_converters.png_converter import PNGConverter
         super().__init__(config=config)
         self.png_converter = PNGConverter(config=self.config)
 
@@ -23,6 +21,9 @@ class BinaryConverter(AbstractConverter):
         """
         Checks if the document is image-like (e.g. it has .bmp, .jpg, .tiff, etc. extension) and has `mime=application/octet-stream`.
         """
+        from dedoc.utils import supported_image_types
+        from dedoc.utils.utils import get_mime_extension
+
         mime, extension = get_mime_extension(file_path=file_path, mime=mime, extension=extension)
         return mime == "application/octet-stream" and extension in supported_image_types
 

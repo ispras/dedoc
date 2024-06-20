@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Optional
 
-from dedoc.config import _config as config
+from dedoc.config import get_config
 from dedoc.structure_extractors.feature_extractors.law_text_features import LawTextFeatures
 from scripts.train.trainers.logreg_line_classifier_trainer import LogRegLineClassifierTrainer
 from train_dataset.data_structures.line_with_label import LineWithLabel
@@ -54,6 +54,7 @@ def get_sample_weight(line: LineWithLabel) -> float:
 
 
 classifier_parameters_nn = dict(multi_class="auto")
+config = get_config()
 
 trainer = LogRegLineClassifierTrainer(
     data_url="https://at.ispras.ru/owncloud/index.php/s/nDxc7wPQzJxoUXY/download",

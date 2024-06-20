@@ -7,6 +7,19 @@ inline-quotes = "
 application-import-names = dedoc, tests, scripts, train_dataset
 import-order-style = pycharm
 
+extend-immutable-calls = File, Depends
+
+banned-modules =
+    dedoc = Use full path
+    dedoc.data_structures = Use full path
+    dedoc.attachments_extractors = Use full path
+    dedoc.attachments_handler = Use full path
+    dedoc.converters = Use full path
+    dedoc.metadata_extractors = Use full path
+    dedoc.readers = Use full path
+    dedoc.structure_constructors = Use full path
+    dedoc.structure_extractors = Use full path
+
 exclude =
     .git,
     __pycache__,
@@ -28,9 +41,11 @@ exclude =
 # ANN202 - Missing return type annotation for protected function
 # ANN204 - Missing return type annotation for special method
 # N802 - function name should be lowercase
+# I251 - Banned import (Use full path)
 ignore =
     ANN101
 per-file-ignores =
     scripts/*:T201
     scripts/benchmark_pdf_performance*:JS101
     tests/custom_test_runner.py:ANN001,ANN201,ANN202,ANN204,N802
+    docs/source/_static/code_examples/*:I251

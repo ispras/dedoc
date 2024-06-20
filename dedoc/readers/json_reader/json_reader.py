@@ -1,16 +1,9 @@
-from json import JSONDecodeError
 from typing import Any, List, Optional
 
-import ujson as json
-
-from dedoc.attachments_extractors.concrete_attachments_extractors.json_attachment_extractor import JsonAttachmentsExtractor
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 from dedoc.common.exceptions.bad_parameters_error import BadParametersError
-from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc.readers.base_reader import BaseReader
 
 
@@ -20,6 +13,9 @@ class JsonReader(BaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
+        from dedoc.attachments_extractors.concrete_attachments_extractors.json_attachment_extractor import JsonAttachmentsExtractor
+        from dedoc.extensions import recognized_extensions, recognized_mimes
+
         super().__init__(config=config, recognized_extensions=recognized_extensions.json_like_format, recognized_mimes=recognized_mimes.json_like_format)
         self.attachment_extractor = JsonAttachmentsExtractor(config=self.config)
 
@@ -31,6 +27,10 @@ class JsonReader(BaseReader):
         The dictionaries are processed by creating key line with type `key` and value line as a child.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
+        from json import JSONDecodeError
+        import ujson as json
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+
         parameters = {} if parameters is None else parameters
         with open(file_path) as file:
             try:
@@ -84,6 +84,8 @@ class JsonReader(BaseReader):
                 del data[key]
 
     def __handle_list(self, depth: int, element: list, result: list, stack: list) -> None:
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+
         for _ in range(len(element)):
             sub_element = element.pop(0)
             line = self.__handle_one_element(depth=depth, value=sub_element, line_type=HierarchyLevel.list_item, line_type_meta=HierarchyLevel.list_item)
@@ -106,6 +108,9 @@ class JsonReader(BaseReader):
             break
 
     def __handle_one_element(self, depth: int, value: Any, line_type: str, line_type_meta: str) -> LineWithMeta:  # noqa
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
+        from dedoc.data_structures.line_metadata import LineMetadata
+
         if depth == 1 and line_type == "title":
             level1, level2 = 0, 0
         else:

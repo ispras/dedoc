@@ -146,7 +146,7 @@ class PdfminerExtractor:
 
     @staticmethod
     def __get_image(path: str, page_num: int) -> np.ndarray:
-        image_page = np.array(get_page_image(path=path, page_id=page_num))  # noqa
+        image_page = np.array(get_page_image(path=path, page_id=page_num))
         image_page = np.array(image_page)
         if len(image_page.shape) == 2:
             image_page = cv2.cvtColor(image_page, cv2.COLOR_GRAY2BGR)

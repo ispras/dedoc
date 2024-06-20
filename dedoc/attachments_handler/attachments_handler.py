@@ -1,14 +1,11 @@
-import copy
-import logging
-import os
-import time
 from typing import List, Optional
 
 from dedoc.common.exceptions.dedoc_error import DedocError
-from dedoc.data_structures import AttachedFile, DocumentMetadata, ParsedDocument
+from dedoc.data_structures.attached_file import AttachedFile
+from dedoc.data_structures.document_metadata import DocumentMetadata
+from dedoc.data_structures.parsed_document import ParsedDocument
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
-from dedoc.utils.parameter_utils import get_param_with_attachments
-from dedoc.utils.utils import get_empty_content
+from dedoc.dedoc_manager import DedocManager
 
 
 class AttachmentsHandler:
@@ -26,10 +23,12 @@ class AttachmentsHandler:
         """
         :param config: configuration of the handler, e.g. logger for logging
         """
+        import logging
+
         self.config = {} if config is None else config
         self.logger = self.config.get("logger", logging.getLogger())
 
-    def handle_attachments(self, document_parser: "DedocManager", document: UnstructuredDocument, parameters: dict) -> List[ParsedDocument]:  # noqa
+    def handle_attachments(self, document_parser: DedocManager, document: UnstructuredDocument, parameters: dict) -> List[ParsedDocument]:
         """
         Handle attachments of the document in the intermediate representation.
 
@@ -39,6 +38,11 @@ class AttachmentsHandler:
             are important, look to the API parameters documentation for more details).
         :return: list of parsed document attachments
         """
+        import copy
+        import os
+        import time
+        from dedoc.utils.parameter_utils import get_param_with_attachments
+
         attachments = []
         recursion_deep_attachments = int(parameters.get("recursion_deep_attachments", 10)) - 1
 
@@ -76,7 +80,8 @@ class AttachmentsHandler:
             attachments.append(parsed_file)
         return attachments
 
-    def __get_empty_document(self, document_parser: "DedocManager", attachment: AttachedFile, parameters: dict) -> ParsedDocument:  # noqa
+    def __get_empty_document(self, document_parser: DedocManager, attachment: AttachedFile, parameters: dict) -> ParsedDocument:
+        from dedoc.utils.utils import get_empty_content
         metadata = document_parser.document_metadata_extractor.extract(
             file_path=attachment.get_filename_in_path(),
             original_filename=attachment.get_original_filename(),
