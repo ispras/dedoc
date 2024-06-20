@@ -40,6 +40,7 @@ class TestApiCSVReader(AbstractTestApiDocReader):
         row3 = self._get_text_of_row(table[3])
         self.assertListEqual(["id", "cat", "name", "price", "inStock", "author", "series_t", "sequence_i", "genre_s"], row0)
         self.assertListEqual(["055357342X", "book", "A Storm of Swords", "7.99", "true", "George R.R. Martin", "A Song of Ice and Fire", "3", "fantasy"], row3)
+        self.assertEqual("", table[-1][5]["lines"][0]["text"])
 
     def test_csv_books2(self) -> None:
         file_name = "books_2.csv"

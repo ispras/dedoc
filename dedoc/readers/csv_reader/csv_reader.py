@@ -32,14 +32,14 @@ class CSVReader(BaseReader):
         if delimiter is None:
             delimiter = "\t" if file_path.endswith(".tsv") else self.default_separator
         encoding, encoding_warning = self.__get_encoding(file_path, parameters)
-        df = pd.read_csv(file_path, sep=delimiter, header=None, encoding=encoding)
+        df = pd.read_csv(file_path, sep=delimiter, header=None, encoding=encoding, dtype="string", keep_default_na=False)
         table_metadata = TableMetadata(page_id=0)
         cells_with_meta = []
         line_id = 0
         for ind in df.index:
             row_lines = []
             for cell in df.loc[ind]:
-                row_lines.append(CellWithMeta(lines=[LineWithMeta(line=str(cell), metadata=LineMetadata(page_id=0, line_id=line_id))]))
+                row_lines.append(CellWithMeta(lines=[LineWithMeta(line=cell, metadata=LineMetadata(page_id=0, line_id=line_id))]))
                 line_id += 1
             cells_with_meta.append(row_lines)
 
