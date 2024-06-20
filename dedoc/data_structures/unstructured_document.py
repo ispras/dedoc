@@ -28,3 +28,6 @@ class UnstructuredDocument:
         self.attachments = attachments
         self.warnings = warnings if warnings else []
         self.metadata = metadata if metadata is not None else {}
+
+    def get_text(self) -> str:
+        return LineWithMeta.join(self.lines).line

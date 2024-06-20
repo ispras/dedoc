@@ -59,5 +59,9 @@ class DataLoaderImageOrient(Dataset):
     def load_dataset(self, csv_path: str, image_path: str, batch_size: int = 4) -> DataLoader:
         trainset = DatasetImageOrient(csv_file=csv_path, root_dir=image_path, transform=self.transform)
         trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
+        self.amount = len(trainset)
 
         return trainloader
+
+    def __len__(self) -> int:
+        return self.amount
