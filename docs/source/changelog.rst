@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v2.2.4 (2024-06-20)
+-------------------
+Release note: `v2.2.4 <https://github.com/ispras/dedoc/releases/tag/v2.2.4>`_
+
+* Show page division and page numbers in the HTML output representation (API usage, return_format="html").
+* Make imports from dedoc library faster.
+* Added tutorial how to add a new language to dedoc (not finished entirely).
+* Added additional page_id metadata for multi-page nodes (structure_type="tree" in API, `TreeConstructor` in the library).
+* Updated OCR and orientation/columns classification benchmarks.
+* Minor edits of `README.md`.
+* Fixed empty cells handling in `CSVReader`.
+* Fixed bounding boxes extraction for text in tables for `PdfTabbyReader`.
+
 v2.2.3 (2024-06-05)
 -------------------
 Release note: `v2.2.3 <https://github.com/ispras/dedoc/releases/tag/v2.2.3>`_
