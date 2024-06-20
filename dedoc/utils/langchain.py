@@ -1,15 +1,5 @@
-import dataclasses
-from typing import Generator
-
-from dedoc.data_structures.parsed_document import ParsedDocument
-from dedoc.data_structures.tree_node import TreeNode
 from dedoc.extensions import converted_extensions, recognized_extensions
 
-
-@dataclasses.dataclass
-class Document:
-    page_content: str
-    metadata: dict
 
 supported_extensions = {format_group: {*recognized_extensions._asdict()[format_group], *converted_extensions._asdict()[format_group]} for format_group in recognized_extensions._asdict().keys()}  # noqa
 
@@ -179,40 +169,3 @@ def make_manager_pdf_config(file_path: str, split: str, parsing_params: dict) ->
         attachments_handler=AttachmentsHandler()
     )
     return manager_config
-
-
-def parse_subparagraphs(doc_tree: TreeNode, doc_metadata: dict) -> Generator:
-    if len(doc_tree.subparagraphs) > 0:
-        for subparagraph in doc_tree.subparagraphs:
-            yield from parse_subparagraphs(doc_tree=subparagraph, doc_metadata=doc_metadata)
-    else:
-        yield Document(page_content=doc_tree.text, metadata={**doc_metadata, **vars(doc_tree.metadata)})
-
-
-def split_document(document_tree: ParsedDocument, split: str) -> Generator:
-    from dedoc.api.api_utils import json2txt
-    if split == "document":
-        text = json2txt(paragraph=document_tree.content.structure)
-        yield Document(page_content=text, metadata=vars(document_tree.metadata))
-    elif split == "page":
-        initial_page_id = document_tree.content.structure.subparagraphs[0].metadata.page_id
-        initial_page_text = ""
-        initial_page_metadata = vars(document_tree.metadata)
-        for node_index, node in enumerate(document_tree.content.structure.subparagraphs):
-            if node.metadata.page_id == initial_page_id:
-                initial_page_text += json2txt(node)
-                initial_page_metadata["page_id"] = initial_page_id
-                if node_index == len(document_tree.content.structure.subparagraphs) - 1:
-                    yield Document(page_content=initial_page_text, metadata=dict(initial_page_metadata))
-            else:
-                yield Document(page_content=initial_page_text, metadata=dict(initial_page_metadata))
-                initial_page_id = node.metadata.page_id
-                initial_page_text = json2txt(node)
-                initial_page_metadata["page_id"] = initial_page_id
-    elif split == "line":
-        initial_document_metadata = vars(document_tree.metadata)
-        for node in document_tree.content.structure.subparagraphs:
-            line_metadata = node.metadata
-            yield Document(page_content=json2txt(node), metadata={**initial_document_metadata, **vars(line_metadata)})
-    elif split == "node":
-        yield from parse_subparagraphs(doc_tree=document_tree.content.structure, doc_metadata=vars(document_tree.metadata))
