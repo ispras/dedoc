@@ -8,8 +8,8 @@ model_hash_dict = dict(
     txtlayer_classifier="9ca1de749d8d37147b00a3a228e03ee1776c695f",
     scan_orientation_efficient_net_b0="c60812552a1be624476c1e5b58599867b36f8d4e",
     font_classifier="db4481ad60ab050cbb42079b64f97f9e431feb07",
-    paragraph_classifier="c26a10193499d3cbc77ffec9842bece24fa8950b",
-    line_type_classifiers="0568c6e1f49612c0c351f10b80a26dc05f796683",
+    paragraph_classifier="97c4b78bc20d87ec7d53389e09f1ca35c6ade067",
+    line_type_classifiers="18df71c2e5d6985769d2d2dea6902e3e0a1fc9fe",
     fintoc_classifiers="6a907b7d2437c3f61ac9c506f67175207982fae8"
 )
 

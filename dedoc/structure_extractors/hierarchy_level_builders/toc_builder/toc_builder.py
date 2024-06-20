@@ -3,6 +3,7 @@ from typing import List, Tuple
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor
 from dedoc.structure_extractors.hierarchy_level_builders.abstract_hierarchy_level_builder import AbstractHierarchyLevelBuilder
 
 
@@ -12,7 +13,7 @@ class TocBuilder(AbstractHierarchyLevelBuilder):
         result = []
         is_toc_begun = False
         for line, _ in lines_with_labels:
-            if line.line.lower().strip() in ("содержание", "оглавление"):  # set line as toc
+            if line.line.lower().strip() in TOCFeatureExtractor.titles:  # set line as toc
                 line.metadata.hierarchy_level = HierarchyLevel(init_hl_depth + 0, 0, False, "toc")
                 result.append(line)
                 is_toc_begun = True

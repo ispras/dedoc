@@ -7,12 +7,13 @@ class ValleyEmphasisBinarizer:
         self.n = n
 
     def binarize(self, image: np.ndarray) -> np.ndarray:
-        gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        threshold = self.__get_threshold(gray_img)
+        if image.shape[-1] == 3:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        threshold = self.__get_threshold(image)
 
-        gray_img[gray_img <= threshold] = 0
-        gray_img[gray_img > threshold] = 1
-        return gray_img
+        image[image <= threshold] = 0
+        image[image > threshold] = 1
+        return image
 
     def __get_threshold(self, gray_img: np.ndarray) -> int:
         c, x = np.histogram(gray_img, bins=255)
@@ -33,8 +34,8 @@ class ValleyEmphasisBinarizer:
             omega_1 = omega_1 + c[t] / total
             omega_2 = 1 - omega_1
             mu_k = mu_k + t * (c[t] / total)
-            mu_1 = mu_k / omega_1
-            mu_2 = (sum_val - mu_k) / omega_2
+            mu_1 = mu_k / omega_1 if omega_1 != 0. else 0.
+            mu_2 = (sum_val - mu_k) / omega_2 if omega_2 != 0. else 0.
             sum_of_neighbors = np.sum(c[max(1, t - self.n):min(255, t + self.n)])
             denom = total
             current_var = (1 - sum_of_neighbors / denom) * (omega_1 * mu_1 ** 2 + omega_2 * mu_2 ** 2)

@@ -9,6 +9,7 @@ from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnot
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
+from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TocItem
 from dedoc.utils.utils import flatten
 
 
@@ -33,10 +34,7 @@ class PairedFeatureExtractor(AbstractFeatureExtractor):
     def parameters(self) -> dict:
         return {}
 
-    def fit(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None) -> "AbstractFeatureExtractor":
-        return self
-
-    def transform(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None) -> pd.DataFrame:
+    def transform(self, documents: List[List[LineWithMeta]], toc_lines: Optional[List[List[TocItem]]] = None) -> pd.DataFrame:
         df = pd.DataFrame()
         df["raw_depth_size"] = list(flatten([self._handle_one_document(document, self.__get_size) for document in documents]))
         df["raw_depth_indentation"] = list(flatten([self._handle_one_document(document, self._get_indentation) for document in documents]))

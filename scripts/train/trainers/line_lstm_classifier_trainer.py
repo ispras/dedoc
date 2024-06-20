@@ -5,7 +5,7 @@ import os
 import time
 from collections import OrderedDict
 from statistics import mean
-from typing import Any, Callable, Dict, Iterator, List, Optional
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -16,11 +16,12 @@ from torch.autograd import Variable
 from torch.nn.modules.loss import CrossEntropyLoss
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 from torch.optim.optimizer import Optimizer
+from torch.utils.data import Dataset
 from tqdm import tqdm
 
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.utils.utils import flatten
-from scripts.train.trainers.data_loader import DataLoader, LineEpsDataSet
+from scripts.train.trainers.data_loader import DataLoader
 from train_dataset.data_structures.line_with_label import LineWithLabel
 
 
@@ -117,6 +118,30 @@ class LSTM(nn.Module):
         preds = self.fc2(drop)
 
         return preds
+
+
+class LineEpsDataSet(Dataset):
+    def __init__(self, features: pd.DataFrame, labels: List[str], class_dict: dict, eps: int = 3) -> None:
+        self.line_features = features
+        if self.line_features is not None:
+            self.line_features.index = np.arange(0, len(self.line_features))
+        self.line_labels = labels
+        self.length = len(self.line_labels)
+        self.eps = eps
+        self.class_dict = class_dict
+
+    def __len__(self) -> int:
+        return len(self.line_labels)
+
+    def __getitem__(self, index: int) -> Tuple[List[float], int, int]:
+        line_with_eps_features = []
+
+        for line_id in range(index - self.eps, index + self.eps + 1):
+            if line_id < 0 or line_id >= self.length:
+                line_with_eps_features.append(np.zeros(self.line_features.shape[1]))
+            else:
+                line_with_eps_features.append(self.line_features.loc[[line_id]].to_numpy()[0])
+        return line_with_eps_features, self.class_dict[self.line_labels[index]], len(line_with_eps_features)
 
 
 class LSTMTrainer:

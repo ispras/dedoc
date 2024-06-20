@@ -24,28 +24,30 @@ class TestApiDiploma(AbstractTestApiDocReader):
         node = self._get_by_tree_path(structure, "0.1")
         self.assertEqual("СОДЕРЖАНИЕ", node["text"].strip())
         self.assertEqual("toc", node["metadata"]["paragraph_type"])
-
         node = self._get_by_tree_path(structure, "0.1.0")
         self.assertEqual("ВВЕДЕНИЕ", node["text"][:8])
+        self.assertEqual("toc_item", node["metadata"]["paragraph_type"])
+        node = self._get_by_tree_path(structure, "0.1.1")
+        self.assertEqual("1. ТЕОРЕТИЧЕСКОЕ", node["text"][:16])
         self.assertEqual("toc_item", node["metadata"]["paragraph_type"])
 
         node = self._get_by_tree_path(structure, "0.2")
         self.assertEqual("ВВЕДЕНИЕ", node["text"].strip())
         self.assertEqual("named_item", node["metadata"]["paragraph_type"])
 
-        node = self._get_by_tree_path(structure, "0.3")
+        node = self._get_by_tree_path(structure, "0.6")
         self.assertEqual("1. ТЕОРЕТИЧЕСКОЕ", node["text"][:16])
         self.assertEqual("named_item", node["metadata"]["paragraph_type"])
 
-        node = self._get_by_tree_path(structure, "0.4")
+        node = self._get_by_tree_path(structure, "0.7")
         self.assertEqual("2. АНАЛИЗ", node["text"][:9])
         self.assertEqual("named_item", node["metadata"]["paragraph_type"])
 
-        node = self._get_by_tree_path(structure, "0.5")
+        node = self._get_by_tree_path(structure, "0.8")
         self.assertEqual("ЗАКЛЮЧЕНИЕ", node["text"].strip())
         self.assertEqual("named_item", node["metadata"]["paragraph_type"])
 
-        node = self._get_by_tree_path(structure, "0.6")
+        node = self._get_by_tree_path(structure, "0.9")
         self.assertEqual("БИБЛИОГРАФИЧЕСКИЙ СПИСОК", node["text"].strip())
         self.assertEqual("named_item", node["metadata"]["paragraph_type"])
 
@@ -78,14 +80,10 @@ class TestApiDiploma(AbstractTestApiDocReader):
         self.assertEqual("Глава 1.", node["text"][:8])
         self.assertEqual("named_item", node["metadata"]["paragraph_type"])
 
-        node = self._get_by_tree_path(structure, "0.4")
+        node = self._get_by_tree_path(structure, "0.5")
         self.assertEqual("Глава 2.", node["text"][:8])
         self.assertEqual("named_item", node["metadata"]["paragraph_type"])
 
-        node = self._get_by_tree_path(structure, "0.5")
-        self.assertEqual("Глава 3.", node["text"][:8])
-        self.assertEqual("named_item", node["metadata"]["paragraph_type"])
-
         node = self._get_by_tree_path(structure, "0.6")
-        self.assertEqual("Список литературы", node["text"].strip())
+        self.assertEqual("Глава 3.", node["text"][:8])
         self.assertEqual("named_item", node["metadata"]["paragraph_type"])

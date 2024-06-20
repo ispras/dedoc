@@ -7,29 +7,19 @@ import pandas as pd
 
 class TxtlayerFeatureExtractor:
 
-    def __init__(self) -> None:
-        self.eng = "".join(list(map(chr, range(ord("a"), ord("z") + 1))))
-        self.rus = "".join([chr(i) for i in range(ord("а"), ord("а") + 32)] + ["ё"])
-        self.lower_letters = self.eng + self.rus
-        self.upper_letters = self.lower_letters.upper()
-        self.letters = self.upper_letters + self.lower_letters
-        self.digits = "".join([str(i) for i in range(10)])
-        self.special_symbols = "<>~!@#$%^&*_+-/\"|?.,:;'`= "
-        self.brackets = "{}[]()"
-        self.symbols = self.letters + self.digits + self.brackets + self.special_symbols
-
-        self.prohibited_symbols = {s: i for i, s in enumerate("[]<")}
-
     def transform(self, texts: List[str]) -> pd.DataFrame:
+        from dedoc.structure_extractors.feature_extractors.char_features import letters, digits, special_symbols, brackets, rus, eng, prohibited_symbols, \
+            lower_letters, upper_letters, symbols, count_symbols
+
         features = defaultdict(list)
 
         for text in texts:
-            num_letters = self.__count_symbols(text, self.letters)
-            num_digits = self.__count_symbols(text, self.digits)
-            num_special_symbols = self.__count_symbols(text, self.special_symbols)
-            num_brackets = self.__count_symbols(text, self.brackets)
-            num_rus = self.__count_symbols(text, self.rus + self.rus.upper())
-            num_eng = self.__count_symbols(text, self.eng + self.eng.upper())
+            num_letters = count_symbols(text, letters)
+            num_digits = count_symbols(text, digits)
+            num_special_symbols = count_symbols(text, special_symbols)
+            num_brackets = count_symbols(text, brackets)
+            num_rus = count_symbols(text, rus + rus.upper())
+            num_eng = count_symbols(text, eng + eng.upper())
 
             features["letters_proportion"].append(num_letters / len(text))
             features["digits_proportion"].append(num_digits / len(text))
@@ -38,24 +28,24 @@ class TxtlayerFeatureExtractor:
             features["rus_proportion"].append(num_rus / len(text))
             features["eng_proportion"].append(num_eng / len(text))
 
-            for symbol in self.letters + self.digits:
+            for symbol in letters + digits:
                 n = num_letters + num_digits
                 # proportion of occurring english and russian letters
                 features[f"{symbol}_proportion"].append(text.count(symbol) / n if n != 0 else 0.0)
 
-            for symbol in self.special_symbols + self.brackets:
+            for symbol in special_symbols + brackets:
                 # number of symbols
-                symbol_name = symbol if symbol not in self.prohibited_symbols else f"symbol{self.prohibited_symbols[symbol]}"
+                symbol_name = symbol if symbol not in prohibited_symbols else f"symbol{prohibited_symbols[symbol]}"
                 features[f"{symbol_name}_number"].append(text.count(symbol))
 
             # proportion of letters with symbols
             features["all_proportion"].append((num_letters + num_digits + num_brackets + num_special_symbols) / len(text) if len(text) != 0 else 0)
 
-            case_changes = sum(1 for s1, s2 in zip(text[:-1], text[1:]) if (s1 in self.lower_letters) and (s2 in self.upper_letters))
+            case_changes = sum(1 for s1, s2 in zip(text[:-1], text[1:]) if (s1 in lower_letters) and (s2 in upper_letters))
             features["case_changes"].append(case_changes / len(text))
-            symbol_changes = sum(1 for s1, s2 in zip(text[:-1], text[1:]) if (s1 in self.symbols) != (s2 in self.symbols))
+            symbol_changes = sum(1 for s1, s2 in zip(text[:-1], text[1:]) if (s1 in symbols) != (s2 in symbols))
             features["symbol_changes"].append(symbol_changes / len(text))
-            letter_changes = sum(1 for s1, s2 in zip(text[:-1], text[1:]) if (s1 in self.letters) and (s2 not in self.symbols))
+            letter_changes = sum(1 for s1, s2 in zip(text[:-1], text[1:]) if (s1 in letters) and (s2 not in symbols))
             features["letter_changes"].append(letter_changes / len(text))
 
             features["mean_word_length"].append(np.mean([len(word) for word in text.split()]))
@@ -70,6 +60,3 @@ class TxtlayerFeatureExtractor:
             features["median_char_ord"].append(np.median(all_characters_ord))
         features = pd.DataFrame(features)
         return features[sorted(features.columns)].astype(float)
-
-    def __count_symbols(self, text: str, symbol_list: str) -> int:
-        return sum(1 for symbol in text if symbol in symbol_list)
