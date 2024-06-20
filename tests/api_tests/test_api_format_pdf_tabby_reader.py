@@ -163,6 +163,7 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         self.assertListEqual(["Государство", "Место", "ВВП (по ППС) за 2018 г."], self._get_text_of_row(table[0]))
         self.assertListEqual(["Китай", "1", "25362"], self._get_text_of_row(table[1]))
         self.assertListEqual(["США", "2", "20494"], self._get_text_of_row(table[2]))
+        self.assertEqual(6, len(table[0][2]["lines"][0]["annotations"]))
 
         table = tables[1]["cells"]
         self.assertListEqual(["Государство", "Место", "ВВП (по ППС) за 2018 г."], self._get_text_of_row(table[0]))
