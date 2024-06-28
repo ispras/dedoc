@@ -1,4 +1,4 @@
-from .dedoc import DedocBaseLoader  # noqa from langchain_community.document_loaders.dedoc import DedocBaseLoader
+from dedoc_loader import DedocBaseLoader  # noqa from langchain_community.document_loaders.dedoc import DedocBaseLoader
 
 
 class DedocPDFLoader(DedocBaseLoader):

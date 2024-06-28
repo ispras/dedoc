@@ -19,7 +19,7 @@ Extensions = namedtuple("Parts", [
 
 
 converted_extensions = Extensions(
-    excel_like_format={".ods", "xls"},
+    excel_like_format={".ods", ".xls"},
     docx_like_format={".odt", ".doc", ".rtf"},
     pptx_like_format={".odp", ".ppt"},
     html_like_format={},

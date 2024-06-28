@@ -21,7 +21,7 @@ class DedocBaseLoader(BaseLoader, ABC):
         file_path: str,
         split: str = "document",
         with_tables: bool = True,
-        **dedoc_kwargs: dict
+        **dedoc_kwargs: Union[str, bool]
     ) -> None:
         """
         Initialize with file path and parsing parameters.
@@ -61,18 +61,25 @@ class DedocBaseLoader(BaseLoader, ABC):
 
     def lazy_load(self) -> Iterator[Document]:
         """Lazily load documents."""
+        import tempfile
+
         self._init_dedoc_manager()
-        document_tree = self.dedoc_manager.parse(file_path=self.file_path, parameters=self.parsing_parameters)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            document_tree = self.dedoc_manager.parse(file_path=self.file_path, parameters={**self.parsing_parameters, "attachments_dir": tmpdir})
         yield from self._split_document(document_tree=document_tree.to_api_schema().model_dump(), split=self.split)
 
     def _init_dedoc_manager(self) -> None:
         try:
             from dedoc import DedocManager
+            from dedoc.utils.parameter_utils import get_param_with_attachments, get_param_need_content_analysis
         except ImportError:
             raise ImportError(
                 "`dedoc` package not found, please install it with `pip install dedoc`"
             )
-        self.dedoc_manager = DedocManager(manager_config=self._make_config())
+        if get_param_with_attachments(self.parsing_parameters) and get_param_need_content_analysis(self.parsing_parameters):
+            self.dedoc_manager = DedocManager()
+        else:
+            self.dedoc_manager = DedocManager(manager_config=self._make_config())
 
     @abstractmethod
     def _make_config(self) -> dict:
@@ -85,7 +92,7 @@ class DedocBaseLoader(BaseLoader, ABC):
     ) -> str:
         """Get text (recursively) of the document tree node."""
         subparagraphs_text = "\n".join([self._json2txt(subparagraph) for subparagraph in paragraph["subparagraphs"]])
-        text = f"{paragraph['text']}\n{subparagraphs_text}"
+        text = f"{paragraph['text']}\n{subparagraphs_text}" if subparagraphs_text else paragraph["text"]
         return text
 
     def _parse_subparagraphs(
@@ -142,7 +149,7 @@ class DedocBaseLoader(BaseLoader, ABC):
             raise ValueError(f"Got {split} for `split`, but should be one of `{self.valid_split_values}`")
 
         if self.with_tables:
-            for table in document_tree["tables"]:
+            for table in document_tree["content"]["tables"]:
                 table_text, table_html = self._get_table(table)
                 yield Document(page_content=table_text, metadata={**table["metadata"], "type": "table", "text_as_html": table_html})
 
@@ -237,7 +244,7 @@ class DedocAPIFileLoader(DedocBaseLoader):
         url: str = "http://0.0.0.0:1231",
         split: str = "document",
         with_tables: bool = True,
-        **kwargs: dict
+        **kwargs: Union[str, bool]
     ) -> None:
         """Initialize with file path, API url and parsing parameters.
 
