@@ -36,7 +36,7 @@ class MhtmlReader(BaseReader):
         This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
-        from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
+        from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis, get_param_with_attachments
 
         parameters = {} if parameters is None else parameters
         attachments_dir = get_param_attachments_dir(parameters, file_path)
@@ -51,7 +51,6 @@ class MhtmlReader(BaseReader):
             lines.extend(result.lines)
             tables.extend(result.tables)
 
-        need_content_analysis = get_param_need_content_analysis(parameters)
         tmp_file_names = []
         original_file_names = []
         for tmp_file_name, original_file_name in zip(names_list, original_names_list):
@@ -59,8 +58,14 @@ class MhtmlReader(BaseReader):
                 tmp_file_names.append(tmp_file_name)
                 original_file_names.append(original_file_name)
 
-        attachments = self.__get_attachments(save_dir=attachments_dir, tmp_names_list=tmp_file_names, original_names_list=original_file_names,
-                                             need_content_analysis=need_content_analysis)
+        with_attachments = get_param_with_attachments(parameters)
+        need_content_analysis = get_param_need_content_analysis(parameters)
+        if with_attachments:
+            attachments = self.__get_attachments(
+                save_dir=attachments_dir, tmp_names_list=tmp_file_names, original_names_list=original_file_names, need_content_analysis=need_content_analysis
+            )
+        else:
+            attachments = []
 
         return UnstructuredDocument(tables=tables, lines=lines, attachments=attachments)
 

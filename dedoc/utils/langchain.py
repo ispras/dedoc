@@ -1,7 +1,10 @@
 from dedoc.extensions import converted_extensions, recognized_extensions
 
 
-supported_extensions = {format_group: {*recognized_extensions._asdict()[format_group], *converted_extensions._asdict()[format_group]} for format_group in recognized_extensions._asdict().keys()}  # noqa
+supported_extensions = {
+    format_group: {*recognized_extensions._asdict()[format_group], *converted_extensions._asdict()[format_group]}
+    for format_group in recognized_extensions._asdict().keys()
+}
 
 
 def make_manager_config(file_path: str, split: str, parsing_params: dict) -> dict:  # noqa: C901
@@ -77,14 +80,14 @@ def make_manager_config(file_path: str, split: str, parsing_params: dict) -> dic
         from dedoc.metadata_extractors.concrete_metadata_extractors.base_metadata_extractor import BaseMetadataExtractor
         converter, reader, metadata_extractor = None, JsonReader(), BaseMetadataExtractor()
     else:
-        raise BadFileFormatError(f'Could not find the suitable reader for the file with mime = "{mime}", extension = "{extension}".')  # noqa: T201
+        raise BadFileFormatError(f'Could not find the suitable reader for the file with mime = "{mime}", extension = "{extension}".')
 
-    if split in ["line", "page", "document"]:
-        from dedoc.structure_constructors.concrete_structure_constructors.linear_constructor import LinearConstructor
-        constructors, default_constructor = {"linear": LinearConstructor()}, LinearConstructor()
-    else:
+    if split == "node":
         from dedoc.structure_constructors.concrete_structure_constructors.tree_constructor import TreeConstructor
         constructors, default_constructor = {"tree": TreeConstructor()}, TreeConstructor()
+    else:
+        from dedoc.structure_constructors.concrete_structure_constructors.linear_constructor import LinearConstructor
+        constructors, default_constructor = {"linear": LinearConstructor()}, LinearConstructor()
 
     from dedoc.converters.converter_composition import ConverterComposition
     from dedoc.readers.reader_composition import ReaderComposition
@@ -93,13 +96,6 @@ def make_manager_config(file_path: str, split: str, parsing_params: dict) -> dic
     from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
     from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
     from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
-
-    # hardcoding some arguments
-    parsing_params["need_pdf_table_analysis"] = False
-    parsing_params["with_attachments"] = False
-    parsing_params["need_content_analysis"] = False
-    parsing_params["document_type"] = "other"
-    parsing_params["structure_type"] = "linear" if split in ["line", "page", "document"] else "tree"
 
     manager_config = dict(
         converter=ConverterComposition(converters=[converter] if converter else []),
@@ -138,12 +134,12 @@ def make_manager_pdf_config(file_path: str, split: str, parsing_params: dict) ->
     else:
         raise BadFileFormatError(f'Could not find the suitable reader for the file with mime = "{mime}", extension = "{extension}".')  # noqa: T201
 
-    if split in ["line", "page", "document"]:
-        from dedoc.structure_constructors.concrete_structure_constructors.linear_constructor import LinearConstructor
-        constructors, default_constructor = {"linear": LinearConstructor()}, LinearConstructor()
-    else:
+    if split == "node":
         from dedoc.structure_constructors.concrete_structure_constructors.tree_constructor import TreeConstructor
         constructors, default_constructor = {"tree": TreeConstructor()}, TreeConstructor()
+    else:
+        from dedoc.structure_constructors.concrete_structure_constructors.linear_constructor import LinearConstructor
+        constructors, default_constructor = {"linear": LinearConstructor()}, LinearConstructor()
 
     from dedoc.converters.converter_composition import ConverterComposition
     from dedoc.readers.reader_composition import ReaderComposition
@@ -152,13 +148,6 @@ def make_manager_pdf_config(file_path: str, split: str, parsing_params: dict) ->
     from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
     from dedoc.attachments_handler.attachments_handler import AttachmentsHandler
     from dedoc.metadata_extractors.metadata_extractor_composition import MetadataExtractorComposition
-
-    # hardcoding some arguments
-    parsing_params["need_pdf_table_analysis"] = False
-    parsing_params["with_attachments"] = False
-    parsing_params["need_content_analysis"] = False
-    parsing_params["document_type"] = "other"
-    parsing_params["structure_type"] = "linear" if split in ["line", "page", "document"] else "tree"
 
     manager_config = dict(
         converter=ConverterComposition(converters=[converter]),
