@@ -244,7 +244,7 @@ class DedocAPIFileLoader(DedocBaseLoader):
         url: str = "http://0.0.0.0:1231",
         split: str = "document",
         with_tables: bool = True,
-        **kwargs: Union[str, bool]
+        **dedoc_kwargs: Union[str, bool]
     ) -> None:
         """Initialize with file path, API url and parsing parameters.
 
@@ -272,7 +272,7 @@ class DedocAPIFileLoader(DedocBaseLoader):
                 delimiter: column separator for CSV, TSV files
                 encoding: encoding of TXT, CSV, TSV
         """
-        super().__init__(file_path=file_path, split=split, with_tables=with_tables, **kwargs)
+        super().__init__(file_path=file_path, split=split, with_tables=with_tables, **dedoc_kwargs)
         self.url = url
         self.parsing_parameters["return_format"] = "json"
 
