@@ -29,8 +29,8 @@ class TzStructureExtractor(AbstractStructureExtractor):
         self.body_builder = TzBodyBuilder()
         self.toc_builder = TocBuilder()
         path = os.path.join(get_config()["resources_path"], "line_type_classifiers")
-        self.classifier = TzLineTypeClassifier(classifier_type="tz", path=os.path.join(path, "tz_classifier.pkl.gz"), config=self.config)
-        self.txt_classifier = TzLineTypeClassifier(classifier_type="tz_txt", path=os.path.join(path, "tz_txt_classifier.pkl.gz"), config=self.config)
+        self.classifier = TzLineTypeClassifier(classifier_type="tz", path=os.path.join(path, "tz_classifier.zip"), config=self.config)
+        self.txt_classifier = TzLineTypeClassifier(classifier_type="tz_txt", path=os.path.join(path, "tz_txt_classifier.zip"), config=self.config)
 
     def extract(self, document: UnstructuredDocument, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

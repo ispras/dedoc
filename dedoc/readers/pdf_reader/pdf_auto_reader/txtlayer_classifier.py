@@ -1,7 +1,5 @@
-import gzip
 import logging
 import os
-import pickle
 from typing import List
 
 from xgboost import XGBClassifier
@@ -22,7 +20,7 @@ class TxtlayerClassifier:
         self.logger = config.get("logger", logging.getLogger())
 
         self.feature_extractor = TxtlayerFeatureExtractor()
-        self.path = os.path.join(get_config()["resources_path"], "txtlayer_classifier.pkl.gz")
+        self.path = os.path.join(get_config()["resources_path"], "txtlayer_classifier.json")
         self.__model = None
 
     @property
@@ -32,11 +30,11 @@ class TxtlayerClassifier:
 
         if not os.path.isfile(self.path):
             out_dir, out_name = os.path.split(self.path)
-            download_from_hub(out_dir=out_dir, out_name=out_name, repo_name="txtlayer_classifier", hub_name="model.pkl.gz")
+            download_from_hub(out_dir=out_dir, out_name=out_name, repo_name="txtlayer_classifier", hub_name="model.json")
 
         assert os.path.isfile(self.path)
-        with gzip.open(self.path, "rb") as f:
-            self.__model = pickle.load(f)
+        self.__model = XGBClassifier()
+        self.__model.load_model(self.path)
 
         if get_param_gpu_available(self.config, self.logger):
             gpu_params = dict(predictor="gpu_predictor", tree_method="auto", gpu_id=0)

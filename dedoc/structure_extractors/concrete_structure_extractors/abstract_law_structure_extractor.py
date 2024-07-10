@@ -26,8 +26,8 @@ class AbstractLawStructureExtractor(AbstractStructureExtractor, ABC):
         from dedoc.structure_extractors.line_type_classifiers.law_classifier import LawLineTypeClassifier
 
         path = os.path.join(get_config()["resources_path"], "line_type_classifiers")
-        self.classifier = LawLineTypeClassifier(classifier_type="law", path=os.path.join(path, "law_classifier.pkl.gz"), config=self.config)
-        self.txt_classifier = LawLineTypeClassifier(classifier_type="law_txt", path=os.path.join(path, "law_txt_classifier.pkl.gz"), config=self.config)
+        self.classifier = LawLineTypeClassifier(classifier_type="law", path=os.path.join(path, "law_classifier.zip"), config=self.config)
+        self.txt_classifier = LawLineTypeClassifier(classifier_type="law_txt", path=os.path.join(path, "law_txt_classifier.zip"), config=self.config)
         self.hierarchy_level_builders = [StubHierarchyLevelBuilder()]
         self.hl_type = "law"
         self.init_hl_depth = 1

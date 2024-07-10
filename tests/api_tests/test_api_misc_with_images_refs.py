@@ -71,11 +71,11 @@ class TestApiImageRefs(AbstractTestApiDocReader):
         self.assertEqual(attach_annotation["name"], "attachment")
         self.assertIn(attach_annotation["value"], attachment_uids)
 
-        attach_annotation = structure["subparagraphs"][3]["annotations"][-2]
+        attach_annotation = structure["subparagraphs"][2]["annotations"][-2]
         self.assertEqual(attach_annotation["name"], "attachment")
         self.assertIn(attach_annotation["value"], attachment_uids)
 
-        attach_annotation = structure["subparagraphs"][3]["annotations"][-1]
+        attach_annotation = structure["subparagraphs"][2]["annotations"][-1]
         self.assertEqual(attach_annotation["name"], "attachment")
         self.assertIn(attach_annotation["value"], attachment_uids)
 

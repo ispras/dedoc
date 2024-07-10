@@ -1,10 +1,8 @@
 import abc
-import gzip
 import hashlib
 import json
 import logging
 import os
-import pickle
 from collections import Counter, OrderedDict
 from statistics import mean
 from typing import Callable, List, Optional
@@ -16,6 +14,7 @@ from tqdm import tqdm
 from xgboost import XGBClassifier
 
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
+from dedoc.structure_extractors.line_type_classifiers.abstract_pickled_classifier import AbstractPickledLineTypeClassifier
 from dedoc.utils.utils import flatten, identity
 from scripts.train.trainers.data_loader import DataLoader
 from scripts.train.trainers.dataset import LineClassifierDataset
@@ -90,10 +89,6 @@ class BaseSklearnLineClassifierTrainer:
         self.errors_saver = ErrorsSaver(self.path_errors, os.path.join(self.dataset_dir, "dataset.zip"), logger, config=config)
         self.path_features_importances = path_features_importances
         self.label_transformer = identity if label_transformer is None else label_transformer
-
-        if not path_out.endswith(".pkl.gz"):
-            path_out = path_out + ".gz" if path_out.endswith(".pkl") else path_out + ".pkl.gz"
-
         self.path_out = path_out
         self.config = config
         self.n_splits = n_splits
@@ -131,8 +126,7 @@ class BaseSklearnLineClassifierTrainer:
 
             if not os.path.isdir(os.path.dirname(self.path_out)):
                 os.makedirs(os.path.dirname(self.path_out))
-            with gzip.open(self.path_out, "wb") as output_file:
-                pickle.dump((cls, self.feature_extractor.parameters()), output_file)
+            AbstractPickledLineTypeClassifier.save(path_out=self.path_out, classifier=cls, parameters=self.feature_extractor.parameters())
 
             if self.path_scores is not None:
                 self.logger.info(f"Save scores in {self.path_scores}")
