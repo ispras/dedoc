@@ -1,6 +1,4 @@
-import gzip
 import os
-import pickle
 import zipfile
 from pathlib import Path
 from typing import List, Tuple
@@ -92,8 +90,7 @@ if __name__ == "__main__":
     print(f"F1 score = {score}")
 
     resources_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "..", "resources")
-    with gzip.open(os.path.join(resources_dir, "txtlayer_classifier.pkl.gz"), "wb") as file:
-        pickle.dump(clf, file)
+    clf.save_model(os.path.join(resources_dir, "txtlayer_classifier.json"))
 
     xgbfir.saveXgbFI(clf,
                      feature_names=features.columns,

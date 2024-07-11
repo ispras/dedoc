@@ -22,7 +22,7 @@ classifier_name = "article_classifier"
 # configure path for saving a trained classifier
 classifier_directory_path = os.path.join(os.path.expanduser("~"), ".cache", "dedoc", "resources", "line_type_classifiers")
 os.makedirs(classifier_directory_path, exist_ok=True)
-classifier_path = os.path.join(classifier_directory_path, f"{classifier_name}.pkl.gz")
+classifier_path = os.path.join(classifier_directory_path, f"{classifier_name}.zip")
 
 # configure paths for saving scores and features importances (this is not obligatory)
 resources_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources"))

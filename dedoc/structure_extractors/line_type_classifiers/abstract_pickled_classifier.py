@@ -1,7 +1,8 @@
-import gzip
+import json
 import logging
 import os
-import pickle
+import tempfile
+import zipfile
 from abc import ABC
 from typing import Optional, Tuple
 
@@ -32,10 +33,16 @@ class AbstractPickledLineTypeClassifier(AbstractLineTypeClassifier, ABC):
         """
         if not os.path.isfile(path):
             out_dir, out_name = os.path.split(path)
-            download_from_hub(out_dir=out_dir, out_name=out_name, repo_name="line_type_classifiers", hub_name=f"{classifier_type}.pkl.gz")
+            download_from_hub(out_dir=out_dir, out_name=out_name, repo_name="line_type_classifiers", hub_name=f"{classifier_type}.zip")
 
-        with gzip.open(path) as file:
-            classifier, feature_extractor_parameters = pickle.load(file)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with zipfile.ZipFile(path) as archive:
+                archive.extractall(tmpdir)
+
+            with open(os.path.join(tmpdir, "parameters.json")) as parameters_file:
+                feature_extractor_parameters = json.load(parameters_file)
+            classifier = XGBClassifier()
+            classifier.load_model(os.path.join(tmpdir, "classifier.json"))
 
         if get_param_gpu_available(self.config, self.logger):
             gpu_params = dict(predictor="gpu_predictor", tree_method="auto", gpu_id=0)
@@ -44,19 +51,27 @@ class AbstractPickledLineTypeClassifier(AbstractLineTypeClassifier, ABC):
 
         return classifier, feature_extractor_parameters
 
-    def save(self, path_out: str, object_for_saving: object) -> str:
+    @staticmethod
+    def save(path_out: str, classifier: XGBClassifier, parameters: dict) -> str:
         """
-        Save the pickled classifier (with initialization parameters for a feature extractor) into the `.pkl.gz` file with path=`path_out`
+        Save the classifier (with initialization parameters for a feature extractor) into the `.zip` file with path=`path_out`
+
+        * classifier -> classifier.json
+        * parameters -> parameters.json
 
         :param path_out: path (with file name) where to save the object
-        :param object_for_saving: classifier with feature extractor's parameters to save
+        :param classifier: classifier to save
+        :param parameters: feature extractor parameters to save
         :return: the resulting path of the saved file
         """
-        if path_out.endswith(".pkl"):
-            path_out += ".gz"
-        elif not path_out.endswith(".gz"):
-            path_out += ".pkl.gz"
+        with tempfile.TemporaryDirectory() as tmpdir:
+            clf_path = os.path.join(tmpdir, "classifier.json")
+            params_path = os.path.join(tmpdir, "parameters.json")
+            classifier.save_model(clf_path)
+            with open(params_path, "w") as out_file:
+                json.dump(parameters, out_file)
 
-        with gzip.open(path_out, "wb") as file_out:
-            pickle.dump(obj=object_for_saving, file=file_out)
+            with zipfile.ZipFile(path_out, "w") as archive:
+                archive.write(clf_path, os.path.basename(clf_path))
+                archive.write(params_path, os.path.basename(params_path))
         return path_out

@@ -19,7 +19,7 @@ class ArticleStructureExtractor(AbstractStructureExtractor):
     def __init__(self, *, config: Optional[dict] = None) -> None:
         super().__init__(config=config)
         path = os.path.abspath(os.path.dirname(__file__))  # path to the directory where the classifier weights are located
-        self.classifier = ArticleLineTypeClassifier(path=os.path.join(path, "article_classifier.pkl.gz"), config=self.config)
+        self.classifier = ArticleLineTypeClassifier(path=os.path.join(path, "article_classifier.zip"), config=self.config)
 
         self.named_item_keywords = ("abstract", "introduction", "related work", "conclusion", "references", "appendix", "acknowledgements")
 
