@@ -49,4 +49,4 @@ per-file-ignores =
     scripts/benchmark_pdf_performance*:JS101
     tests/custom_test_runner.py:ANN001,ANN201,ANN202,ANN204,N802
     docs/source/_static/code_examples/*:I251
-    docs/source/_static/code_examples/langchain/*:FOL005,I251
+    docs/source/_static/code_examples/langchain/*:FOL001,FOL002,FOL003,FOL004,FOL005,I100,I202,I251
