@@ -18,15 +18,15 @@ class DedocBaseLoader(BaseLoader, ABC):
 
     Loader enables extracting text, tables and attached files from the given file:
         * `Text` can be split by pages, `dedoc` tree nodes, textual lines
-        (according to the `split` parameter).
-        * `Attached files` (when with_attachments=True and need_content_analysis==True)
-        are split according to the `split` parameter.
+            (according to the `split` parameter).
+        * `Attached files` (when with_attachments=True)
+            are split according to the `split` parameter.
             For attachments, langchain Document object has an additional metadata field
-        `type`="attachment".
+            `type`="attachment".
         * `Tables` (when with_tables=True) are not split - each table corresponds to one
-        langchain Document object.
+            langchain Document object.
             For tables, Document object has additional metadata fields `type`="table"
-        and `text_as_html` with table HTML representation.
+            and `text_as_html` with table HTML representation.
     """
 
     def __init__(
@@ -52,21 +52,26 @@ class DedocBaseLoader(BaseLoader, ABC):
                 "line": split document text into lines
             with_tables: add tables to the result - each table is returned as a single
                 langchain Document object
-                dedoc_kwargs: parameters used for document parsing via `dedoc` (https://dedoc.readthedocs.io/en/latest/parameters/parameters.html).
-                with_attachments: enable attached files extraction, you need also
-                    need_content_analysis parameter to get results
-                need_content_analysis: enable attached files parsing, works only when
-                    with_attachments==True
+
+            dedoc_kwargs: parameters used for document parsing via `dedoc`
+                (https://dedoc.readthedocs.io/en/latest/parameters/parameters.html).
+                with_attachments: enable attached files extraction
                 recursion_deep_attachments: recursion level for attached files
                     extraction, works only when with_attachments==True
-                pdf_with_text_layer: type of handler for parsing PDF documents
+                pdf_with_text_layer: type of handler for parsing PDF documents,
+                    available options
+                    ["true", "false", "tabby", "auto", "auto_tabby" (default)]
                 language: language of the document for PDF without a textual layer and
-                    images
+                    images, available options ["eng", "rus", "rus+eng" (default)],
+                    the list of languages can be extended, please see
+                    https://dedoc.readthedocs.io/en/latest/tutorials/add_new_language.html
                 pages: page slice to define the reading range for parsing PDF documents
-                is_one_column_document: number of columns in case it’s known beforehand
-                    for PDF without a textual layer and images
+                is_one_column_document: detect number of columns for PDF without
+                    a textual layer and images, available options
+                    ["true", "false", "auto" (default)]
                 document_orientation: fix document orientation (90, 180, 270 degrees)
-                    for PDF without a textual layer and images
+                    for PDF without a textual layer and images, available options
+                    ["auto" (default), "no_change"]
                 need_header_footer_analysis: remove headers and footers from the output
                     result for parsing PDF and images
                 need_binarization: clean pages background (binarize) for PDF without a
@@ -86,11 +91,13 @@ class DedocBaseLoader(BaseLoader, ABC):
 
         self.with_tables = with_tables
         self.file_path = file_path
+        with_attachments = str(dedoc_kwargs.get("with_attachments", "false")).lower()
         self.parsing_parameters = {
             **dedoc_kwargs,
             **{
                 "structure_type": "tree" if self.split == "node" else "linear",
                 "document_type": "other",
+                "need_content_analysis": with_attachments,
             },
         }
 
@@ -264,7 +271,8 @@ class DedocFileLoader(DedocBaseLoader):
     Load files using `dedoc`.
 
     The file loader automatically detects the file type (with the correct extension).
-    The list of supported file types is gives at https://dedoc.readthedocs.io/en/latest/index.html#id1.
+    The list of supported file types is gives at
+    https://dedoc.readthedocs.io/en/latest/index.html#id1.
     Please see the documentation of DedocBaseLoader to get more details.
 
     Examples
@@ -342,21 +350,26 @@ class DedocAPIFileLoader(DedocBaseLoader):
                 "line": split document into lines
             with_tables: add tables to the result - each table is returned as a single
                 langchain Document object
-            dedoc_kwargs: parameters used for document parsing via `dedoc` (https://dedoc.readthedocs.io/en/latest/parameters/parameters.html).
-                with_attachments: enable attached files extraction, you need also
-                    need_content_analysis parameter to get results
-                need_content_analysis: enable attached files parsing, works only when
-                    with_attachments==True
+
+            dedoc_kwargs: parameters used for document parsing via `dedoc`
+                (https://dedoc.readthedocs.io/en/latest/parameters/parameters.html).
+                with_attachments: enable attached files extraction
                 recursion_deep_attachments: recursion level for attached files
                     extraction, works only when with_attachments==True
-                pdf_with_text_layer: type of handler for parsing PDF documents
+                pdf_with_text_layer: type of handler for parsing PDF documents,
+                    available options
+                    ["true", "false", "tabby", "auto", "auto_tabby" (default)]
                 language: language of the document for PDF without a textual layer and
-                    images
+                    images, available options ["eng", "rus", "rus+eng" (default)],
+                    the list of languages can be extended, please see
+                    https://dedoc.readthedocs.io/en/latest/tutorials/add_new_language.html
                 pages: page slice to define the reading range for parsing PDF documents
-                is_one_column_document: number of columns in case it’s known beforehand
-                    for PDF without a textual layer and images
+                is_one_column_document: detect number of columns for PDF without
+                    a textual layer and images, available options
+                    ["true", "false", "auto" (default)]
                 document_orientation: fix document orientation (90, 180, 270 degrees)
-                    for PDF without a textual layer and images
+                    for PDF without a textual layer and images, available options
+                    ["auto" (default), "no_change"]
                 need_header_footer_analysis: remove headers and footers from the output
                     result for parsing PDF and images
                 need_binarization: clean pages background (binarize) for PDF without a

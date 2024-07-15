@@ -8,11 +8,11 @@ supported_extensions = {
 
 
 def make_manager_config(file_path: str, split: str, parsing_params: dict) -> dict:  # noqa: C901
-    from dedoc.utils.parameter_utils import get_param_need_content_analysis, get_param_with_attachments
+    from dedoc.utils.parameter_utils import get_param_with_attachments
     from dedoc.utils.utils import get_mime_extension
     from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 
-    if get_param_with_attachments(parsing_params) and get_param_need_content_analysis(parsing_params):
+    if get_param_with_attachments(parsing_params):
         return make_minimal_manager_config(split, parsing_params)
 
     mime, extension = get_mime_extension(file_path=file_path)
@@ -113,11 +113,11 @@ def make_manager_config(file_path: str, split: str, parsing_params: dict) -> dic
 
 
 def make_manager_pdf_config(file_path: str, split: str, parsing_params: dict) -> dict:  # noqa: C901
-    from dedoc.utils.parameter_utils import get_param_need_content_analysis, get_param_with_attachments
+    from dedoc.utils.parameter_utils import get_param_with_attachments
     from dedoc.utils.utils import get_mime_extension
     from dedoc.common.exceptions.bad_file_error import BadFileFormatError
 
-    if get_param_with_attachments(parsing_params) and get_param_need_content_analysis(parsing_params):
+    if get_param_with_attachments(parsing_params):
         return make_minimal_manager_config(split, parsing_params)
 
     mime, extension = get_mime_extension(file_path=file_path)

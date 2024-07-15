@@ -9,20 +9,22 @@ class DedocPDFLoader(DedocBaseLoader):
     Note that `__init__` method supports dedoc_kwargs that differ from ones of
         DedocBaseLoader.
 
-    dedoc_kwargs: parameters used for document parsing via `dedoc` (https://dedoc.readthedocs.io/en/latest/parameters/parameters.html).
-        with_attachments: enable attached files extraction, you need also
-            need_content_analysis parameter to get results
-        need_content_analysis: enable attached files parsing, works only when
-            with_attachments==True
+    dedoc_kwargs: parameters used for document parsing via `dedoc`
+        (https://dedoc.readthedocs.io/en/latest/parameters/pdf_handling.html).
+        with_attachments: enable attached files extraction
         recursion_deep_attachments: recursion level for attached files extraction,
             works only when with_attachments==True
-        pdf_with_text_layer: type of handler for parsing
-        language: language of the document for PDF without a textual layer
+        pdf_with_text_layer: type of handler for parsing, available options
+            ["true", "false", "tabby", "auto", "auto_tabby" (default)]
+        language: language of the document for PDF without a textual layer,
+            available options ["eng", "rus", "rus+eng" (default)], the list of
+            languages can be extended, please see
+            https://dedoc.readthedocs.io/en/latest/tutorials/add_new_language.html
         pages: page slice to define the reading range for parsing
-        is_one_column_document: number of columns in case it’s known beforehand for PDF
-            without a textual layer
+        is_one_column_document: detect number of columns for PDF without a textual
+            layer, available options ["true", "false", "auto" (default)]
         document_orientation: fix document orientation (90, 180, 270 degrees) for PDF
-            without a textual layer
+            without a textual layer, available options ["auto" (default), "no_change"]
         need_header_footer_analysis: remove headers and footers from the output result
         need_binarization: clean pages background (binarize) for PDF without a textual
             layer
