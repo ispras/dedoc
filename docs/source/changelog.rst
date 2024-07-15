@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v2.2.5 (2024-07-15)
+-------------------
+Release note: `v2.2.5 <https://github.com/ispras/dedoc/releases/tag/v2.2.5>`_
+
+* Added internal functions and classes to support integration of Dedoc into langchain
+* Changed Pandas and XGBoost versions in the requirements to avoid conflicts with langchain
+
 v2.2.4 (2024-06-20)
 -------------------
 Release note: `v2.2.4 <https://github.com/ispras/dedoc/releases/tag/v2.2.4>`_
