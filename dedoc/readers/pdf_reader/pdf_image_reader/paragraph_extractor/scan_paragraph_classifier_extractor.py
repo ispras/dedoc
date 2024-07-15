@@ -1,7 +1,8 @@
-import gzip
+import json
 import logging
 import os
-import pickle
+import tempfile
+import zipfile
 from typing import List
 
 from xgboost import XGBClassifier
@@ -21,7 +22,7 @@ class ScanParagraphClassifierExtractor(object):
     def __init__(self, *, config: dict) -> None:
         super().__init__()
         self.logger = config.get("logger", logging.getLogger())
-        self.path = os.path.join(get_config()["resources_path"], "paragraph_classifier.pkl.gz")
+        self.path = os.path.join(get_config()["resources_path"], "paragraph_classifier.zip")
         self.config = config
         self._feature_extractor = None
         self._classifier = None
@@ -41,11 +42,17 @@ class ScanParagraphClassifierExtractor(object):
     def _unpickle(self) -> None:
         if not os.path.isfile(self.path):
             out_dir, out_name = os.path.split(self.path)
-            download_from_hub(out_dir=out_dir, out_name=out_name, repo_name="paragraph_classifier", hub_name="model.pkl.gz")
+            download_from_hub(out_dir=out_dir, out_name=out_name, repo_name="paragraph_classifier", hub_name="model.zip")
 
-        with gzip.open(self.path) as file:
-            self._classifier, parameters = pickle.load(file)
-            self._feature_extractor = ParagraphFeatureExtractor(**parameters, config=self.config)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with zipfile.ZipFile(self.path) as archive:
+                archive.extractall(tmpdir)
+
+            with open(os.path.join(tmpdir, "parameters.json")) as parameters_file:
+                parameters = json.load(parameters_file)
+            self._classifier = XGBClassifier()
+            self._classifier.load_model(os.path.join(tmpdir, "classifier.json"))
+        self._feature_extractor = ParagraphFeatureExtractor(**parameters, config=self.config)
 
         if get_param_gpu_available(self.config, self.logger):
             gpu_params = dict(predictor="gpu_predictor", tree_method="auto", gpu_id=0)

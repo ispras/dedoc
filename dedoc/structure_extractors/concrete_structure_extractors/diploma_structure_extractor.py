@@ -32,7 +32,7 @@ class DiplomaStructureExtractor(AbstractStructureExtractor):
         self.toc_builder = TocBuilder()
         self.body_builder = DiplomaBodyBuilder()
         path = os.path.join(get_config()["resources_path"], "line_type_classifiers")
-        self.classifier = DiplomaLineTypeClassifier(path=os.path.join(path, "diploma_classifier.pkl.gz"), config=self.config)
+        self.classifier = DiplomaLineTypeClassifier(path=os.path.join(path, "diploma_classifier.zip"), config=self.config)
         self.footnote_start_regexp = re.compile(r"^\d+ ")
 
     def extract(self, document: UnstructuredDocument, parameters: Optional[dict] = None) -> UnstructuredDocument:

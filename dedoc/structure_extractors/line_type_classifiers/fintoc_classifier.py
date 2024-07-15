@@ -1,7 +1,5 @@
-import gzip
 import logging
 import os
-import pickle
 from typing import Dict, List, Optional, Union
 
 import numpy as np
@@ -60,8 +58,7 @@ class FintocClassifier:
     def save(self, classifiers_dir_path: str, features_importances_dir_path: str, logger: logging.Logger, features_names: List[str], reader: str) -> None:
         os.makedirs(classifiers_dir_path, exist_ok=True)
         for classifier_type in ("binary", "target"):
-            with gzip.open(os.path.join(classifiers_dir_path, f"{classifier_type}_classifier_{self.language}_{reader}.pkg.gz"), "wb") as output_file:
-                pickle.dump(self.classifiers[classifier_type], output_file)
+            self.classifiers[classifier_type].save_model(os.path.join(classifiers_dir_path, f"{classifier_type}_classifier_{self.language}_{reader}.json"))
         logger.info(f"Classifiers were saved in {classifiers_dir_path} directory")
 
         os.makedirs(features_importances_dir_path, exist_ok=True)
@@ -81,15 +78,16 @@ class FintocClassifier:
     def __lazy_load_weights(self, classifier_type: str) -> XGBClassifier:
         if self.classifiers[classifier_type] is None:
             assert self.weights_dir_path is not None
-            file_name = f"{classifier_type}_classifier_{self.language}.pkg.gz"
+            file_name = f"{classifier_type}_classifier_{self.language}.json"
             classifier_path = os.path.join(self.weights_dir_path, file_name)
             if not os.path.isfile(classifier_path):
                 download_from_hub(out_dir=self.weights_dir_path,
                                   out_name=file_name,
                                   repo_name="fintoc_classifiers",
-                                  hub_name=f"{classifier_type}_classifier_{self.language}_txt_layer.pkg.gz")
+                                  hub_name=f"{classifier_type}_classifier_{self.language}_txt_layer.json")
 
-            with gzip.open(classifier_path, "rb") as input_file:
-                self.classifiers[classifier_type] = pickle.load(file=input_file)
+            classifier = XGBClassifier()
+            classifier.load_model(classifier_path)
+            self.classifiers[classifier_type] = classifier
 
         return self.classifiers[classifier_type]

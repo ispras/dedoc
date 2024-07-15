@@ -19,7 +19,7 @@ config = get_config()
 
 resources_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources"))
 assert os.path.isdir(resources_path)
-path_out = os.path.join(resources_path, f"{classifier_name}.pkl.gz")
+path_out = os.path.join(resources_path, f"{classifier_name}.zip")
 path_scores = os.path.join(resources_path, "benchmarks", f"{classifier_name}_scores.json")
 path_feature_importances = os.path.join(resources_path, "feature_importances", f"{classifier_name}_feature_importances.xlsx")
 

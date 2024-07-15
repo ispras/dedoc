@@ -44,11 +44,13 @@ class EmailReader(BaseReader):
         import os
         import uuid
         from dedoc.data_structures.attached_file import AttachedFile
-        from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
+        from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis, get_param_with_attachments
         from dedoc.utils.utils import get_unique_name
 
         parameters = {} if parameters is None else parameters
         attachments_dir = get_param_attachments_dir(parameters, file_path)
+        with_attachments = get_param_with_attachments(parameters)
+        need_content_analysis = get_param_need_content_analysis(parameters)
 
         with open(file_path, "rb") as f:
             msg = email.message_from_binary_file(f)
@@ -58,16 +60,15 @@ class EmailReader(BaseReader):
         lines = self.__get_main_fields(msg)
         header_filename = "message_header_" + get_unique_name("message_header.json")
 
-        # saving message header into separated file as an attachment
-        header_file_path = os.path.join(attachments_dir, header_filename)
-        with open(header_file_path, "w", encoding="utf-8") as f:
-            json.dump(all_header_fields, f, ensure_ascii=False, indent=4)
-
-        need_content_analysis = get_param_need_content_analysis(parameters)
-        attachments.append(AttachedFile(original_name=header_filename,
-                                        tmp_file_path=header_file_path,
-                                        uid=f"attach_{uuid.uuid1()}",
-                                        need_content_analysis=need_content_analysis))
+        if with_attachments:
+            # saving message header into separated file as an attachment
+            header_file_path = os.path.join(attachments_dir, header_filename)
+            with open(header_file_path, "w", encoding="utf-8") as f:
+                json.dump(all_header_fields, f, ensure_ascii=False, indent=4)
+            attachments.append(AttachedFile(original_name=header_filename,
+                                            tmp_file_path=header_file_path,
+                                            uid=f"attach_{uuid.uuid1()}",
+                                            need_content_analysis=need_content_analysis))
 
         html_found = False
         text_parts = []
@@ -92,7 +93,8 @@ class EmailReader(BaseReader):
             if part.is_multipart():
                 continue
 
-            self.__add_attachment(part, attachments_dir, attachments, need_content_analysis)
+            if with_attachments:
+                self.__add_attachment(part, attachments_dir, attachments, need_content_analysis)
 
         # text/plain has the same content as text/html
         if not html_found:
