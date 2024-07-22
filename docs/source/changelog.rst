@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v2.2.6 (2024-07-22)
+-------------------
+Release note: `v2.2.6 <https://github.com/ispras/dedoc/releases/tag/v2.2.6>`_
+
+* Upgrade dependencies: `numpy<2.0` and `dedoc-utils==0.3.7`.
+
 v2.2.5 (2024-07-15)
 -------------------
 Release note: `v2.2.5 <https://github.com/ispras/dedoc/releases/tag/v2.2.5>`_

@@ -1,5 +1,6 @@
 # Dedoc
 
+[![image](https://img.shields.io/pypi/pyversions/dedoc.svg)](https://pypi.python.org/pypi/dedoc)
 [![GitHub release](https://img.shields.io/github/release/ispras/dedoc.svg)](https://github.com/ispras/dedoc/releases/)
 [![PyPI version](https://badge.fury.io/py/dedoc.svg)](https://badge.fury.io/py/dedoc)
 [![PyPI downloads](https://pepy.tech/badge/dedoc)](https://pepy.tech/project/dedoc)
