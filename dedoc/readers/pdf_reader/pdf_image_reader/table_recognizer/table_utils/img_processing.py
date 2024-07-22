@@ -117,7 +117,7 @@ def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict) -> [An
 
 def __get_contours_for_table_wo_external_bounds(img: np.ndarray, img_with_contours: np.ndarray, contours: List, hierarchy: List, config: dict) -> [Any, Any]:
     # get children (get table counters)
-    contours = np.array(contours)
+    contours = np.array(contours, dtype=object)
     list_contours, table_contours = __get_table_contours(contours, hierarchy)
 
     filtered_cont_id = []

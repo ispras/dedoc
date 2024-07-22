@@ -25,7 +25,7 @@ class TestApiFintoc(AbstractTestApiDocReader):
 
     def test_article_fr(self) -> None:
         file_name = "fintoc/prospectus_fr.pdf"
-        result = self._send_request(file_name, dict(document_type="fintoc", pdf_with_text_layer="true", language="fr"))
+        result = self._send_request(file_name, dict(document_type="fintoc", pdf_with_text_layer="true", language="fr", need_pdf_table_analysis="false"))
 
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
@@ -45,7 +45,7 @@ class TestApiFintoc(AbstractTestApiDocReader):
 
     def test_article_sp(self) -> None:
         file_name = "fintoc/prospectus_sp.pdf"
-        result = self._send_request(file_name, dict(document_type="fintoc", pdf_with_text_layer="true", language="sp"))
+        result = self._send_request(file_name, dict(document_type="fintoc", pdf_with_text_layer="true", language="sp", need_pdf_table_analysis="false"))
 
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
