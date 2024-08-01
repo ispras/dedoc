@@ -1,4 +1,5 @@
 import logging
+import os
 import warnings
 from os import path
 from typing import Optional, Tuple
@@ -31,7 +32,7 @@ class ColumnsOrientationClassifier(object):
     def net(self) -> ClassificationModelTorch:
         if self._net is None:
             if self.checkpoint_path is not None:
-                net = ClassificationModelTorch(path.join(self.checkpoint_path, "scan_orientation_efficient_net_b0.pth"))
+                net = ClassificationModelTorch(self.checkpoint_path)
                 self._load_weights(net)
             else:
                 net = ClassificationModelTorch(None)
@@ -61,9 +62,11 @@ class ColumnsOrientationClassifier(object):
         self.logger.warning(f"Classifier is set to device {self.device}")
 
     def _load_weights(self, net: ClassificationModelTorch) -> None:
-        path_checkpoint = path.join(self.checkpoint_path, "scan_orientation_efficient_net_b0.pth")
+        path_checkpoint = self.checkpoint_path
         if not path.isfile(path_checkpoint):
-            download_from_hub(out_dir=self.checkpoint_path,
+            from dedoc.config import get_config
+            path_checkpoint = os.path.join(get_config()["resources_path"], "scan_orientation_efficient_net_b0.pth")
+            download_from_hub(out_dir=os.path.dirname(os.path.abspath(path_checkpoint)),
                               out_name="scan_orientation_efficient_net_b0.pth",
                               repo_name="scan_orientation_efficient_net_b0",
                               hub_name="model.pth")

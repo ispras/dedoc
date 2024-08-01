@@ -1,10 +1,13 @@
 import argparse
 import os
+import shutil
+import zipfile
 from time import time
 from typing import List
 
 import numpy as np
 import torch
+from huggingface_hub import hf_hub_download
 from sklearn.metrics import precision_recall_fscore_support
 from texttable import Texttable
 from torch import nn
@@ -19,17 +22,17 @@ from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.da
 parser = argparse.ArgumentParser()
 checkpoint_path_save = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "efficient_net_b0_fixed.pth"))
 checkpoint_path_load = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "efficient_net_b0_fixed.pth"))
-checkpoint_path = "../../resources"
-output_dir = os.path.abspath(os.path.join(checkpoint_path, "benchmarks"))
+output_dir = os.path.abspath(os.path.join("../../resources", "benchmarks"))
 
 parser.add_argument("-t", "--train", type=bool, help="run for train model", default=False)
 parser.add_argument("-s", "--checkpoint_save", help="Path to checkpoint for save or load", default=checkpoint_path_save)
 parser.add_argument("-l", "--checkpoint_load", help="Path to checkpoint for load", default=checkpoint_path_load)
 parser.add_argument("-f", "--from_checkpoint", type=bool, help="run for train model", default=True)
 parser.add_argument("-d", "--input_data_folder", help="Path to data with folders train or test")
+parser.add_argument("-b", "--batch_size", type=int, help="Batch size", default=1)
 
 args = parser.parse_args()
-BATCH_SIZE = 1
+BATCH_SIZE = args.batch_size
 ON_GPU = True
 
 """
@@ -191,10 +194,37 @@ def train_step(data_executor: DataLoaderImageOrient, classifier: ColumnsOrientat
     train_model(trainloader, args.checkpoint_save, classifier)
 
 
+def create_dataset() -> None:
+    if not os.path.isdir(args.input_data_folder):
+        #  download source files
+        datasets_path = os.path.join(get_config()["resources_path"], "datasets")
+        os.makedirs(datasets_path, exist_ok=True)
+        intermediate_path = os.path.realpath(hf_hub_download(repo_id="dedoc/orientation_columns_dataset",
+                                                             filename="generate_dataset_orient_classifier.zip",
+                                                             repo_type="dataset",
+                                                             revision="821dc53a24f8039cd77effe0e22813ad6b2a073f"))
+        source_dataset_folder = os.path.join(datasets_path, "generate_dataset_orient_classifier.zip")
+        shutil.move(intermediate_path, source_dataset_folder)
+
+        with zipfile.ZipFile(source_dataset_folder, "r") as zip_ref:
+            zip_ref.extractall(datasets_path)
+        os.remove(source_dataset_folder)
+
+        #  rotate source files
+        src_pics_path = os.path.join(datasets_path, "generate_dataset_orient_classifier", "src")
+        scripts_path = os.path.join(datasets_path, "generate_dataset_orient_classifier", "scripts")
+        final_dataset_folder = os.path.join(get_config()["resources_path"], "datasets", "columns_orientation_dataset")
+        os.makedirs(final_dataset_folder, exist_ok=True)
+
+        os.system("python3 " + os.path.join(scripts_path, "gen_dataset.py") + " -i " + src_pics_path + " -o " + final_dataset_folder)
+        setattr(args, "input_data_folder", final_dataset_folder)  # noqa: B010
+
+
 if __name__ == "__main__":
     config = get_config()
     data_executor = DataLoaderImageOrient()
-    net = ColumnsOrientationClassifier(on_gpu=ON_GPU, checkpoint_path=checkpoint_path if not args.train else "", config=config)
+    create_dataset()
+    net = ColumnsOrientationClassifier(on_gpu=ON_GPU, checkpoint_path=args.checkpoint_load if args.from_checkpoint else "", config=config)
     if args.train:
         train_step(data_executor, net)
     else:
