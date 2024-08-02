@@ -31,11 +31,9 @@ class ColumnsOrientationClassifier(object):
     @property
     def net(self) -> ClassificationModelTorch:
         if self._net is None:
+            net = ClassificationModelTorch(self.checkpoint_path)
             if self.checkpoint_path is not None:
-                net = ClassificationModelTorch(self.checkpoint_path)
                 self._load_weights(net)
-            else:
-                net = ClassificationModelTorch(None)
             self._net = net
         self._net.to(self.device)
         return self._net
