@@ -205,12 +205,12 @@ def create_dataset() -> None:
                                                          filename="generate_dataset_orient_classifier.zip",
                                                          repo_type="dataset",
                                                          revision="902cc77dbd28e63dbb74dfc14a7a7b198e9d6f9d"))
-    source_dataset_folder = os.path.join(datasets_path, "generate_dataset_orient_classifier.zip")
-    shutil.move(intermediate_path, source_dataset_folder)
+    source_dataset_archive = os.path.join(datasets_path, "generate_dataset_orient_classifier.zip")
+    shutil.move(intermediate_path, source_dataset_archive)
 
-    with zipfile.ZipFile(source_dataset_folder, "r") as zip_ref:
+    with zipfile.ZipFile(source_dataset_archive, "r") as zip_ref:
         zip_ref.extractall(datasets_path)
-    os.remove(source_dataset_folder)
+    os.remove(source_dataset_archive)
 
     #  rotate source files
     src_pics_path = os.path.join(datasets_path, "generate_dataset_orient_classifier", "src")
@@ -218,7 +218,7 @@ def create_dataset() -> None:
     final_dataset_folder = os.path.join(get_config()["resources_path"], "datasets", "columns_orientation_dataset")
     os.makedirs(final_dataset_folder, exist_ok=True)
 
-    os.system("python3 " + os.path.join(scripts_path, "gen_dataset.py") + " -i " + src_pics_path + " -o " + final_dataset_folder)
+    os.system(f"python3 {os.path.join(scripts_path, 'gen_dataset.py')} -i {src_pics_path} -o {final_dataset_folder}")
     setattr(args, "input_data_folder", final_dataset_folder)  # noqa: B010
 
 
