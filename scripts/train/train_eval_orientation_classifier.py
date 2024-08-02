@@ -22,13 +22,14 @@ from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.da
 parser = argparse.ArgumentParser()
 checkpoint_path_save = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "efficient_net_b0_fixed.pth"))
 checkpoint_path_load = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "resources", "efficient_net_b0_fixed.pth"))
-output_dir = os.path.abspath(os.path.join("../../resources", "benchmarks"))
+output_dir = os.path.abspath(os.path.join("..", "..", "resources", "benchmarks"))
 
 parser.add_argument("-t", "--train", type=bool, help="run for train model", default=False)
 parser.add_argument("-s", "--checkpoint_save", help="Path to checkpoint for save or load", default=checkpoint_path_save)
 parser.add_argument("-l", "--checkpoint_load", help="Path to checkpoint for load", default=checkpoint_path_load)
 parser.add_argument("-f", "--from_checkpoint", type=bool, help="run for train model", default=True)
-parser.add_argument("-d", "--input_data_folder", help="Path to data with folders train or test")
+parser.add_argument("-d", "--input_data_folder", help="Path to data with folders train or test",
+                    default=os.path.join(get_config()["intermediate_data_path"], "orientation_columns_dataset"))
 parser.add_argument("-b", "--batch_size", type=int, help="Batch size", default=1)
 
 args = parser.parse_args()
@@ -195,29 +196,30 @@ def train_step(data_executor: DataLoaderImageOrient, classifier: ColumnsOrientat
 
 
 def create_dataset() -> None:
-    if not os.path.isdir(args.input_data_folder):
-        #  download source files
-        datasets_path = os.path.join(get_config()["resources_path"], "datasets")
-        os.makedirs(datasets_path, exist_ok=True)
-        intermediate_path = os.path.realpath(hf_hub_download(repo_id="dedoc/orientation_columns_dataset",
-                                                             filename="generate_dataset_orient_classifier.zip",
-                                                             repo_type="dataset",
-                                                             revision="821dc53a24f8039cd77effe0e22813ad6b2a073f"))
-        source_dataset_folder = os.path.join(datasets_path, "generate_dataset_orient_classifier.zip")
-        shutil.move(intermediate_path, source_dataset_folder)
+    if os.path.isdir(args.input_data_folder):
+        return
+    #  download source files
+    datasets_path = os.path.join(get_config()["resources_path"], "datasets")
+    os.makedirs(datasets_path, exist_ok=True)
+    intermediate_path = os.path.realpath(hf_hub_download(repo_id="dedoc/orientation_columns_dataset",
+                                                         filename="generate_dataset_orient_classifier.zip",
+                                                         repo_type="dataset",
+                                                         revision="68f8659e3692a7042d5ba958476f127b16ff3849"))
+    source_dataset_folder = os.path.join(datasets_path, "generate_dataset_orient_classifier.zip")
+    shutil.move(intermediate_path, source_dataset_folder)
 
-        with zipfile.ZipFile(source_dataset_folder, "r") as zip_ref:
-            zip_ref.extractall(datasets_path)
-        os.remove(source_dataset_folder)
+    with zipfile.ZipFile(source_dataset_folder, "r") as zip_ref:
+        zip_ref.extractall(datasets_path)
+    os.remove(source_dataset_folder)
 
-        #  rotate source files
-        src_pics_path = os.path.join(datasets_path, "generate_dataset_orient_classifier", "src")
-        scripts_path = os.path.join(datasets_path, "generate_dataset_orient_classifier", "scripts")
-        final_dataset_folder = os.path.join(get_config()["resources_path"], "datasets", "columns_orientation_dataset")
-        os.makedirs(final_dataset_folder, exist_ok=True)
+    #  rotate source files
+    src_pics_path = os.path.join(datasets_path, "generate_dataset_orient_classifier", "src")
+    scripts_path = os.path.join(datasets_path, "generate_dataset_orient_classifier", "scripts")
+    final_dataset_folder = os.path.join(get_config()["resources_path"], "datasets", "columns_orientation_dataset")
+    os.makedirs(final_dataset_folder, exist_ok=True)
 
-        os.system("python3 " + os.path.join(scripts_path, "gen_dataset.py") + " -i " + src_pics_path + " -o " + final_dataset_folder)
-        setattr(args, "input_data_folder", final_dataset_folder)  # noqa: B010
+    os.system("python3 " + os.path.join(scripts_path, "gen_dataset.py") + " -i " + src_pics_path + " -o " + final_dataset_folder)
+    setattr(args, "input_data_folder", final_dataset_folder)  # noqa: B010
 
 
 if __name__ == "__main__":
