@@ -204,7 +204,7 @@ def create_dataset() -> None:
     intermediate_path = os.path.realpath(hf_hub_download(repo_id="dedoc/orientation_columns_dataset",
                                                          filename="generate_dataset_orient_classifier.zip",
                                                          repo_type="dataset",
-                                                         revision="68f8659e3692a7042d5ba958476f127b16ff3849"))
+                                                         revision="902cc77dbd28e63dbb74dfc14a7a7b198e9d6f9d"))
     source_dataset_folder = os.path.join(datasets_path, "generate_dataset_orient_classifier.zip")
     shutil.move(intermediate_path, source_dataset_folder)
 
