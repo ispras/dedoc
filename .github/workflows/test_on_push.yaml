@@ -36,4 +36,4 @@ jobs:
         flake8 .
     - name: Run tests
       run: |
-        test="true" docker-compose up --build --exit-code-from test
+        test="true" docker compose up --build --exit-code-from test

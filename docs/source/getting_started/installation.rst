@@ -31,7 +31,7 @@ still, the docker application should be installed and configured properly.
 
   .. code-block:: bash
 
-    docker-compose up --build
+    docker compose up --build
 
 If you need to change some application settings, you may update ``config.py`` according to your needs and re-build the image.
 
