@@ -54,11 +54,14 @@ class DocxTable:
                 if cell.vMerge:
                     value = cell.vMerge.get("w:val", "continue")
                     if value == "continue":
-                        cell_lines = cell_list[-1][cell_ind].lines
-                        cell_row_list.append(CellWithMeta(lines=cell_lines, colspan=1, rowspan=1, invisible=True))
-                        last_cell_rowspan = cell_list[rowspan_start_info[cell_ind]][cell_ind]
-                        last_cell_rowspan.rowspan += 1
-                        cell_list[rowspan_start_info[cell_ind]][cell_ind] = last_cell_rowspan
+                        if cell_ind in rowspan_start_info:
+                            cell_lines = cell_list[-1][cell_ind].lines
+                            cell_row_list.append(CellWithMeta(lines=cell_lines, colspan=1, rowspan=1, invisible=True))
+                            last_cell_rowspan = cell_list[rowspan_start_info[cell_ind]][cell_ind]
+                            last_cell_rowspan.rowspan += 1
+                            cell_list[rowspan_start_info[cell_ind]][cell_ind] = last_cell_rowspan
+                        else:
+                            cell_row_list.append(CellWithMeta(lines=cell_lines, colspan=grid_span, rowspan=1, invisible=False))
                     elif value == "restart":
                         rowspan_start_info[cell_ind] = row_index
                         cell_row_list.append(CellWithMeta(lines=cell_lines, colspan=grid_span, rowspan=1, invisible=False))
