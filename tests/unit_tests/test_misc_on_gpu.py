@@ -32,7 +32,7 @@ class TestOnGpu(AbstractTestApiDocReader):
         self.assertListEqual(predictions, ["header", "header", "cellar"])
 
     def test_orientation_classifier(self) -> None:
-        checkpoint_path = get_test_config()["resources_path"]
+        checkpoint_path = os.path.join(get_test_config()["resources_path"], "scan_orientation_efficient_net_b0.pth")
         orientation_classifier = ColumnsOrientationClassifier(on_gpu=self.config.get("on_gpu", False), checkpoint_path=checkpoint_path, config=self.config)
         imgs_path = [f"../data/skew_corrector/rotated_{i}.jpg" for i in range(1, 5)]
 

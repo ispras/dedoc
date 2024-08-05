@@ -16,7 +16,7 @@ from tests.test_utils import get_test_config
 
 
 class TestPDFReader(unittest.TestCase):
-    checkpoint_path = get_test_config()["resources_path"]
+    checkpoint_path = os.path.join(get_test_config()["resources_path"], "scan_orientation_efficient_net_b0.pth")
     config = get_test_config()
     orientation_classifier = ColumnsOrientationClassifier(on_gpu=False, checkpoint_path=checkpoint_path, config=config)
 

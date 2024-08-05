@@ -1,4 +1,5 @@
 import logging
+import os
 import warnings
 from os import path
 from typing import Optional, Tuple
@@ -30,11 +31,9 @@ class ColumnsOrientationClassifier(object):
     @property
     def net(self) -> ClassificationModelTorch:
         if self._net is None:
+            net = ClassificationModelTorch(self.checkpoint_path)
             if self.checkpoint_path is not None:
-                net = ClassificationModelTorch(path.join(self.checkpoint_path, "scan_orientation_efficient_net_b0.pth"))
                 self._load_weights(net)
-            else:
-                net = ClassificationModelTorch(None)
             self._net = net
         self._net.to(self.device)
         return self._net
@@ -61,17 +60,18 @@ class ColumnsOrientationClassifier(object):
         self.logger.warning(f"Classifier is set to device {self.device}")
 
     def _load_weights(self, net: ClassificationModelTorch) -> None:
-        path_checkpoint = path.join(self.checkpoint_path, "scan_orientation_efficient_net_b0.pth")
-        if not path.isfile(path_checkpoint):
-            download_from_hub(out_dir=self.checkpoint_path,
+        if not path.isfile(self.checkpoint_path):
+            from dedoc.config import get_config
+            self.checkpoint_path = os.path.join(get_config()["resources_path"], "scan_orientation_efficient_net_b0.pth")
+            download_from_hub(out_dir=os.path.dirname(os.path.abspath(self.checkpoint_path)),
                               out_name="scan_orientation_efficient_net_b0.pth",
                               repo_name="scan_orientation_efficient_net_b0",
                               hub_name="model.pth")
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            net.load_state_dict(torch.load(path_checkpoint, map_location=self.location))
-            self.logger.info(f"Weights were loaded from {path_checkpoint}")
+            net.load_state_dict(torch.load(self.checkpoint_path, map_location=self.location))
+            self.logger.info(f"Weights were loaded from {self.checkpoint_path}")
 
     def save_weights(self, path_checkpoint: str) -> None:
         torch.save(self.net.state_dict(), path_checkpoint)

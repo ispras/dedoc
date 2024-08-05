@@ -31,4 +31,4 @@ jobs:
         python-version: '3.9'
     - name: Run tests for labeling
       run: |
-        test="true" docker-compose -f labeling/docker-compose.yml up --build --exit-code-from test
+        test="true" docker compose -f labeling/docker-compose.yml up --build --exit-code-from test

@@ -136,12 +136,12 @@ cd dedoc
 
 ### 3. Build the image and run the application
 ```shell
-docker-compose up --build
+docker compose up --build
 ```
 
 ### 4. Run container with tests
 ```shell
-test="true" docker-compose up --build
+test="true" docker compose up --build
 ```
 
 If you need to change some application settings, you may update `config.py` according to your needs and re-build the image.
