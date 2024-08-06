@@ -41,6 +41,8 @@ PDF and images handling
               If the document has a textual layer (is copyable), :class:`dedoc.readers.PdfTxtlayerReader` will be used for parsing.
               If the document doesn't have a textual layer (it is an image, scanned document), :class:`dedoc.readers.PdfImageReader` will be used.
 
+            * **fast_auto** -- the pipeline is the same as **auto** except thr detection of textual layer. It is much faster but less accurate
+            because of no-ML solution.
 
             * **auto_tabby** -- automatic detection of textual layer presence in the PDF document.
               This option is used to choose :class:`dedoc.readers.PdfAutoReader` for parsing.

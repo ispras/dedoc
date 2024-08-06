@@ -29,8 +29,12 @@ class TxtLayerDetector:
         """
         try:
             lines = self.__get_lines_for_predict(path=path, parameters=parameters)
-            is_correct = self.txtlayer_classifier.predict(lines)
-            first_page_correct = self.__is_first_page_correct(lines=lines, is_txt_layer_correct=is_correct)
+            if parameters["pdf_with_text_layer"] == "fast_auto":
+                is_correct = any(line._line.strip() for line in lines)
+                first_page_correct = True
+            else:
+                is_correct = self.txtlayer_classifier.predict(lines)
+                first_page_correct = self.__is_first_page_correct(lines=lines, is_txt_layer_correct=is_correct)
             return PdfTxtlayerParameters(is_correct_text_layer=is_correct, is_first_page_correct=first_page_correct)
 
         except Exception as e:
