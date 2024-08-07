@@ -26,8 +26,10 @@ class QueryParameters:
                                   description='Set cells orientation in table headers, "90" means 90 degrees counterclockwise cells rotation')
 
     # pdf handling
-    pdf_with_text_layer: str = Form("auto_tabby", enum=["true", "false", "auto", "fast_auto", "auto_tabby", "tabby"],
+    pdf_with_text_layer: str = Form("auto_tabby", enum=["true", "false", "auto", "auto_tabby", "tabby"],
                                     description="Extract text from a text layer of PDF or using OCR methods for image-like documents")
+    fast_auto: str = Form("false", enum=["true", "false"], description="Use non-ML solution to detect textual layer if selected auto or"
+                          " auto_tabby in pdf_with_text_layer option. Much faster but less accurate.")
     language: str = Form("rus+eng", description="Recognition language ('rus+eng', 'rus', 'eng', 'fra', 'spa')")
     pages: str = Form(":", description='Page numbers range for reading PDF or images, "left:right" means read pages from left to right')
     is_one_column_document: str = Form("auto", enum=["auto", "true", "false"],

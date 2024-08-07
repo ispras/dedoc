@@ -29,7 +29,7 @@ class TxtLayerDetector:
         """
         try:
             lines = self.__get_lines_for_predict(path=path, parameters=parameters)
-            if parameters["pdf_with_text_layer"] == "fast_auto":
+            if parameters["fast_auto"] == "true":
                 is_correct = any(line._line.strip() for line in lines)
                 first_page_correct = True
             else:

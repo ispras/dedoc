@@ -43,7 +43,7 @@ class PdfAutoReader(BaseReader):
         You can look to :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
         from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
-        return super().can_read(file_path=file_path, mime=mime, extension=extension) and get_param_pdf_with_txt_layer(parameters) in ("auto", "fast_auto", "auto_tabby")
+        return super().can_read(file_path=file_path, mime=mime, extension=extension) and get_param_pdf_with_txt_layer(parameters) in ("auto", "auto_tabby")
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
