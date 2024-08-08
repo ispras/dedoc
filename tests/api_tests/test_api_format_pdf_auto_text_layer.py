@@ -57,7 +57,7 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         for pdf_with_text_layer in "auto", "auto_tabby":
             result = self._send_request(file_name, dict(pdf_with_text_layer=pdf_with_text_layer))
             self.assertIn("Assume document has a correct textual layer", result["warnings"])
-            self.assertIn("Assume the first page hasn"t a textual layer", result["warnings"])
+            self.assertIn("Assume the first page hasn't a textual layer", result["warnings"])
             self._check_english_doc(result)
             structure = result["content"]["structure"]
             list_items = structure["subparagraphs"][1]["subparagraphs"]
