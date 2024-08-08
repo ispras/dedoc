@@ -29,9 +29,9 @@ class TxtLayerDetector:
         """
         try:
             lines = self.__get_lines_for_predict(path=path, parameters=parameters)
-            if parameters["fast_auto"] == "true":
-                is_correct = any(line._line.strip() for line in lines)
-                first_page_correct = True
+            if str(parameters.get("fast_textual_layer_detection", "false")).lower() == "true":
+                is_correct = any(line.line.strip() for line in lines)
+                first_page_correct = True if len([line for line in lines if line.metadata.page_id == 0]) > 0 else False
             else:
                 is_correct = self.txtlayer_classifier.predict(lines)
                 first_page_correct = self.__is_first_page_correct(lines=lines, is_txt_layer_correct=is_correct)
