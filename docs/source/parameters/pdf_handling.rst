@@ -47,7 +47,7 @@ PDF and images handling
               If the document doesn't have a textual layer (it is an image, scanned document), :class:`dedoc.readers.PdfImageReader` will be used.
               It is highly recommended to use this option value for any PDF document parsing.
 
-    * - fast_auto
+    * - fast_textual_layer_detection
       - true, false
       - false
       - * :meth:`dedoc.readers.PdfAutoReader.read`

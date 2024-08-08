@@ -210,7 +210,7 @@ Api parameters description
               If the document doesn't have a textual layer (it is an image, scanned document), PDF document parsing works like with ``need_pdf_table_analysis=false``.
               It is highly recommended to use this option value for any PDF document parsing.
 
-    * - fast_auto
+    * - fast_textual_layer_detection
       - true, false
       - false
       - Enable fast textual layer detection. Works only when **auto** or **auto_tabby** is selected at **pdf_with_text_layer**.

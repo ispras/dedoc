@@ -31,7 +31,8 @@ class TxtLayerDetector:
             lines = self.__get_lines_for_predict(path=path, parameters=parameters)
             if str(parameters.get("fast_textual_layer_detection", "false")).lower() == "true":
                 is_correct = any(line.line.strip() for line in lines)
-                first_page_correct = True if len([line for line in lines if line.metadata.page_id == 0]) > 0 else False
+                first_page_lines = [line for line in lines if line.metadata.page_id == 0]
+                first_page_correct = first_page_lines and any(line.line.strip() for line in first_page_lines)
             else:
                 is_correct = self.txtlayer_classifier.predict(lines)
                 first_page_correct = self.__is_first_page_correct(lines=lines, is_txt_layer_correct=is_correct)
