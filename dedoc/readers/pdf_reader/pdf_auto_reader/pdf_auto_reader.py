@@ -52,6 +52,7 @@ class PdfAutoReader(BaseReader):
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
+        parameters = {} if parameters is None else parameters
         warnings = []
         txtlayer_parameters = self.txtlayer_detector.detect_txtlayer(path=file_path, parameters=parameters)
 
