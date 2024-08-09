@@ -82,14 +82,12 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         file_name = "0004057v1.pdf"
         parameters = dict(pdf_with_text_layer="auto", fast_textual_layer_detection=True)
         result = self._send_request(file_name, parameters)
-        warnings = result["warnings"]
-        self.assertIn("Assume document has a correct textual layer", warnings)
+        self.assertIn("Assume document has a correct textual layer", result["warnings"])
         self.assertEqual(result["content"]["structure"]["subparagraphs"][5]["text"][:10], "This paper")
 
         file_name = "tz_scan_1page.pdf"
         parameters = dict(pdf_with_text_layer="auto_tabby", fast_textual_layer_detection=True)
         result = self._send_request(file_name, parameters)
-        warnings = result["warnings"]
         self.assertIn("Assume document has incorrect textual layer", result["warnings"])
 
         file_name = "mixed_pdf.pdf"
@@ -97,4 +95,4 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         result = self._send_request(file_name, parameters)
         warnings = result["warnings"]
         self.assertIn("Assume document has a correct textual layer", warnings)
-        self.assertIn("Assume the first page hasn't a textual layer", result["warnings"])
+        self.assertIn("Assume the first page hasn't a textual layer", warnings)
