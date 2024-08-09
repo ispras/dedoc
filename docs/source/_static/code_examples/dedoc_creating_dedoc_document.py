@@ -41,7 +41,7 @@ table_line_metadata = LineMetadata(
 )
 table_line_text = "Line with simple table"
 table_line = LineWithMeta(table_line_text, metadata=table_line_metadata,
-                          annotations=[TableAnnotation(name=table.metadata.uid, start=0, end=len(table_line_text))])
+                          annotations=[TableAnnotation(value=table.metadata.uid, start=0, end=len(table_line_text))])
 table_cells = [
     ["Last name First name Patronymic", "Last name First name Patronymic", "Last name First name Patronymic"],
     ["Ivanov", "Ivan", "Ivanovich"],
@@ -75,7 +75,7 @@ complicated_table_line_metadata = LineMetadata(
 )
 complicated_table_line_text = "complicated table line"
 complicated_table_line = LineWithMeta(complicated_table_line_text, metadata=table_line_metadata,
-                                      annotations=[TableAnnotation(name=complicated_table.metadata.uid, start=0, end=len(complicated_table_line_text))])
+                                      annotations=[TableAnnotation(value=complicated_table.metadata.uid, start=0, end=len(complicated_table_line_text))])
 
 attached_file = AttachedFile(original_name="docx_example.png", tmp_file_path="test_dir/docx_example.png", need_content_analysis=False, uid="attached_file")
 

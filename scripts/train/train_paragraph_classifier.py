@@ -3,7 +3,7 @@ import os
 from typing import Optional
 
 from dedoc.config import get_config
-from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.paragraph_features import ParagraphFeatureExtractor
+from dedoc.structure_extractors.feature_extractors.paragraph_feature_extractor import ParagraphFeatureExtractor
 from scripts.train.trainers.xgboost_line_classifier_trainer import XGBoostLineClassifierTrainer
 
 
@@ -33,7 +33,7 @@ classifier_parameters = dict(learning_rate=0.6,
 
 
 trainer = XGBoostLineClassifierTrainer(
-    data_url="https://at.ispras.ru/owncloud/index.php/s/gLvUSYvsCjvKtGg/download",
+    data_url="https://huggingface.co/datasets/dedoc/paragraph_dataset/resolve/main/paragraph_dataset.zip?download=true",
     logger=config.get("logging", logging.getLogger()),
     feature_extractor=feature_extractor,
     path_out=path_out,

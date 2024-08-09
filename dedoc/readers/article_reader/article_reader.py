@@ -235,7 +235,7 @@ class ArticleReader(BaseReader):
                 if subpart.get("type") == "bibr" and target in bib2uid:
                     annotations.append(ReferenceAnnotation(value=bib2uid[target], start=start, end=start + len(sub_text)))
                 if subpart.get("type") == "table" and target in table2uid:
-                    annotations.append(TableAnnotation(name=table2uid[target], start=start, end=start + len(sub_text)))
+                    annotations.append(TableAnnotation(value=table2uid[target], start=start, end=start + len(sub_text)))
                 if subpart.get("type") == "figure" and target in attachment2uid:
                     annotations.append(AttachAnnotation(attach_uid=attachment2uid[target], start=start, end=start + len(sub_text)))
             else:

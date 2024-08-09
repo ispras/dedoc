@@ -57,7 +57,7 @@ class BoldAgglomerativeClusterizer:
 
         w1 = np.std(x) * len(x)
         w2 = np.std(x_clust0) * len(x_clust0) + np.std(x_clust1) * len(x_clust1)
-        f1 = w2 / w1
+        f1 = w2 / w1 if w1 != 0. else 0.
         return f1
 
     def __get_f_criterion_homogeneous(self, n: int, p: int = 2) -> float:

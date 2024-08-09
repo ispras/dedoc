@@ -83,6 +83,5 @@ class TestApiPdfPageLimit(AbstractTestApiDocReader):
             self.assertIn("first_page", result["metadata"])
             self.assertIn("last_page", result["metadata"])
         tree = result["content"]["structure"]
-        node = self._get_by_tree_path(tree, "0.0")
-        text = node["text"].strip()
-        self.assertEqual(text_expected, text, f"{pages} and {reader}")
+        text = "".join([node["text"] for node in tree["subparagraphs"]])
+        self.assertEqual(text_expected.strip(), text.strip(), f"{pages} and {reader}")

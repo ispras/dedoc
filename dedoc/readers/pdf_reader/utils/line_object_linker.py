@@ -50,7 +50,7 @@ class LineObjectLinker:
                                                 lines_after=object_with_lines["next_lines"],
                                                 last_page_line=last_page_line)
             if isinstance(page_object, ScanTable):
-                annotation = TableAnnotation(name=page_object.uid, start=0, end=len(best_line.line))
+                annotation = TableAnnotation(value=page_object.uid, start=0, end=len(best_line.line))
             elif isinstance(page_object, PdfImageAttachment):
                 annotation = AttachAnnotation(attach_uid=page_object.uid, start=0, end=len(best_line.line))
             else:

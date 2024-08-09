@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.diploma_feature_extractor import DiplomaFeatureExtractor
+from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TocItem
 from dedoc.structure_extractors.line_type_classifiers.abstract_pickled_classifier import AbstractPickledLineTypeClassifier
 
 
@@ -12,11 +13,11 @@ class DiplomaLineTypeClassifier(AbstractPickledLineTypeClassifier):
         self.classifier, feature_extractor_parameters = self.load("diploma", path)
         self.feature_extractor = DiplomaFeatureExtractor()
 
-    def predict(self, lines: List[LineWithMeta], toc_lines: Optional[List[LineWithMeta]] = None) -> List[str]:
+    def predict(self, lines: List[LineWithMeta], toc_items: Optional[List[TocItem]] = None) -> List[str]:
         if len(lines) == 0:
             return []
 
-        features = self.feature_extractor.transform([lines], toc_lines=[toc_lines])
+        features = self.feature_extractor.transform([lines], toc_items=[toc_items])
         labels_probability = self.classifier.predict_proba(features)
 
         title_id = list(self.classifier.classes_).index("title")
@@ -40,7 +41,7 @@ class DiplomaLineTypeClassifier(AbstractPickledLineTypeClassifier):
                 first_non_title = i + 1
                 break
 
-            if labels[i] not in ("title", "raw_text"):
+            if labels[i] not in ("title", "raw_text", "other"):
                 first_non_title = i
                 break
 

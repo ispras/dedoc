@@ -7,6 +7,7 @@ import pandas as pd
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_features_extractor import ListFeaturesExtractor
+from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TocItem
 from dedoc.structure_extractors.feature_extractors.utils_feature_extractor import normalization_by_min_max
 from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_year, roman_regexp
 
@@ -42,10 +43,7 @@ class LawTextFeatures(AbstractFeatureExtractor):
     def parameters(self) -> dict:
         return {"text_features_only": self.text_features_only}
 
-    def fit(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None) -> "LawTextFeatures":
-        return self
-
-    def transform(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None) -> pd.DataFrame:
+    def transform(self, documents: List[List[LineWithMeta]], toc_lines: Optional[List[List[TocItem]]] = None) -> pd.DataFrame:
         assert len(documents) > 0
 
         result_matrix = pd.concat([self.__process_document(document) for document in documents], ignore_index=True)

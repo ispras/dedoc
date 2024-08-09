@@ -14,6 +14,8 @@ from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnot
 from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
 from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
+from dedoc.structure_extractors.feature_extractors.char_features import not_chars
+from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TocItem
 from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_ends_of_number, regexps_number
 from dedoc.utils.utils import list_get
 
@@ -28,33 +30,15 @@ class AbstractFeatureExtractor(ABC):
         pass
 
     @abstractmethod
-    def fit(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None) -> "AbstractFeatureExtractor":
-        """
-        :param documents: list of documents in form of list of lines
-        :param y: the list of labels
-        :returns: feature extractor (it may be fitted if needed)
-        """
-        pass
-
-    @abstractmethod
-    def transform(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None) -> pd.DataFrame:
+    def transform(self, documents: List[List[LineWithMeta]], toc_lines: Optional[List[List[TocItem]]] = None) -> pd.DataFrame:
         """
         Extract a list of float features for each document line.
 
         :param documents: list of documents in form of list of lines
-        :param y: the list of labels
+        :param toc_lines:
         :returns: matrix of features extracted for the document
         """
         pass
-
-    def fit_transform(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None) -> pd.DataFrame:
-        """
-        :param documents: list of documents in form of list of lines
-        :param y: the list of labels
-        :returns: matrix of features extracted for the document
-        """
-        self.fit(documents, y)
-        return self.transform(documents)
 
     def prev_next_line_features(self, matrix: pd.DataFrame, n_prev: int, n_next: int) -> pd.DataFrame:
         """
@@ -159,9 +143,9 @@ class AbstractFeatureExtractor(ABC):
         bold_character_number = sum([
             annotation.end - annotation.start for annotation in line.annotations if annotation.name == BoldAnnotation.name and annotation.value == "True"
         ])
-        if len(line.line) == 0:
+        if len(line.line.strip()) == 0:
             return 0
-        return bold_character_number / len(line.line)
+        return min(bold_character_number / len(line.line.strip()), 1.0)
 
     @staticmethod
     def _is_first_bold(line: LineWithMeta) -> float:
@@ -191,6 +175,22 @@ class AbstractFeatureExtractor(ABC):
         """
         underlined = [annotation for annotation in line.annotations if annotation.name == UnderlinedAnnotation.name]
         return 1. if len(underlined) > 0 else 0
+
+    def _get_percent_upper_letters(self, line: LineWithMeta) -> float:
+        count_upper = 0
+        count_chars = 0
+        for symbol in line.line.strip():
+            if not symbol.isspace() and symbol not in not_chars:
+                if symbol.isupper():
+                    count_upper += 1
+                count_chars += 1
+        return min(count_upper / count_chars if count_chars != 0 else 0.0, 1.0)
+
+    def _get_before_toc(self, line: LineWithMeta, toc_items: List[TocItem]) -> bool:
+        if toc_items:
+            return line.metadata.line_id < toc_items[0].line.metadata.line_id
+        else:
+            return False
 
     @staticmethod
     def _get_color(line: LineWithMeta) -> Iterable[Tuple[str, float]]:

@@ -136,6 +136,9 @@ class LineWithMeta(Sized, Serializable):
     def set_line(self, line: str) -> None:
         self._line = line
 
+    def set_metadata(self, metadata: LineMetadata) -> None:
+        self._metadata = metadata
+
     def __repr__(self) -> str:
         return (f"LineWithMeta({self.line[:65]}, "
                 f"tagHL={self.metadata.tag_hierarchy_level.level_1, self.metadata.tag_hierarchy_level.level_2, self.metadata.tag_hierarchy_level.line_type})")

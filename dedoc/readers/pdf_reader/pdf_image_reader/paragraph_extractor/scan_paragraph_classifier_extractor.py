@@ -1,5 +1,6 @@
 import json
 import logging
+import numbers
 import os
 import tempfile
 import zipfile
@@ -10,7 +11,7 @@ from xgboost import XGBClassifier
 from dedoc.config import get_config
 from dedoc.download_models import download_from_hub
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
-from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.paragraph_features import ParagraphFeatureExtractor
+from dedoc.structure_extractors.feature_extractors.paragraph_feature_extractor import ParagraphFeatureExtractor
 from dedoc.utils.parameter_utils import get_param_gpu_available
 
 
@@ -67,8 +68,14 @@ class ScanParagraphClassifierExtractor(object):
             labels = ["not_paragraph"] * len(lines_with_links)
         else:
             labels = self.classifier.predict(data)
+
         for label, line in zip(labels, lines_with_links):
-            if line.line.strip() == "":
+
+            if line.line.strip() == "" or label is None:
                 label = "not_paragraph"
+            elif isinstance(label, numbers.Integral):
+                label = self.classifier.classes_[label]
+
             line.metadata.tag_hierarchy_level.can_be_multiline = label != "paragraph"
+
         return lines_with_links

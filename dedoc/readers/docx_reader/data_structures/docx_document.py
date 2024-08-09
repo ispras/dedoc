@@ -110,7 +110,7 @@ class DocxDocument:
 
             if i in table_refs:
                 for table_uid in table_refs[i]:
-                    annotation = TableAnnotation(name=table_uid, start=0, end=len(line))
+                    annotation = TableAnnotation(value=table_uid, start=0, end=len(line))
                     line.annotations.append(annotation)
 
             paragraph_id += 1

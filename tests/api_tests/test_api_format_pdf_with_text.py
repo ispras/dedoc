@@ -23,21 +23,19 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
         result = self._send_request("example.pdf", dict(pdf_with_text_layer="true"))
         tables_uids = [table["metadata"]["uid"] for table in result["content"]["tables"]]
         self.assertEqual(len(tables_uids), 2)
-        ref0 = self.__extract_node_with_annotation(result, "0.1.2", "table")[0]["value"]
-        ref1 = self.__extract_node_with_annotation(result, "0.1.2.0", "table")[0]["value"]
+        ref0 = self.__extract_node_with_annotation(result, "0.6.2", "table")[0]["value"]
+        ref1 = self.__extract_node_with_annotation(result, "0.6.2.0", "table")[0]["value"]
         self.assertEqual(ref0, tables_uids[0])
         self.assertEqual(ref1, tables_uids[1])
 
-        params = [dict(pdf_with_text_layer="tabby"), dict(pdf_with_text_layer="false")]
-        for param in params:
-            result = self._send_request("example.pdf", param)
-            tables_uids = [table["metadata"]["uid"] for table in result["content"]["tables"]]
-            self.assertEqual(len(tables_uids), 2)
-            annotations = self.__extract_node_with_annotation(result, "0.2.2", "table")
-            ref0 = annotations[0]["value"]
-            ref1 = annotations[1]["value"]
-            self.assertEqual(ref0, tables_uids[0])
-            self.assertEqual(ref1, tables_uids[1])
+        result = self._send_request("example.pdf", dict(pdf_with_text_layer="tabby"))
+        tables_uids = [table["metadata"]["uid"] for table in result["content"]["tables"]]
+        self.assertEqual(len(tables_uids), 2)
+        annotations = self.__extract_node_with_annotation(result, "0.7.2", "table")
+        ref0 = annotations[0]["value"]
+        ref1 = annotations[1]["value"]
+        self.assertEqual(ref0, tables_uids[0])
+        self.assertEqual(ref1, tables_uids[1])
 
     def test_pdf_with_text_style(self) -> None:
         file_name = "diff_styles.pdf"
@@ -103,24 +101,24 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
 
     def test_pdf_with_2_columns_text(self) -> None:
         file_name = "2-column-state.pdf"
-        result = self._send_request(file_name, dict(pdf_with_text_layer="true", document_type="", need_pdf_table_analysis="false"))
+        result = self._send_request(file_name, dict(pdf_with_text_layer="tabby", document_type=""))
 
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
         self.assertIn("Privacy of users in P2P networks goes far beyond their\n"
                       "current usage and is a fundamental requirement to the adop-\n"
                       "tion of P2P protocols for legal usage. In a climate of cold",
-                      self._get_by_tree_path(tree, "0.6.1.2")["text"])
+                      self._get_by_tree_path(tree, "0.5")["text"])
 
-        self.assertIn("Keywords", self._get_by_tree_path(tree, "0.6.1.3")["text"])
-        self.assertIn("Anonymizing Networks, Privacy, Tor, BitTorrent", self._get_by_tree_path(tree, "0.6.1.4")["text"])
+        self.assertIn("Keywords", self._get_by_tree_path(tree, "0.6")["text"])
+        self.assertIn("Anonymizing Networks, Privacy, Tor, BitTorrent", self._get_by_tree_path(tree, "0.7")["text"])
 
-        self.assertIn("INTRODUCTION\n", self._get_by_tree_path(tree, "0.7.0")["text"])
+        self.assertIn("INTRODUCTION\n", self._get_by_tree_path(tree, "0.8.0")["text"])
         self.assertIn("The Tor network was designed to provide freedom\n"
                       "of speech by guaranteeing anonymous communications.\n"
                       "Whereas the cryptographic foundations of Tor, based on\n"
                       "onion-routing [3, 9, 22, 24], are known to be robust, identity",
-                      self._get_by_tree_path(tree, "0.7.0.0")["text"])
+                      self._get_by_tree_path(tree, "0.8.0.0")["text"])
 
     def test_pdf_with_2_columns_text_2(self) -> None:
         file_name = "liters_state.pdf"
