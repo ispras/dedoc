@@ -9,7 +9,7 @@ model_hash_dict = dict(
     scan_orientation_efficient_net_b0="c60812552a1be624476c1e5b58599867b36f8d4e",
     font_classifier="db4481ad60ab050cbb42079b64f97f9e431feb07",
     paragraph_classifier="97c4b78bc20d87ec7d53389e09f1ca35c6ade067",
-    line_type_classifiers="18df71c2e5d6985769d2d2dea6902e3e0a1fc9fe",
+    line_type_classifiers="6ad0eacbfdea065b658cb6f039d13f75245d51ae",
     fintoc_classifiers="6a907b7d2437c3f61ac9c506f67175207982fae8"
 )
 

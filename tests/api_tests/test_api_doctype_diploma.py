@@ -80,10 +80,10 @@ class TestApiDiploma(AbstractTestApiDocReader):
         self.assertEqual("Глава 1.", node["text"][:8])
         self.assertEqual("named_item", node["metadata"]["paragraph_type"])
 
-        node = self._get_by_tree_path(structure, "0.5")
+        node = self._get_by_tree_path(structure, "0.6")
         self.assertEqual("Глава 2.", node["text"][:8])
         self.assertEqual("named_item", node["metadata"]["paragraph_type"])
 
-        node = self._get_by_tree_path(structure, "0.6")
+        node = self._get_by_tree_path(structure, "0.7")
         self.assertEqual("Глава 3.", node["text"][:8])
         self.assertEqual("named_item", node["metadata"]["paragraph_type"])
