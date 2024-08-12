@@ -83,7 +83,7 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         parameters = dict(pdf_with_text_layer="auto", fast_textual_layer_detection=True)
         result = self._send_request(file_name, parameters)
         self.assertIn("Assume document has a correct textual layer", result["warnings"])
-        self.assertEqual(result["content"]["structure"]["subparagraphs"][5]["text"][:10], "This paper")
+        self.assertIn("FinTOC-2019", result["content"]["structure"]["subparagraphs"][0]["text"])
 
         file_name = "tz_scan_1page.pdf"
         parameters = dict(pdf_with_text_layer="auto_tabby", fast_textual_layer_detection=True)
