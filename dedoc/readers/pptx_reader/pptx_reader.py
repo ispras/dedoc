@@ -104,7 +104,7 @@ class PptxReader(BaseReader):
 
         if len(lines) == 0:
             lines.append(LineWithMeta(line="", metadata=LineMetadata(page_id=page_id, line_id=0)))
-        lines[-1].annotations.append(TableAnnotation(start=0, end=len(lines[-1]), name=table.metadata.uid))
+        lines[-1].annotations.append(TableAnnotation(start=0, end=len(lines[-1]), value=table.metadata.uid))
         tables.append(table)
 
     def __add_attach_annotation(self, line: LineWithMeta, image_rel_id: str, attachment_name2uid: dict, images_rels: dict) -> None:

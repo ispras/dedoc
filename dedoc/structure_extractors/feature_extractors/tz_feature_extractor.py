@@ -8,7 +8,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.list_features_extractor import ListFeaturesExtractor
 from dedoc.structure_extractors.feature_extractors.list_features.prefix.bullet_prefix import BulletPrefix
-from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor
+from dedoc.structure_extractors.feature_extractors.toc_feature_extractor import TOCFeatureExtractor, TocItem
 from dedoc.structure_extractors.feature_extractors.utils_feature_extractor import normalization_by_min_max
 from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_number, regexps_subitem_extended, regexps_year
 from dedoc.utils.utils import flatten
@@ -38,10 +38,7 @@ class TzTextFeatures(AbstractFeatureExtractor):
     def parameters(self) -> dict:
         return {"text_features_only": self.text_features_only}
 
-    def fit(self, documents: List[LineWithMeta], y: Optional[List[str]] = None) -> "TzTextFeatures":
-        return self
-
-    def transform(self, documents: List[List[LineWithMeta]], y: Optional[List[str]] = None) -> pd.DataFrame:
+    def transform(self, documents: List[List[LineWithMeta]], toc_lines: Optional[List[List[TocItem]]] = None) -> pd.DataFrame:
         list_features = self.list_feature_extractor.transform(documents)
         result_matrix = pd.concat([self.__process_document(document) for document in documents], ignore_index=True)
         result_matrix["is_in_toc"] = list(flatten(self.toc_extractor.is_line_in_toc(document) for document in documents))

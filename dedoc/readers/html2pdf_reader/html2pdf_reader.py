@@ -47,7 +47,7 @@ class Html2PdfReader(HtmlReader):
                 line_id += 1
                 lines.append(line)
             elif previous_line is not None:
-                table_annotation = TableAnnotation(name=table_uid, start=0, end=len(line.line))
+                table_annotation = TableAnnotation(value=table_uid, start=0, end=len(line.line))
                 previous_line.annotations.append(table_annotation)
                 tables_result.append(tables[table_uid])
         return UnstructuredDocument(lines=lines, tables=tables_result, attachments=document.attachments)

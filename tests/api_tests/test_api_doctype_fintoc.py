@@ -1,4 +1,4 @@
-from api_tests.abstract_api_test import AbstractTestApiDocReader
+from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 
 class TestApiFintoc(AbstractTestApiDocReader):

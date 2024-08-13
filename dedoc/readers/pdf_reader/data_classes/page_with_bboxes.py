@@ -8,7 +8,7 @@ from dedoc.readers.pdf_reader.data_classes.text_with_bbox import TextWithBBox
 
 class PageWithBBox:
 
-    def __init__(self, image: ndarray, bboxes: List[TextWithBBox], page_num: int, attachments: List[PdfImageAttachment] = None,
+    def __init__(self, image: Optional[ndarray], bboxes: List[TextWithBBox], page_num: int, attachments: List[PdfImageAttachment] = None,
                  pdf_page_width: Optional[int] = None, pdf_page_height: Optional[int] = None) -> None:
         self.image = image
         self.bboxes = bboxes
