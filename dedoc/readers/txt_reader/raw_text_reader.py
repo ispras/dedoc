@@ -54,15 +54,14 @@ class RawTextReader(BaseReader):
     def _get_lines_with_meta(self, path: str, encoding: str) -> List[LineWithMeta]:
         import time
         from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
         from dedoc.data_structures.line_metadata import LineMetadata
-        from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
         from dedoc.utils.utils import calculate_file_hash
 
         lines = []
         file_hash = calculate_file_hash(path=path)
         number_of_empty_lines = 0
         previous_log_time = time.time()
-        prev_line = None
 
         for line_id, line in self.__get_lines(path=path, encoding=encoding):
             if time.time() - previous_log_time > 5:
@@ -76,14 +75,10 @@ class RawTextReader(BaseReader):
             indent_annotation = self.__get_indent_annotation(line)
 
             line_with_meta = LineWithMeta(line=line, metadata=metadata, annotations=[spacing_annotation, indent_annotation], uid=uid)
-            line_with_meta.metadata.tag_hierarchy_level = DefaultStructureExtractor.get_hl_list_using_regexp(line_with_meta, prev_line)
-            prev_line = line_with_meta
+            line_with_meta.metadata.tag_hierarchy_level = HierarchyLevel.create_unknown()
             lines.append(line_with_meta)
 
-            if line.isspace():
-                number_of_empty_lines += 1
-            else:
-                number_of_empty_lines = 0
+            number_of_empty_lines = number_of_empty_lines + 1 if line.isspace() else 0
 
         return lines
 

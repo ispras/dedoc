@@ -28,6 +28,7 @@ exclude =
     *__init__.py,
     resources,
     venv,
+    .venv,
     build,
     dedoc.egg-info,
     docs/_build,

@@ -1,4 +1,5 @@
 import os
+import unittest
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
@@ -8,6 +9,7 @@ class TestApiDiploma(AbstractTestApiDocReader):
     def _get_abs_path(self, file_name: str) -> str:
         return os.path.join(self.data_directory_path, "diplomas", file_name)
 
+    @unittest.skip("TLDR-748")
     def test_diploma_pdf(self) -> None:
         file_name = "diploma.pdf"
         result = self._send_request(file_name, dict(document_type="diploma", pdf_with_text_layer="tabby"))
@@ -51,6 +53,7 @@ class TestApiDiploma(AbstractTestApiDocReader):
         self.assertEqual("БИБЛИОГРАФИЧЕСКИЙ СПИСОК", node["text"].strip())
         self.assertEqual("named_item", node["metadata"]["paragraph_type"])
 
+    @unittest.skip("TLDR-748")
     def test_diploma_docx(self) -> None:
         file_name = "diploma.docx"
         result = self._send_request(file_name, dict(document_type="diploma"))

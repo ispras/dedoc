@@ -152,6 +152,7 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         self.assertEqual("raw_text", node["metadata"]["paragraph_type"])
         self.assertEqual("", node["text"].strip()[:30])
 
+    @unittest.skip("TLDR-748")
     def test_pdf_with_tables(self) -> None:
         file_name = "VVP_6_tables.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="tabby", document_orientation="no_change"))

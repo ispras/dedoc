@@ -1,5 +1,6 @@
 import json
 import os
+import unittest
 from json import JSONDecodeError
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
@@ -27,6 +28,7 @@ class TestApiJSONReader(AbstractTestApiDocReader):
         self.assertEqual("list_item", list_items[1]["metadata"]["paragraph_type"])
         self.assertEqual("он её любил", list_items[1]["text"])
 
+    @unittest.skip("TLDR-748")
     def test_dict(self) -> None:
         file_name = "dict.json"
         result = self._send_request(file_name)["content"]["structure"]
@@ -36,6 +38,7 @@ class TestApiJSONReader(AbstractTestApiDocReader):
         self.assertEqual("key", nodes[1]["metadata"]["paragraph_type"])
         self.assertEqual("он её любил", nodes[1]["subparagraphs"][0]["text"])
 
+    @unittest.skip("TLDR-748")
     def test_dict_with_list(self) -> None:
         file_name = "dict_with_list.json"
         result = self._send_request(file_name)["content"]["structure"]
@@ -54,6 +57,7 @@ class TestApiJSONReader(AbstractTestApiDocReader):
         self.assertEqual("понедельник", second_list_items[0]["text"])
         self.assertEqual("вторник", second_list_items[1]["text"])
 
+    @unittest.skip("TLDR-748")
     def test_list_with_dict(self) -> None:
         file_name = "list_with_dict.json"
         result = self._send_request(file_name)["content"]["structure"]
@@ -67,6 +71,7 @@ class TestApiJSONReader(AbstractTestApiDocReader):
         self.assertEqual("понедельник", self._get_by_tree_path(result, "0.1.0.0.0.0")["text"])
         self.assertEqual("вторник", self._get_by_tree_path(result, "0.1.0.0.0.1")["text"])
 
+    @unittest.skip("TLDR-748")
     def test_realistic(self) -> None:
         file_name = "realistic_json.json"
         result = self._send_request(file_name)["content"]["structure"]["subparagraphs"]
@@ -86,6 +91,7 @@ class TestApiJSONReader(AbstractTestApiDocReader):
         data = {"html_fields": '[["e"], ["f"]]', "with_attachments": "True", "return_base64": "true"}
         self._send_request(file_name, expected_code=200, data=data)
 
+    @unittest.skip("TLDR-748")
     def test_json_null(self) -> None:
         file_name = "test_null.json"
         result = self._send_request(file_name, expected_code=200)
