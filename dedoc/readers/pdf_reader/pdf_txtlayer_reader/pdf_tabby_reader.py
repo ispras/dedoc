@@ -277,7 +277,7 @@ class PdfTabbyReader(PdfBaseReader):
         if line_type == "litem":  # TODO automatic list depth and merge list items from multiple lines
             return HierarchyLevel(None, None, False, HierarchyLevel.list_item)
 
-        return HierarchyLevel(None, None, True, line_type)
+        return HierarchyLevel.create_unknown()
 
     def __jar_path(self) -> str:
         import os

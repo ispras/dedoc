@@ -1,5 +1,4 @@
 import os
-import unittest
 from typing import List
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
@@ -20,7 +19,6 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
         node_with_annotation = self._get_by_tree_path(tree["content"]["structure"], node_id)
         return self.__filter_by_name(node_with_annotation["annotations"], ann_name)
 
-    @unittest.skip("TLDR-748")
     def test_ref_tables(self) -> None:
         result = self._send_request("example.pdf", dict(pdf_with_text_layer="true"))
         tables_uids = [table["metadata"]["uid"] for table in result["content"]["tables"]]
@@ -82,7 +80,6 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
         self.assertEqual("Calibri18,", node["text"][word_bboxes[2]["start"]:word_bboxes[2]["end"]])
         self.assertEqual("Tahoma16", node["text"][word_bboxes[3]["start"]:word_bboxes[3]["end"]])
 
-    @unittest.skip("TLDR-748")
     def test_pdf_with_text_style_2(self) -> None:
         file_name = "2-column-state.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="true", need_pdf_table_analysis="false"))
@@ -102,7 +99,6 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
 
         self.assertIn("Pere Manils, Abdelberi Chaabane, Stevens Le Blond,", self._get_by_tree_path(tree, "0.1")["text"])
 
-    @unittest.skip("TLDR-748")
     def test_pdf_with_2_columns_text(self) -> None:
         file_name = "2-column-state.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="tabby", document_type=""))
@@ -124,7 +120,6 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
                       "onion-routing [3, 9, 22, 24], are known to be robust, identity",
                       self._get_by_tree_path(tree, "0.8.0.0")["text"])
 
-    @unittest.skip("TLDR-748")
     def test_pdf_with_2_columns_text_2(self) -> None:
         file_name = "liters_state.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="true", need_pdf_table_analysis="false"))
@@ -134,7 +129,6 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
         self.assertIn("References", self._get_by_tree_path(tree, "0.0")["text"])
         self.assertIn("[1] Navaneeth Bodla, Bharat Singh, Rama Chellappa, and", self._get_by_tree_path(tree, "0.1")["text"])
 
-    @unittest.skip("TLDR-748")
     def test_pdf_with_some_tables(self) -> None:
         file_name = "VVP_6_tables.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="true"))

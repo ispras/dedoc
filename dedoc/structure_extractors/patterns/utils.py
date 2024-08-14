@@ -6,8 +6,6 @@ def get_pattern(pattern_parameters: dict) -> AbstractPattern:
 
     assert isinstance(pattern_parameters, dict)
     assert "name" in pattern_parameters, "Pattern parameter missing 'name'"
-    assert "line_type" in pattern_parameters, "Pattern parameter missing 'line_type'"
-    assert "level_1" in pattern_parameters, "Pattern parameter missing 'level_1'"
 
     supported_patterns = {pattern.name: pattern for pattern in patterns_module.__all__}
     pattern_class = supported_patterns.get(pattern_parameters["name"])

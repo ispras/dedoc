@@ -43,14 +43,18 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
             from dedoc.structure_extractors.patterns.letter_list_pattern import LetterListPattern
             from dedoc.structure_extractors.patterns.tag_header_pattern import TagHeaderPattern
             from dedoc.structure_extractors.patterns.tag_list_pattern import TagListPattern
+            from dedoc.structure_extractors.patterns.tag_pattern import TagPattern
+            from dedoc.structure_extractors.patterns.tag_type_pattern import TagTypePattern
 
             patterns = [
-                TagHeaderPattern(line_type=HierarchyLevel.header, level_1=1),
-                TagListPattern(line_type=HierarchyLevel.list_item, level_1=2),
-                DottedListPattern(line_type=HierarchyLevel.list_item, level_1=2),
-                BracketListPattern(line_type=HierarchyLevel.list_item, level_1=3, level_2=1),
-                LetterListPattern(line_type=HierarchyLevel.list_item, level_1=4, level_2=1),
-                BulletListPattern(line_type=HierarchyLevel.list_item, level_1=5, level_2=1),
+                TagHeaderPattern(line_type=HierarchyLevel.header, level_1=1, can_be_multiline=False),
+                TagListPattern(line_type=HierarchyLevel.list_item, level_1=2, can_be_multiline=False),
+                DottedListPattern(line_type=HierarchyLevel.list_item, level_1=2, can_be_multiline=False),
+                BracketListPattern(line_type=HierarchyLevel.list_item, level_1=3, level_2=1, can_be_multiline=False),
+                LetterListPattern(line_type=HierarchyLevel.list_item, level_1=4, level_2=1, can_be_multiline=False),
+                BulletListPattern(line_type=HierarchyLevel.list_item, level_1=5, level_2=1, can_be_multiline=False),
+                TagTypePattern(),
+                TagPattern(line_type=HierarchyLevel.raw_text)
             ]
         else:
             import json

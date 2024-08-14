@@ -1,5 +1,4 @@
 import os
-import unittest
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 from tests.test_utils import get_by_tree_path
@@ -51,14 +50,12 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         with open(self._get_abs_path(file_name)) as file_in:
             self.assertEqual(file_in.read(), content["subparagraphs"][0]["text"])
 
-    @unittest.skip("TLDR-748")
     def test_paragraphs(self) -> None:
         file_name = "football.txt"
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]["subparagraphs"]
         self.__check_football(content)
 
-    @unittest.skip("TLDR-748")
     def test_paragraphs_gz(self) -> None:
         file_name = "football.txt.gz"
         result = self._send_request(file_name, data={"structure_type": "tree"})

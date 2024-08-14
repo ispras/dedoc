@@ -108,15 +108,9 @@ class RawTextReader(BaseReader):
         return space_this.end() - space_this.start()
 
     def __is_paragraph(self, line: LineWithMeta, previous_line: Optional[LineWithMeta]) -> bool:
-        from dedoc.data_structures.hierarchy_level import HierarchyLevel
-
-        if not line.metadata.tag_hierarchy_level.can_be_multiline and \
-                line.metadata.tag_hierarchy_level.line_type not in (HierarchyLevel.raw_text, HierarchyLevel.unknown):
-            return True
         space_this = self.__get_starting_spacing(line)
         space_prev = self.__get_starting_spacing(previous_line)
-        return line.metadata.tag_hierarchy_level.line_type in (HierarchyLevel.raw_text, HierarchyLevel.unknown) \
-            and not line.line.isspace() and space_this - space_prev >= 2
+        return not line.line.isspace() and space_this - space_prev >= 2
 
     def _postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:
         previous_line = None

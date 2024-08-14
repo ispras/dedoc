@@ -36,7 +36,6 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self.__check_metainfo(result["metadata"], "application/pdf", file_name)
         self.assertEqual([], result["attachments"])
 
-    @unittest.skip("TLDR-748")
     def test_djvu(self) -> None:
         file_name = "example_with_table7.djvu"
         result = self._send_request(file_name, dict(document_type=""))
@@ -47,7 +46,6 @@ class TestApiPdfReader(AbstractTestApiDocReader):
 
         self.__check_metainfo(result["metadata"], "image/vnd.djvu", file_name)
 
-    @unittest.skip("TLDR-748")
     def test_djvu_2(self) -> None:
         file_name = "example_with_table9.djvu"
         result = self._send_request(file_name)
@@ -65,7 +63,6 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         file_name = "broken.djvu"
         _ = self._send_request(file_name, expected_code=415)
 
-    @unittest.skip("TLDR-748")
     def test_header_pdf(self) -> None:
         file_name = "header_test.pdf"
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="true"))
@@ -112,7 +109,6 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self.assertIn("ЦЕНТРАЛЬНЫЙ БАНК РОССИЙСКОЙ ФЕДЕРАЦИИ\n", result["content"]["structure"]["subparagraphs"][0]["text"])
         self.assertIn("Е.И Курицына\n(расшифровка подлиси", result["content"]["structure"]["subparagraphs"][-1]["text"])
 
-    @unittest.skip("TLDR-748")
     def test_on_ocr_conf_threshold(self) -> None:
         result = self._send_request("with_trash.jpg", data=dict(structure_type="tree"))
         tree = result["content"]["structure"]
@@ -138,7 +134,6 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         for table in result["content"]["tables"]:
             self.assertTrue(table["metadata"]["uid"] in table_refs)
 
-    @unittest.skip("TLDR-748")
     def test_pdf_with_some_tables(self) -> None:
         file_name = os.path.join("..", "pdf_with_text_layer", "VVP_6_tables.pdf")
         result = self._send_request(file_name, data={"pdf_with_text_layer": "true"})
@@ -173,7 +168,6 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         self._check_similarity(tree["subparagraphs"][0]["text"], "Приложение к постановлению\n"
                                                                  "Губернатора Камчатского края")
 
-    @unittest.skip("TLDR-748")
     def test_bold_annotation(self) -> None:
         file_name = "bold_font.png"
         result = self._send_request(file_name)

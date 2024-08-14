@@ -1,5 +1,4 @@
 import os
-import unittest
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
@@ -9,7 +8,6 @@ class TestApiEmailReader(AbstractTestApiDocReader):
     def _get_abs_path(self, file_name: str) -> str:
         return os.path.join(self.data_directory_path, "eml", file_name)
 
-    @unittest.skip("TLDR-748")
     def test_email_file(self) -> None:
         file_name = "spam_mail.eml"
         result = self._send_request(file_name, data={"with_attachments": "true"})
@@ -31,7 +29,6 @@ class TestApiEmailReader(AbstractTestApiDocReader):
         self.assertEqual('"sunny_goldensun@126.com" <sunny_goldensun@126.com>', from_message["text"])
         self.assertEqual("from", from_message["metadata"]["paragraph_type"])
 
-    @unittest.skip("TLDR-748")
     def test_email_with_attachments(self) -> None:
         file_name = "message.eml"
         result = self._send_request(file_name, data={"with_attachments": "true"})

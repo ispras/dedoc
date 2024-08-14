@@ -34,7 +34,7 @@ class LineObjectLinker:
         @return:
         """
         if len(lines) == 0:
-            metadata = LineMetadata(tag_hierarchy_level=HierarchyLevel.create_raw_text(), page_id=0, line_id=0)
+            metadata = LineMetadata(tag_hierarchy_level=HierarchyLevel.create_unknown(), page_id=0, line_id=0)
             lines = [LineWithLocation(line="", metadata=metadata, annotations=[], location=Location(page_number=0, bbox=BBox(0, 0, 1, 1)))]
         last_page_line = self._get_last_page_line(lines)
         all_objects = list(lines + tables + images)
