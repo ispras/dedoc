@@ -6,7 +6,7 @@ from dedoc.structure_extractors.patterns.abstract_pattern import AbstractPattern
 
 
 class RegexpPattern(AbstractPattern):
-    __name = "regexp"
+    _name = "regexp"
 
     def __init__(self,
                  regexp: str or re.Pattern,

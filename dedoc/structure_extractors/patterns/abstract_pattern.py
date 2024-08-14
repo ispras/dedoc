@@ -6,7 +6,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 
 
 class AbstractPattern(ABC):
-    __name = ""
+    _name = ""
 
     def __init__(self,
                  line_type: Optional[str] = None,
@@ -20,7 +20,7 @@ class AbstractPattern(ABC):
 
     @classmethod
     def name(cls: "AbstractPattern") -> str:
-        return cls.__name
+        return cls._name
 
     @abstractmethod
     def match(self, line: LineWithMeta) -> bool:
@@ -39,7 +39,7 @@ class AbstractPattern(ABC):
             return self._line_type
 
         if line.metadata.tag_hierarchy_level is None:
-            raise ValueError(f"Cannot resolve line type: tag_hierarchy_level is missing and {self.__name} line_type isn't configured")
+            raise ValueError(f"Cannot resolve line type: tag_hierarchy_level is missing and {self._name} line_type isn't configured")
 
         return line.metadata.tag_hierarchy_level.line_type
 

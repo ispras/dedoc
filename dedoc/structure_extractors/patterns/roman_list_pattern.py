@@ -5,7 +5,7 @@ from dedoc.structure_extractors.patterns.regexp_pattern import RegexpPattern
 
 
 class RomanListPattern(RegexpPattern):
-    __name = "roman_list"
+    _name = "roman_list"
 
     def __init__(self,
                  line_type: Optional[str] = None,

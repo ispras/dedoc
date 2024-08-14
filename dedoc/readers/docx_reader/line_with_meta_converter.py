@@ -64,4 +64,4 @@ class LineWithMetaConverter:
         if paragraph.list_level is not None:
             return HierarchyLevel(2, paragraph.list_level, False, HierarchyLevel.list_item)
 
-        return HierarchyLevel(None, None, True, HierarchyLevel.unknown)
+        return HierarchyLevel.create_unknown()

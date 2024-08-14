@@ -5,7 +5,7 @@ from dedoc.structure_extractors.patterns.abstract_pattern import AbstractPattern
 
 
 class StartWordPattern(AbstractPattern):
-    __name = "start_word"
+    _name = "start_word"
 
     def __init__(self,
                  start_word: str,

@@ -5,7 +5,7 @@ from dedoc.structure_extractors.patterns.regexp_pattern import RegexpPattern
 
 
 class LetterListPattern(RegexpPattern):
-    __name = "letter_list"
+    _name = "letter_list"
 
     def __init__(self,
                  line_type: Optional[str] = None,

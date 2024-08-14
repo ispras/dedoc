@@ -5,7 +5,7 @@ from dedoc.structure_extractors.patterns.regexp_pattern import RegexpPattern
 
 
 class BulletListPattern(RegexpPattern):
-    __name = "bullet_list"
+    _name = "bullet_list"
 
     def __init__(self,
                  line_type: Optional[str] = None,

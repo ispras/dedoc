@@ -11,5 +11,5 @@ from dedoc.structure_extractors.patterns.tag_list_pattern import TagListPattern
 from dedoc.structure_extractors.patterns.tag_pattern import TagPattern
 from dedoc.structure_extractors.patterns.tag_type_pattern import TagTypePattern
 
-__all__ = ["BracketListPattern", "BracketRomanListPattern", "BulletListPattern", "DottedListPattern", "LetterListPattern", "RegexpPattern", "RomanListPattern",
-           "StartWordPattern", "TagHeaderPattern", "TagListPattern", "TagPattern", "TagTypePattern"]
+__all__ = [BracketListPattern, BracketRomanListPattern, BulletListPattern, DottedListPattern, LetterListPattern, RegexpPattern, RomanListPattern,
+           StartWordPattern, TagHeaderPattern, TagListPattern, TagPattern, TagTypePattern]

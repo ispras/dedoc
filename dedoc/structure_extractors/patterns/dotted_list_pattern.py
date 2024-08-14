@@ -7,7 +7,7 @@ from dedoc.structure_extractors.patterns.regexp_pattern import RegexpPattern
 
 
 class DottedListPattern(RegexpPattern):
-    __name = "dotted_list"
+    _name = "dotted_list"
 
     def __init__(self,
                  line_type: Optional[str] = None,

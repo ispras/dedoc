@@ -4,7 +4,7 @@ from dedoc.structure_extractors.patterns.abstract_pattern import AbstractPattern
 
 
 class TagTypePattern(AbstractPattern):
-    __name = "tag_type"
+    _name = "tag_type"
 
     def match(self, line: LineWithMeta) -> bool:
         return line.metadata.tag_hierarchy_level is not None and not line.metadata.tag_hierarchy_level.is_unknown()

@@ -5,7 +5,7 @@ from dedoc.structure_extractors.patterns.regexp_pattern import RegexpPattern
 
 
 class BracketListPattern(RegexpPattern):
-    __name = "bracket_list"
+    _name = "bracket_list"
 
     def __init__(self,
                  line_type: Optional[str] = None,

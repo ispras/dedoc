@@ -48,8 +48,8 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
 
             patterns = [
                 TagHeaderPattern(line_type=HierarchyLevel.header, level_1=1, can_be_multiline=False),
-                TagListPattern(line_type=HierarchyLevel.list_item, level_1=2, can_be_multiline=False),
-                DottedListPattern(line_type=HierarchyLevel.list_item, level_1=2, can_be_multiline=False),
+                TagListPattern(line_type=HierarchyLevel.list_item, can_be_multiline=False),
+                DottedListPattern(line_type=HierarchyLevel.list_item, level_1=2, level_2=1, can_be_multiline=False),
                 BracketListPattern(line_type=HierarchyLevel.list_item, level_1=3, level_2=1, can_be_multiline=False),
                 LetterListPattern(line_type=HierarchyLevel.list_item, level_1=4, level_2=1, can_be_multiline=False),
                 BulletListPattern(line_type=HierarchyLevel.list_item, level_1=5, level_2=1, can_be_multiline=False),
