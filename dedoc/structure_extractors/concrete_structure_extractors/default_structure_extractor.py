@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from dedoc.common.exceptions.structure_extractor_error import StructureExtractorError
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
@@ -36,7 +37,8 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
         return document
 
     def __get_patterns(self, parameters: dict) -> List[AbstractPattern]:
-        if "patterns" not in parameters:
+        patterns = parameters.get("patterns")
+        if not patterns:
             from dedoc.structure_extractors.patterns.bracket_list_pattern import BracketListPattern
             from dedoc.structure_extractors.patterns.bullet_list_pattern import BulletListPattern
             from dedoc.structure_extractors.patterns.dotted_list_pattern import DottedListPattern
@@ -46,7 +48,7 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
             from dedoc.structure_extractors.patterns.tag_pattern import TagPattern
             from dedoc.structure_extractors.patterns.tag_type_pattern import TagTypePattern
 
-            patterns = [
+            return [
                 TagHeaderPattern(line_type=HierarchyLevel.header, level_1=1, can_be_multiline=False),
                 TagListPattern(line_type=HierarchyLevel.list_item, can_be_multiline=False),
                 DottedListPattern(line_type=HierarchyLevel.list_item, level_1=2, level_2=1, can_be_multiline=False),
@@ -56,17 +58,20 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
                 TagTypePattern(),
                 TagPattern(line_type=HierarchyLevel.raw_text)
             ]
-        else:
-            import json
+
+        try:
+            import ast
             from dedoc.structure_extractors.patterns.utils import get_pattern
 
             patterns = parameters["patterns"]
             if isinstance(patterns, str):
-                patterns = json.loads(patterns)
-            assert isinstance(patterns, list)
-            assert len(patterns) > 0
+                patterns = ast.literal_eval(patterns)
+            assert isinstance(patterns, list), "Patterns parameter should contain a list of patterns"
+            assert len(patterns) > 0, "Patterns parameter should contain a non-empty list of patterns"
             if isinstance(patterns[0], dict):
                 patterns = [get_pattern(pattern) for pattern in patterns]
 
-        assert isinstance(patterns[0], AbstractPattern)
+            assert isinstance(patterns[0], AbstractPattern), "Patterns should be initialized properly"
+        except AssertionError as e:
+            raise StructureExtractorError(msg=str(e))
         return patterns
