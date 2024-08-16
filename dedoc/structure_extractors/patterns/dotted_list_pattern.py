@@ -9,19 +9,15 @@ from dedoc.structure_extractors.patterns.regexp_pattern import RegexpPattern
 class DottedListPattern(RegexpPattern):
     _name = "dotted_list"
 
-    def __init__(self,
-                 line_type: Optional[str] = None,
-                 level_1: Optional[int] = None,
-                 level_2: Optional[int] = None,
-                 can_be_multiline: Optional[bool] = None) -> None:
-        super().__init__(regexp=DottedPrefix.regexp, line_type=line_type, level_1=level_1, level_2=level_2, can_be_multiline=can_be_multiline)
+    def __init__(self, line_type: str, level_1: int, can_be_multiline: Optional[bool or str] = None) -> None:
+        super().__init__(regexp=DottedPrefix.regexp, line_type=line_type, level_1=level_1, level_2=None, can_be_multiline=can_be_multiline)
 
     def get_hierarchy_level(self, line: LineWithMeta) -> HierarchyLevel:
         return HierarchyLevel(
-            line_type=self._get_line_type(line),
-            level_1=self._get_level_1(line),
+            line_type=self._line_type,
+            level_1=self._level_1,
             level_2=self.__get_list_depth(line=line),
-            can_be_multiline=self._get_can_be_multiline(line)
+            can_be_multiline=self._can_be_multiline
         )
 
     def __get_list_depth(self, line: LineWithMeta) -> int:

@@ -46,32 +46,36 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
             from dedoc.structure_extractors.patterns.tag_header_pattern import TagHeaderPattern
             from dedoc.structure_extractors.patterns.tag_list_pattern import TagListPattern
             from dedoc.structure_extractors.patterns.tag_pattern import TagPattern
-            from dedoc.structure_extractors.patterns.tag_type_pattern import TagTypePattern
 
             return [
                 TagHeaderPattern(line_type=HierarchyLevel.header, level_1=1, can_be_multiline=False),
-                TagListPattern(line_type=HierarchyLevel.list_item, can_be_multiline=False),
-                DottedListPattern(line_type=HierarchyLevel.list_item, level_1=2, level_2=1, can_be_multiline=False),
+                TagListPattern(line_type=HierarchyLevel.list_item, default_level_1=2, default_level_2=1, can_be_multiline=False),
+                DottedListPattern(line_type=HierarchyLevel.list_item, level_1=2, can_be_multiline=False),
                 BracketListPattern(line_type=HierarchyLevel.list_item, level_1=3, level_2=1, can_be_multiline=False),
                 LetterListPattern(line_type=HierarchyLevel.list_item, level_1=4, level_2=1, can_be_multiline=False),
                 BulletListPattern(line_type=HierarchyLevel.list_item, level_1=5, level_2=1, can_be_multiline=False),
-                TagTypePattern(),
-                TagPattern(line_type=HierarchyLevel.raw_text)
+                TagPattern(default_line_type=HierarchyLevel.raw_text)
             ]
 
-        try:
-            import ast
-            from dedoc.structure_extractors.patterns.utils import get_pattern
+        import ast
+        from dedoc.structure_extractors.patterns.utils import get_pattern
 
-            patterns = parameters["patterns"]
-            if isinstance(patterns, str):
+        if isinstance(patterns, str):
+            try:
                 patterns = ast.literal_eval(patterns)
-            assert isinstance(patterns, list), "Patterns parameter should contain a list of patterns"
-            assert len(patterns) > 0, "Patterns parameter should contain a non-empty list of patterns"
-            if isinstance(patterns[0], dict):
-                patterns = [get_pattern(pattern) for pattern in patterns]
+            except ValueError as e:
+                raise StructureExtractorError(msg=f"Bad syntax for patterns: {str(e)}")
 
-            assert isinstance(patterns[0], AbstractPattern), "Patterns should be initialized properly"
-        except AssertionError as e:
-            raise StructureExtractorError(msg=str(e))
-        return patterns
+        if not isinstance(patterns, list):
+            raise StructureExtractorError(msg="Patterns parameter should contain a list of patterns")
+
+        pattern_classes = []
+        for pattern in patterns:
+            if isinstance(pattern, dict):
+                pattern_classes.append(get_pattern(pattern))
+            elif isinstance(pattern, AbstractPattern):
+                pattern_classes.append(pattern)
+            else:
+                raise StructureExtractorError(msg="Pattern should be dict or `AbstractPattern`")
+
+        return pattern_classes
