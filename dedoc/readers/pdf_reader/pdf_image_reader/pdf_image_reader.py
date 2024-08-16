@@ -1,3 +1,4 @@
+import os
 from typing import List, Optional, Tuple
 
 from numpy import ndarray
@@ -46,7 +47,9 @@ class PdfImageReader(PdfBaseReader):
         )
         self.skew_corrector = SkewCorrector()
         self.column_orientation_classifier = ColumnsOrientationClassifier(on_gpu=self.config.get("on_gpu", False),
-                                                                          checkpoint_path=get_config()["resources_path"], config=self.config)
+                                                                          checkpoint_path=os.path.join(get_config()["resources_path"],
+                                                                                                       "scan_orientation_efficient_net_b0.pth"),
+                                                                          config=self.config)
         self.binarizer = AdaptiveBinarizer()
         self.ocr = OCRLineExtractor(config=self.config)
 

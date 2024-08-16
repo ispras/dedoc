@@ -17,8 +17,10 @@ It extracts a document’s logical structure and content: tables, text formattin
 The document’s content is represented as a tree storing headings and lists of any level. 
 Dedoc can be integrated in a document contents and structure analysis system as a separate module.
 
-## Workflow
+## Star History
+[![Star History Chart](https://api.star-history.com/svg?repos=ispras/dedoc&type=Date)](https://tar-history.com/#ispras/dedoc&Date)
 
+## Workflow
 ![Workflow](https://github.com/ispras/dedoc/raw/master/docs/source/_static/workflow.png)
 
 Workflow description is given [`here`](https://dedoc.readthedocs.io/en/latest/?badge=latest#workflow)
@@ -136,12 +138,12 @@ cd dedoc
 
 ### 3. Build the image and run the application
 ```shell
-docker-compose up --build
+docker compose up --build
 ```
 
 ### 4. Run container with tests
 ```shell
-test="true" docker-compose up --build
+test="true" docker compose up --build
 ```
 
 If you need to change some application settings, you may update `config.py` according to your needs and re-build the image.

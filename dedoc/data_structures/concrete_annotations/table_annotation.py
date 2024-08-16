@@ -8,10 +8,10 @@ class TableAnnotation(Annotation):
     """
     name = "table"
 
-    def __init__(self, name: str, start: int, end: int) -> None:
+    def __init__(self, value: str, start: int, end: int) -> None:
         """
-        :param name: unique identifier of the table which is referenced inside this annotation
+        :param value: unique identifier of the table which is referenced inside this annotation
         :param start: start of the annotated text (usually zero)
         :param end: end of the annotated text (usually end of the line)
         """
-        super().__init__(start=start, end=end, name=TableAnnotation.name, value=name, is_mergeable=False)
+        super().__init__(start=start, end=end, name=TableAnnotation.name, value=value, is_mergeable=False)

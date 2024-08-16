@@ -210,6 +210,15 @@ Api parameters description
               If the document doesn't have a textual layer (it is an image, scanned document), PDF document parsing works like with ``need_pdf_table_analysis=false``.
               It is highly recommended to use this option value for any PDF document parsing.
 
+    * - fast_textual_layer_detection
+      - true, false
+      - false
+      - Enable fast textual layer detection. Works only when **auto** or **auto_tabby** is selected at **pdf_with_text_layer**.
+
+        * **true** -- if any text is detected in a PDF file, Dedoc assumes that textual layer is detected and it is correct. Much faster but less accurate.
+        * **false** -- use the textual layer classifier to detect textual layer and prove its correctness.
+
+
     * - language
       - rus, eng, rus+eng, fra, spa
       - rus+eng

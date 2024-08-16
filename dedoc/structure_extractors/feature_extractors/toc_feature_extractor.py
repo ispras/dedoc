@@ -1,10 +1,26 @@
 import re
-from typing import Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 import numpy as np
 from Levenshtein._levenshtein import ratio
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
+
+
+class TocItem:
+    """
+    TocItem contains LineWithLabel and page.
+    For example, line: 'Method implementation.....................45' converts to TocItem(line='Method implementation', page=45)
+    """
+    def __init__(self, line: LineWithMeta, page: int) -> None:
+        self.line = line
+        self.page = page
+
+    def filter_toc_line(self, toc_item: "TocItem") -> "TocItem":
+        # - filtering a toc_line from page_number and "................."
+        # Example: "Introduction................................. 12 \n" is converted to "Introduction"
+        toc_item.line.set_line(self.line.line.strip("\n ").rstrip(str(toc_item.page)).rstrip(". "))
+        return toc_item
 
 
 class TOCFeatureExtractor:
@@ -17,50 +33,63 @@ class TOCFeatureExtractor:
         "indice", "índice", "contenidos", "tabladecontenido"  # spanish
     )
 
-    def get_toc(self, document: List[LineWithMeta]) -> List[Dict[str, Union[LineWithMeta, str]]]:
+    def get_toc(self, document: List[LineWithMeta], by_tag: Optional[str] = None) -> List[TocItem]:
         """
-        Finds the table of contents in the given document
-        Returns:
-            list of dictionaries with toc item (LineWithMeta) and page number where it is located: {"line", "page"}
-        """
-        corrected_lines, marks = self.__get_probable_toc(document)
+        Finds the table of contents in the given document using heuristic rules.
 
-        marks = np.array(marks, dtype=bool)
-        corrected_lines = np.array(corrected_lines, dtype=object)
-        len_lines = corrected_lines.shape[0]
+        :param document: document's textual lines
+        :param by_tag: try to extract TocItems from textual lines by line.metadata.tag_hierarchy_level.line_type == by_tag.
+                For better Toc extraction, a tocitem textual line (LineWithMeta) should have a 'tocitem_page' attribute in line.metadata,
+                because the page number does not always match the page number in the table of contents element.
+                For example:
+                    line: 'Method implementation.....................45' converts to TocItem(line='Method implementation', page=45) where 'tocitem_page'==45
+
+        :return:
+            list of TocItem with (LineWithMeta) and page_number where it is located
+        """
+        if by_tag:
+            return [
+                TocItem(line=line, page=line.metadata.tocitem_page if hasattr(line.metadata, "tocitem_page") else line.metadata.page_id)
+                for line in document if line.metadata.tag_hierarchy_level.line_type == by_tag
+            ]
+
+        probable_toc_lines, lines_have_page_number = self.__get_probable_toc(document)
 
         # filter too short TOCs
-        if len_lines <= self.window_size:
+        if len(probable_toc_lines) <= self.window_size:
             return []
-        result = self.__get_raw_result(corrected_lines, len_lines, marks)
-        corrected_result = self.__get_corrected_result(result)
 
-        if len(corrected_result) > 6 and self.__check_page_order(corrected_result):
-            return corrected_result
+        unmerged_toc = self.__get_unmerged_toc(np.array(probable_toc_lines, dtype=object), np.array(lines_have_page_number, dtype=bool))
+        merged_toc = self.__get_merged_multilines_toc(unmerged_toc)
+
+        if len(merged_toc) > 6 and self.__check_page_order(merged_toc):
+            return merged_toc
         return []
 
-    def __get_corrected_result(self, result: list) -> List[dict]:
+    def __get_merged_multilines_toc(self, result: List[TocItem or LineWithMeta]) -> List[TocItem]:
         # merge multiline toc items
-        corrected_result = []
-        cur_line = None
+        merged_toc: List[TocItem] = []
+        cur_line: Optional[LineWithMeta] = None
+
         for line in result:
-            # line may be a dict or LineWithMeta
+            # line may be a TocItem or LineWithMeta
             if isinstance(line, LineWithMeta):
                 cur_line = line if cur_line is None else cur_line + line
+            elif isinstance(line, TocItem):
+                cur_line = line.line if cur_line is None else cur_line + line.line
+                merged_toc.append(TocItem(line=cur_line, page=line.page))
+                cur_line = None
+            else:
                 continue
-            if not line["page"].isdigit():
-                continue
-            cur_line = line["line"] if cur_line is None else cur_line + line["line"]
-            corrected_result.append({"line": cur_line, "page": line["page"]})
-            cur_line = None
-        return corrected_result
 
-    def __get_raw_result(self, corrected_lines: np.ndarray, len_lines: int, marks: np.ndarray) -> list:
+        return merged_toc
+
+    def __get_unmerged_toc(self, corrected_lines: np.ndarray, marks: np.ndarray) -> List[TocItem or LineWithMeta]:
         corrected_marks = []
         # fill empty space between toc items
-        for idx in range(len_lines - self.window_size):
+        for idx in range(len(corrected_lines) - self.window_size):
             if sum(marks[:idx]) > 5 and not np.any(marks[idx: idx + self.window_size]):
-                corrected_marks.extend([False] * (len_lines - self.window_size - idx))
+                corrected_marks.extend([False] * (len(corrected_lines) - self.window_size - idx))
                 break
             marked_before = np.any(marks[idx: idx + self.window_size]) and np.any(marks[:idx])
             marked_after = marks[idx] and np.any(marks[idx + 1: idx + self.window_size])
@@ -69,14 +98,14 @@ class TOCFeatureExtractor:
         result = list(corrected_lines[corrected_marks])
         return result
 
-    def __get_probable_toc(self, document: List[LineWithMeta]) -> Tuple[List[Union[dict, LineWithMeta]], List[bool]]:
+    def __get_probable_toc(self, document: List[LineWithMeta]) -> Tuple[List[TocItem or LineWithMeta], np.ndarray]:
         """
-        returns:
-            raw list of probable TOC items
-            list of marks - if the line contains a page number or not
+        :return:
+            raw list of probable TOC items, can contain TocItem or LineWithMeta (in case the line is the continuation of a TOC item)
+            list of lines_have_page_number - if the toc_line contains a page number or not
         """
-        marks = []
-        corrected_lines = []
+        lines_have_page_number = []
+        probable_toc_lines = []
         # First step: we check each line with regular expressions and find the TOC title and TOC items
         # We filter too short probable TOCs (< 6 TOC items) or too long probable TOC items (> 5 lines long)
         for line in document:
@@ -84,10 +113,10 @@ class TOCFeatureExtractor:
 
             # check if the line is a TOC title
             probable_title = re.sub(r"[\s:]", "", line_text).lower()
-            if probable_title in self.titles and sum(marks) < 6:  # filtering of short TOCs
+            if probable_title in self.titles and sum(lines_have_page_number) < 6:  # filtering of short TOCs
                 # clear current probable TOC
-                corrected_lines = []
-                marks = []
+                probable_toc_lines = []
+                lines_have_page_number = []
                 continue
 
             # check if a line is a TOC item
@@ -95,14 +124,14 @@ class TOCFeatureExtractor:
                 match = self.end_with_num.match(line_text.strip())
                 if match:
                     # the line is a TOC item
-                    corrected_lines.append({"line": line, "page": match.group(2)})
+                    probable_toc_lines.append(TocItem(line=line, page=int(match.group(2))))
                 else:
                     # the line is the continuation of a TOC item
-                    corrected_lines.append(line)
-                marks.append(match is not None and len(line_text) > 5)
-        return corrected_lines, marks
+                    probable_toc_lines.append(line)
+                lines_have_page_number.append(match is not None and len(line_text) > 5)
+        return probable_toc_lines, np.array(lines_have_page_number, dtype=bool)
 
-    def __check_page_order(self, corrected_result: List[dict]) -> bool:
+    def __check_page_order(self, corrected_result: List[TocItem]) -> bool:
         """
         check correctness of the result:
 
@@ -118,11 +147,11 @@ class TOCFeatureExtractor:
         """
         assert len(corrected_result) > 1
         right_page_order = True
-        prev_page = int(corrected_result[0]["page"])
+        prev_page = int(corrected_result[0].page)
         for item in corrected_result[1:]:
-            if int(item["page"]) < prev_page:
+            if int(item.page) < prev_page:
                 return False
-            prev_page = int(item["page"])
+            prev_page = int(item.page)
         return right_page_order
 
     def is_line_in_toc(self, document: List[LineWithMeta]) -> List[Optional[float]]:
@@ -131,6 +160,6 @@ class TOCFeatureExtractor:
         if len(toc) == 0:
             return [None] * len(document)
         for line in document:
-            result.append(max(ratio(toc_line["line"].line, line.line) for toc_line in toc))
+            result.append(max(ratio(toc_line.line.line, line.line) for toc_line in toc))
 
         return result

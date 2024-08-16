@@ -77,3 +77,22 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         self.assertEqual("4) Список идёт своим чередом\n", list_items[1]["text"])
         self.assertEqual("5) заканчиваем список\n", list_items[2]["text"])
         self.assertEqual("6) последний элемент списка.\n", list_items[3]["text"])
+
+    def test_fast_textual_layer_detection(self) -> None:
+        file_name = "0004057v1.pdf"
+        parameters = dict(pdf_with_text_layer="auto", fast_textual_layer_detection=True)
+        result = self._send_request(file_name, parameters)
+        self.assertIn("Assume document has a correct textual layer", result["warnings"])
+        self.assertIn("FinTOC-2019", result["content"]["structure"]["subparagraphs"][0]["text"])
+
+        file_name = "tz_scan_1page.pdf"
+        parameters = dict(pdf_with_text_layer="auto_tabby", fast_textual_layer_detection=True)
+        result = self._send_request(file_name, parameters)
+        self.assertIn("Assume document has incorrect textual layer", result["warnings"])
+
+        file_name = "mixed_pdf.pdf"
+        parameters = dict(pdf_with_text_layer="auto", fast_textual_layer_detection=True)
+        result = self._send_request(file_name, parameters)
+        warnings = result["warnings"]
+        self.assertIn("Assume document has a correct textual layer", warnings)
+        self.assertIn("Assume the first page hasn't a textual layer", warnings)
