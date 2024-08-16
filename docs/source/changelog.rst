@@ -1,11 +1,24 @@
 Changelog
 =========
 
+v2.2.7 (2024-08-16)
+-------------------
+Release note: `v2.2.7 <https://github.com/ispras/dedoc/releases/tag/v2.2.7>`_
+
+* Fix bugs with `start`, `end` of `BBoxAnnotation` in `PdfTabbyReader`.
+* Improve columns classification and orientation detection for PDF and images (`is_one_column_document` and `document_orientation` parameters).
+* Upgrade `docker`: `docker-compose` is no longer supported, use `docker compose` instead.
+* Fix bug of tables parsing in `DocxReader` (see `issue 478 <https://github.com/ispras/dedoc/issues/478>`_).
+* Added simple textual layer detection in `PdfAutoReader` (`fast_textual_layer_detection` parameter).
+* Improve paragraph extraction from PDF documents and images.
+* Retrain a classifier for diplomas (document_type="diploma") on a new dataset.
+
 v2.2.6 (2024-07-22)
 -------------------
 Release note: `v2.2.6 <https://github.com/ispras/dedoc/releases/tag/v2.2.6>`_
 
 * Upgrade dependencies: `numpy<2.0` and `dedoc-utils==0.3.7`.
+* Since this version, `dedoc` is supported by `langchain <https://github.com/langchain-ai/langchain>`_ (langchain-community>=0.2.10).
 
 v2.2.5 (2024-07-15)
 -------------------
