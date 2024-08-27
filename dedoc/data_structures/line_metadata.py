@@ -24,8 +24,7 @@ class LineMetadata(Serializable):
         :param hierarchy_level: the hierarchy level of the line extracted by some of the structure extractors - the result type and level of the line.
             The lower the level of the hierarchy, the closer it is to the root, it's used to construct document tree.
         """
-        self.tag_hierarchy_level = HierarchyLevel(None, None, can_be_multiline=True, line_type=HierarchyLevel.unknown) \
-            if tag_hierarchy_level is None else tag_hierarchy_level
+        self.tag_hierarchy_level = HierarchyLevel.create_unknown() if tag_hierarchy_level is None else tag_hierarchy_level
         self.hierarchy_level = hierarchy_level
         self.page_id = page_id
         self.line_id = line_id

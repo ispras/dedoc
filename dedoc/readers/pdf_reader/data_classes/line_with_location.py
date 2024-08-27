@@ -14,8 +14,8 @@ class LineWithLocation(LineWithMeta):
         super().__init__(line, metadata, annotations, uid)
 
     def __repr__(self) -> str:
-        text = self.line if len(self.line) < 65 else self.line[:62] + "..."
-        return f"LineWithLocation({text[:65]})"
+        parent_repr = super().__repr__()
+        return parent_repr.replace("LineWithMeta", "LineWithLocation")
 
     def __str__(self) -> str:
         return self.__repr__()

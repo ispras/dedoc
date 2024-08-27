@@ -140,8 +140,12 @@ class LineWithMeta(Sized, Serializable):
         self._metadata = metadata
 
     def __repr__(self) -> str:
-        return (f"LineWithMeta({self.line[:65]}, "
-                f"tagHL={self.metadata.tag_hierarchy_level.level_1, self.metadata.tag_hierarchy_level.level_2, self.metadata.tag_hierarchy_level.line_type})")
+        text = self.line if len(self.line) < 65 else self.line[:62] + "..."
+        tag_hl = "None" if self.metadata.tag_hierarchy_level is None else \
+            f"{self.metadata.tag_hierarchy_level.level_1, self.metadata.tag_hierarchy_level.level_2, self.metadata.tag_hierarchy_level.line_type}"
+        hl = "None" if self.metadata.hierarchy_level is None else \
+            f"{self.metadata.hierarchy_level.level_1, self.metadata.hierarchy_level.level_2, self.metadata.hierarchy_level.line_type}"
+        return f"LineWithMeta({text.strip()}, tagHL={tag_hl}, HL={hl})"
 
     def __add__(self, other: Union["LineWithMeta", str]) -> "LineWithMeta":
         from dedoc.utils.annotation_merger import AnnotationMerger
