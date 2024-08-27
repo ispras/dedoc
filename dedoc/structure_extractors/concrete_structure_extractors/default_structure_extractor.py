@@ -20,6 +20,9 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
         Extract basic structure from the given document and add additional information to the lines' metadata.
         To get the information about the method's parameters look at the documentation of the class \
         :class:`~dedoc.structure_extractors.AbstractStructureExtractor`.
+
+        ``parameters`` parameter can contain patterns for configuring lines types and their levels in the output document tree ("patterns" key).
+        Please see :ref:`dedoc_structure_extractors_patterns` and :ref:`using_patterns` to get information how to use patterns for making your custom structure.
         """
         parameters = {} if parameters is None else parameters
         patterns = self.__get_patterns(parameters)
@@ -49,7 +52,7 @@ class DefaultStructureExtractor(AbstractStructureExtractor):
 
             return [
                 TagHeaderPattern(line_type=HierarchyLevel.header, level_1=1, can_be_multiline=False),
-                TagListPattern(line_type=HierarchyLevel.list_item, default_level_1=2, default_level_2=1, can_be_multiline=False),
+                TagListPattern(line_type=HierarchyLevel.list_item, default_level_1=2, can_be_multiline=False),
                 DottedListPattern(line_type=HierarchyLevel.list_item, level_1=2, can_be_multiline=False),
                 BracketListPattern(line_type=HierarchyLevel.list_item, level_1=3, level_2=1, can_be_multiline=False),
                 LetterListPattern(line_type=HierarchyLevel.list_item, level_1=4, level_2=1, can_be_multiline=False),

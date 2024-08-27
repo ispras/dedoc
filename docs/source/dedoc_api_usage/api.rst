@@ -42,10 +42,10 @@ Post-requests should be sent to ``http://localhost:1231/upload``.
         "is_one_column_document": "true",
         "return_format": 'html'
     }
-    with open(filename, 'rb') as file:
-        files = {'file': (filename, file)}
+    with open(filename, "rb") as file:
+        files = {"file": (filename, file)}
         r = requests.post("http://localhost:1231/upload", files=files, data=data)
-        result = r.content.decode('utf-8')
+        result = r.content.decode("utf-8")
 
 The ``data`` dictionary in the example contains some parameters to parse the given file.
 They are described in the section :ref:`api_parameters`.

@@ -18,7 +18,7 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
         super().__init__()
         self.digits_with_dots_regexp = regexps_digits_with_dots
         self.patterns = [
-            TagListPattern(line_type=HierarchyLevel.list_item, level_1=2, can_be_multiline=False),
+            TagListPattern(line_type=HierarchyLevel.list_item, default_level_1=2, can_be_multiline=False),
             DottedListPattern(line_type=HierarchyLevel.list_item, level_1=2, can_be_multiline=False),
             BracketListPattern(line_type=HierarchyLevel.list_item, level_1=3, level_2=1, can_be_multiline=False),
             LetterListPattern(line_type=HierarchyLevel.list_item, level_1=4, level_2=1, can_be_multiline=False),

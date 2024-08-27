@@ -3,6 +3,11 @@
 Default document structure type
 ===============================
 
+.. note::
+
+    This structure type is configurable: you can change lines types and levels in the tree hierarchy.
+    Please see :ref:`using_patterns` for more details.
+
 Below we will consider document lines as nodes of the document tree.
 In some cases document lines are paragraphs of the text (e.g. in docx).
 
