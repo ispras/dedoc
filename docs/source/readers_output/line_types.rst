@@ -19,7 +19,7 @@ Below the readers are enlisted that can return non-empty ``tag_hierarchy_level``
    * - **Reader**
      - **header**
      - **list_item**
-     - **raw_text, unknown**
+     - **unknown**
      - **key**
 
    * - :class:`~dedoc.readers.DocxReader`

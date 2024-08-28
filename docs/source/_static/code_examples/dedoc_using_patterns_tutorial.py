@@ -84,7 +84,7 @@ print_document_tree(document=pdf_document, patterns=patterns)
 
 
 print("\n\nDocument lines\n")
-for document_line in pdf_document.lines[:50]:
+for document_line in pdf_document.lines[:10]:
     print(document_line, document_line.annotations)
 
 
