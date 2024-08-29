@@ -1,5 +1,6 @@
 # Dedoc
 
+[![Telegram](https://img.shields.io/badge/chat-on%20Telegram-2ba2d9.svg)](https://t.me/dedoc_chat)
 [![image](https://img.shields.io/pypi/pyversions/dedoc.svg)](https://pypi.python.org/pypi/dedoc)
 [![GitHub release](https://img.shields.io/github/release/ispras/dedoc.svg)](https://github.com/ispras/dedoc/releases/)
 [![PyPI version](https://badge.fury.io/py/dedoc.svg)](https://badge.fury.io/py/dedoc)
@@ -93,6 +94,10 @@ Relevant documentation of dedoc is available [here](https://dedoc.readthedocs.io
 * Article [ISPRAS@FinTOC-2022 shared task: Two-stage TOC generation model](https://aclanthology.org/2022.fnp-1.13.pdf) for the [FinTOC 2022 Shared Task](https://wp.lancs.ac.uk/cfie/fintoc2022/). We are the winners :smiley: :trophy:!
 * Article on habr.com [Dedoc: как автоматически извлечь из текстового документа всё и даже немного больше](https://habr.com/ru/companies/isp_ras/articles/779390/) in Russian (2023)
 * Article [Dedoc: A Universal System for Extracting Content and Logical Structure From Textual Documents](https://ieeexplore.ieee.org/abstract/document/10508151/) in English (2023)
+
+# Join Our Community
+
+Have questions or want to discuss Dedoc? Join our [Telegram chat](https://t.me/dedoc_chat) and connect with the community and the developers.
 
 # Installation instructions
 
