@@ -99,6 +99,8 @@ Relevant documentation of dedoc is available [here](https://dedoc.readthedocs.io
 
 Have questions or want to discuss Dedoc? Join our [Telegram chat](https://t.me/dedoc_chat) and connect with the community and the developers.
 
+Join our [Telegram channel](https://t.me/dedoc_channel) to get notifications about the most recent updates.
+
 # Installation instructions
 
 This project has a REST api and you can run it in Docker container.
