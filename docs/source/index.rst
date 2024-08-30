@@ -229,6 +229,7 @@ This type of structure is configurable (see :ref:`using_patterns`).
    :maxdepth: 1
    :caption: Tutorials
 
+   tutorials/notebooks
    tutorials/add_new_doc_format
    tutorials/add_new_structure_type
    tutorials/add_new_language
