@@ -9,6 +9,7 @@ from dedoc.structure_extractors.hierarchy_level_builders.law_builders.body_build
     AbstractBodyHierarchyLevelBuilder
 from dedoc.structure_extractors.hierarchy_level_builders.utils_reg import regexps_digits_with_dots
 from dedoc.structure_extractors.patterns import BracketListPattern, BulletListPattern, DottedListPattern, LetterListPattern, TagListPattern, TagPattern
+from dedoc.structure_extractors.patterns.pattern_composition import PatternComposition
 
 
 class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
@@ -17,14 +18,16 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
     def __init__(self) -> None:
         super().__init__()
         self.digits_with_dots_regexp = regexps_digits_with_dots
-        self.patterns = [
-            TagListPattern(line_type=HierarchyLevel.list_item, default_level_1=2, can_be_multiline=False),
-            DottedListPattern(line_type=HierarchyLevel.list_item, level_1=2, can_be_multiline=False),
-            BracketListPattern(line_type=HierarchyLevel.list_item, level_1=3, level_2=1, can_be_multiline=False),
-            LetterListPattern(line_type=HierarchyLevel.list_item, level_1=4, level_2=1, can_be_multiline=False),
-            BulletListPattern(line_type=HierarchyLevel.list_item, level_1=5, level_2=1, can_be_multiline=False),
-            TagPattern(line_type=HierarchyLevel.raw_text)
-        ]
+        self.pattern_composition = PatternComposition(
+            [
+                TagListPattern(line_type=HierarchyLevel.list_item, default_level_1=2, can_be_multiline=False),
+                DottedListPattern(line_type=HierarchyLevel.list_item, level_1=2, can_be_multiline=False),
+                BracketListPattern(line_type=HierarchyLevel.list_item, level_1=3, level_2=1, can_be_multiline=False),
+                LetterListPattern(line_type=HierarchyLevel.list_item, level_1=4, level_2=1, can_be_multiline=False),
+                BulletListPattern(line_type=HierarchyLevel.list_item, level_1=5, level_2=1, can_be_multiline=False),
+                TagPattern(line_type=HierarchyLevel.raw_text)
+            ]
+        )
 
     def get_lines_with_hierarchy(self, lines_with_labels: List[Tuple[LineWithMeta, str]], init_hl_depth: int) -> List[LineWithMeta]:
         if len(lines_with_labels) > 0:
@@ -51,7 +54,7 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
             elif prediction == "raw_text":
                 line = self.__postprocess_raw_text(line, init_hl_depth)
                 if not (line.metadata.hierarchy_level is not None and line.metadata.hierarchy_level.line_type == "named_item"):
-                    line.metadata.hierarchy_level = self.__get_level_by_patterns(line)
+                    line.metadata.hierarchy_level = self.pattern_composition.get_hierarchy_level(line)
             else:
                 line.metadata.hierarchy_level = HierarchyLevel.create_raw_text()
                 line.metadata.hierarchy_level.line_type = prediction
@@ -74,15 +77,6 @@ class DiplomaBodyBuilder(AbstractHierarchyLevelBuilder):
             hierarchy_level = HierarchyLevel(init_hl_depth, item_depth - 1, True, prediction)
         line.metadata.hierarchy_level = hierarchy_level
         return line
-
-    def __get_level_by_patterns(self, line: LineWithMeta) -> HierarchyLevel:
-        line_pattern = None
-        for pattern in self.patterns:
-            if pattern.match(line):
-                line_pattern = pattern
-                break
-
-        return line_pattern.get_hierarchy_level(line) if line_pattern else HierarchyLevel.create_raw_text()
 
     def __postprocess_raw_text(self, line: LineWithMeta, init_hl_depth: int) -> LineWithMeta:
         text = line.line.strip().lower()

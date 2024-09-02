@@ -33,7 +33,7 @@ class RawTextReader(BaseReader):
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
-        This method returns only document lines, some types of the lines (e.g. `list_item`) may be found using regular expressions.
+        This method returns only document lines.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters

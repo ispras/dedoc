@@ -85,6 +85,12 @@ Api parameters description
 
         This type is used for choosing a specific structure extractor (and, in some cases, a specific reader).
 
+    * - patterns
+      - list of patterns dictionaries converted to string
+      - None
+      - This parameter is used only when ``document_type="other"``.
+        Configuration of default document structure, please see :ref:`using_patterns` for more details.
+
     * - structure_type
       - tree, linear
       - tree

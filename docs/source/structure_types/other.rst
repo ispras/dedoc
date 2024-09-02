@@ -55,7 +55,7 @@ The detailed description of each line type:
 
         Its text is an empty string.
         This type of node is optional, it occurs only if lists are found in the given document.
-        For each list type (dotted, bracket, bullet) the new list node is created.
+        For each list type (dotted, roman, bracket, bullet) the new list node is created.
         This type of node is more important than list_item and raw_text.
         List nodes for less important lists are are nested into list items of more important list types.
         For example, list node for bullet list beginning is less important than a list item of a dotted list.

@@ -46,7 +46,7 @@ nitpick_ignore = [
     ("py:class", "train_dataset.data_structures.line_with_label.LineWithLabel"),
     ("py:class", "xgboost.sklearn.XGBClassifier"),
     ("py:class", "collections.Counter"),
-
+    ("py:obj", "typing.Pattern")
 ]
 
 # -- Options for HTML output -------------------------------------------------

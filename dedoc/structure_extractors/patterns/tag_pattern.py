@@ -52,7 +52,7 @@ class TagPattern(AbstractPattern):
                  default_level_1: Optional[int] = None,
                  default_level_2: Optional[int] = None) -> None:
         """
-        Initialise pattern for configuring values of :class:`~dedoc.data_structures.HierarchyLevel` attributes.
+        Initialize pattern for configuring values of :class:`~dedoc.data_structures.HierarchyLevel` attributes.
         It is recommended to configure ``default_*`` values in case ``line.metadata.tag_hierarchy_level`` miss some values.
         If you want to use values from ``line.metadata.tag_hierarchy_level``, it is recommended to leave
         ``line_type``, ``level_1``, ``level_2``, ``can_be_multiline`` empty.
@@ -88,7 +88,7 @@ class TagPattern(AbstractPattern):
         returned ``True`` for the given line.
 
         Return :class:`~dedoc.data_structures.HierarchyLevel` for initialising ``line.metadata.hierarchy_level``.
-        The attribute ``line_type`` is initialised according to the following rules:
+        The attribute ``line_type`` is initialized according to the following rules:
 
         * if non-empty ``line_type`` is given during pattern initialisation, then its value is used in the result;
         * if ``line_type`` is not given (or ``None`` is given) and ``line.metadata.tag_hierarchy_level`` is not ``unknown``, \
@@ -97,7 +97,7 @@ class TagPattern(AbstractPattern):
 
         Similar rules work for ``level_1`` and ``level_2`` with comparing with ``None`` instead of ``unknown``.
 
-        The ``can_be_multiline`` attribute is initialised according to the following rules:
+        The ``can_be_multiline`` attribute is initialized according to the following rules:
 
         * if non-empty ``can_be_multiline`` is given during pattern initialisation, then its value is used in the result;
         * otherwise ``can_be_multiline`` value from ``line.metadata.tag_hierarchy_level`` is used in the result.

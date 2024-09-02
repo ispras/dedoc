@@ -82,6 +82,10 @@ Please see :ref:`using_patterns` to get examples of patterns usage.
 
     .. autoattribute:: _name
 
+.. autoclass:: dedoc.structure_extractors.patterns.pattern_composition.PatternComposition
+    :special-members: __init__
+    :members:
+
 .. autoclass:: dedoc.structure_extractors.patterns.RegexpPattern
     :show-inheritance:
     :special-members: __init__

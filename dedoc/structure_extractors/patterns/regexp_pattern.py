@@ -57,7 +57,7 @@ class RegexpPattern(AbstractPattern):
                  level_2: Optional[int] = None,
                  can_be_multiline: Optional[Union[bool, str]] = None) -> None:
         """
-        Initialise pattern with default values of :class:`~dedoc.data_structures.HierarchyLevel` attributes.
+        Initialize pattern with default values of :class:`~dedoc.data_structures.HierarchyLevel` attributes.
 
         :param regexp: regular expression for checking, if the line text matches the pattern.
             Note that regular expression is used on the lowercase and stripped line.

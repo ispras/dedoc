@@ -13,7 +13,7 @@ class AbstractPattern(ABC):
 
     def __init__(self, line_type: Optional[str], level_1: Optional[int], level_2: Optional[int], can_be_multiline: Optional[Union[bool, str]]) -> None:
         """
-        Initialise pattern with default values of :class:`~dedoc.data_structures.HierarchyLevel` attributes.
+        Initialize pattern with default values of :class:`~dedoc.data_structures.HierarchyLevel` attributes.
         They can be used in :meth:`~dedoc.structure_extractors.patterns.abstract_pattern.AbstractPattern.get_hierarchy_level`
         according to specific pattern logic.
 

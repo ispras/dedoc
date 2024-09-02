@@ -237,7 +237,8 @@ Let's read the document using :class:`~dedoc.readers.PdfTabbyReader` and see the
 
 
 Here we consider class ``LineWithLocation`` almost the same as :class:`~dedoc.data_structures.LineWithMeta`.
-As we see, the reader couldn't extract any useful information about lines types and levels.
+As we see, ``tagHL=(None, None, 'unknown')`` for each line:
+this means that the reader couldn't extract any useful information about lines types and levels.
 So, :class:`~dedoc.structure_extractors.patterns.TagHeaderPattern` and
 :class:`~dedoc.structure_extractors.patterns.TagListPattern` are useless in this case.
 

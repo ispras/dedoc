@@ -54,7 +54,8 @@ class PdfBaseReader(BaseReader):
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines, tables and attachments.
-        This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
+        This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`
+        (``can_be_multiline`` attribute is important for paragraph extraction).
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
 
         You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.

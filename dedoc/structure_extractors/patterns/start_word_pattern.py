@@ -50,7 +50,7 @@ class StartWordPattern(AbstractPattern):
                  level_2: Optional[int] = None,
                  can_be_multiline: Optional[Union[bool, str]] = None) -> None:
         """
-        Initialise pattern with default values of :class:`~dedoc.data_structures.HierarchyLevel` attributes.
+        Initialize pattern with default values of :class:`~dedoc.data_structures.HierarchyLevel` attributes.
 
         :param start_word: string for checking of line text beginning.
             Note that start_word will be stripped and made lowercase, and will be used on the lowercase and stripped line.
