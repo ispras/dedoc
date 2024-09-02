@@ -41,7 +41,7 @@ class TestApiTxtReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, data={"structure_type": "tree"})
         content = result["content"]["structure"]
         self.assertIn("УТВЕРЖДЕНЫ", get_by_tree_path(content, "0.0")["text"])
-        self.assertIn("1. Настоящие Требования разработаны в соответствии с Федеральным законом", get_by_tree_path(content, "0.1.0")["text"])
+        self.assertIn("1. Настоящие Требования разработаны в соответствии с Федеральным законом", get_by_tree_path(content, "0.2.0")["text"])
 
     def test_special_symbols(self) -> None:
         file_name = "special_symbol.txt"

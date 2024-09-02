@@ -28,6 +28,7 @@ exclude =
     *__init__.py,
     resources,
     venv,
+    .venv,
     build,
     dedoc.egg-info,
     docs/_build,
@@ -48,5 +49,5 @@ per-file-ignores =
     scripts/*:T201
     scripts/benchmark_pdf_performance*:JS101
     tests/custom_test_runner.py:ANN001,ANN201,ANN202,ANN204,N802
-    docs/source/_static/code_examples/*:I251
+    docs/source/_static/code_examples/*:I251,T201
     docs/source/_static/code_examples/langchain/*:FOL001,FOL002,FOL003,FOL004,FOL005,I100,I202,I251

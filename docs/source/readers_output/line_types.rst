@@ -4,8 +4,8 @@ Types of textual lines
 ======================
 
 Each reader returns :class:`~dedoc.data_structures.UnstructuredDocument` with textual lines.
-Readers don't fill ``hierarchy_level`` metadata field (structure extractors do this), but they can fill ``hierarchy_level_tag`` with information about line types.
-Below the readers are enlisted that can return non-empty ``hierarchy_level_tag`` in document lines metadata:
+Readers don't fill ``hierarchy_level`` metadata field (structure extractors do this), but they can fill ``tag_hierarchy_level`` with information about line types.
+Below the readers are enlisted that can return non-empty ``tag_hierarchy_level`` in document lines metadata:
 
 * `+` means that the reader can return lines of this type.
 * `-` means that the reader doesn't return  lines of this type due to complexity of the task or lack of information provided by the format.
@@ -19,7 +19,7 @@ Below the readers are enlisted that can return non-empty ``hierarchy_level_tag``
    * - **Reader**
      - **header**
      - **list_item**
-     - **raw_text, unknown**
+     - **unknown**
      - **key**
 
    * - :class:`~dedoc.readers.DocxReader`
@@ -42,7 +42,7 @@ Below the readers are enlisted that can return non-empty ``hierarchy_level_tag``
 
    * - :class:`~dedoc.readers.RawTextReader`
      - `-`
-     - `+`
+     - `-`
      - `+`
      - `-`
 
@@ -54,7 +54,7 @@ Below the readers are enlisted that can return non-empty ``hierarchy_level_tag``
 
    * - :class:`~dedoc.readers.PdfImageReader`
      - `-`
-     - `+`
+     - `-`
      - `+`
      - `-`
 
@@ -66,6 +66,6 @@ Below the readers are enlisted that can return non-empty ``hierarchy_level_tag``
 
    * - :class:`~dedoc.readers.PdfTxtlayerReader`
      - `-`
-     - `+`
+     - `-`
      - `+`
      - `-`

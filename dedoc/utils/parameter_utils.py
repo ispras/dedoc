@@ -6,6 +6,13 @@ from typing import Any, Dict, Optional, Tuple
 from dedoc.config import get_config
 
 
+def get_bool_value(parameter: Optional[bool or str], default_value: bool = False) -> bool:
+    if parameter is None:
+        return default_value
+
+    return parameter if isinstance(parameter, bool) else str(parameter).lower() == "true"
+
+
 def get_param_language(parameters: Optional[dict]) -> str:
     if parameters is None:
         return "rus+eng"

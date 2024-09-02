@@ -54,7 +54,8 @@ class PdfBaseReader(BaseReader):
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines, tables and attachments.
-        This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
+        This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`
+        (``can_be_multiline`` attribute is important for paragraph extraction).
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
 
         You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
@@ -94,8 +95,8 @@ class PdfBaseReader(BaseReader):
             Tuple)[List[LineWithMeta], List[ScanTable], List[PdfImageAttachment], List[str], Optional[dict]]:
         import math
         from joblib import Parallel, delayed
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
         from dedoc.readers.pdf_reader.utils.header_footers_analysis import footer_header_analysis
-        from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
         from dedoc.utils.pdf_utils import get_pdf_page_count
         from dedoc.utils.utils import flatten
 
@@ -129,10 +130,8 @@ class PdfBaseReader(BaseReader):
         mp_tables = self.table_recognizer.convert_to_multipages_tables(unref_tables, lines_with_meta=all_lines)
         all_lines_with_links = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=attachments)
 
-        prev_line = None
         for line in all_lines_with_links:
-            line.metadata.tag_hierarchy_level = DefaultStructureExtractor.get_hl_list_using_regexp(line, prev_line)
-            prev_line = line
+            line.metadata.tag_hierarchy_level = HierarchyLevel.create_unknown()
 
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
         if page_angles:

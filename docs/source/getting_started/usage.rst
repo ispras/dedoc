@@ -25,7 +25,7 @@ For this purpose one can use :class:`~dedoc.converters.DocxConverter` class:
     :language: python
     :lines: 10
 
-Method :meth:`~dedoc.converters.DocxConverter.can_convert` allows to check if the converter can convert the given file:
+Method :meth:`~dedoc.converters.AbstractConverter.can_convert` allows to check if the converter can convert the given file:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
@@ -70,7 +70,7 @@ one can use :class:`~dedoc.readers.DocxReader` class:
     :language: python
     :lines: 17
 
-Method :meth:`~dedoc.readers.DocxReader.can_read` allows to check if the reader can parse the given file:
+Method :meth:`~dedoc.readers.BaseReader.can_read` allows to check if the reader can parse the given file:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python
@@ -196,7 +196,7 @@ we can add some metadata using :class:`~dedoc.metadata_extractors.DocxMetadataEx
     :language: python
     :lines: 64
 
-Method :meth:`~dedoc.metadata_extractors.DocxMetadataExtractor.can_extract` allows to check if
+Method :meth:`~dedoc.metadata_extractors.AbstractMetadataExtractor.can_extract` allows to check if
 the metadata extractor can extract metadata from the given file:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
@@ -228,7 +228,7 @@ For example, in the :ref:`docx_example_image` we can use :class:`~dedoc.attachme
     :language: python
     :lines: 74
 
-Method :meth:`~dedoc.attachments_extractors.DocxAttachmentsExtractor.can_extract` allows to check if the attachments extractor can extract attachments from the given file:
+Method :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.can_extract` allows to check if the attachments extractor can extract attachments from the given file:
 
 .. literalinclude:: ../_static/code_examples/dedoc_usage_tutorial.py
     :language: python

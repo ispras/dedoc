@@ -42,10 +42,10 @@ Post-requests should be sent to ``http://localhost:1231/upload``.
         "is_one_column_document": "true",
         "return_format": 'html'
     }
-    with open(filename, 'rb') as file:
-        files = {'file': (filename, file)}
+    with open(filename, "rb") as file:
+        files = {"file": (filename, file)}
         r = requests.post("http://localhost:1231/upload", files=files, data=data)
-        result = r.content.decode('utf-8')
+        result = r.content.decode("utf-8")
 
 The ``data`` dictionary in the example contains some parameters to parse the given file.
 They are described in the section :ref:`api_parameters`.
@@ -84,6 +84,12 @@ Api parameters description
             * **fintoc** -- English, French and Spanish financial prospects (:ref:`fintoc_structure`).
 
         This type is used for choosing a specific structure extractor (and, in some cases, a specific reader).
+
+    * - patterns
+      - list of patterns dictionaries converted to string
+      - None
+      - This parameter is used only when ``document_type="other"``.
+        Configuration of default document structure, please see :ref:`using_patterns` for more details.
 
     * - structure_type
       - tree, linear

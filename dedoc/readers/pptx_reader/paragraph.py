@@ -33,7 +33,7 @@ class PptxParagraph:
     def get_line_with_meta(self, page_id: int, line_id: int, is_title: bool, shift: int = 0) -> LineWithMeta:
         text = ""
         paragraph_properties = self.properties_extractor.get_properties(self.xml.pPr, level=self.level)
-        hierarchy_level = HierarchyLevel.create_raw_text()
+        hierarchy_level = HierarchyLevel.create_unknown()
 
         if is_title or paragraph_properties.title:
             hierarchy_level = HierarchyLevel(line_type=HierarchyLevel.header, level_1=1, level_2=self.level, can_be_multiline=False)

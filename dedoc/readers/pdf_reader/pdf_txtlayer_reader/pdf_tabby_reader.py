@@ -215,7 +215,6 @@ class PdfTabbyReader(PdfBaseReader):
 
         lines = []
         page_number, page_width, page_height = page["number"], int(page["width"]), int(page["height"])
-        prev_line = None
         labeling_mode = self.config.get("labeling_mode", False)
 
         for block in page["blocks"]:
@@ -261,15 +260,13 @@ class PdfTabbyReader(PdfBaseReader):
                                                   uid=uid,
                                                   location=Location(bbox=bbox, page_number=page_number),
                                                   order=order)
-            line_with_location.metadata.tag_hierarchy_level = self.__get_tag(line_with_location, prev_line, meta)
-            prev_line = line_with_location
+            line_with_location.metadata.tag_hierarchy_level = self.__get_tag(line_with_location, meta)
 
             lines.append(line_with_location)
 
         return lines
 
-    def __get_tag(self, line: LineWithMeta, prev_line: Optional[LineWithMeta], line_type: str) -> HierarchyLevel:
-        from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
+    def __get_tag(self, line: LineWithMeta, line_type: str) -> HierarchyLevel:
         from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
 
         if line_type == HierarchyLevel.header:
@@ -278,9 +275,9 @@ class PdfTabbyReader(PdfBaseReader):
             return HierarchyLevel(1, header_level, False, line_type)
 
         if line_type == "litem":  # TODO automatic list depth and merge list items from multiple lines
-            return DefaultStructureExtractor.get_hl_list_using_regexp(line, prev_line)
+            return HierarchyLevel(None, None, False, HierarchyLevel.list_item)
 
-        return HierarchyLevel(None, None, True, line_type)
+        return HierarchyLevel.create_unknown()
 
     def __jar_path(self) -> str:
         import os

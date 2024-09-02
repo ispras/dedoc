@@ -45,6 +45,7 @@ docs = [
     "sphinx-togglebutton==0.3.2",  # for using toggle button
     "linuxdoc==20230506",  # for using flat-table
     "tabula-py==2.8.1",  # for adding new doc type tutorial
+    "html2text==2024.2.26"  # for using patterns tutorial
 ]
 lint = [
     "flake8==5.0.4",
