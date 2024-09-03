@@ -119,18 +119,30 @@ class LineWithMeta(Sized, Serializable):
 
     @property
     def line(self) -> str:
+        """
+        Raw text of the document line
+        """
         return self._line
 
     @property
     def metadata(self) -> LineMetadata:
+        """
+        Line metadata related to the entire line, as line or page number, hierarchy level
+        """
         return self._metadata
 
     @property
     def annotations(self) -> List[Annotation]:
+        """
+        Metadata that refers to some part of the text, for example, font size, font type, etc.
+        """
         return self._annotations
 
     @property
     def uid(self) -> str:
+        """
+        Unique identifier of the line
+        """
         return self._uid
 
     def set_line(self, line: str) -> None:

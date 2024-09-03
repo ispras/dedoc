@@ -7,33 +7,28 @@ Main classes defining a document
 --------------------------------
 
 .. autoclass:: dedoc.data_structures.UnstructuredDocument
-    :special-members: __init__
 
 .. autoclass:: dedoc.data_structures.ParsedDocument
     :show-inheritance:
-    :special-members: __init__
     :members:
 
 .. autoclass:: dedoc.data_structures.DocumentContent
     :show-inheritance:
-    :special-members: __init__
     :members:
 
 .. autoclass:: dedoc.data_structures.DocumentMetadata
     :show-inheritance:
-    :special-members: __init__
     :members:
 
 .. autoclass:: dedoc.data_structures.TreeNode
     :show-inheritance:
-    :special-members: __init__
     :members:
 
 .. autoclass:: dedoc.data_structures.LineWithMeta
     :show-inheritance:
     :special-members: __init__, __lt__
     :members:
-    :undoc-members: line, uid, metadata, annotations
+    :undoc-members: set_line, set_metadata
 
     .. automethod:: __len__
     .. automethod:: __getitem__
@@ -41,26 +36,22 @@ Main classes defining a document
 
 .. autoclass:: dedoc.data_structures.LineMetadata
     :show-inheritance:
-    :special-members: __init__
     :members:
 
 .. autoclass:: dedoc.data_structures.HierarchyLevel
-    :special-members: __init__, __eq__, __lt__
+    :special-members: __eq__, __lt__
     :members:
 
 .. autoclass:: dedoc.data_structures.Table
     :show-inheritance:
-    :special-members: __init__
     :members:
 
 .. autoclass:: dedoc.data_structures.TableMetadata
     :show-inheritance:
-    :special-members: __init__
     :members:
 
 .. autoclass:: dedoc.data_structures.CellWithMeta
     :show-inheritance:
-    :special-members: __init__
     :members:
 
 
@@ -83,7 +74,6 @@ Helper classes
      .. autoattribute:: height
 
 .. autoclass:: dedoc.data_structures.AttachedFile
-    :special-members: __init__
     :members:
 
 .. _annotations:
@@ -93,7 +83,6 @@ Annotations of the text lines
 
 .. autoclass:: dedoc.data_structures.Annotation
     :show-inheritance:
-    :special-members: __init__
 
 Concrete annotations
 ~~~~~~~~~~~~~~~~~~~~

@@ -8,6 +8,20 @@ from dedoc.data_structures.serializable import Serializable
 class LineMetadata(Serializable):
     """
     This class holds information about document node (and document line) metadata, such as page number or line level in a document hierarchy.
+
+    :ivar tag_hierarchy_level: the hierarchy level of the line with its type directly extracted by some of the readers
+        (usually information got from tags e.g. in docx or html readers)
+    :ivar hierarchy_level: the hierarchy level of the line extracted by some of the structure extractors - the result type and level of the line.
+        The lower the level of the hierarchy, the closer it is to the root, it's used to construct document tree.
+    :ivar page_id: page number where paragraph starts, the numeration starts from page 0
+    :ivar line_id: line number inside the entire document, the numeration starts from line 0
+
+    :vartype tag_hierarchy_level: HierarchyLevel
+    :vartype hierarchy_level: Optional[HierarchyLevel]
+    :vartype page_id: int
+    :vartype line_id: Optional[int]
+
+    Additional variables may be added with other line metadata.
     """
 
     def __init__(self,
@@ -20,14 +34,12 @@ class LineMetadata(Serializable):
         :param page_id: page number where paragraph starts, the numeration starts from page 0
         :param line_id: line number inside the entire document, the numeration starts from line 0
         :param tag_hierarchy_level: the hierarchy level of the line with its type directly extracted by some of the readers
-            (usually information got from tags e.g. in docx or html readers)
         :param hierarchy_level: the hierarchy level of the line extracted by some of the structure extractors - the result type and level of the line.
-            The lower the level of the hierarchy, the closer it is to the root, it's used to construct document tree.
         """
-        self.tag_hierarchy_level = HierarchyLevel.create_unknown() if tag_hierarchy_level is None else tag_hierarchy_level
-        self.hierarchy_level = hierarchy_level
-        self.page_id = page_id
-        self.line_id = line_id
+        self.tag_hierarchy_level: HierarchyLevel = HierarchyLevel.create_unknown() if tag_hierarchy_level is None else tag_hierarchy_level
+        self.hierarchy_level: Optional[HierarchyLevel] = hierarchy_level
+        self.page_id: int = page_id
+        self.line_id: Optional[int] = line_id
         for key, value in kwargs.items():
             setattr(self, key, value)
 

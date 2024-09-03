@@ -9,6 +9,16 @@ from dedoc.data_structures.serializable import Serializable
 class CellWithMeta(Serializable):
     """
     This class holds the information about the cell: list of lines and cell properties (rowspan, colspan, invisible).
+
+    :ivar lines: list of textual lines of the cell
+    :ivar colspan: number of columns to span (for cells merged horizontally)
+    :ivar rowspan: number of rows to span (for cells merged vertically)
+    :ivar invisible: indicator for displaying or hiding cell text - cells that are merged with others are hidden (for HTML display)
+
+    :vartype lines: List[LineWithMeta]
+    :vartype colspan: int
+    :vartype rowspan: int
+    :vartype invisible: bool
     """
     def __init__(self, lines: List[LineWithMeta], colspan: int = 1, rowspan: int = 1, invisible: bool = False) -> None:
         """
@@ -17,10 +27,10 @@ class CellWithMeta(Serializable):
         :param rowspan: number of rows to span like in HTML format
         :param invisible: indicator for displaying or hiding cell text
         """
-        self.lines = lines
-        self.colspan = colspan
-        self.rowspan = rowspan
-        self.invisible = invisible
+        self.lines: List[LineWithMeta] = lines
+        self.colspan: int = colspan
+        self.rowspan: int = rowspan
+        self.invisible: bool = invisible
 
     def __repr__(self) -> str:
         return f"CellWithMeta({self.get_text()[:65]})"
