@@ -26,7 +26,8 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "table_type",
     "with_attachments",
     "attachments_dir",
-    "need_content_analysis"
+    "need_content_analysis",
+    "need_gost_frame_analysis"
 ])
 
 
@@ -79,7 +80,8 @@ class PdfBaseReader(BaseReader):
             table_type=param_utils.get_param_table_type(parameters),
             with_attachments=param_utils.get_param_with_attachments(parameters),
             attachments_dir=param_utils.get_param_attachments_dir(parameters, file_path),
-            need_content_analysis=param_utils.get_param_need_content_analysis(parameters)
+            need_content_analysis=param_utils.get_param_need_content_analysis(parameters),
+            need_gost_frame_analysis=param_utils.get_param_need_gost_frame_analysis(parameters)
         )
 
         lines, scan_tables, attachments, warnings, metadata = self._parse_document(file_path, params_for_parse)
@@ -104,9 +106,20 @@ class PdfBaseReader(BaseReader):
         last_page = math.inf if parameters.last_page is None else parameters.last_page
         images = self._get_images(path, first_page, last_page)
 
-        result = Parallel(n_jobs=self.config["n_jobs"])(
-            delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, image in enumerate(images, start=first_page)
-        )
+        if parameters.need_gost_frame_analysis:
+            from dedocutils.data_structures import BBox
+            from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import GOSTFrameRecognizer
+            self.gost_frame_recognizer = GOSTFrameRecognizer(config=self.config)
+            gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(
+                delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images
+            )
+            result = Parallel(n_jobs=self.config["n_jobs"])(
+                delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box) in enumerate(gost_analyzed_images, start=first_page)
+            )
+        else:
+            result = Parallel(n_jobs=self.config["n_jobs"])(
+                delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, image in enumerate(images, start=first_page)
+            )
 
         page_count = get_pdf_page_count(path)
         page_count = math.inf if page_count is None else page_count
@@ -136,7 +149,78 @@ class PdfBaseReader(BaseReader):
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
         if page_angles:
             metadata["rotated_page_angles"] = page_angles
+        if parameters.need_gost_frame_analysis:
+            shifted_lines, shifted_scan_tables, shifted_attachments = self._shift_all_contents(all_lines_with_paragraphs=all_lines_with_paragraphs,
+                                                                                               mp_tables=mp_tables,
+                                                                                               attachments=attachments,
+                                                                                               gost_analyzed_images=gost_analyzed_images)
+            return shifted_lines, shifted_scan_tables, shifted_attachments, warnings, metadata
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
+
+    def _shift_all_contents(self, all_lines_with_paragraphs, mp_tables, attachments, gost_analyzed_images) \
+            -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment]]:
+        from dedocutils.data_structures import BBox
+        from dedoc.readers.pdf_reader.data_classes.tables.location import Location
+        from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
+        # shift mp_tables
+        shifted_scan_tables = []
+        for scan_table in mp_tables:
+            shifted_table_locations = []
+            for location in scan_table.locations:
+                table_page_number = location.page_number
+                shifted_table_locations.append(Location.shift_location(location=location,
+                                                                       shift_x=gost_analyzed_images[table_page_number][1].x_top_left,
+                                                                       shift_y=gost_analyzed_images[table_page_number][1].y_top_left))
+            shifted_matrix_cells = []
+            for row in scan_table.matrix_cells:
+                shifted_matrix_cells_row = []
+                row_page_number = scan_table.page_number
+                for cell in row:  # check page number information in the current table row, because table can be located on multiple pages
+                    if cell.lines and len(cell.lines) >= 1:
+                        row_page_number = cell.lines[0].metadata.page_id
+                        break
+                for cell in row:  # if cell doesn't contain page number information we use row_page_number
+                    page_number = cell.lines[0].metadata.page_id if cell.lines and len(cell.lines) >= 1 else row_page_number
+                    image_width, image_height = gost_analyzed_images[page_number][0].shape[1], gost_analyzed_images[page_number][0].shape[0]
+                    shift_x, shift_y = gost_analyzed_images[page_number][1].x_top_left, gost_analyzed_images[page_number][1].y_top_left
+                    shifted_cell = Cell.shift_cell(cell=cell,
+                                                   shift_x=shift_x,
+                                                   shift_y=shift_y,
+                                                   image_width=image_width,
+                                                   image_height=image_height)
+                    shifted_matrix_cells_row.append(shifted_cell)
+                shifted_matrix_cells.append(shifted_matrix_cells_row)
+            shifted_scan_table = ScanTable(page_number=scan_table.page_number,
+                                           name=scan_table.name,
+                                           order=scan_table.order,
+                                           matrix_cells=shifted_matrix_cells,
+                                           bbox=BBox(0, 0, 0, 0))  # pass empty box since we overwrite locations in the next line anyway
+            shifted_scan_table.locations = shifted_table_locations  # ScanTable doesn't use bbox for anything else but locations and now we overwrite them
+            shifted_scan_tables.append(shifted_scan_table)
+
+        # shift attachments
+        shifted_attachments = []
+        for attachment in attachments:
+            attachment_page_number = attachment.location.page_number
+            shift_x, shift_y = gost_analyzed_images[attachment_page_number][1].x_top_left, gost_analyzed_images[attachment_page_number][1].y_top_left
+            new_attachment_location = Location.shift_location(attachment.location, shift_x, shift_y)
+            shifted_attachments.append(PdfImageAttachment(original_name=attachment.original_name,
+                                                          tmp_file_path=attachment.tmp_file_path,
+                                                          need_content_analysis=attachment.need_content_analysis,
+                                                          location=new_attachment_location,
+                                                          uid=attachment.uid))
+        # shift lines
+        shifted_lines = []
+        for line in all_lines_with_paragraphs:
+            page_number = line.metadata.page_id
+            image_width, image_height = gost_analyzed_images[page_number][0].shape[1], gost_analyzed_images[page_number][0].shape[0]
+            shifted_line = LineWithLocation.shift_line_with_location(line_with_location=line,
+                                                                     shift_x=gost_analyzed_images[page_number][1].x_top_left,
+                                                                     shift_y=gost_analyzed_images[page_number][1].y_top_left,
+                                                                     image_width=image_width,
+                                                                     image_height=image_height)
+            shifted_lines.append(shifted_line)
+        return shifted_lines, shifted_scan_tables, shifted_attachments
 
     @abstractmethod
     def _process_one_page(self, image: ndarray, parameters: ParametersForParseDoc, page_number: int, path: str) \

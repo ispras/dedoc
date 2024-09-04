@@ -66,6 +66,13 @@ def get_param_need_pdf_table_analysis(parameters: Optional[dict]) -> bool:
     return need_pdf_table_analysis
 
 
+def get_param_need_gost_frame_analysis(parameters: Optional[dict]) -> bool:
+    if parameters is None:
+        return False
+    need_gost_frame_analysis = str(parameters.get("need_gost_frame_analysis", "False")).lower() == "true"
+    return need_gost_frame_analysis
+
+
 def get_param_need_binarization(parameters: Optional[dict]) -> bool:
     if parameters is None:
         return False

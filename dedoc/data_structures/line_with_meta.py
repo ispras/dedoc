@@ -180,3 +180,24 @@ class LineWithMeta(Sized, Serializable):
     def to_api_schema(self) -> ApiLineWithMeta:
         annotations = [annotation.to_api_schema() for annotation in self.annotations]
         return ApiLineWithMeta(text=self._line, annotations=annotations)
+
+    @staticmethod
+    def shift_line_with_meta(line_with_meta: "LineWithMeta", shift_x: int, shift_y: int, image_width: int, image_height: int) -> "LineWithMeta":
+        from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
+        from dedocutils.data_structures import BBox
+        new_annotations = []
+        for annotation in line_with_meta.annotations:
+            if annotation.name != "bounding box":
+                new_annotations.append(annotation)
+            else:
+                bbox, page_width, page_height = BBoxAnnotation.get_bbox_from_value(annotation.value)
+                new_bbox = BBox.shift_bbox(bbox, shift_x, shift_y)
+                new_annotations.append(BBoxAnnotation(start=annotation.start,
+                                                      end=annotation.end,
+                                                      value=new_bbox,
+                                                      page_width=image_width,
+                                                      page_height=image_height))
+        return LineWithMeta(line=line_with_meta.line,
+                            metadata=line_with_meta.metadata,
+                            annotations=new_annotations,
+                            uid=line_with_meta.uid)
