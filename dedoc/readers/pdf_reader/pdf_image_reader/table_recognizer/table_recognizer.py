@@ -26,7 +26,10 @@ class GOSTFrameRecognizer(object):
         self.config = config
 
     def rec_and_clean_frame(self, image: np.ndarray) -> Tuple[np.ndarray, BBox]:
-        thresh, img_bin = cv2.threshold(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), 225, 255, cv2.THRESH_BINARY)
+        if len(image.shape) < 3:  # check if an image is already converted to grayscale
+            thresh, img_bin = cv2.threshold(image, 225, 255, cv2.THRESH_BINARY)
+        else:
+            thresh, img_bin = cv2.threshold(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), 225, 255, cv2.THRESH_BINARY)
         lines_bin = detect_lines(255 - img_bin, self.config, "tables")
         contours, hierarchy = cv2.findContours(lines_bin, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
         tree_table = TableTree.parse_contours_to_tree(contours=contours, hierarchy=hierarchy, config=self.config)
@@ -37,7 +40,7 @@ class GOSTFrameRecognizer(object):
             return BBox.crop_image_by_box(image, main_box), main_box
         return image, BBox(0, 0, image.shape[1], image.shape[0])
 
-    def _analyze_table_on_frame(self, tree_table, img_area) -> Tuple[bool, Optional[BBox]]:
+    def _analyze_table_on_frame(self, tree_table: "TableTree", img_area: "int") -> Tuple[bool, Optional[BBox]]:
         try:
             sub_bboxes = tree_table.children[0].children
             for box in sub_bboxes:

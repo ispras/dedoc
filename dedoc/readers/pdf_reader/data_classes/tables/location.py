@@ -12,12 +12,8 @@ class Location:
         self.name = name
         self.rotated_angle = rotated_angle
 
-    @staticmethod
-    def shift_location(location: "Location", shift_x: int, shift_y: int):
-        return Location(page_number=location.page_number,
-                        bbox=BBox.shift_bbox(location.bbox, shift_x, shift_y),
-                        name=location.name,
-                        rotated_angle=location.rotated_angle)
+    def shift(self, shift_x: int, shift_y: int) -> None:
+        self.bbox.shift(shift_x, shift_y)
 
     def to_dict(self) -> Dict[str, Any]:
         from collections import OrderedDict

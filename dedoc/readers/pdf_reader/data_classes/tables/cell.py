@@ -30,31 +30,16 @@ class Cell:
                     uid=cell.cell_uid,
                     contour_coord=cell.con_coord)
 
-    @staticmethod
-    def shift_cell(cell: "Cell", shift_x: int, shift_y: int, image_width: int, image_height: int) -> "Cell":
-        if cell.lines and len(cell.lines) >= 1:
-            shifted_lines = []
-            for line in cell.lines:
-                shifted_lines.append(LineWithMeta.shift_line_with_meta(line_with_meta=line,
-                                                                       shift_x=shift_x,
-                                                                       shift_y=shift_y,
-                                                                       image_width=image_width,
-                                                                       image_height=image_height))
-        else:
-            shifted_lines = cell.lines
-        return Cell(x_top_left=cell.x_top_left + shift_x,
-                    x_bottom_right=cell.x_bottom_right + shift_x,
-                    y_top_left=cell.y_top_left + shift_y,
-                    y_bottom_right=cell.y_bottom_right + shift_y,
-                    id_con=cell.id_con,
-                    lines=shifted_lines,
-                    is_attribute=cell.is_attribute,
-                    is_attribute_required=cell.is_attribute_required,
-                    rotated_angle=cell.rotated_angle,
-                    uid=cell.cell_uid,
-                    contour_coord=BBox.shift_bbox(bbox=cell.con_coord,
-                                                  shift_x=shift_x,
-                                                  shift_y=shift_y)) if cell.con_coord else None
+    def shift(self, shift_x: int, shift_y: int, image_width: int, image_height: int) -> None:
+        if self.lines and len(self.lines) >= 1:
+            for i_lin, _line in enumerate(self.lines):
+                self.lines[i_lin].shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
+        self.x_top_left += shift_x
+        self.x_bottom_right += shift_x
+        self.y_top_left += shift_y
+        self.y_bottom_right += shift_y
+        if self.con_coord:
+            self.con_coord.shift(shift_x=shift_x, shift_y=shift_y)
 
     def __init__(self,
                  x_top_left: int,
