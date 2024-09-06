@@ -176,10 +176,7 @@ class PdfBaseReader(BaseReader):
                     page_number = cell.lines[0].metadata.page_id if cell.lines and len(cell.lines) >= 1 else row_page_number
                     image_width, image_height = gost_analyzed_images[page_number][0].shape[1], gost_analyzed_images[page_number][0].shape[0]
                     shift_x, shift_y = gost_analyzed_images[page_number][1].x_top_left, gost_analyzed_images[page_number][1].y_top_left
-                    row[i_cel].shift(shift_x=shift_x,
-                                     shift_y=shift_y,
-                                     image_width=image_width,
-                                     image_height=image_height)
+                    row[i_cel].shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
 
         # shift attachments
         for i_att, attachment in enumerate(attachments):
