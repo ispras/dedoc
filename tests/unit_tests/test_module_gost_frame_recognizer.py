@@ -55,6 +55,5 @@ class TestGOSTFrameRecognizer(unittest.TestCase):
         self.assertTrue(abs(result[0][1].location.bbox.x_top_left - 84) < 10)
         self.assertTrue(abs(result[0][1].location.bbox.y_top_left - 580) < 10)
         self.assertTrue(len(result[1]) > 0)
-        self.assertTrue(len(result[1]) > 0)
         self.assertTrue(abs(result[1][0].location.bbox.x_top_left - 81) < 10)
         self.assertTrue(abs(result[1][0].location.bbox.y_top_left - 49) < 10)
