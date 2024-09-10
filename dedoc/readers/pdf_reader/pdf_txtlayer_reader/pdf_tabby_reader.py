@@ -1,3 +1,5 @@
+import os
+from os.path import expanduser
 from typing import List, Optional, Tuple
 
 from dedocutils.data_structures import BBox
@@ -283,12 +285,14 @@ class PdfTabbyReader(PdfBaseReader):
         import os
         return os.environ.get("TABBY_JAR", self.default_config["JAR_PATH"])
 
-    def __run(self, path: str = None, encoding: str = "utf-8", start_page: int = None, end_page: int = None) -> bytes:
+    def __run(self, path: str = None, encoding: str = "utf-8",
+              start_page: int = None, end_page: int = None, tmp_dir: str = "") -> bytes:
         import subprocess
 
         args = ["java"] + ["-jar", self.__jar_path(), "-i", path]
         if start_page is not None and end_page is not None:
             args += ["-sp", str(start_page), "-ep", str(end_page)]
+        args += ["-tmp", tmp_dir]
         try:
             result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL, check=True)
             if result.stderr:
@@ -299,12 +303,16 @@ class PdfTabbyReader(PdfBaseReader):
         except subprocess.CalledProcessError as e:
             raise TabbyPdfError(e.stderr.decode(encoding))
 
-    def __process_pdf(self, path: str, start_page: int = None, end_page: int = None) -> dict:
+    def __process_pdf(self, path: str, start_page: int = None, end_page: int = None, tmp_dir: str = "/.cache/dedoc/tabby/") -> dict:
         import json
 
-        output = self.__run(path=path, start_page=start_page, end_page=end_page)
-        response = output.decode("UTF-8")
-        document = json.loads(response) if response else {}
+        self.__run(path=path, start_page=start_page, end_page=end_page, tmp_dir=tmp_dir)
+        folder = expanduser("~") + tmp_dir
+        out_path = os.path.join(folder, 'data.json')
+        with open(out_path) as response:
+            document = json.load(response) if response else {}
+            response.close()
+
         return document
 
     def _process_one_page(self,
