@@ -153,10 +153,7 @@ class PdfBaseReader(BaseReader):
         if page_angles:
             metadata["rotated_page_angles"] = page_angles
         if parameters.need_gost_frame_analysis and parameters.pdf_with_txt_layer == "false":
-            self._shift_all_contents(lines=all_lines_with_paragraphs,
-                                     mp_tables=mp_tables,
-                                     attachments=attachments,
-                                     gost_analyzed_images=gost_analyzed_images)
+            self._shift_all_contents(lines=all_lines_with_paragraphs, mp_tables=mp_tables, attachments=attachments, gost_analyzed_images=gost_analyzed_images)
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
     def _shift_all_contents(self, lines: List[LineWithMeta], mp_tables: List[ScanTable], attachments: List[PdfImageAttachment],
