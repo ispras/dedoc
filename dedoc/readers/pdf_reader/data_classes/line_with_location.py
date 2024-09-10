@@ -14,13 +14,7 @@ class LineWithLocation(LineWithMeta):
         super().__init__(line, metadata, annotations, uid)
 
     def shift(self, shift_x: int, shift_y: int, image_width: int, image_height: int) -> None:
-        import json
-        from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
-        for i_ann, annotation in enumerate(self.annotations):
-            if self.annotations[i_ann].name == "bounding box":
-                bbox, page_width, page_height = BBoxAnnotation.get_bbox_from_value(annotation.value)
-                bbox.shift(shift_x, shift_y)
-                self.annotations[i_ann].value = json.dumps(bbox.to_relative_dict(image_width, image_height))
+        super().shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
         self.location.shift(shift_x, shift_y)
 
     def __repr__(self) -> str:

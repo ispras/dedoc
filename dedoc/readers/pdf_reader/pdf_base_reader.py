@@ -13,6 +13,7 @@ from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.gost_frame_recognizer import GOSTFrameRecognizer
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "orient_analysis_cells",
@@ -29,7 +30,8 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "with_attachments",
     "attachments_dir",
     "need_content_analysis",
-    "need_gost_frame_analysis"
+    "need_gost_frame_analysis",
+    "pdf_with_txt_layer"
 ])
 
 
@@ -53,6 +55,7 @@ class PdfBaseReader(BaseReader):
         self.attachment_extractor = PDFAttachmentsExtractor(config=self.config)
         self.linker = LineObjectLinker(config=self.config)
         self.paragraph_extractor = ScanParagraphClassifierExtractor(config=self.config)
+        self.gost_frame_recognizer = GOSTFrameRecognizer(config=self.config)
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -83,7 +86,9 @@ class PdfBaseReader(BaseReader):
             with_attachments=param_utils.get_param_with_attachments(parameters),
             attachments_dir=param_utils.get_param_attachments_dir(parameters, file_path),
             need_content_analysis=param_utils.get_param_need_content_analysis(parameters),
-            need_gost_frame_analysis=param_utils.get_param_need_gost_frame_analysis(parameters)
+            need_gost_frame_analysis=param_utils.get_param_need_gost_frame_analysis(parameters),
+            pdf_with_txt_layer=param_utils.get_param_pdf_with_txt_layer(parameters)
+
         )
 
         lines, scan_tables, attachments, warnings, metadata = self._parse_document(file_path, params_for_parse)
@@ -108,12 +113,8 @@ class PdfBaseReader(BaseReader):
         last_page = math.inf if parameters.last_page is None else parameters.last_page
         images = self._get_images(path, first_page, last_page)
 
-        if parameters.need_gost_frame_analysis:
-            from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import GOSTFrameRecognizer
-            self.gost_frame_recognizer = GOSTFrameRecognizer(config=self.config)
-            gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(
-                delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images
-            )
+        if parameters.need_gost_frame_analysis and parameters.pdf_with_txt_layer == "false":
+            gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images)
             result = Parallel(n_jobs=self.config["n_jobs"])(
                 delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box) in
                 enumerate(gost_analyzed_images, start=first_page)
@@ -151,14 +152,14 @@ class PdfBaseReader(BaseReader):
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
         if page_angles:
             metadata["rotated_page_angles"] = page_angles
-        if parameters.need_gost_frame_analysis:
-            self._shift_all_contents(all_lines_with_paragraphs=all_lines_with_paragraphs,
+        if parameters.need_gost_frame_analysis and parameters.pdf_with_txt_layer == "false":
+            self._shift_all_contents(lines=all_lines_with_paragraphs,
                                      mp_tables=mp_tables,
                                      attachments=attachments,
                                      gost_analyzed_images=gost_analyzed_images)
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
-    def _shift_all_contents(self, all_lines_with_paragraphs: List[LineWithMeta], mp_tables: List[ScanTable], attachments: List[PdfImageAttachment],
+    def _shift_all_contents(self, lines: List[LineWithMeta], mp_tables: List[ScanTable], attachments: List[PdfImageAttachment],
                             gost_analyzed_images: List[Tuple[np.ndarray, BBox]]) -> None:
         # shift mp_tables
         for scan_table in mp_tables:
@@ -185,13 +186,13 @@ class PdfBaseReader(BaseReader):
             attachments[i_att].location.shift(shift_x, shift_y)
 
         # shift lines
-        for i_lin, line in enumerate(all_lines_with_paragraphs):
+        for i_lin, line in enumerate(lines):
             page_number = line.metadata.page_id
             image_width, image_height = gost_analyzed_images[page_number][0].shape[1], gost_analyzed_images[page_number][0].shape[0]
-            all_lines_with_paragraphs[i_lin].shift(shift_x=gost_analyzed_images[page_number][1].x_top_left,
-                                                   shift_y=gost_analyzed_images[page_number][1].y_top_left,
-                                                   image_width=image_width,
-                                                   image_height=image_height)
+            lines[i_lin].shift(shift_x=gost_analyzed_images[page_number][1].x_top_left,
+                               shift_y=gost_analyzed_images[page_number][1].y_top_left,
+                               image_width=image_width,
+                               image_height=image_height)
 
     @abstractmethod
     def _process_one_page(self, image: ndarray, parameters: ParametersForParseDoc, page_number: int, path: str) \

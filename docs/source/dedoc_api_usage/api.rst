@@ -224,6 +224,13 @@ Api parameters description
         * **true** -- if any text is detected in a PDF file, Dedoc assumes that textual layer is detected and it is correct. Much faster but less accurate.
         * **false** -- use the textual layer classifier to detect textual layer and prove its correctness.
 
+    * - need_gost_frame_analysis
+      - True, False
+      - False
+      - This option is used to enable GOST(Russian government standard) frame recognition for PDF documents or images.
+        The GOST frame recognizer is used in :meth:`dedoc.readers.PdfBaseReader.read`. Its main function is to recognize and
+        ignore the GOST frame on the document. It allows :class:`dedoc.readers.PdfImageReader` to properly process the content
+        of the document containing GOST frame. Currently works only when ``pdf_with_text_layer="false"``.
 
     * - language
       - rus, eng, rus+eng, fra, spa
