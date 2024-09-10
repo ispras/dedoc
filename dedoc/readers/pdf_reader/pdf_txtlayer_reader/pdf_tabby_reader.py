@@ -1,5 +1,3 @@
-import os
-from os.path import expanduser
 from typing import List, Optional, Tuple
 
 from dedocutils.data_structures import BBox
@@ -58,10 +56,18 @@ class PdfTabbyReader(PdfBaseReader):
 
         You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
+        import tempfile
         from dedoc.utils.parameter_utils import get_param_with_attachments
         parameters = {} if parameters is None else parameters
         warnings = []
-        lines, tables, tables_on_images, attachments, document_metadata = self.__extract(path=file_path, parameters=parameters, warnings=warnings)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            lines, tables, tables_on_images, attachments, document_metadata = self.__extract(
+                path=file_path,
+                parameters=parameters,
+                warnings=warnings,
+                tmp_dir=tmp_dir
+            )
         lines = self.linker.link_objects(lines=lines, tables=tables_on_images, images=attachments)
 
         if get_param_with_attachments(parameters) and self.attachment_extractor.can_extract(file_path):
@@ -73,7 +79,7 @@ class PdfTabbyReader(PdfBaseReader):
 
         return self._postprocess(result)
 
-    def __extract(self, path: str, parameters: dict, warnings: list)\
+    def __extract(self, path: str, parameters: dict, warnings: list, tmp_dir: str)\
             -> Tuple[List[LineWithMeta], List[Table], List[ScanTable], List[PdfImageAttachment], Optional[dict]]:
         import math
         from dedoc.utils.pdf_utils import get_pdf_page_count
@@ -104,7 +110,7 @@ class PdfTabbyReader(PdfBaseReader):
         first_tabby_page = first_page + 1 if first_page is not None else 1
         last_tabby_page = page_count if (last_page is None) or (last_page is not None and last_page > page_count) else last_page
         self.logger.info(f"Reading PDF pages from {first_tabby_page} to {last_tabby_page}")
-        document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_tabby_page)
+        document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_tabby_page, tmp_dir=tmp_dir)
 
         pages = document.get("pages", [])
         for page in pages:
@@ -285,14 +291,12 @@ class PdfTabbyReader(PdfBaseReader):
         import os
         return os.environ.get("TABBY_JAR", self.default_config["JAR_PATH"])
 
-    def __run(self, path: str = None, encoding: str = "utf-8",
-              start_page: int = None, end_page: int = None, tmp_dir: str = "") -> bytes:
+    def __run(self, path: str, tmp_dir: str, encoding: str = "utf-8", start_page: int = None, end_page: int = None) -> bytes:
         import subprocess
 
-        args = ["java"] + ["-jar", self.__jar_path(), "-i", path]
+        args = ["java"] + ["-jar", self.__jar_path(), "-i", path, "-tmp", f"{tmp_dir}/"]
         if start_page is not None and end_page is not None:
             args += ["-sp", str(start_page), "-ep", str(end_page)]
-        args += ["-tmp", tmp_dir]
         try:
             result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL, check=True)
             if result.stderr:
@@ -303,12 +307,12 @@ class PdfTabbyReader(PdfBaseReader):
         except subprocess.CalledProcessError as e:
             raise TabbyPdfError(e.stderr.decode(encoding))
 
-    def __process_pdf(self, path: str, start_page: int = None, end_page: int = None, tmp_dir: str = "/.cache/dedoc/tabby/") -> dict:
+    def __process_pdf(self, path: str, tmp_dir: str, start_page: int = None, end_page: int = None) -> dict:
         import json
+        import os
 
         self.__run(path=path, start_page=start_page, end_page=end_page, tmp_dir=tmp_dir)
-        folder = expanduser("~") + tmp_dir
-        out_path = os.path.join(folder, 'data.json')
+        out_path = os.path.join(tmp_dir, "data.json")
         with open(out_path) as response:
             document = json.load(response) if response else {}
             response.close()
