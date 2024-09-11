@@ -8,6 +8,7 @@ import numpy as np
 import dedoc.utils.parameter_utils as param_utils
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc
 from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
+from dedoc.readers.pdf_reader.pdf_auto_reader.pdf_auto_reader import PdfAutoReader
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.gost_frame_recognizer import GOSTFrameRecognizer
 from tests.test_utils import get_test_config
 
@@ -17,6 +18,7 @@ class TestGOSTFrameRecognizer(unittest.TestCase):
     gost_frame_recognizer = GOSTFrameRecognizer(config=get_test_config())
     test_data_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "tables"))
     pdf_image_reader = PdfImageReader(config=get_test_config())
+    pdf_auto_reader = PdfAutoReader(config=get_test_config())
 
     def _get_params_for_parse(self, parameters: Optional[dict], file_path: Optional[str]) -> ParametersForParseDoc:
         parameters = parameters if parameters else {}
@@ -43,7 +45,7 @@ class TestGOSTFrameRecognizer(unittest.TestCase):
 
     def test_gost_frame_recognition(self) -> None:
         image_names = [
-            "gost_frame_1.png", "gost_frame_2.png", "gost_frame_3.png", "example_with_table6.png", "example_with_table5.png", "example_with_table3.png"
+            "gost_frame_1.jpg", "gost_frame_2.png", "gost_frame_3.jpg", "example_with_table6.png", "example_with_table5.png", "example_with_table3.png"
         ]
         gt = [True, True, True, False, False, False]
         for index, image_name in enumerate(image_names):
@@ -52,9 +54,18 @@ class TestGOSTFrameRecognizer(unittest.TestCase):
             result_image, result_bbox = self.gost_frame_recognizer.rec_and_clean_frame(image)
             self.assertEqual(not np.array_equal(result_image, image), gt[index])  # check if we cut something from original image or not
 
+    def test_not_gost_frame(self) -> None:
+        path_image = os.path.join(self.test_data_folder, "not_gost_frame.jpg")
+        image = cv2.imread(path_image)
+        result_image, result_bbox = self.gost_frame_recognizer.rec_and_clean_frame(image)
+        self.assertTrue(abs(result_bbox.x_top_left - 26) < 10)
+        self.assertTrue(abs(result_bbox.y_top_left - 26) < 10)
+        self.assertTrue(abs(result_bbox.width - 722) < 10)
+        self.assertTrue(abs(result_bbox.height - 969) < 10)
+
     def test_coordinates_shift(self) -> None:
         file_path = os.path.join(self.test_data_folder, "gost_frame_2.png")
-        parameters = {"need_gost_frame_analysis": "True", "pdf_with_text_layer": "false"}
+        parameters = {"need_gost_frame_analysis": "True"}
         params_for_parse = self._get_params_for_parse(parameters=parameters, file_path=file_path)
         result = self.pdf_image_reader._parse_document(path=file_path, parameters=params_for_parse)
         self.assertTrue(len(result[0]) > 0)
@@ -65,3 +76,14 @@ class TestGOSTFrameRecognizer(unittest.TestCase):
         self.assertTrue(len(result[1]) > 0)
         self.assertTrue(abs(result[1][0].location.bbox.x_top_left - 81) < 10)
         self.assertTrue(abs(result[1][0].location.bbox.y_top_left - 49) < 10)
+
+    def test_pdf_auto_reader(self) -> None:
+        file_path = os.path.join(self.test_data_folder, "gost_frame_2.png")
+        parameters = {"need_gost_frame_analysis": "True"}
+        result = self.pdf_auto_reader.read(file_path=file_path, parameters=parameters)
+        self.assertTrue(len(result.tables) == 1)
+        self.assertEqual(result.tables[0].cells[0][1].get_text(), "Колонка 2")
+        self.assertEqual(result.tables[0].cells[0][2].get_text(), "Колонка 3")
+        self.assertEqual(len(result.tables[0].cells), 22)
+        self.assertTrue("Названне таблицы (продолженне)" in result.lines[0].line)
+
