@@ -107,13 +107,14 @@ class PdfBaseReader(BaseReader):
         from dedoc.data_structures.hierarchy_level import HierarchyLevel
         from dedoc.readers.pdf_reader.utils.header_footers_analysis import footer_header_analysis
         from dedoc.utils.pdf_utils import get_pdf_page_count
+        from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
         from dedoc.utils.utils import flatten
 
         first_page = 0 if parameters.first_page is None or parameters.first_page < 0 else parameters.first_page
         last_page = math.inf if parameters.last_page is None else parameters.last_page
         images = self._get_images(path, first_page, last_page)
 
-        if parameters.need_gost_frame_analysis and type(self).__name__ == "PdfImageReader":
+        if parameters.need_gost_frame_analysis and isinstance(self, PdfImageReader):
             gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images)
             result = Parallel(n_jobs=self.config["n_jobs"])(
                 delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box) in
@@ -152,7 +153,7 @@ class PdfBaseReader(BaseReader):
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
         if page_angles:
             metadata["rotated_page_angles"] = page_angles
-        if parameters.need_gost_frame_analysis and type(self).__name__ == "PdfImageReader":
+        if parameters.need_gost_frame_analysis and isinstance(self, PdfImageReader):
             self._shift_all_contents(lines=all_lines_with_paragraphs, mp_tables=mp_tables, attachments=attachments, gost_analyzed_images=gost_analyzed_images)
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 

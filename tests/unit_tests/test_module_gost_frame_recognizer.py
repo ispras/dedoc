@@ -85,4 +85,4 @@ class TestGOSTFrameRecognizer(unittest.TestCase):
         self.assertEqual(result.tables[0].cells[0][1].get_text(), "Колонка 2")
         self.assertEqual(result.tables[0].cells[0][2].get_text(), "Колонка 3")
         self.assertEqual(len(result.tables[0].cells), 22)
-        self.assertTrue("Названне таблицы (продолженне)" in result.lines[0].line)
+        self.assertTrue("Название таблицы (продолжение)" in result.lines[0].line)
