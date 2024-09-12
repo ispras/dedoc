@@ -76,6 +76,7 @@ class DedocBaseLoader(BaseLoader, ABC):
                     result for parsing PDF and images
                 need_binarization: clean pages background (binarize) for PDF without a
                     textual layer and images
+                need_gost_frame_analysis: detect and ignore GOST frame of the document
                 need_pdf_table_analysis: parse tables for PDF without a textual layer
                     and images
                 delimiter: column separator for CSV, TSV files
@@ -374,6 +375,7 @@ class DedocAPIFileLoader(DedocBaseLoader):
                     result for parsing PDF and images
                 need_binarization: clean pages background (binarize) for PDF without a
                     textual layer and images
+                need_gost_frame_analysis: detect and ignore GOST frame
                 need_pdf_table_analysis: parse tables for PDF without a textual layer
                     and images
                 delimiter: column separator for CSV, TSV files

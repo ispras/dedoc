@@ -28,6 +28,7 @@ class DedocPDFLoader(DedocBaseLoader):
         need_header_footer_analysis: remove headers and footers from the output result
         need_binarization: clean pages background (binarize) for PDF without a textual
             layer
+        need_gost_frame_analysis: detect and ignore GOST frame
         need_pdf_table_analysis: parse tables for PDF without a textual layer
 
     Examples

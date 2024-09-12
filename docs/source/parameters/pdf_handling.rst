@@ -151,6 +151,17 @@ PDF and images handling
         If the document has a textual layer, it is recommended to use :class:`dedoc.readers.PdfTabbyReader`,
         in this case tables will be parsed much easier and faster.
 
+    * - need_gost_frame_analysis
+      - True, False
+      - False
+      - * :meth:`dedoc.DedocManager.parse`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfBaseReader.read`
+        * :meth:`dedoc.readers.ReaderComposition.read`
+      - This option is used to enable GOST (Russian government standard) frame recognition for PDF documents or images.
+        The GOST frame recognizer is used in :meth:`dedoc.readers.PdfBaseReader.read`. Its main function is to recognize and
+        ignore the GOST frame on the document. It allows :class:`dedoc.readers.PdfImageReader` to properly process the content
+        of the document containing GOST frame.
+
     * - orient_analysis_cells
       - True, False
       - False

@@ -30,6 +30,17 @@ class Cell:
                     uid=cell.cell_uid,
                     contour_coord=cell.con_coord)
 
+    def shift(self, shift_x: int, shift_y: int, image_width: int, image_height: int) -> None:
+        if self.lines:
+            for line in self.lines:
+                line.shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
+        self.x_top_left += shift_x
+        self.x_bottom_right += shift_x
+        self.y_top_left += shift_y
+        self.y_bottom_right += shift_y
+        if self.con_coord:
+            self.con_coord.shift(shift_x=shift_x, shift_y=shift_y)
+
     def __init__(self,
                  x_top_left: int,
                  x_bottom_right: int,

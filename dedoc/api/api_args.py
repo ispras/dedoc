@@ -40,6 +40,7 @@ class QueryParameters:
                                                  '"no_change" - set vertical orientation of the document without using an orientation classifier')
     need_header_footer_analysis: str = Form("false", enum=["true", "false"], description="Exclude headers and footers from PDF parsing result")
     need_binarization: str = Form("false", enum=["true", "false"], description="Binarize document pages (for images or PDF without a textual layer)")
+    need_gost_frame_analysis: str = Form("false", enum=["true", "false"], description="Parameter for detecting and ignoring GOST frame of the document")
 
     # other formats handling
     delimiter: Optional[str] = Form(None, description="Column separator for CSV files")

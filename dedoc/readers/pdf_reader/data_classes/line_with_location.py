@@ -13,6 +13,10 @@ class LineWithLocation(LineWithMeta):
         self.order = order
         super().__init__(line, metadata, annotations, uid)
 
+    def shift(self, shift_x: int, shift_y: int, image_width: int, image_height: int) -> None:
+        super().shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
+        self.location.shift(shift_x, shift_y)
+
     def __repr__(self) -> str:
         parent_repr = super().__repr__()
         return parent_repr.replace("LineWithMeta", "LineWithLocation")
