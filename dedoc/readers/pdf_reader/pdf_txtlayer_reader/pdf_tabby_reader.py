@@ -312,10 +312,8 @@ class PdfTabbyReader(PdfBaseReader):
         import os
 
         self.__run(path=path, start_page=start_page, end_page=end_page, tmp_dir=tmp_dir)
-        out_path = os.path.join(tmp_dir, "data.json")
-        with open(out_path) as response:
-            document = json.load(response) if response else {}
-            response.close()
+        with open(os.path.join(tmp_dir, "data.json"), "r") as response:
+            document = json.load(response)
 
         return document
 
