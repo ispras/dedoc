@@ -163,8 +163,7 @@ class PdfBaseReader(BaseReader):
         for scan_table in mp_tables:
             for location in scan_table.locations:
                 table_page_number = location.page_number
-                location.shift(shift_x=gost_analyzed_images[table_page_number][1].x_top_left,
-                               shift_y=gost_analyzed_images[table_page_number][1].y_top_left)
+                location.shift(shift_x=gost_analyzed_images[table_page_number][1].x_top_left, shift_y=gost_analyzed_images[table_page_number][1].y_top_left)
             for row in scan_table.matrix_cells:
                 row_page_number = scan_table.page_number
                 for cell in row:  # check page number information in the current table row, because table can be located on multiple pages
