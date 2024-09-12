@@ -161,36 +161,36 @@ class PdfBaseReader(BaseReader):
                             gost_analyzed_images: List[Tuple[np.ndarray, BBox]]) -> None:
         # shift mp_tables
         for scan_table in mp_tables:
-            for i_loc, location in enumerate(scan_table.locations):
+            for location in scan_table.locations:
                 table_page_number = location.page_number
-                scan_table.locations[i_loc].shift(shift_x=gost_analyzed_images[table_page_number][1].x_top_left,
-                                                  shift_y=gost_analyzed_images[table_page_number][1].y_top_left)
+                location.shift(shift_x=gost_analyzed_images[table_page_number][1].x_top_left,
+                               shift_y=gost_analyzed_images[table_page_number][1].y_top_left)
             for row in scan_table.matrix_cells:
                 row_page_number = scan_table.page_number
                 for cell in row:  # check page number information in the current table row, because table can be located on multiple pages
                     if cell.lines and len(cell.lines) >= 1:
                         row_page_number = cell.lines[0].metadata.page_id
                         break
-                for i_cel, cell in enumerate(row):  # if cell doesn't contain page number information we use row_page_number
+                for cell in row:  # if cell doesn't contain page number information we use row_page_number
                     page_number = cell.lines[0].metadata.page_id if cell.lines and len(cell.lines) >= 1 else row_page_number
                     image_width, image_height = gost_analyzed_images[page_number][0].shape[1], gost_analyzed_images[page_number][0].shape[0]
                     shift_x, shift_y = gost_analyzed_images[page_number][1].x_top_left, gost_analyzed_images[page_number][1].y_top_left
-                    row[i_cel].shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
+                    cell.shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
 
         # shift attachments
-        for i_att, attachment in enumerate(attachments):
+        for attachment in attachments:
             attachment_page_number = attachment.location.page_number
             shift_x, shift_y = gost_analyzed_images[attachment_page_number][1].x_top_left, gost_analyzed_images[attachment_page_number][1].y_top_left
-            attachments[i_att].location.shift(shift_x, shift_y)
+            attachment.location.shift(shift_x, shift_y)
 
         # shift lines
-        for i_lin, line in enumerate(lines):
+        for line in lines:
             page_number = line.metadata.page_id
             image_width, image_height = gost_analyzed_images[page_number][0].shape[1], gost_analyzed_images[page_number][0].shape[0]
-            lines[i_lin].shift(shift_x=gost_analyzed_images[page_number][1].x_top_left,
-                               shift_y=gost_analyzed_images[page_number][1].y_top_left,
-                               image_width=image_width,
-                               image_height=image_height)
+            line.shift(shift_x=gost_analyzed_images[page_number][1].x_top_left,
+                       shift_y=gost_analyzed_images[page_number][1].y_top_left,
+                       image_width=image_width,
+                       image_height=image_height)
 
     @abstractmethod
     def _process_one_page(self, image: ndarray, parameters: ParametersForParseDoc, page_number: int, path: str) \
