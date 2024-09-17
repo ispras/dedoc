@@ -58,6 +58,18 @@ class PdfTxtlayerReader(PdfBaseReader):
         page = self.extractor_layer.extract_text_layer(path=path, page_number=page_number, parameters=parameters)
         if page is None:
             return [], [], [], []
+        if parameters.need_gost_frame_analysis:
+            page_shift = self.gost_frame_boxes[page_number]
+            for table in tables:
+                shift_x, shift_y = page_shift.x_top_left, page_shift.y_top_left  # shift tables to original coordinates
+                for location in table.locations:
+                    location.bbox.shift(shift_x=shift_x, shift_y=shift_y)
+                for row in table.matrix_cells:
+                    for cell in row:
+                        image_width, image_height = page.pdf_page_width, page.pdf_page_height
+                        cell.shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
+            readable_block = page_shift  # bbox representing the content of the gost frame
+            page.bboxes = [bbox for bbox in page.bboxes if self._inside_any_unreadable_block(bbox.bbox, [readable_block])]  # exclude boxes outside the frame
         unreadable_blocks = [location.bbox for table in tables for location in table.locations]
         page.bboxes = [bbox for bbox in page.bboxes if not self._inside_any_unreadable_block(bbox.bbox, unreadable_blocks)]
         lines = self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page, call_classifier=False)

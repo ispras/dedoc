@@ -88,7 +88,6 @@ class PdfBaseReader(BaseReader):
             need_content_analysis=param_utils.get_param_need_content_analysis(parameters),
             need_gost_frame_analysis=param_utils.get_param_need_gost_frame_analysis(parameters),
             pdf_with_txt_layer=param_utils.get_param_pdf_with_txt_layer(parameters)
-
         )
 
         lines, scan_tables, attachments, warnings, metadata = self._parse_document(file_path, params_for_parse)
@@ -108,18 +107,26 @@ class PdfBaseReader(BaseReader):
         from dedoc.readers.pdf_reader.utils.header_footers_analysis import footer_header_analysis
         from dedoc.utils.pdf_utils import get_pdf_page_count
         from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
+        from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
         from dedoc.utils.utils import flatten
 
         first_page = 0 if parameters.first_page is None or parameters.first_page < 0 else parameters.first_page
         last_page = math.inf if parameters.last_page is None else parameters.last_page
         images = self._get_images(path, first_page, last_page)
 
-        if parameters.need_gost_frame_analysis and isinstance(self, PdfImageReader):
+        if parameters.need_gost_frame_analysis and (isinstance(self, PdfImageReader) or isinstance(self, PdfTxtlayerReader)):
             gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images)
-            result = Parallel(n_jobs=self.config["n_jobs"])(
-                delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box) in
-                enumerate(gost_analyzed_images, start=first_page)
-            )
+            if isinstance(self, PdfImageReader):
+                result = Parallel(n_jobs=self.config["n_jobs"])(
+                    delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box, original_image_shape) in
+                    enumerate(gost_analyzed_images, start=first_page)
+                )
+            else:
+                self.gost_frame_boxes = [item[1] for item in gost_analyzed_images]
+                result = Parallel(n_jobs=self.config["n_jobs"])(
+                    delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box, original_image_shape) in
+                    enumerate(gost_analyzed_images, start=first_page)
+                )
         else:
             result = Parallel(n_jobs=self.config["n_jobs"])(
                 delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, image in enumerate(images, start=first_page)
@@ -158,7 +165,7 @@ class PdfBaseReader(BaseReader):
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
     def _shift_all_contents(self, lines: List[LineWithMeta], mp_tables: List[ScanTable], attachments: List[PdfImageAttachment],
-                            gost_analyzed_images: List[Tuple[np.ndarray, BBox]]) -> None:
+                            gost_analyzed_images: List[Tuple[np.ndarray, BBox, Tuple[int, ...]]]) -> None:
         # shift mp_tables
         for scan_table in mp_tables:
             for location in scan_table.locations:
@@ -172,8 +179,8 @@ class PdfBaseReader(BaseReader):
                         break
                 for cell in row:  # if cell doesn't contain page number information we use row_page_number
                     page_number = cell.lines[0].metadata.page_id if cell.lines and len(cell.lines) >= 1 else row_page_number
-                    image_width, image_height = gost_analyzed_images[page_number][0].shape[1], gost_analyzed_images[page_number][0].shape[0]
-                    shift_x, shift_y = gost_analyzed_images[page_number][1].x_top_left, gost_analyzed_images[page_number][1].y_top_left
+                    image_width, image_height = gost_analyzed_images[page_number][2][1], gost_analyzed_images[page_number][2][0]
+                    shift_x, shift_y = (gost_analyzed_images[page_number][1].x_top_left, gost_analyzed_images[page_number][1].y_top_left)
                     cell.shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
 
         # shift attachments
@@ -185,7 +192,7 @@ class PdfBaseReader(BaseReader):
         # shift lines
         for line in lines:
             page_number = line.metadata.page_id
-            image_width, image_height = gost_analyzed_images[page_number][0].shape[1], gost_analyzed_images[page_number][0].shape[0]
+            image_width, image_height = gost_analyzed_images[page_number][2][1], gost_analyzed_images[page_number][2][0]
             line.shift(shift_x=gost_analyzed_images[page_number][1].x_top_left,
                        shift_y=gost_analyzed_images[page_number][1].y_top_left,
                        image_width=image_width,
