@@ -231,3 +231,11 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         self.assertTrue("SAMPLE TEXT" in result["content"]["tables"][0]["cells"][0][0]["lines"][0]["text"])
         self.assertTrue("2" in result["content"]["tables"][0]["cells"][-1][0]["lines"][0]["text"])
         self.assertEqual(len(result["content"]["tables"]), 1)
+
+    def test_multipage_gost_table_with_text_layer_and_pages_param(self) -> None:
+        file_name = "gost_multipage_table_2.pdf"
+        result = self._send_request(file_name, data={"need_gost_frame_analysis": "True", "pdf_with_text_layer": "True", "pages": "2:"})
+        self.assertEqual(len(result["content"]["tables"]), 1)
+        self.assertEqual(len(result["content"]["tables"][0]["cells"]), 5)
+        self.assertTrue("SAMPLE TEXT" in result["content"]["tables"][0]["cells"][0][0]["lines"][0]["text"])
+        self.assertTrue("2" in result["content"]["tables"][0]["cells"][-1][0]["lines"][0]["text"])

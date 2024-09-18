@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from collections import namedtuple
-from typing import Iterator, List, Optional, Set, Tuple
+from typing import Dict, Iterator, List, Optional, Set, Tuple
 
 import numpy as np
 from dedocutils.data_structures.bbox import BBox
@@ -116,16 +116,18 @@ class PdfBaseReader(BaseReader):
 
         if parameters.need_gost_frame_analysis and (isinstance(self, PdfImageReader) or isinstance(self, PdfTxtlayerReader)):
             gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images)
+            page_range = range(first_page, first_page + len(gost_analyzed_images))
+            gost_analyzed_images = dict(zip(page_range, gost_analyzed_images))
             if isinstance(self, PdfImageReader):
                 result = Parallel(n_jobs=self.config["n_jobs"])(
                     delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box, original_image_shape) in
-                    enumerate(gost_analyzed_images, start=first_page)
+                    gost_analyzed_images.items()
                 )
             else:
-                self.gost_frame_boxes = [item[1] for item in gost_analyzed_images]
+                self.gost_frame_boxes = dict(zip(page_range, [item[1] for item in gost_analyzed_images.values()]))
                 result = Parallel(n_jobs=self.config["n_jobs"])(
                     delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box, original_image_shape) in
-                    enumerate(gost_analyzed_images, start=first_page)
+                    gost_analyzed_images.items()
                 )
         else:
             result = Parallel(n_jobs=self.config["n_jobs"])(
@@ -151,6 +153,8 @@ class PdfBaseReader(BaseReader):
             lines = [lines for lines, _, _, _ in result]
             lines, headers, footers = footer_header_analysis(lines)
             all_lines = list(flatten(lines))
+        if parameters.need_gost_frame_analysis and isinstance(self, PdfImageReader):
+            self._shift_all_contents(lines=all_lines, unref_tables=unref_tables, attachments=attachments, gost_analyzed_images=gost_analyzed_images)
         mp_tables = self.table_recognizer.convert_to_multipages_tables(unref_tables, lines_with_meta=all_lines)
         all_lines_with_links = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=attachments)
 
@@ -160,25 +164,18 @@ class PdfBaseReader(BaseReader):
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
         if page_angles:
             metadata["rotated_page_angles"] = page_angles
-        if parameters.need_gost_frame_analysis and isinstance(self, PdfImageReader):
-            self._shift_all_contents(lines=all_lines_with_paragraphs, mp_tables=mp_tables, attachments=attachments, gost_analyzed_images=gost_analyzed_images)
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
-    def _shift_all_contents(self, lines: List[LineWithMeta], mp_tables: List[ScanTable], attachments: List[PdfImageAttachment],
-                            gost_analyzed_images: List[Tuple[np.ndarray, BBox, Tuple[int, ...]]]) -> None:
-        # shift mp_tables
-        for scan_table in mp_tables:
+    def _shift_all_contents(self, lines: List[LineWithMeta], unref_tables: List[ScanTable], attachments: List[PdfImageAttachment],
+                            gost_analyzed_images: Dict[int, Tuple[np.ndarray, BBox, Tuple[int, ...]]]) -> None:
+        # shift unref_tables
+        for scan_table in unref_tables:
             for location in scan_table.locations:
                 table_page_number = location.page_number
                 location.shift(shift_x=gost_analyzed_images[table_page_number][1].x_top_left, shift_y=gost_analyzed_images[table_page_number][1].y_top_left)
+            page_number = scan_table.locations[0].page_number
             for row in scan_table.matrix_cells:
-                row_page_number = scan_table.page_number
-                for cell in row:  # check page number information in the current table row, because table can be located on multiple pages
-                    if cell.lines and len(cell.lines) >= 1:
-                        row_page_number = cell.lines[0].metadata.page_id
-                        break
-                for cell in row:  # if cell doesn't contain page number information we use row_page_number
-                    page_number = cell.lines[0].metadata.page_id if cell.lines and len(cell.lines) >= 1 else row_page_number
+                for cell in row:
                     image_width, image_height = gost_analyzed_images[page_number][2][1], gost_analyzed_images[page_number][2][0]
                     shift_x, shift_y = (gost_analyzed_images[page_number][1].x_top_left, gost_analyzed_images[page_number][1].y_top_left)
                     cell.shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
