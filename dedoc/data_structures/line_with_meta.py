@@ -119,18 +119,30 @@ class LineWithMeta(Sized, Serializable):
 
     @property
     def line(self) -> str:
+        """
+        Raw text of the document line
+        """
         return self._line
 
     @property
     def metadata(self) -> LineMetadata:
+        """
+        Line metadata related to the entire line, as line or page number, hierarchy level
+        """
         return self._metadata
 
     @property
     def annotations(self) -> List[Annotation]:
+        """
+        Metadata that refers to some part of the text, for example, font size, font type, etc.
+        """
         return self._annotations
 
     @property
     def uid(self) -> str:
+        """
+        Unique identifier of the line
+        """
         return self._uid
 
     def set_line(self, line: str) -> None:
@@ -140,8 +152,12 @@ class LineWithMeta(Sized, Serializable):
         self._metadata = metadata
 
     def __repr__(self) -> str:
-        return (f"LineWithMeta({self.line[:65]}, "
-                f"tagHL={self.metadata.tag_hierarchy_level.level_1, self.metadata.tag_hierarchy_level.level_2, self.metadata.tag_hierarchy_level.line_type})")
+        text = self.line if len(self.line) < 65 else self.line[:62] + "..."
+        tag_hl = "None" if self.metadata.tag_hierarchy_level is None else \
+            f"{self.metadata.tag_hierarchy_level.level_1, self.metadata.tag_hierarchy_level.level_2, self.metadata.tag_hierarchy_level.line_type}"
+        hl = "None" if self.metadata.hierarchy_level is None else \
+            f"{self.metadata.hierarchy_level.level_1, self.metadata.hierarchy_level.level_2, self.metadata.hierarchy_level.line_type}"
+        return f"LineWithMeta({text.strip()}, tagHL={tag_hl}, HL={hl})"
 
     def __add__(self, other: Union["LineWithMeta", str]) -> "LineWithMeta":
         from dedoc.utils.annotation_merger import AnnotationMerger
@@ -164,3 +180,12 @@ class LineWithMeta(Sized, Serializable):
     def to_api_schema(self) -> ApiLineWithMeta:
         annotations = [annotation.to_api_schema() for annotation in self.annotations]
         return ApiLineWithMeta(text=self._line, annotations=annotations)
+
+    def shift(self, shift_x: int, shift_y: int, image_width: int, image_height: int) -> None:
+        import json
+        from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
+        for annotation in self.annotations:
+            if annotation.name == "bounding box":
+                bbox, page_width, page_height = BBoxAnnotation.get_bbox_from_value(annotation.value)
+                bbox.shift(shift_x, shift_y)
+                annotation.value = json.dumps(bbox.to_relative_dict(image_width, image_height))

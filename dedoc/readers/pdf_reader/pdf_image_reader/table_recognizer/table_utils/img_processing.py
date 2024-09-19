@@ -83,7 +83,7 @@ def get_contours_cells(img: np.ndarray, table_type: str, *, config: dict) -> [An
     if config.get("debug_mode", False):
         cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "image_bin.jpg"), img_bin)
     # step 2
-    img_final_bin = __detect_horizontal_and_vertical_lines(img_bin, config, "tables")
+    img_final_bin = detect_horizontal_and_vertical_lines(img_bin, config, "tables")
     # step 3
     img_final_bin_houph, angle_alignment = __apply_houph_lines_and_detect_angle(img_final_bin, config)
 
@@ -182,7 +182,7 @@ def __apply_houph_lines_and_detect_angle(image: np.ndarray, config: dict) -> [np
     return img_final_bin_houph, angle_alignment
 
 
-def __detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, task: str) -> np.ndarray:
+def detect_horizontal_and_vertical_lines(img_bin: np.ndarray, config: dict, task: str) -> np.ndarray:
     # Defining a kernel length
 
     if task == "orientation":

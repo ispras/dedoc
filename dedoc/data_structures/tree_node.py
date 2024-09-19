@@ -12,6 +12,20 @@ class TreeNode(Serializable):
     """
     TreeNode helps to represent document as recursive tree structure.
     It has parent node (None for root ot the tree) and list of children nodes (empty list for list node).
+
+    :ivar node_id: unique node identifier
+    :ivar text: text of the node (may contain several lines)
+    :ivar annotations: some metadata related to the part of the text (as font size)
+    :ivar metadata: metadata refers to entire node (as node type)
+    :ivar subparagraphs: list of child of this node
+    :ivar parent: parent node (None for root, not none for other nodes)
+
+    :vartype node_id: str
+    :vartype text: str
+    :vartype annotations: List[Annotation]
+    :vartype metadata: LineMetadata
+    :vartype subparagraphs: List[TreeNode]
+    :vartype parent: TreeNode
     """
     def __init__(self,
                  node_id: str,
@@ -23,17 +37,17 @@ class TreeNode(Serializable):
         """
         :param node_id: node id is unique in one document
         :param text: text of the node
-        :param annotations: some metadata related to the part of the text (as font size)
-        :param metadata: metadata refers to entire node (as node type)
+        :param annotations: metadata related to the part of the text
+        :param metadata: metadata refers to entire node
         :param subparagraphs: list of child of this node
-        :param parent: parent node (None for root, not none for other nodes)
+        :param parent: parent node
         """
-        self.node_id = node_id
-        self.text = text
-        self.annotations = annotations
-        self.metadata = metadata
-        self.subparagraphs = subparagraphs
-        self.parent = parent
+        self.node_id: str = node_id
+        self.text: str = text
+        self.annotations: List[Annotation] = annotations
+        self.metadata: LineMetadata = metadata
+        self.subparagraphs: List["TreeNode"] = subparagraphs
+        self.parent: "TreeNode" = parent
 
     def to_api_schema(self) -> ApiTreeNode:
         annotations = [annotation.to_api_schema() for annotation in self.annotations]

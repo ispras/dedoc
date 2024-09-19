@@ -7,6 +7,18 @@ class Annotation(Serializable):
     Base class for text annotations of all kinds.
     Annotation is the piece of information about the text line: it's appearance or links to another document object.
     Look to the concrete kind of annotations to get mode examples.
+
+    :ivar start: start of the annotated text
+    :ivar end: end of the annotated text (end isn't included)
+    :ivar name: annotation's name, specific for each type of annotation
+    :ivar value: information about annotated text, depends on the type of annotation, e.g. "True"/"False", "10.0", etc.
+    :ivar is_mergeable: is it possible to merge annotations with the same value
+
+    :vartype start: int
+    :vartype end: int
+    :vartype name: str
+    :vartype value: str
+    :vartype is_mergeable: bool
     """
 
     def __init__(self, start: int, end: int, name: str, value: str, is_mergeable: bool = True) -> None:
@@ -20,11 +32,11 @@ class Annotation(Serializable):
         :param value: information about annotated text
         :param is_mergeable: is it possible to merge annotations with the same value
         """
-        self.start = start
-        self.end = end
-        self.name = name
-        self.value = value
-        self.is_mergeable = is_mergeable
+        self.start: int = start
+        self.end: int = end
+        self.name: str = name
+        self.value: str = value
+        self.is_mergeable: bool = is_mergeable
 
     def __eq__(self, o: object) -> bool:
         if not isinstance(o, Annotation):
@@ -35,7 +47,7 @@ class Annotation(Serializable):
         return f"{self.name.capitalize()}({self.start}:{self.end}, {self.value})"
 
     def __repr__(self) -> str:
-        return f"{self.name.capitalize()}(...)"
+        return self.__str__()
 
     def to_api_schema(self) -> ApiAnnotation:
         return ApiAnnotation(start=self.start, end=self.end, name=self.name, value=self.value)

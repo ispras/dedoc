@@ -9,11 +9,21 @@ from dedoc.data_structures.serializable import Serializable
 class ParsedDocument(Serializable):
     """
     This class holds information about the document content, metadata and attachments.
+
+    :ivar content: document text (hierarchy of nodes) and tables
+    :ivar attachments: result of analysis of attached files (empty if with_attachments=False)
+    :ivar metadata: document metadata such as size, creation date and so on.
+    :ivar warnings: list of warnings and possible errors, arising in the process of document parsing
+
+    :vartype content: DocumentContent
+    :vartype attachments: List[ParsedDocument]
+    :vartype metadata: DocumentMetadata
+    :vartype warnings: List[str]
     """
     def __init__(self,
                  metadata: DocumentMetadata,
-                 content: Optional[DocumentContent],
-                 warnings: List[str] = None,
+                 content: DocumentContent,
+                 warnings: Optional[List[str]] = None,
                  attachments: Optional[List["ParsedDocument"]] = None) -> None:
         """
         :param metadata: document metadata such as size, creation date and so on.
@@ -21,10 +31,10 @@ class ParsedDocument(Serializable):
         :param attachments: result of analysis of attached files
         :param warnings: list of warnings and possible errors, arising in the process of document parsing
         """
-        self.metadata = metadata
-        self.content = content
-        self.attachments = [] if attachments is None else attachments
-        self.warnings = warnings if warnings is not None else []
+        self.metadata: DocumentMetadata = metadata
+        self.content: DocumentContent = content
+        self.attachments: List["ParsedDocument"] = [] if attachments is None else attachments
+        self.warnings: List[str] = warnings if warnings is not None else []
 
     def add_attachments(self, new_attachment: List["ParsedDocument"]) -> None:
         if self.attachments is None:

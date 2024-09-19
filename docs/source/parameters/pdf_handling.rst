@@ -62,7 +62,7 @@ PDF and images handling
       - rus, eng, rus+eng, fra, spa
       - rus+eng
       - * :meth:`dedoc.DedocManager.parse`
-        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfBaseReader.read`
         * :meth:`dedoc.readers.ReaderComposition.read`
         * :meth:`dedoc.structure_extractors.FintocStructureExtractor.extract`
       - Language of the document without a textual layer. The following values are available:
@@ -77,7 +77,7 @@ PDF and images handling
       - :, start:, :end, start:end
       - :
       - * :meth:`dedoc.DedocManager.parse`
-        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfTxtlayerReader.read`, :meth:`dedoc.readers.PdfTabbyReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfBaseReader.read`, :meth:`dedoc.readers.PdfTabbyReader.read`
         * :meth:`dedoc.readers.ReaderComposition.read`
       - If you need to read a part of the PDF document, you can use page slice to define the reading range.
         If the range is set like ``start_page:end_page``, document will be processed from ``start_page`` to ``end_page``
@@ -96,7 +96,7 @@ PDF and images handling
       - true, false, auto
       - auto
       - * :meth:`dedoc.DedocManager.parse`
-        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfBaseReader.read`
         * :meth:`dedoc.readers.ReaderComposition.read`
       - This option is used to set the number of columns if the PDF document is without a textual layer in case it's known beforehand.
         The following values are available:
@@ -111,7 +111,7 @@ PDF and images handling
       - auto, no_change
       - auto
       - * :meth:`dedoc.DedocManager.parse`
-        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfBaseReader.read`
         * :meth:`dedoc.readers.ReaderComposition.read`
       - This option is used to control document orientation analysis for PDF documents without a textual layer.
         The following values are available:
@@ -125,7 +125,7 @@ PDF and images handling
       - True, False
       - False
       - * :meth:`dedoc.DedocManager.parse`
-        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfTxtlayerReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfBaseReader.read`
         * :meth:`dedoc.readers.ReaderComposition.read`
       - This option is used to **remove** headers and footers of PDF documents from the output result.
         If ``need_header_footer_analysis=False``, header and footer lines will present in the output as well as all other document lines.
@@ -134,7 +134,7 @@ PDF and images handling
       - True, False
       - False
       - * :meth:`dedoc.DedocManager.parse`
-        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfBaseReader.read`
         * :meth:`dedoc.readers.ReaderComposition.read`
       - This option is used to clean background (binarize) for pages of PDF documents without a textual layer.
         If the document's background is heterogeneous, this option may help to improve the result of document text recognition.
@@ -144,18 +144,29 @@ PDF and images handling
       - True, False
       - True
       - * :meth:`dedoc.DedocManager.parse`
-        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfTxtlayerReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfBaseReader.read`
         * :meth:`dedoc.readers.ReaderComposition.read`
       - This option is used to enable table recognition for PDF documents or images.
         The table recognition method is used in :class:`dedoc.readers.PdfImageReader` and :class:`dedoc.readers.PdfTxtlayerReader`.
         If the document has a textual layer, it is recommended to use :class:`dedoc.readers.PdfTabbyReader`,
         in this case tables will be parsed much easier and faster.
 
+    * - need_gost_frame_analysis
+      - True, False
+      - False
+      - * :meth:`dedoc.DedocManager.parse`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfBaseReader.read`
+        * :meth:`dedoc.readers.ReaderComposition.read`
+      - This option is used to enable GOST (Russian government standard) frame recognition for PDF documents or images.
+        The GOST frame recognizer is used in :meth:`dedoc.readers.PdfBaseReader.read`. Its main function is to recognize and
+        ignore the GOST frame on the document. It allows :class:`dedoc.readers.PdfImageReader` and :class:`dedoc.readers.PdfTxtlayerReader`
+        to properly process the content of the document containing GOST frame.
+
     * - orient_analysis_cells
       - True, False
       - False
       - * :meth:`dedoc.DedocManager.parse`
-        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfTxtlayerReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfBaseReader.read`
         * :meth:`dedoc.readers.ReaderComposition.read`
       - This option is used for a table recognition for PDF documents or images.
         It is ignored when ``need_pdf_table_analysis=False``.
@@ -166,7 +177,7 @@ PDF and images handling
       - 90, 270
       - 90
       - * :meth:`dedoc.DedocManager.parse`
-        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfTxtlayerReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfBaseReader.read`
         * :meth:`dedoc.readers.ReaderComposition.read`
       - This option is used for a table recognition for PDF documents or images.
         It is ignored when ``need_pdf_table_analysis=False`` or ``orient_analysis_cells=False``.

@@ -56,10 +56,18 @@ class PdfTabbyReader(PdfBaseReader):
 
         You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
+        import tempfile
         from dedoc.utils.parameter_utils import get_param_with_attachments
         parameters = {} if parameters is None else parameters
         warnings = []
-        lines, tables, tables_on_images, attachments, document_metadata = self.__extract(path=file_path, parameters=parameters, warnings=warnings)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            lines, tables, tables_on_images, attachments, document_metadata = self.__extract(
+                path=file_path,
+                parameters=parameters,
+                warnings=warnings,
+                tmp_dir=tmp_dir
+            )
         lines = self.linker.link_objects(lines=lines, tables=tables_on_images, images=attachments)
 
         if get_param_with_attachments(parameters) and self.attachment_extractor.can_extract(file_path):
@@ -71,7 +79,7 @@ class PdfTabbyReader(PdfBaseReader):
 
         return self._postprocess(result)
 
-    def __extract(self, path: str, parameters: dict, warnings: list)\
+    def __extract(self, path: str, parameters: dict, warnings: list, tmp_dir: str)\
             -> Tuple[List[LineWithMeta], List[Table], List[ScanTable], List[PdfImageAttachment], Optional[dict]]:
         import math
         from dedoc.utils.pdf_utils import get_pdf_page_count
@@ -102,7 +110,7 @@ class PdfTabbyReader(PdfBaseReader):
         first_tabby_page = first_page + 1 if first_page is not None else 1
         last_tabby_page = page_count if (last_page is None) or (last_page is not None and last_page > page_count) else last_page
         self.logger.info(f"Reading PDF pages from {first_tabby_page} to {last_tabby_page}")
-        document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_tabby_page)
+        document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_tabby_page, tmp_dir=tmp_dir)
 
         pages = document.get("pages", [])
         for page in pages:
@@ -215,7 +223,6 @@ class PdfTabbyReader(PdfBaseReader):
 
         lines = []
         page_number, page_width, page_height = page["number"], int(page["width"]), int(page["height"])
-        prev_line = None
         labeling_mode = self.config.get("labeling_mode", False)
 
         for block in page["blocks"]:
@@ -261,15 +268,13 @@ class PdfTabbyReader(PdfBaseReader):
                                                   uid=uid,
                                                   location=Location(bbox=bbox, page_number=page_number),
                                                   order=order)
-            line_with_location.metadata.tag_hierarchy_level = self.__get_tag(line_with_location, prev_line, meta)
-            prev_line = line_with_location
+            line_with_location.metadata.tag_hierarchy_level = self.__get_tag(line_with_location, meta)
 
             lines.append(line_with_location)
 
         return lines
 
-    def __get_tag(self, line: LineWithMeta, prev_line: Optional[LineWithMeta], line_type: str) -> HierarchyLevel:
-        from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
+    def __get_tag(self, line: LineWithMeta, line_type: str) -> HierarchyLevel:
         from dedoc.structure_extractors.feature_extractors.list_features.list_utils import get_dotted_item_depth
 
         if line_type == HierarchyLevel.header:
@@ -278,18 +283,18 @@ class PdfTabbyReader(PdfBaseReader):
             return HierarchyLevel(1, header_level, False, line_type)
 
         if line_type == "litem":  # TODO automatic list depth and merge list items from multiple lines
-            return DefaultStructureExtractor.get_hl_list_using_regexp(line, prev_line)
+            return HierarchyLevel(None, None, False, HierarchyLevel.list_item)
 
-        return HierarchyLevel(None, None, True, line_type)
+        return HierarchyLevel.create_unknown()
 
     def __jar_path(self) -> str:
         import os
         return os.environ.get("TABBY_JAR", self.default_config["JAR_PATH"])
 
-    def __run(self, path: str = None, encoding: str = "utf-8", start_page: int = None, end_page: int = None) -> bytes:
+    def __run(self, path: str, tmp_dir: str, encoding: str = "utf-8", start_page: int = None, end_page: int = None) -> bytes:
         import subprocess
 
-        args = ["java"] + ["-jar", self.__jar_path(), "-i", path]
+        args = ["java"] + ["-jar", self.__jar_path(), "-i", path, "-tmp", f"{tmp_dir}/"]
         if start_page is not None and end_page is not None:
             args += ["-sp", str(start_page), "-ep", str(end_page)]
         try:
@@ -302,12 +307,14 @@ class PdfTabbyReader(PdfBaseReader):
         except subprocess.CalledProcessError as e:
             raise TabbyPdfError(e.stderr.decode(encoding))
 
-    def __process_pdf(self, path: str, start_page: int = None, end_page: int = None) -> dict:
+    def __process_pdf(self, path: str, tmp_dir: str, start_page: int = None, end_page: int = None) -> dict:
         import json
+        import os
 
-        output = self.__run(path=path, start_page=start_page, end_page=end_page)
-        response = output.decode("UTF-8")
-        document = json.loads(response) if response else {}
+        self.__run(path=path, start_page=start_page, end_page=end_page, tmp_dir=tmp_dir)
+        with open(os.path.join(tmp_dir, "data.json"), "r") as response:
+            document = json.load(response)
+
         return document
 
     def _process_one_page(self,

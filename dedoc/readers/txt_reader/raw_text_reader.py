@@ -33,7 +33,7 @@ class RawTextReader(BaseReader):
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
-        This method returns only document lines, some types of the lines (e.g. `list_item`) may be found using regular expressions.
+        This method returns only document lines.
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
         """
         parameters = {} if parameters is None else parameters
@@ -54,15 +54,14 @@ class RawTextReader(BaseReader):
     def _get_lines_with_meta(self, path: str, encoding: str) -> List[LineWithMeta]:
         import time
         from dedoc.data_structures.concrete_annotations.spacing_annotation import SpacingAnnotation
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
         from dedoc.data_structures.line_metadata import LineMetadata
-        from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
         from dedoc.utils.utils import calculate_file_hash
 
         lines = []
         file_hash = calculate_file_hash(path=path)
         number_of_empty_lines = 0
         previous_log_time = time.time()
-        prev_line = None
 
         for line_id, line in self.__get_lines(path=path, encoding=encoding):
             if time.time() - previous_log_time > 5:
@@ -76,14 +75,10 @@ class RawTextReader(BaseReader):
             indent_annotation = self.__get_indent_annotation(line)
 
             line_with_meta = LineWithMeta(line=line, metadata=metadata, annotations=[spacing_annotation, indent_annotation], uid=uid)
-            line_with_meta.metadata.tag_hierarchy_level = DefaultStructureExtractor.get_hl_list_using_regexp(line_with_meta, prev_line)
-            prev_line = line_with_meta
+            line_with_meta.metadata.tag_hierarchy_level = HierarchyLevel.create_unknown()
             lines.append(line_with_meta)
 
-            if line.isspace():
-                number_of_empty_lines += 1
-            else:
-                number_of_empty_lines = 0
+            number_of_empty_lines = number_of_empty_lines + 1 if line.isspace() else 0
 
         return lines
 
@@ -113,15 +108,9 @@ class RawTextReader(BaseReader):
         return space_this.end() - space_this.start()
 
     def __is_paragraph(self, line: LineWithMeta, previous_line: Optional[LineWithMeta]) -> bool:
-        from dedoc.data_structures.hierarchy_level import HierarchyLevel
-
-        if not line.metadata.tag_hierarchy_level.can_be_multiline and \
-                line.metadata.tag_hierarchy_level.line_type not in (HierarchyLevel.raw_text, HierarchyLevel.unknown):
-            return True
         space_this = self.__get_starting_spacing(line)
         space_prev = self.__get_starting_spacing(previous_line)
-        return line.metadata.tag_hierarchy_level.line_type in (HierarchyLevel.raw_text, HierarchyLevel.unknown) \
-            and not line.line.isspace() and space_this - space_prev >= 2
+        return not line.line.isspace() and space_this - space_prev >= 2
 
     def _postprocess(self, document: UnstructuredDocument) -> UnstructuredDocument:
         previous_line = None

@@ -6,6 +6,13 @@ from typing import Any, Dict, Optional, Tuple
 from dedoc.config import get_config
 
 
+def get_bool_value(parameter: Optional[bool or str], default_value: bool = False) -> bool:
+    if parameter is None:
+        return default_value
+
+    return parameter if isinstance(parameter, bool) else str(parameter).lower() == "true"
+
+
 def get_param_language(parameters: Optional[dict]) -> str:
     if parameters is None:
         return "rus+eng"
@@ -57,6 +64,13 @@ def get_param_need_pdf_table_analysis(parameters: Optional[dict]) -> bool:
         return False
     need_pdf_table_analysis = str(parameters.get("need_pdf_table_analysis", "True")).lower() == "true"
     return need_pdf_table_analysis
+
+
+def get_param_need_gost_frame_analysis(parameters: Optional[dict]) -> bool:
+    if parameters is None:
+        return False
+    need_gost_frame_analysis = str(parameters.get("need_gost_frame_analysis", "False")).lower() == "true"
+    return need_gost_frame_analysis
 
 
 def get_param_need_binarization(parameters: Optional[dict]) -> bool:

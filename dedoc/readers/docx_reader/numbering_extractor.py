@@ -104,6 +104,7 @@ class NumberingExtractor:
         if abstract_num_id in self.state.prev_ilvl_dict:
             prev_ilvl = self.state.prev_ilvl_dict[abstract_num_id]
 
+            restarted = False
             # startOverride:
             if lvl_info.restart:
                 if abstract_num_id in self.state.prev_num_id_dict:
@@ -112,13 +113,15 @@ class NumberingExtractor:
                     prev_num_id = None
                 if prev_num_id and prev_num_id != num_id:
                     self.state.numerations_dict[(abstract_num_id, ilvl)] = lvl_info.start
+                    restarted = True
 
-            # it's a new deeper level
-            if prev_ilvl < ilvl and lvl_info.lvl_restart or (abstract_num_id, ilvl) not in self.state.numerations_dict:
-                self.state.numerations_dict[(abstract_num_id, ilvl)] = lvl_info.start
-            # it's a continue of the old level (current level <= previous level)
-            else:
-                self.state.numerations_dict[(abstract_num_id, ilvl)] += 1
+            if not restarted:
+                # it's a new deeper level
+                if prev_ilvl < ilvl and lvl_info.lvl_restart or (abstract_num_id, ilvl) not in self.state.numerations_dict:
+                    self.state.numerations_dict[(abstract_num_id, ilvl)] = lvl_info.start
+                # it's a continue of the old level (current level <= previous level)
+                else:
+                    self.state.numerations_dict[(abstract_num_id, ilvl)] += 1
 
         # there isn't the information about this list
         else:

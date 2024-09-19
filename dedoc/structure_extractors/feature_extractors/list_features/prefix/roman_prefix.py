@@ -15,7 +15,7 @@ class RomanPrefix(LinePrefix):
     IV. forth item
     """
 
-    regexp = re.compile(r"^\s*[ivxl]\.")
+    regexp = re.compile(r"^\s*[ivxlcdm]\.")
     name = "roman"
 
     def __init__(self, prefix: str, indent: float) -> None:
@@ -32,4 +32,4 @@ class RomanPrefix(LinePrefix):
         if len(prefix_str) <= 1 or not prefix_str.endswith("."):
             return False
         prefix_set = set(prefix_str[:-1])
-        return prefix_set.issubset(set("ivxl"))
+        return prefix_set.issubset(set("ivxlcdm"))

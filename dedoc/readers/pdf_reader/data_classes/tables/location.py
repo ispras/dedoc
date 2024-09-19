@@ -12,6 +12,9 @@ class Location:
         self.name = name
         self.rotated_angle = rotated_angle
 
+    def shift(self, shift_x: int, shift_y: int) -> None:
+        self.bbox.shift(shift_x, shift_y)
+
     def to_dict(self) -> Dict[str, Any]:
         from collections import OrderedDict
 

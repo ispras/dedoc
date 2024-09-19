@@ -15,6 +15,16 @@ class HierarchyLevel:
     For the least important lines (line_type=raw_text) both levels are None.
 
     Look to the :ref:`hierarchy level description <add_structure_type_hierarchy_level>` to get more details.
+
+    :ivar level_1: value of a line's primary importance
+    :ivar level_2: level of the line inside specific class
+    :ivar can_be_multiline: is used to unify lines inside tree node, if line can be multiline, it can be joined with another line
+    :ivar line_type: type of the line, e.g. raw text, list item, header, etc.
+
+    :vartype level_1: Optional[int]
+    :vartype level_2: Optional[int]
+    :vartype can_be_multiline: bool
+    :vartype line_type: str
     """
     root = "root"
     toc = "toc"
@@ -33,14 +43,14 @@ class HierarchyLevel:
         :param level_1: value of a line's primary importance
         :param level_2: level of the line inside specific class
         :param can_be_multiline: is used to unify lines inside tree node, if line can be multiline, it can be joined with another line
-        :param line_type: type of the line, e.g. raw text, list item, header, etc.
+        :param line_type: type of the line
         """
         assert level_1 is None or level_1 >= 0
         assert level_2 is None or level_2 >= 0
-        self.level_1 = level_1
-        self.level_2 = level_2
-        self.can_be_multiline = can_be_multiline
-        self.line_type = line_type
+        self.level_1: Optional[int] = level_1
+        self.level_2: Optional[int] = level_2
+        self.can_be_multiline: bool = can_be_multiline
+        self.line_type: str = line_type
 
     def __is_defined(self, other: "HierarchyLevel") -> bool:
         return self.level_1 is not None and self.level_2 is not None and other.level_1 is not None and other.level_2 is not None

@@ -37,6 +37,16 @@ Structure type configuring
 
         If you use your custom configuration, look to the documentation of :class:`~dedoc.structure_extractors.StructureExtractorComposition`
 
+    * - patterns
+      - list of patterns based on :class:`~dedoc.structure_extractors.patterns.abstract_pattern.AbstractPattern`,
+        or list of patterns dicts, or list of dictionaries converted to string
+      - None
+      - * :meth:`dedoc.DedocManager.parse`
+        * :meth:`dedoc.structure_extractors.StructureExtractorComposition.extract`
+        * :meth:`dedoc.structure_extractors.DefaultStructureExtractor.extract`
+      - This parameter is used only by :class:`~dedoc.structure_extractors.DefaultStructureExtractor` (``document_type="other"``).
+        Configuration of default document structure, please see :ref:`using_patterns` for more details.
+
     * - structure_type
       - tree, linear
       - tree

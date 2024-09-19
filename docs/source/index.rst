@@ -213,6 +213,7 @@ Currently the following domains can be handled:
 
 For a document of unknown or unsupported domain there is an option to use default structure extractor
 (``document_type=other`` at :ref:`api_parameters`), the default document structure described :ref:`here <other_structure>`.
+This type of structure is configurable (see :ref:`using_patterns`).
 
 
 .. toctree::
@@ -223,14 +224,17 @@ For a document of unknown or unsupported domain there is an option to use defaul
    getting_started/usage
    parameters/parameters
 
+
 .. toctree::
    :maxdepth: 1
    :caption: Tutorials
 
+   tutorials/notebooks
    tutorials/add_new_doc_format
    tutorials/add_new_structure_type
-   tutorials/creating_document_classes
    tutorials/add_new_language
+   tutorials/creating_document_classes
+   tutorials/using_patterns
 
 
 .. toctree::

@@ -1,7 +1,9 @@
 from abc import abstractmethod
 from collections import namedtuple
-from typing import Iterator, List, Optional, Set, Tuple
+from typing import Dict, Iterator, List, Optional, Set, Tuple
 
+import numpy as np
+from dedocutils.data_structures.bbox import BBox
 from numpy import ndarray
 
 from dedoc.common.exceptions.bad_file_error import BadFileFormatError
@@ -11,6 +13,7 @@ from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.gost_frame_recognizer import GOSTFrameRecognizer
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "orient_analysis_cells",
@@ -26,7 +29,9 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "table_type",
     "with_attachments",
     "attachments_dir",
-    "need_content_analysis"
+    "need_content_analysis",
+    "need_gost_frame_analysis",
+    "pdf_with_txt_layer"
 ])
 
 
@@ -50,11 +55,13 @@ class PdfBaseReader(BaseReader):
         self.attachment_extractor = PDFAttachmentsExtractor(config=self.config)
         self.linker = LineObjectLinker(config=self.config)
         self.paragraph_extractor = ScanParagraphClassifierExtractor(config=self.config)
+        self.gost_frame_recognizer = GOSTFrameRecognizer(config=self.config)
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
         The method return document content with all document's lines, tables and attachments.
-        This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`.
+        This reader is able to add some additional information to the `tag_hierarchy_level` of :class:`~dedoc.data_structures.LineMetadata`
+        (``can_be_multiline`` attribute is important for paragraph extraction).
         Look to the documentation of :meth:`~dedoc.readers.BaseReader.read` to get information about the method's parameters.
 
         You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
@@ -78,7 +85,9 @@ class PdfBaseReader(BaseReader):
             table_type=param_utils.get_param_table_type(parameters),
             with_attachments=param_utils.get_param_with_attachments(parameters),
             attachments_dir=param_utils.get_param_attachments_dir(parameters, file_path),
-            need_content_analysis=param_utils.get_param_need_content_analysis(parameters)
+            need_content_analysis=param_utils.get_param_need_content_analysis(parameters),
+            need_gost_frame_analysis=param_utils.get_param_need_gost_frame_analysis(parameters),
+            pdf_with_txt_layer=param_utils.get_param_pdf_with_txt_layer(parameters)
         )
 
         lines, scan_tables, attachments, warnings, metadata = self._parse_document(file_path, params_for_parse)
@@ -94,18 +103,23 @@ class PdfBaseReader(BaseReader):
             Tuple)[List[LineWithMeta], List[ScanTable], List[PdfImageAttachment], List[str], Optional[dict]]:
         import math
         from joblib import Parallel, delayed
+        from dedoc.data_structures.hierarchy_level import HierarchyLevel
         from dedoc.readers.pdf_reader.utils.header_footers_analysis import footer_header_analysis
-        from dedoc.structure_extractors.concrete_structure_extractors.default_structure_extractor import DefaultStructureExtractor
         from dedoc.utils.pdf_utils import get_pdf_page_count
+        from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
+        from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
         from dedoc.utils.utils import flatten
 
         first_page = 0 if parameters.first_page is None or parameters.first_page < 0 else parameters.first_page
         last_page = math.inf if parameters.last_page is None else parameters.last_page
         images = self._get_images(path, first_page, last_page)
 
-        result = Parallel(n_jobs=self.config["n_jobs"])(
-            delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, image in enumerate(images, start=first_page)
-        )
+        if parameters.need_gost_frame_analysis and isinstance(self, (PdfImageReader, PdfTxtlayerReader)):
+            result, gost_analyzed_images = self._process_document_with_gost_frame(images=images, first_page=first_page, parameters=parameters, path=path)
+        else:
+            result = Parallel(n_jobs=self.config["n_jobs"])(
+                delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, image in enumerate(images, start=first_page)
+            )
 
         page_count = get_pdf_page_count(path)
         page_count = math.inf if page_count is None else page_count
@@ -126,18 +140,63 @@ class PdfBaseReader(BaseReader):
             lines = [lines for lines, _, _, _ in result]
             lines, headers, footers = footer_header_analysis(lines)
             all_lines = list(flatten(lines))
+        if parameters.need_gost_frame_analysis and isinstance(self, PdfImageReader):
+            self._shift_all_contents(lines=all_lines, unref_tables=unref_tables, attachments=attachments, gost_analyzed_images=gost_analyzed_images)
         mp_tables = self.table_recognizer.convert_to_multipages_tables(unref_tables, lines_with_meta=all_lines)
         all_lines_with_links = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=attachments)
 
-        prev_line = None
         for line in all_lines_with_links:
-            line.metadata.tag_hierarchy_level = DefaultStructureExtractor.get_hl_list_using_regexp(line, prev_line)
-            prev_line = line
+            line.metadata.tag_hierarchy_level = HierarchyLevel.create_unknown()
 
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
         if page_angles:
             metadata["rotated_page_angles"] = page_angles
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
+
+    def _process_document_with_gost_frame(self, images: Iterator[np.ndarray], first_page: int, parameters: ParametersForParseDoc, path: str) -> \
+            Tuple[Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]], Dict[int, Tuple[np.ndarray, BBox, Tuple[int, ...]]]]:
+        from joblib import Parallel, delayed
+        from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
+
+        gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images)
+        page_range = range(first_page, first_page + len(gost_analyzed_images))
+        gost_analyzed_images = dict(zip(page_range, gost_analyzed_images))
+        if isinstance(self, PdfTxtlayerReader):
+            self.gost_frame_boxes = dict(zip(page_range, [item[1] for item in gost_analyzed_images.values()]))
+        result = Parallel(n_jobs=self.config["n_jobs"])(
+            delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box, original_image_shape) in
+            gost_analyzed_images.items()
+        )
+        return result, gost_analyzed_images
+
+    def _shift_all_contents(self, lines: List[LineWithMeta], unref_tables: List[ScanTable], attachments: List[PdfImageAttachment],
+                            gost_analyzed_images: Dict[int, Tuple[np.ndarray, BBox, Tuple[int, ...]]]) -> None:
+        # shift unref_tables
+        for scan_table in unref_tables:
+            for location in scan_table.locations:
+                table_page_number = location.page_number
+                location.shift(shift_x=gost_analyzed_images[table_page_number][1].x_top_left, shift_y=gost_analyzed_images[table_page_number][1].y_top_left)
+            page_number = scan_table.locations[0].page_number
+            for row in scan_table.matrix_cells:
+                for cell in row:
+                    image_width, image_height = gost_analyzed_images[page_number][2][1], gost_analyzed_images[page_number][2][0]
+                    shift_x, shift_y = (gost_analyzed_images[page_number][1].x_top_left, gost_analyzed_images[page_number][1].y_top_left)
+                    cell.shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
+
+        # shift attachments
+        for attachment in attachments:
+            attachment_page_number = attachment.location.page_number
+            shift_x, shift_y = gost_analyzed_images[attachment_page_number][1].x_top_left, gost_analyzed_images[attachment_page_number][1].y_top_left
+            attachment.location.shift(shift_x, shift_y)
+
+        # shift lines
+        for line in lines:
+            page_number = line.metadata.page_id
+            image_width, image_height = gost_analyzed_images[page_number][2][1], gost_analyzed_images[page_number][2][0]
+            line.shift(shift_x=gost_analyzed_images[page_number][1].x_top_left,
+                       shift_y=gost_analyzed_images[page_number][1].y_top_left,
+                       image_width=image_width,
+                       image_height=image_height)
 
     @abstractmethod
     def _process_one_page(self, image: ndarray, parameters: ParametersForParseDoc, page_number: int, path: str) \

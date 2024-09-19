@@ -164,8 +164,7 @@ You should implement the following methods:
 * :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.can_extract()`: use file extension or mime to check if we could read the given file. You can learn more about extensions and mime using file ``dedoc/extensions.py``
 * :meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor.extract()` : use information about file path and file name to extract attachments from the given file.
 
-The method returns the list of :class:`~dedoc.data_structures.attached_file.AttachedFile` using
-:meth:`~dedoc.attachments_extractors.AbstractAttachmentsExtractor._content2attach_file` method.
+The method returns the list of :class:`~dedoc.data_structures.attached_file.AttachedFile` using ``_content2attach_file`` method.
 This method is inherited from the abstract class, it makes the list of :class:`~dedoc.data_structures.attached_file.AttachedFile` from the list of tuples:
 the name of the attached file and binary content of the file.
 

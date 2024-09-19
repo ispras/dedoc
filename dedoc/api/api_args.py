@@ -8,6 +8,7 @@ from fastapi import Form
 class QueryParameters:
     # type of document structure parsing
     document_type: str = Form("", enum=["", "law", "tz", "diploma", "article", "fintoc"], description="Document domain")
+    patterns: str = Form("", description='Patterns for default document type (when document_type="")')
     structure_type: str = Form("tree", enum=["linear", "tree"], description="Output structure type")
     return_format: str = Form("json", enum=["json", "html", "plain_text", "tree", "collapsed_tree", "ujson", "pretty_json"],
                               description="Response representation, most types (except json) are used for debug purposes only")
@@ -39,6 +40,7 @@ class QueryParameters:
                                                  '"no_change" - set vertical orientation of the document without using an orientation classifier')
     need_header_footer_analysis: str = Form("false", enum=["true", "false"], description="Exclude headers and footers from PDF parsing result")
     need_binarization: str = Form("false", enum=["true", "false"], description="Binarize document pages (for images or PDF without a textual layer)")
+    need_gost_frame_analysis: str = Form("false", enum=["true", "false"], description="Parameter for detecting and ignoring GOST frame of the document")
 
     # other formats handling
     delimiter: Optional[str] = Form(None, description="Column separator for CSV files")

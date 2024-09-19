@@ -29,9 +29,6 @@ Let's implement the basic methods of the parent class:
     * :meth:`~dedoc.structure_extractors.feature_extractors.abstract_extractor.AbstractFeatureExtractor.parameters` --
       we don't plan to use any parameters in the ``__init__`` method, so an empty dictionary can be returned;
 
-    * :meth:`~dedoc.structure_extractors.feature_extractors.abstract_extractor.AbstractFeatureExtractor.fit` --
-      we don't need to train our feature extractor, so the method can be empty;
-
     * :meth:`~dedoc.structure_extractors.feature_extractors.abstract_extractor.AbstractFeatureExtractor.transform` --
       here we implement a basic scheme of features extraction from each document and their concatenation.
 
