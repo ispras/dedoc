@@ -228,7 +228,7 @@ Api parameters description
       - true, false
       - false
       - This option is used to enable GOST (Russian government standard) frame recognition for PDF documents or images.
-        The GOST frame recognizer is used recognize and ignore GOST frame on images and PDF documents without correct textual layer.
+        The GOST frame recognizer is used recognize and ignore GOST frame on images and PDF documents.
 
     * - language
       - rus, eng, rus+eng, fra, spa

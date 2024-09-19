@@ -51,13 +51,13 @@ class TestGOSTFrameRecognizer(unittest.TestCase):
         for index, image_name in enumerate(image_names):
             path_image = os.path.join(self.test_data_folder, image_name)
             image = cv2.imread(path_image)
-            result_image, result_bbox = self.gost_frame_recognizer.rec_and_clean_frame(image)
+            result_image, result_bbox, original_image_shape = self.gost_frame_recognizer.rec_and_clean_frame(image)
             self.assertEqual(not np.array_equal(result_image, image), gt[index])  # check if we cut something from original image or not
 
     def test_not_gost_frame(self) -> None:
         path_image = os.path.join(self.test_data_folder, "not_gost_frame.jpg")
         image = cv2.imread(path_image)
-        result_image, result_bbox = self.gost_frame_recognizer.rec_and_clean_frame(image)
+        result_image, result_bbox, original_image_shape = self.gost_frame_recognizer.rec_and_clean_frame(image)
         self.assertTrue(abs(result_bbox.x_top_left - 26) < 10)
         self.assertTrue(abs(result_bbox.y_top_left - 26) < 10)
         self.assertTrue(abs(result_bbox.width - 722) < 10)

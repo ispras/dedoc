@@ -223,3 +223,19 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         self.assertTrue("Испытание по проверке" in result["content"]["tables"][0]["cells"][-1][2]["lines"][0]["text"])
         self.assertTrue("3.6" in result["content"]["tables"][0]["cells"][-1][3]["lines"][0]["text"])
         self.assertTrue("7.4.9" in result["content"]["tables"][0]["cells"][-1][4]["lines"][0]["text"])
+
+    def test_multipage_gost_table_with_text_layer(self) -> None:
+        file_name = "gost_multipage_table_2.pdf"
+        result = self._send_request(file_name, data={"need_gost_frame_analysis": "True", "pdf_with_text_layer": "True"})
+        self.assertEqual(len(result["content"]["tables"][0]["cells"]), 14)
+        self.assertTrue("SAMPLE TEXT" in result["content"]["tables"][0]["cells"][0][0]["lines"][0]["text"])
+        self.assertTrue("2" in result["content"]["tables"][0]["cells"][-1][0]["lines"][0]["text"])
+        self.assertEqual(len(result["content"]["tables"]), 1)
+
+    def test_multipage_gost_table_with_text_layer_and_pages_param(self) -> None:
+        file_name = "gost_multipage_table_2.pdf"
+        result = self._send_request(file_name, data={"need_gost_frame_analysis": "True", "pdf_with_text_layer": "True", "pages": "2:"})
+        self.assertEqual(len(result["content"]["tables"]), 1)
+        self.assertEqual(len(result["content"]["tables"][0]["cells"]), 5)
+        self.assertTrue("SAMPLE TEXT" in result["content"]["tables"][0]["cells"][0][0]["lines"][0]["text"])
+        self.assertTrue("2" in result["content"]["tables"][0]["cells"][-1][0]["lines"][0]["text"])

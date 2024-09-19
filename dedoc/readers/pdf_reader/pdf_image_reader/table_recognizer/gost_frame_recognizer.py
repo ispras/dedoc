@@ -8,7 +8,7 @@ from dedocutils.data_structures import BBox
 from dedoc.readers.pdf_reader.data_classes.tables.table_tree import TableTree
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.img_processing import detect_horizontal_and_vertical_lines as detect_lines
 
-MIN_FRAME_CONTENT_AREA = 0.7
+MIN_FRAME_CONTENT_AREA = 0.65
 
 
 class GOSTFrameRecognizer:
@@ -16,7 +16,7 @@ class GOSTFrameRecognizer:
         self.logger = config.get("logger", logging.getLogger())
         self.config = config
 
-    def rec_and_clean_frame(self, image: np.ndarray) -> Tuple[np.ndarray, BBox]:
+    def rec_and_clean_frame(self, image: np.ndarray) -> Tuple[np.ndarray, BBox, Tuple[int, ...]]:
         if len(image.shape) < 3:  # check if an image is already converted to grayscale
             thresh, img_bin = cv2.threshold(image, 225, 255, cv2.THRESH_BINARY)
         else:
@@ -28,8 +28,8 @@ class GOSTFrameRecognizer:
         img_area = image.shape[0] * image.shape[1]
         has_gost_frame, main_box = self._analyze_cells_on_frame(tree_table, img_area)
         if has_gost_frame:
-            return BBox.crop_image_by_box(image, main_box), main_box
-        return image, BBox(0, 0, image.shape[1], image.shape[0])
+            return BBox.crop_image_by_box(image, main_box), main_box, (int(image.shape[0]), int(image.shape[1]))
+        return image, BBox(0, 0, image.shape[1], image.shape[0]), (int(image.shape[0]), int(image.shape[1]))
 
     def _analyze_cells_on_frame(self, tree_table: "TableTree", img_area: "int") -> Tuple[bool, Optional[BBox]]:
         try:
