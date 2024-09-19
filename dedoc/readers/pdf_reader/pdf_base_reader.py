@@ -114,21 +114,8 @@ class PdfBaseReader(BaseReader):
         last_page = math.inf if parameters.last_page is None else parameters.last_page
         images = self._get_images(path, first_page, last_page)
 
-        if parameters.need_gost_frame_analysis and (isinstance(self, PdfImageReader) or isinstance(self, PdfTxtlayerReader)):
-            gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images)
-            page_range = range(first_page, first_page + len(gost_analyzed_images))
-            gost_analyzed_images = dict(zip(page_range, gost_analyzed_images))
-            if isinstance(self, PdfImageReader):
-                result = Parallel(n_jobs=self.config["n_jobs"])(
-                    delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box, original_image_shape) in
-                    gost_analyzed_images.items()
-                )
-            else:
-                self.gost_frame_boxes = dict(zip(page_range, [item[1] for item in gost_analyzed_images.values()]))
-                result = Parallel(n_jobs=self.config["n_jobs"])(
-                    delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box, original_image_shape) in
-                    gost_analyzed_images.items()
-                )
+        if parameters.need_gost_frame_analysis and isinstance(self, (PdfImageReader, PdfTxtlayerReader)):
+            result, gost_analyzed_images = self._process_document_with_gost_frame(images=images, first_page=first_page, parameters=parameters, path=path)
         else:
             result = Parallel(n_jobs=self.config["n_jobs"])(
                 delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, image in enumerate(images, start=first_page)
@@ -165,6 +152,22 @@ class PdfBaseReader(BaseReader):
         if page_angles:
             metadata["rotated_page_angles"] = page_angles
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
+
+    def _process_document_with_gost_frame(self, images: Iterator[np.ndarray], first_page: int, parameters: ParametersForParseDoc, path: str) -> \
+            Tuple[Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]], Dict[int, Tuple[np.ndarray, BBox, Tuple[int, ...]]]]:
+        from joblib import Parallel, delayed
+        from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
+
+        gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images)
+        page_range = range(first_page, first_page + len(gost_analyzed_images))
+        gost_analyzed_images = dict(zip(page_range, gost_analyzed_images))
+        if isinstance(self, PdfTxtlayerReader):
+            self.gost_frame_boxes = dict(zip(page_range, [item[1] for item in gost_analyzed_images.values()]))
+        result = Parallel(n_jobs=self.config["n_jobs"])(
+            delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box, original_image_shape) in
+            gost_analyzed_images.items()
+        )
+        return result, gost_analyzed_images
 
     def _shift_all_contents(self, lines: List[LineWithMeta], unref_tables: List[ScanTable], attachments: List[PdfImageAttachment],
                             gost_analyzed_images: Dict[int, Tuple[np.ndarray, BBox, Tuple[int, ...]]]) -> None:
