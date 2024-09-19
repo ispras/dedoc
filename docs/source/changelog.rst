@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v2.3 (2024-09-19)
+-----------------
+Release note: `v2.3 <https://github.com/ispras/dedoc/releases/tag/v2.3>`_
+
+* `Dedoc telegram chat <https://t.me/dedoc_chat>`_ created.
+* Added `patterns` parameter for configuring default structure type (:ref:`using_patterns`).
+* Added notebooks with Dedoc usage :ref:`table_notebooks` (see `issue 484 <https://github.com/ispras/dedoc/issues/484>`_).
+* Fix bug `OutOfMemoryError: Java heap space` in `PdfTabbyReader` (see `issue 489 <https://github.com/ispras/dedoc/issues/489>`_).
+* Fix bug with numeration in `DocxReader` (see `issue 494 <https://github.com/ispras/dedoc/issues/494>`_).
+* Added GOST (Russian government standard) frame recognition in `PdfImageReader` and `PdfTxtlayerReader` (`need_gost_frame_analysis` parameter).
+
 v2.2.7 (2024-08-16)
 -------------------
 Release note: `v2.2.7 <https://github.com/ispras/dedoc/releases/tag/v2.2.7>`_
