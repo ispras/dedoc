@@ -1,4 +1,4 @@
-beautifulsoup4>=4.10.0,<=4.12.2
+beautifulsoup4>=4.10.0,<=4.12.3
 charset-normalizer>=2.0.12,<=3.2.0
 Cython>=0.29.28,<=3.0.2
 dedoc-utils==0.3.8
