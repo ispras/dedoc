@@ -75,9 +75,9 @@ class NumberingExtractor:
             self.styles_extractor.parse(lvl_info.style_id, paragraph_properties, StyleType.NUMBERING)
         if lvl_info.pPr:
             change_paragraph_properties(paragraph_properties, lvl_info.pPr)
+        # run properties are applied only to the numbering text ("lvlText" content)
         if lvl_info.rPr:
             change_run_properties(run_properties, lvl_info.rPr)
-            change_run_properties(paragraph_properties, lvl_info.rPr)
 
         run_properties.text = text
         paragraph_properties.list_level = self.state.levels_count
