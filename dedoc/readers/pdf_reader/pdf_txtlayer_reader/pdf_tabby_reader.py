@@ -80,22 +80,6 @@ class PdfTabbyReader(PdfBaseReader):
 
         return self._postprocess(result)
 
-    def _save_gost_frame_boxes_to_json(self, first_page: Optional[int], last_page: Optional[int], page_count: int, path: str,
-                                       tmp_dir: str) -> str:
-        from joblib import Parallel, delayed
-        import json
-
-        first_page = 0 if first_page is None or first_page < 0 else first_page
-        last_page = page_count if (last_page is None) or (last_page is not None and last_page > page_count) else last_page
-        images = self._get_images(path, first_page, last_page)
-
-        gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images)
-        result_dict = {page_number: page_data[1].to_dict() for page_number, page_data in enumerate(gost_analyzed_images, start=first_page)}
-        result_json_path = os.path.join(tmp_dir, 'gost_frame_bboxes.json')
-        with open(result_json_path, 'w') as f:
-            json.dump(result_dict, f)
-        return result_json_path
-
     def __extract(self, path: str, parameters: dict, warnings: list, tmp_dir: str)\
             -> Tuple[List[LineWithMeta], List[Table], List[ScanTable], List[PdfImageAttachment], Optional[dict]]:
         import math
@@ -124,9 +108,9 @@ class PdfTabbyReader(PdfBaseReader):
             if empty_page_limit:
                 return all_lines, all_tables, all_tables_on_images, all_attached_images, document_metadata
 
-        gost_json_path = ''
+        gost_json_path = ""
         if get_param_need_gost_frame_analysis(parameters):
-            gost_json_path = self._save_gost_frame_boxes_to_json(first_page=first_page, last_page=last_page, page_count=page_count, tmp_dir=tmp_dir, path=path)
+            gost_json_path = self.__save_gost_frame_boxes_to_json(first_page=first_page, last_page=last_page, page_count=page_count, tmp_dir=tmp_dir, path=path)  # noqa
 
         # in java tabby reader page numeration starts with 1, end_page is included
         first_tabby_page = first_page + 1 if first_page is not None else 1
@@ -150,6 +134,21 @@ class PdfTabbyReader(PdfBaseReader):
                 all_attached_images.extend(attached_images)
 
         return all_lines, all_tables, all_tables_on_images, all_attached_images, document_metadata
+
+    def __save_gost_frame_boxes_to_json(self, first_page: Optional[int], last_page: Optional[int], page_count: int, path: str, tmp_dir: str) -> str:
+        from joblib import Parallel, delayed
+        import json
+
+        first_page = 0 if first_page is None or first_page < 0 else first_page
+        last_page = page_count if (last_page is None) or (last_page is not None and last_page > page_count) else last_page
+        images = self._get_images(path, first_page, last_page)
+
+        gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images)
+        result_dict = {page_number: page_data[1].to_dict() for page_number, page_data in enumerate(gost_analyzed_images, start=first_page)}
+        result_json_path = os.path.join(tmp_dir, "gost_frame_bboxes.json")
+        with open(result_json_path, "w") as f:
+            json.dump(result_dict, f)
+        return result_json_path
 
     def __get_tables(self, page: dict) -> Tuple[List[Table], List[ScanTable]]:
         import uuid
