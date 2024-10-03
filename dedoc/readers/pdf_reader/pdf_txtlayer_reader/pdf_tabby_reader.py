@@ -150,7 +150,10 @@ class PdfTabbyReader(PdfBaseReader):
         images = self._get_images(path, first_page, last_page)
 
         gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images)
-        result_dict = {page_number: page_data[1].to_dict() for page_number, page_data in enumerate(gost_analyzed_images, start=first_page)}
+        result_dict = {
+            page_number: {**page_data[1].to_dict(), **{"original_image_width": page_data[2][1], "original_image_height": page_data[2][0]}}
+            for page_number, page_data in enumerate(gost_analyzed_images, start=first_page)
+        }
         result_json_path = os.path.join(tmp_dir, "gost_frame_bboxes.json")
         with open(result_json_path, "w") as f:
             json.dump(result_dict, f)
