@@ -6,10 +6,14 @@ import cv2
 import numpy as np
 
 import dedoc.utils.parameter_utils as param_utils
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.pdf_auto_reader.pdf_auto_reader import PdfAutoReader
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc
 from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.gost_frame_recognizer import GOSTFrameRecognizer
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 from tests.test_utils import get_test_config
 
 
@@ -19,6 +23,8 @@ class TestGOSTFrameRecognizer(unittest.TestCase):
     test_data_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "tables"))
     pdf_image_reader = PdfImageReader(config=get_test_config())
     pdf_auto_reader = PdfAutoReader(config=get_test_config())
+    pdf_txtlayer_reader = PdfTxtlayerReader(config=get_test_config())
+    pdf_tabby_reader = PdfTabbyReader(config=get_test_config())
 
     def _get_params_for_parse(self, parameters: Optional[dict], file_path: Optional[str]) -> ParametersForParseDoc:
         parameters = parameters if parameters else {}
@@ -86,3 +92,26 @@ class TestGOSTFrameRecognizer(unittest.TestCase):
         self.assertEqual(result.tables[0].cells[0][2].get_text(), "Колонка 3")
         self.assertEqual(len(result.tables[0].cells), 22)
         self.assertTrue("Название таблицы (продолжение)" in result.lines[0].line)
+
+    def test_pdf_txtlayer_reader(self) -> None:
+        file_path = os.path.join(self.test_data_folder, "gost_multipage_table_2.pdf")
+        result = self.pdf_txtlayer_reader.read(file_path=file_path, parameters={"need_gost_frame_analysis": "true"})
+        self.__check_content(result)
+
+    def test_pdf_tabby_reader(self) -> None:
+        file_path = os.path.join(self.test_data_folder, "gost_multipage_table_2.pdf")
+        result = self.pdf_tabby_reader.read(file_path=file_path, parameters={"need_gost_frame_analysis": "true"})
+        self.__check_content(result)
+
+    def __check_content(self, result: UnstructuredDocument) -> None:
+        self.assertTrue(len(result.tables) == 1)
+        self.assertEqual(result.tables[0].cells[0][0].get_text(), "SAMPLE TEXT")
+        # {"x_top_left": 0.37142857142857144, "y_top_left": 1.708680142687277, "width": 0.1815126050420168, "height": 0.022592152199762187,
+        # "page_width": 595, "page_height": 841}
+
+        self.assertEqual(result.tables[0].cells[1][0].get_text(), "1")
+        self.assertEqual(len(result.tables[0].cells), 14)
+        line: LineWithLocation = result.lines[37]
+        self.assertEqual(line.line.strip(), "1. Sample text 1")
+        self.assertTrue(abs(line.location.bbox.x_top_left - 212) < 10)
+        self.assertTrue(abs(line.location.bbox.y_top_left - 1309) < 10)

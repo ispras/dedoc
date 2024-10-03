@@ -253,6 +253,14 @@ class TestRecognizedTable(AbstractTestApiDocReader):
     def test_multipage_gost_table_with_text_layer(self) -> None:
         file_name = "gost_multipage_table_2.pdf"
         result = self._send_request(file_name, data={"need_gost_frame_analysis": "True", "pdf_with_text_layer": "True"})
+        self.__check_content(result)
+
+    def test_multipage_gost_table_tabby(self) -> None:
+        file_name = "gost_multipage_table_2.pdf"
+        result = self._send_request(file_name, data={"need_gost_frame_analysis": "True", "pdf_with_text_layer": "tabby"})
+        self.__check_content(result)
+
+    def __check_content(self, result: dict) -> None:
         self.assertEqual(len(result["content"]["tables"][0]["cells"]), 14)
         target_bbox_dict = {
             "x_top_left": 0.12,
