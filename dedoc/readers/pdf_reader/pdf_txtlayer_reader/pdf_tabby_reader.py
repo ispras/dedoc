@@ -109,10 +109,9 @@ class PdfTabbyReader(PdfBaseReader):
                 return all_lines, all_tables, all_tables_on_images, all_attached_images, document_metadata
 
         gost_json_path = ""
-        remove_frame = False
-        if get_param_need_gost_frame_analysis(parameters):
-            remove_frame = True
-            gost_json_path = self.__save_gost_frame_boxes_to_json(first_page=first_page, last_page=last_page, page_count=page_count, tmp_dir=tmp_dir, path=path)  # noqa
+        remove_frame = get_param_need_gost_frame_analysis(parameters)
+        if remove_frame:
+            gost_json_path = self.__save_gost_frame_boxes_to_json(first_page=first_page, last_page=last_page, page_count=page_count, tmp_dir=tmp_dir, path=path)
 
         # in java tabby reader page numeration starts with 1, end_page is included
         first_tabby_page = first_page + 1 if first_page is not None else 1
@@ -332,7 +331,7 @@ class PdfTabbyReader(PdfBaseReader):
 
         args = ["java"] + ["-jar", self.__jar_path(), "-i", path, "-tmp", f"{tmp_dir}/"]
         if remove_frame:
-            args += ["-rf",  gost_json_path]
+            args += ["-rf", gost_json_path]
         if start_page is not None and end_page is not None:
             args += ["-sp", str(start_page), "-ep", str(end_page)]
         try:
@@ -355,12 +354,7 @@ class PdfTabbyReader(PdfBaseReader):
         import json
         import os
 
-        self.__run(path=path,
-                   start_page=start_page,
-                   end_page=end_page,
-                   tmp_dir=tmp_dir,
-                   remove_frame=remove_frame,
-                   gost_json_path=gost_json_path)
+        self.__run(path=path, start_page=start_page, end_page=end_page, tmp_dir=tmp_dir, remove_frame=remove_frame, gost_json_path=gost_json_path)
 
         with open(os.path.join(tmp_dir, "data.json"), "r") as response:
             document = json.load(response)
