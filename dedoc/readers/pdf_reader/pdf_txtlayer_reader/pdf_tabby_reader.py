@@ -109,14 +109,21 @@ class PdfTabbyReader(PdfBaseReader):
                 return all_lines, all_tables, all_tables_on_images, all_attached_images, document_metadata
 
         gost_json_path = ""
+        remove_frame = False
         if get_param_need_gost_frame_analysis(parameters):
+            remove_frame = True
             gost_json_path = self.__save_gost_frame_boxes_to_json(first_page=first_page, last_page=last_page, page_count=page_count, tmp_dir=tmp_dir, path=path)  # noqa
 
         # in java tabby reader page numeration starts with 1, end_page is included
         first_tabby_page = first_page + 1 if first_page is not None else 1
         last_tabby_page = page_count if (last_page is None) or (last_page is not None and last_page > page_count) else last_page
         self.logger.info(f"Reading PDF pages from {first_tabby_page} to {last_tabby_page}")
-        document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_tabby_page, tmp_dir=tmp_dir)
+        document = self.__process_pdf(path=path,
+                                      start_page=first_tabby_page,
+                                      end_page=last_tabby_page,
+                                      tmp_dir=tmp_dir,
+                                      gost_json_path=gost_json_path,
+                                      remove_frame=remove_frame)
 
         pages = document.get("pages", [])
         for page in pages:
@@ -312,10 +319,20 @@ class PdfTabbyReader(PdfBaseReader):
         import os
         return os.environ.get("TABBY_JAR", self.default_config["JAR_PATH"])
 
-    def __run(self, path: str, tmp_dir: str, encoding: str = "utf-8", start_page: int = None, end_page: int = None) -> bytes:
+    def __run(self,
+              path: str,
+              tmp_dir: str,
+              encoding: str = "utf-8",
+              start_page: int = None,
+              end_page: int = None,
+              remove_frame: bool = False,
+              gost_json_path: str = ""
+              ) -> bytes:
         import subprocess
 
         args = ["java"] + ["-jar", self.__jar_path(), "-i", path, "-tmp", f"{tmp_dir}/"]
+        if remove_frame:
+            args += ["-rf",  gost_json_path]
         if start_page is not None and end_page is not None:
             args += ["-sp", str(start_page), "-ep", str(end_page)]
         try:
@@ -328,11 +345,23 @@ class PdfTabbyReader(PdfBaseReader):
         except subprocess.CalledProcessError as e:
             raise TabbyPdfError(e.stderr.decode(encoding))
 
-    def __process_pdf(self, path: str, tmp_dir: str, start_page: int = None, end_page: int = None) -> dict:
+    def __process_pdf(self,
+                      path: str,
+                      tmp_dir: str,
+                      start_page: int = None,
+                      end_page: int = None,
+                      gost_json_path: str = "",
+                      remove_frame: bool = False) -> dict:
         import json
         import os
 
-        self.__run(path=path, start_page=start_page, end_page=end_page, tmp_dir=tmp_dir)
+        self.__run(path=path,
+                   start_page=start_page,
+                   end_page=end_page,
+                   tmp_dir=tmp_dir,
+                   remove_frame=remove_frame,
+                   gost_json_path=gost_json_path)
+
         with open(os.path.join(tmp_dir, "data.json"), "r") as response:
             document = json.load(response)
 
