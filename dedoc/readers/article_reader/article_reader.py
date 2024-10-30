@@ -28,6 +28,9 @@ class ArticleReader(BaseReader):
         else:
             self.grobid_url = f"http://{os.environ.get('GROBID_HOST', 'localhost')}:{os.environ.get('GROBID_PORT', '8070')}"
         self.url = f"{self.grobid_url}/api/processFulltextDocument"
+
+        auth_key = os.environ.get("GROBID_AUTH_KEY", "")
+        self.request_headers = {"Authorization": auth_key} if auth_key else {}
         self.grobid_is_alive = False
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
@@ -48,7 +51,7 @@ class ArticleReader(BaseReader):
         with open(file_path, "rb") as file:
             files = {"input": file}
             try:
-                response = requests.post(self.url, files=files, data={"teiCoordinates": "figure"})
+                response = requests.post(self.url, files=files, data={"teiCoordinates": "figure"}, headers=self.request_headers)
                 if response.status_code != 200:
                     warning = f"GROBID returns code {response.status_code}."
                     self.logger.warning(warning)
@@ -106,7 +109,7 @@ class ArticleReader(BaseReader):
         attempt = max_attempts
         while attempt > 0:
             try:
-                response = requests.get(f"{grobid_url}/api/isalive")
+                response = requests.get(f"{grobid_url}/api/isalive", headers=self.request_headers)
                 if response.status_code == 200:
                     self.logger.info(f"GROBID up on {grobid_url}.")
                     self.grobid_is_alive = True
