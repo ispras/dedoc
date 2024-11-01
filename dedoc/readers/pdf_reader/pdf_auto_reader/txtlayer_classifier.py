@@ -20,7 +20,7 @@ class TxtlayerClassifier:
         self.logger = config.get("logger", logging.getLogger())
 
         self.feature_extractor = TxtlayerFeatureExtractor()
-        self.path = os.path.join(get_config()["resources_path"], "txtlayer_classifier.json")
+        self.path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'txtlayer_classifier.json')
         self.__model = None
 
     @property

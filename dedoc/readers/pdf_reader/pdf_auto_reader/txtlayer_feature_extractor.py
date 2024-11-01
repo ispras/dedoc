@@ -47,6 +47,9 @@ class TxtlayerFeatureExtractor:
             features["symbol_changes"].append(symbol_changes / len(text))
             letter_changes = sum(1 for s1, s2 in zip(text[:-1], text[1:]) if (s1 in letters) and (s2 not in symbols))
             features["letter_changes"].append(letter_changes / len(text))
+            # new
+            space_changes = sum(1 for s1, s2 in zip(text[:-1], text[1:]) if (s1 == ' ') and (s2 != ' '))
+            features["space_changes"].append(space_changes / len(text))
 
             features["mean_word_length"].append(np.mean([len(word) for word in text.split()]))
             features["median_word_length"].append(np.median([len(word) for word in text.split()]))

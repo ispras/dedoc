@@ -213,6 +213,7 @@ if __name__ == "__main__":
                 except Exception as e:
                     print(e)
                     text = ""
+            text = " ".join(text)
 
             with open(os.path.join(args.out_dir, args.incorrect_dir, f"{i:08d}_{language}.txt"), "w") as f:
                 f.write(text)
@@ -224,6 +225,7 @@ if __name__ == "__main__":
         for language in ("ru", "en"):
 
             text = text_generator.get_random_text(lang=language)
+            text = " ".join(text)
 
             with open(os.path.join(args.out_dir, args.correct_dir, f"{i:08d}_{language}.txt"), "w") as f:
                 f.write(text)

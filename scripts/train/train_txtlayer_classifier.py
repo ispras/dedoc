@@ -57,19 +57,19 @@ class GetTextAndTarget:
 
 
 if __name__ == "__main__":
-    data_dir = os.path.join(get_config()["intermediate_data_path"], "text_layer_correctness_data")
+    data_dir = '/home/alexander/Documents/dedoc/scripts'
     os.makedirs(data_dir, exist_ok=True)
     txtlayer_classifier_dataset_dir = os.path.join(data_dir, "data")
 
-    if not os.path.isdir(txtlayer_classifier_dataset_dir):
-        path_out = os.path.join(data_dir, "data.zip")
-        wget.download("https://at.ispras.ru/owncloud/index.php/s/z9WLFiKKFo2WMgW/download", path_out)
-        with zipfile.ZipFile(path_out, "r") as zip_ref:
-            zip_ref.extractall(data_dir)
-        os.remove(path_out)
-        print(f"Dataset downloaded to {txtlayer_classifier_dataset_dir}")
-    else:
-        print(f"Use cached dataset from {txtlayer_classifier_dataset_dir}")
+    # if not os.path.isdir(txtlayer_classifier_dataset_dir):
+    #     path_out = os.path.join(data_dir, "data.zip")
+    #     wget.download("https://at.ispras.ru/owncloud/index.php/s/z9WLFiKKFo2WMgW/download", path_out)
+    #     with zipfile.ZipFile(path_out, "r") as zip_ref:
+    #         zip_ref.extractall(data_dir)
+    #     os.remove(path_out)
+    #     print(f"Dataset downloaded to {txtlayer_classifier_dataset_dir}")
+    # else:
+    #     print(f"Use cached dataset from {txtlayer_classifier_dataset_dir}")
 
     assert os.path.isdir(txtlayer_classifier_dataset_dir)
 
