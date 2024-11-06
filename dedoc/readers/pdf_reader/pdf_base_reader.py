@@ -2,6 +2,7 @@ from abc import abstractmethod
 from collections import namedtuple
 from typing import Dict, Iterator, List, Optional, Set, Tuple
 
+import numpy as np
 from dedocutils.data_structures.bbox import BBox
 from numpy import ndarray
 
@@ -12,6 +13,7 @@ from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.gost_frame_recognizer import GOSTFrameRecognizer
 
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
