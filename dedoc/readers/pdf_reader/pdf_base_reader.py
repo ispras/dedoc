@@ -161,7 +161,7 @@ class PdfBaseReader(BaseReader):
         page_range = range(first_page, first_page + len(gost_analyzed_images))
         gost_analyzed_images = dict(zip(page_range, gost_analyzed_images))
         if isinstance(self, PdfTxtlayerReader):
-            self.gost_frame_boxes = dict(zip(page_range, [item[1] for item in gost_analyzed_images.values()]))
+            self.gost_frame_boxes = dict(zip(page_range, [(item[1], item[2]) for item in gost_analyzed_images.values()]))
         result = Parallel(n_jobs=self.config["n_jobs"])(
             delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box, original_image_shape) in
             gost_analyzed_images.items()
