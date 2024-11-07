@@ -9,7 +9,7 @@ import numpy as np
 
 from dedoc.api.dedoc_api import config
 from dedoc.utils.image_utils import rotate_image
-from dedoc.utils.pdf_utils import get_page_image
+from dedoc.utils.pdf_utils import get_page_image, get_pdf_page_count
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
 BboxWithConfsType = namedtuple("WordWithConf", ["start", "end", "bbox", "confs", "text_type"])
@@ -61,12 +61,15 @@ class TestWordExtraction(AbstractTestApiDocReader):
 
         return text_type
 
-    def __get_words_annotation(self, structure: dict) -> List[BboxWithConfsType]:
+    def __get_words_annotation(self, structure: dict, page_id: int = 0) -> List[BboxWithConfsType]:
         stack = [structure]
         words_annotation = []
 
         while len(stack) > 0:
             node = stack.pop()
+            if node["metadata"]["page_id"] != page_id:
+                stack.extend(node["subparagraphs"])
+                continue
 
             anns_bbox = [annotation for annotation in node["annotations"] if annotation["name"] == "bounding box"]
             anns_conf = [annotation for annotation in node["annotations"] if annotation["name"] == "confidence"]
@@ -170,6 +173,38 @@ class TestWordExtraction(AbstractTestApiDocReader):
             if len(tables) > 0:
                 image = self.__draw_tables_words(tables, image)
             cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}.png"), image)
+
+    def test_gost_frame_documents(self) -> None:
+        filename_parameters_outputdir = [
+            ["tables/gost_multipage_table_2.pdf", dict(pdf_with_text_layer="true", need_gost_frame_analysis="true"), "gost_frame_true"],
+            ["tables/gost_multipage_table_2.pdf", dict(pdf_with_text_layer="false", need_gost_frame_analysis="true"), "gost_frame_false"]
+        ]
+
+        for file_name, parameters, outputdir in filename_parameters_outputdir:
+            output_path = os.path.join(self.output_path, outputdir)
+            os.makedirs(output_path, exist_ok=True)
+            result = self._send_request(file_name, data=parameters)
+            structure = result["content"]["structure"]
+            tables = result["content"]["tables"]
+            page_count = get_pdf_page_count(self._get_abs_path(file_name))
+
+            for page_id in range(page_count):
+                image = np.asarray(get_page_image(self._get_abs_path(file_name), page_id))
+                word_annotations = self.__get_words_annotation(structure, page_id=page_id)
+                if len(word_annotations) > 0:
+                    ann = word_annotations[0]
+                    if ann is not None:
+                        bbox = json.loads(ann.bbox)
+                        image = cv2.resize(image, dsize=(bbox["page_width"], bbox["page_height"]), interpolation=cv2.INTER_CUBIC)
+                        image = self.__draw_word_annotations(image, word_annotations)
+                if len(tables) > 0:
+                    if len(word_annotations) == 0:
+                        cell_line = tables[0]["cells"][0][0]["lines"][0]
+                        ann_bbox = [annotation for annotation in cell_line["annotations"] if annotation["name"] == "bounding box"][0]
+                        bbox = json.loads(ann_bbox["value"])
+                        image = cv2.resize(image, dsize=(bbox["page_width"], bbox["page_height"]), interpolation=cv2.INTER_CUBIC)
+                    image = self.__draw_tables_words(tables, image)
+                cv2.imwrite(os.path.join(output_path, f"{os.path.split(file_name)[1]}_{page_id}.png"), image)
 
     def test_table_word_extraction(self) -> None:
         output_path = os.path.join(self.output_path, "tables")
