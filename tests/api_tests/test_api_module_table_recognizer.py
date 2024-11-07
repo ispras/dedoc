@@ -225,6 +225,16 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         file_name = "gost_multipage_table.pdf"
         result = self._send_request(file_name, data={"need_gost_frame_analysis": "True"})  # don't pass pdf_with_text_layer to check condition in PDFBaseReader
         self.assertTrue(len(result["content"]["tables"][0]["cells"]) > 35)
+        target_bbox_dict = {
+            "x_top_left": 0.14,
+            "y_top_left": 0.11,
+            "width": 0.07,
+            "height": 0.01,
+            "page_width": 1653,
+            "page_height": 2339
+        }
+        self._test_bbox_annotations(result["content"]["structure"]["subparagraphs"][0], target_bbox_dict)
+        self.assertTrue("Состав квалификационных испытаний" in result["content"]["structure"]["subparagraphs"][0]["text"])
         self.assertTrue("KR13" in result["content"]["tables"][0]["cells"][-1][0]["lines"][0]["text"])  # check the last row of multipage table
         target_bbox_dict_1 = {
             "x_top_left": 0.15,
@@ -236,50 +246,24 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         }
         self._test_bbox_annotations(result["content"]["tables"][0]["cells"][-1][0]["lines"][0], target_bbox_dict_1)
         self.assertTrue("R13.1" in result["content"]["tables"][0]["cells"][-1][1]["lines"][0]["text"])  # check that it belongs to first and only table
-        target_bbox_dict_2 = {
-            "x_top_left": 0.25,
-            "y_top_left": 0.58,
-            "width": 0.04,
-            "height": 0.009,
-            "page_width": 1653,
-            "page_height": 2339
-        }
-        self._test_bbox_annotations(result["content"]["tables"][0]["cells"][-1][1]["lines"][0], target_bbox_dict_2)
         self.assertTrue("Испытание по проверке" in result["content"]["tables"][0]["cells"][-1][2]["lines"][0]["text"])
-        target_bbox_dict_3 = {
-            "x_top_left": 0.33,
-            "y_top_left": 0.58,
-            "width": 0.09,
-            "height": 0.009,
-            "page_width": 1653,
-            "page_height": 2339
-        }
-        self._test_bbox_annotations(result["content"]["tables"][0]["cells"][-1][2]["lines"][0], target_bbox_dict_3)
         self.assertTrue("3.6" in result["content"]["tables"][0]["cells"][-1][3]["lines"][0]["text"])
-        target_bbox_dict_4 = {
-            "x_top_left": 0.78,
-            "y_top_left": 0.58,
-            "width": 0.02,
-            "height": 0.009,
-            "page_width": 1653,
-            "page_height": 2339
-        }
-        self._test_bbox_annotations(result["content"]["tables"][0]["cells"][-1][3]["lines"][0], target_bbox_dict_4)
         self.assertTrue("7.4.9" in result["content"]["tables"][0]["cells"][-1][4]["lines"][0]["text"])
-        target_bbox_dict_5 = {
-            "x_top_left": 0.88,
-            "y_top_left": 0.58,
-            "width": 0.03,
-            "height": 0.009,
-            "page_width": 1653,
-            "page_height": 2339
-        }
-        self._test_bbox_annotations(result["content"]["tables"][0]["cells"][-1][4]["lines"][0], target_bbox_dict_5)
 
     def test_multipage_gost_table_with_text_layer(self) -> None:
         file_name = "gost_multipage_table_2.pdf"
         result = self._send_request(file_name, data={"need_gost_frame_analysis": "True", "pdf_with_text_layer": "True"})
         self.assertEqual(len(result["content"]["tables"][0]["cells"]), 14)
+        target_bbox_dict = {
+            "x_top_left": 0.12,
+            "y_top_left": 0.56,
+            "width": 0.01,
+            "height": 0.01,
+            "page_width": 595,
+            "page_height": 841
+        }
+        self._test_bbox_annotations(result["content"]["structure"]["subparagraphs"][0]["subparagraphs"][0], target_bbox_dict)
+        self.assertTrue("Sample text 1" in result["content"]["structure"]["subparagraphs"][0]["subparagraphs"][0]["text"])
         self.assertTrue("SAMPLE TEXT" in result["content"]["tables"][0]["cells"][0][0]["lines"][0]["text"])
         target_bbox_dict_1 = {
             "x_top_left": 0.13,
@@ -291,15 +275,6 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         }
         self._test_bbox_annotations(result["content"]["tables"][0]["cells"][0][0]["lines"][0], target_bbox_dict_1)
         self.assertTrue("2" in result["content"]["tables"][0]["cells"][-1][0]["lines"][0]["text"])
-        target_bbox_dict_2 = {
-            "x_top_left": 0.13,
-            "y_top_left": 0.15,
-            "width": 0.005,
-            "height": 0.007,
-            "page_width": 595,
-            "page_height": 841
-        }
-        self._test_bbox_annotations(result["content"]["tables"][0]["cells"][-1][0]["lines"][0], target_bbox_dict_2)
         self.assertEqual(len(result["content"]["tables"]), 1)
 
     def test_multipage_gost_table_with_text_layer_and_pages_param(self) -> None:

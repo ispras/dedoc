@@ -64,28 +64,27 @@ class PdfTxtlayerReader(PdfBaseReader):
             self.__change_table_boxes_page_width_heigth(pdf_width=page.pdf_page_width, pdf_height=page.pdf_page_height, tables=tables)
             readable_block = page_shift  # bbox representing the content of the gost frame
             page.bboxes = [bbox for bbox in page.bboxes if self._inside_any_unreadable_block(bbox.bbox, [readable_block])]  # exclude boxes outside the frame
-            unreadable_blocks = [location.bbox for table in tables for location in table.locations]
-            page.bboxes = [bbox for bbox in page.bboxes if not self._inside_any_unreadable_block(bbox.bbox, unreadable_blocks)]
-            lines = self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page, call_classifier=False)
-        else:
-            unreadable_blocks = [location.bbox for table in tables for location in table.locations]
-            page.bboxes = [bbox for bbox in page.bboxes if not self._inside_any_unreadable_block(bbox.bbox, unreadable_blocks)]
-            lines = self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page, call_classifier=False)
+
+        unreadable_blocks = [location.bbox for table in tables for location in table.locations]
+        page.bboxes = [bbox for bbox in page.bboxes if not self._inside_any_unreadable_block(bbox.bbox, unreadable_blocks)]
+        lines = self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page, call_classifier=False)
+
+        if not parameters.need_gost_frame_analysis:
             self.__change_table_boxes_page_width_heigth(pdf_width=page.pdf_page_width, pdf_height=page.pdf_page_height, tables=tables)
 
         return lines, tables, page.attachments, []
 
-    def _move_table_cells(self, tables: List[ScanTable], page_shift: BBox, page: Tuple) -> None:
+    def _move_table_cells(self, tables: List[ScanTable], page_shift: BBox, page: Tuple[int]) -> None:
         """
         Move tables back to original coordinates when parsing a document containing a gost frame
         """
+        image_width, image_height = page[1], page[0]
         for table in tables:
             shift_x, shift_y = page_shift.x_top_left, page_shift.y_top_left  # shift tables to original coordinates
             for location in table.locations:
                 location.bbox.shift(shift_x=shift_x, shift_y=shift_y)
             for row in table.matrix_cells:
                 for cell in row:
-                    image_width, image_height = page[1], page[0]
                     cell.shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
 
     def __change_table_boxes_page_width_heigth(self, pdf_width: int, pdf_height: int, tables: List[ScanTable]) -> None:
