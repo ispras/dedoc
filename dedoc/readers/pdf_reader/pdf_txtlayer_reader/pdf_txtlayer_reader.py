@@ -78,7 +78,7 @@ class PdfTxtlayerReader(PdfBaseReader):
         """
         Move tables back to original coordinates when parsing a document containing a gost frame
         """
-        image_width, image_height = page[1], page[0]
+        image_height, image_width = page
         for table in tables:
             shift_x, shift_y = page_shift.x_top_left, page_shift.y_top_left  # shift tables to original coordinates
             for location in table.locations:
