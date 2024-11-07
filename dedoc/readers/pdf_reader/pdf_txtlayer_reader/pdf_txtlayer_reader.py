@@ -74,7 +74,7 @@ class PdfTxtlayerReader(PdfBaseReader):
 
         return lines, tables, page.attachments, []
 
-    def _move_table_cells(self, tables: List[ScanTable], page_shift: BBox, page: Tuple[int]) -> None:
+    def _move_table_cells(self, tables: List[ScanTable], page_shift: BBox, page: Tuple[int, int]) -> None:
         """
         Move tables back to original coordinates when parsing a document containing a gost frame
         """
