@@ -2,7 +2,6 @@ from abc import abstractmethod
 from collections import namedtuple
 from typing import Dict, Iterator, List, Optional, Set, Tuple
 
-import numpy as np
 from dedocutils.data_structures.bbox import BBox
 from numpy import ndarray
 
@@ -13,7 +12,6 @@ from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.gost_frame_recognizer import GOSTFrameRecognizer
 
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
@@ -164,7 +162,7 @@ class PdfBaseReader(BaseReader):
         page_range = range(first_page, first_page + len(gost_analyzed_images))
         gost_analyzed_images = dict(zip(page_range, gost_analyzed_images))
         if isinstance(self, PdfTxtlayerReader):
-            self.gost_frame_boxes = dict(zip(page_range, [item[1] for item in gost_analyzed_images.values()]))
+            self.gost_frame_boxes = dict(zip(page_range, [(item[1], item[2]) for item in gost_analyzed_images.values()]))
         result = Parallel(n_jobs=self.config["n_jobs"])(
             delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box, original_image_shape) in
             gost_analyzed_images.items()
