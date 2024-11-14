@@ -177,7 +177,8 @@ class TestWordExtraction(AbstractTestApiDocReader):
     def test_gost_frame_documents(self) -> None:
         filename_parameters_outputdir = [
             ["tables/gost_multipage_table_2.pdf", dict(pdf_with_text_layer="true", need_gost_frame_analysis="true"), "gost_frame_true"],
-            ["tables/gost_multipage_table_2.pdf", dict(pdf_with_text_layer="false", need_gost_frame_analysis="true"), "gost_frame_false"]
+            ["tables/gost_multipage_table_2.pdf", dict(pdf_with_text_layer="false", need_gost_frame_analysis="true"), "gost_frame_false"],
+            ["tables/gost_multipage_table_2.pdf", dict(pdf_with_text_layer="tabby", need_gost_frame_analysis="true"), "gost_frame_tabby"]
         ]
 
         for file_name, parameters, outputdir in filename_parameters_outputdir:

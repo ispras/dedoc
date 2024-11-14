@@ -97,11 +97,19 @@ class TestGOSTFrameRecognizer(unittest.TestCase):
         file_path = os.path.join(self.test_data_folder, "gost_multipage_table_2.pdf")
         result = self.pdf_txtlayer_reader.read(file_path=file_path, parameters={"need_gost_frame_analysis": "true"})
         self.__check_content(result)
+        line: LineWithLocation = result.lines[0]
+        self.assertEqual(line.line.strip(), "1. Sample text 1")
+        self.assertTrue(abs(line.location.bbox.x_top_left - 212) < 10)
+        self.assertTrue(abs(line.location.bbox.y_top_left - 1309) < 10)
 
     def test_pdf_tabby_reader(self) -> None:
         file_path = os.path.join(self.test_data_folder, "gost_multipage_table_2.pdf")
         result = self.pdf_tabby_reader.read(file_path=file_path, parameters={"need_gost_frame_analysis": "true"})
         self.__check_content(result)
+        line: LineWithLocation = result.lines[0]
+        self.assertEqual(line.line.strip(), "1. Sample text 1")
+        self.assertTrue(abs(line.location.bbox.x_top_left - 76) < 10)
+        self.assertTrue(abs(line.location.bbox.y_top_left - 476) < 10)
 
     def __check_content(self, result: UnstructuredDocument) -> None:
         self.assertEqual(len(result.tables), 1)
@@ -109,7 +117,3 @@ class TestGOSTFrameRecognizer(unittest.TestCase):
         self.assertTrue(len(result.tables[0].cells[0][0].lines[0].annotations) > 0)
         self.assertEqual(result.tables[0].cells[1][0].get_text(), "1")
         self.assertEqual(len(result.tables[0].cells), 14)
-        line: LineWithLocation = result.lines[0]
-        self.assertEqual(line.line.strip(), "1. Sample text 1")
-        # self.assertTrue(abs(line.location.bbox.x_top_left - 212) < 10)
-        # self.assertTrue(abs(line.location.bbox.y_top_left - 1309) < 10)
