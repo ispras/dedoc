@@ -13,6 +13,7 @@ from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLoc
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 
+
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "orient_analysis_cells",
     "orient_cell_angle",

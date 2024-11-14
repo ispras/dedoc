@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Optional
 
 from dedocutils.data_structures import BBox
 
@@ -10,7 +10,8 @@ from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 
 
 class ScanTable:
-    def __init__(self, page_number: int, matrix_cells: List[List[Cell]] = None, bbox: BBox = None, name: str = "", order: int = -1) -> None:
+    def __init__(self, page_number: int, matrix_cells: Optional[List[List[CellWithMeta]]] = None, bbox: Optional[BBox] = None,
+                 name: str = "", order: int = -1) -> None:
         self.matrix_cells = matrix_cells
         self.page_number = page_number
         self.locations = []
@@ -26,6 +27,15 @@ class ScanTable:
         self.matrix_cells.extend(table.matrix_cells)
         # extend order
         self.order = max(self.order, table.order)
+
+    def check_on_cell_instance(self) -> bool:
+        if len(self.matrix_cells) == 0:
+            return False
+        if len(self.matrix_cells[0]) == 0:
+            return False
+        if not isinstance(self.matrix_cells[0][0], Cell):
+            return False
+        return True
 
     def to_table(self) -> Table:
         metadata = TableMetadata(page_id=self.page_number, uid=self.name, rotated_angle=self.location.rotated_angle)

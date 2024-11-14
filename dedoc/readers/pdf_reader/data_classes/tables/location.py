@@ -10,6 +10,7 @@ class Location:
         self.page_number = page_number
         self.bbox = bbox
         self.name = name
+        # TODO put self.order (change LineWithLocation, PdfImageAttachment, ScanTable)
         self.rotated_angle = rotated_angle
 
     def shift(self, shift_x: int, shift_y: int) -> None:

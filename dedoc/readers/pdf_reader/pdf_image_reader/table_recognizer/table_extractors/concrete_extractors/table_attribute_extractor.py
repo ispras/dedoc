@@ -32,7 +32,21 @@ class TableAttributeExtractor(object):
         return True
 
     @staticmethod
+    def check_have_attributes(matrix_table: List[List[Cell]]) -> bool:
+        if len(matrix_table) == 0:
+            return False
+        if len(matrix_table[0]) == 0:
+            return False
+        if not hasattr(matrix_table[0][0], "is_attribute"):
+            return False
+        return True
+
+    @staticmethod
     def get_header_table(matrix_table: List[List[Cell]]) -> List[List[Cell]]:
+
+        if not TableAttributeExtractor.check_have_attributes(matrix_table):
+            return matrix_table[:1]
+
         header_rows = len(matrix_table)
         for (i, row) in enumerate(matrix_table):
             attrs = [cell for cell in row if cell.is_attribute]
@@ -44,6 +58,9 @@ class TableAttributeExtractor(object):
 
     @staticmethod
     def clear_attributes(matrix_table: List[List[Cell]]) -> None:
+        if not TableAttributeExtractor.check_have_attributes(matrix_table):
+            return
+
         for row in matrix_table:
             for cell in row:
                 cell.is_attribute = False

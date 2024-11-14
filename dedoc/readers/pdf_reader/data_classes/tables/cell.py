@@ -3,10 +3,11 @@ from typing import List, Optional
 from dedocutils.data_structures import BBox
 
 from dedoc.data_structures.annotation import Annotation
+from dedoc.data_structures.cell_with_meta import CellWithMeta
 from dedoc.data_structures.line_with_meta import LineWithMeta
 
 
-class Cell:
+class Cell(CellWithMeta):
 
     @staticmethod
     def copy_from(cell: "Cell",
@@ -41,35 +42,27 @@ class Cell:
         if self.con_coord:
             self.con_coord.shift(shift_x=shift_x, shift_y=shift_y)
 
-    def __init__(self,
-                 x_top_left: int,
-                 x_bottom_right: int,
-                 y_top_left: int,
-                 y_bottom_right: int,
-                 id_con: int = -1,
-                 lines: Optional[List[LineWithMeta]] = None,
-                 is_attribute: bool = False,
-                 is_attribute_required: bool = False,
-                 rotated_angle: int = 0,
-                 uid: str = None,
+    def __init__(self, x_top_left: int, x_bottom_right: int, y_top_left: int, y_bottom_right: int, id_con: int = -1, lines: Optional[List[LineWithMeta]] = None,
+                 is_attribute: bool = False, is_attribute_required: bool = False, rotated_angle: int = 0, uid: str = None,
                  contour_coord: Optional[BBox] = None) -> None:
+
         import uuid
 
         assert x_top_left <= x_bottom_right
         assert y_top_left <= y_bottom_right
+
+        self.lines = [] if lines is None else lines
+        super().__init__(lines)
+
         self.x_top_left = x_top_left
         self.x_bottom_right = x_bottom_right
         self.y_top_left = y_top_left
         self.y_bottom_right = y_bottom_right
         self.id_con = id_con
-        self.lines = [] if lines is None else lines
         self.is_attribute = is_attribute
         self.is_attribute_required = is_attribute_required
         self.rotated_angle = rotated_angle
         self.cell_uid = f"cell_{uuid.uuid1()}" if uid is None else uid
-        self.colspan = 1
-        self.rowspan = 1
-        self.invisible = False
         self.con_coord = contour_coord or BBox(0, 0, 0, 0)
 
     def __str__(self) -> str:

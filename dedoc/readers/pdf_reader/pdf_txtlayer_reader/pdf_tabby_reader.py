@@ -1,3 +1,4 @@
+import os.path
 from typing import List, Optional, Tuple
 
 from dedocutils.data_structures import BBox
@@ -62,13 +63,7 @@ class PdfTabbyReader(PdfBaseReader):
         warnings = []
 
         with tempfile.TemporaryDirectory() as tmp_dir:
-            lines, tables, tables_on_images, attachments, document_metadata = self.__extract(
-                path=file_path,
-                parameters=parameters,
-                warnings=warnings,
-                tmp_dir=tmp_dir
-            )
-        lines = self.linker.link_objects(lines=lines, tables=tables_on_images, images=attachments)
+            lines, tables, attachments, document_metadata = self.__extract(path=file_path, parameters=parameters, warnings=warnings, tmp_dir=tmp_dir)
 
         if get_param_with_attachments(parameters) and self.attachment_extractor.can_extract(file_path):
             attachments += self.attachment_extractor.extract(file_path=file_path, parameters=parameters)
@@ -79,14 +74,15 @@ class PdfTabbyReader(PdfBaseReader):
 
         return self._postprocess(result)
 
-    def __extract(self, path: str, parameters: dict, warnings: list, tmp_dir: str)\
-            -> Tuple[List[LineWithMeta], List[Table], List[ScanTable], List[PdfImageAttachment], Optional[dict]]:
+    def __extract(self, path: str, parameters: dict, warnings: List[str], tmp_dir: str)\
+            -> Tuple[List[LineWithMeta], List[Table], List[PdfImageAttachment], Optional[dict]]:
         import math
         from dedoc.utils.pdf_utils import get_pdf_page_count
         from dedoc.utils.utils import calculate_file_hash
         from dedoc.utils.parameter_utils import get_param_page_slice, get_param_with_attachments
+        from dedoc.utils.parameter_utils import get_param_need_gost_frame_analysis
 
-        all_lines, all_tables, all_tables_on_images, all_attached_images = [], [], [], []
+        all_lines, all_tables, all_scan_tables, all_attached_images = [], [], [], []
         with_attachments = get_param_with_attachments(parameters)
         document_metadata = None
 
@@ -104,40 +100,70 @@ class PdfTabbyReader(PdfBaseReader):
                 document_metadata["last_page"] = last_page
 
             if empty_page_limit:
-                return all_lines, all_tables, all_tables_on_images, all_attached_images, document_metadata
+                return all_lines, all_tables, all_attached_images, document_metadata
+
+        remove_gost_frame = get_param_need_gost_frame_analysis(parameters)
+        gost_json_path = self.__save_gost_frame_boxes_to_json(first_page=first_page, last_page=last_page, page_count=page_count, tmp_dir=tmp_dir, path=path) \
+            if remove_gost_frame else ""
 
         # in java tabby reader page numeration starts with 1, end_page is included
         first_tabby_page = first_page + 1 if first_page is not None else 1
         last_tabby_page = page_count if (last_page is None) or (last_page is not None and last_page > page_count) else last_page
         self.logger.info(f"Reading PDF pages from {first_tabby_page} to {last_tabby_page}")
-        document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_tabby_page, tmp_dir=tmp_dir)
+        document = self.__process_pdf(path=path,
+                                      start_page=first_tabby_page,
+                                      end_page=last_tabby_page,
+                                      tmp_dir=tmp_dir,
+                                      gost_json_path=gost_json_path,
+                                      remove_frame=remove_gost_frame)
 
         pages = document.get("pages", [])
         for page in pages:
             page_lines = self.__get_lines_with_location(page, file_hash)
             if page_lines:
                 all_lines.extend(page_lines)
-            page_tables, table_on_images = self.__get_tables(page)
-            assert len(page_tables) == len(table_on_images)
-            if page_tables:
-                all_tables.extend(page_tables)
-                all_tables_on_images.extend(table_on_images)
+            scan_tables = self.__get_tables(page)
+            all_scan_tables.extend(scan_tables)
 
             attached_images = self.__get_attached_images(page=page, parameters=parameters, path=path) if with_attachments else []
             if attached_images:
                 all_attached_images.extend(attached_images)
 
-        return all_lines, all_tables, all_tables_on_images, all_attached_images, document_metadata
+        mp_tables = self.table_recognizer.convert_to_multipages_tables(all_scan_tables, lines_with_meta=all_lines)
+        all_lines = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=all_attached_images)
 
-    def __get_tables(self, page: dict) -> Tuple[List[Table], List[ScanTable]]:
+        tables = [scan_table.to_table() for scan_table in mp_tables]
+
+        return all_lines, tables, all_attached_images, document_metadata
+
+    def __save_gost_frame_boxes_to_json(self, first_page: Optional[int], last_page: Optional[int], page_count: int, path: str, tmp_dir: str) -> str:
+        from joblib import Parallel, delayed
+        import json
+
+        first_page = 0 if first_page is None or first_page < 0 else first_page
+        last_page = page_count if (last_page is None) or (last_page is not None and last_page > page_count) else last_page
+        images = self._get_images(path, first_page, last_page)
+
+        gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images)
+
+        result_dict = {
+            page_number: {**page_data[1].to_dict(), **{"original_image_width": page_data[2][1], "original_image_height": page_data[2][0]}}
+            for page_number, page_data in enumerate(gost_analyzed_images, start=first_page)
+        }
+
+        result_json_path = os.path.join(tmp_dir, "gost_frame_bboxes.json")
+        with open(result_json_path, "w") as f:
+            json.dump(result_dict, f)
+
+        return result_json_path
+
+    def __get_tables(self, page: dict) -> List[ScanTable]:
         import uuid
         from dedoc.data_structures.cell_with_meta import CellWithMeta
         from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
         from dedoc.data_structures.line_metadata import LineMetadata
-        from dedoc.data_structures.table_metadata import TableMetadata
 
-        tables = []
-        tables_on_image = []
+        scan_tables = []
         page_number = page["number"]
         page_width = int(page["width"])
         page_height = int(page["height"])
@@ -149,7 +175,7 @@ class PdfTabbyReader(PdfBaseReader):
             cell_properties = table["cell_properties"]
             assert len(rows) == len(cell_properties)
 
-            result_cells = []
+            cells = []
             for num_row, row in enumerate(rows):
                 assert len(row) == len(cell_properties[num_row])
 
@@ -161,6 +187,10 @@ class PdfTabbyReader(PdfBaseReader):
                     for c in cell_blocks:
                         cell_bbox = BBox(x_top_left=int(c["x_top_left"]), y_top_left=int(c["y_top_left"]), width=int(c["width"]), height=int(c["height"]))
                         annotations.append(BBoxAnnotation(c["start"], c["end"], cell_bbox, page_width=page_width, page_height=page_height))
+                    """
+                        TODO: change to Cell class after tabby can return cell coordinates. Then set type Cell in class "ScanTable"
+                        https://jira.intra.ispras.ru/browse/TLDR-851
+                    """
 
                     result_row.append(CellWithMeta(
                         lines=[LineWithMeta(line=cell["text"], metadata=LineMetadata(page_id=page_number, line_id=0), annotations=annotations)],
@@ -168,13 +198,11 @@ class PdfTabbyReader(PdfBaseReader):
                         rowspan=cell_properties[num_row][num_col]["row_span"],
                         invisible=bool(cell_properties[num_row][num_col]["invisible"])
                     ))
-                result_cells.append(result_row)
+                cells.append(result_row)
 
-            table_name = str(uuid.uuid4())
-            tables.append(Table(cells=result_cells, metadata=TableMetadata(page_id=page_number, uid=table_name)))
-            tables_on_image.append(ScanTable(page_number=page_number, matrix_cells=None, bbox=table_bbox, name=table_name, order=order))
+            scan_tables.append(ScanTable(page_number=page_number, matrix_cells=cells, bbox=table_bbox, name=str(uuid.uuid4()), order=order))
 
-        return tables, tables_on_image
+        return scan_tables
 
     def __get_attached_images(self, page: dict, parameters: dict, path: str) -> List[PdfImageAttachment]:
         import os
@@ -291,10 +319,20 @@ class PdfTabbyReader(PdfBaseReader):
         import os
         return os.environ.get("TABBY_JAR", self.default_config["JAR_PATH"])
 
-    def __run(self, path: str, tmp_dir: str, encoding: str = "utf-8", start_page: int = None, end_page: int = None) -> bytes:
+    def __run(self,
+              path: str,
+              tmp_dir: str,
+              encoding: str = "utf-8",
+              start_page: int = None,
+              end_page: int = None,
+              remove_frame: bool = False,
+              gost_json_path: str = ""
+              ) -> bytes:
         import subprocess
 
         args = ["java"] + ["-jar", self.__jar_path(), "-i", path, "-tmp", f"{tmp_dir}/"]
+        if remove_frame:
+            args += ["-rf", gost_json_path]
         if start_page is not None and end_page is not None:
             args += ["-sp", str(start_page), "-ep", str(end_page)]
         try:
@@ -307,11 +345,18 @@ class PdfTabbyReader(PdfBaseReader):
         except subprocess.CalledProcessError as e:
             raise TabbyPdfError(e.stderr.decode(encoding))
 
-    def __process_pdf(self, path: str, tmp_dir: str, start_page: int = None, end_page: int = None) -> dict:
+    def __process_pdf(self,
+                      path: str,
+                      tmp_dir: str,
+                      start_page: int = None,
+                      end_page: int = None,
+                      gost_json_path: str = "",
+                      remove_frame: bool = False) -> dict:
         import json
         import os
 
-        self.__run(path=path, start_page=start_page, end_page=end_page, tmp_dir=tmp_dir)
+        self.__run(path=path, start_page=start_page, end_page=end_page, tmp_dir=tmp_dir, remove_frame=remove_frame, gost_json_path=gost_json_path)
+
         with open(os.path.join(tmp_dir, "data.json"), "r") as response:
             document = json.load(response)
 
