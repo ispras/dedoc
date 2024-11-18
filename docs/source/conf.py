@@ -38,6 +38,7 @@ nitpick_ignore = [
     ("py:class", "abc.ABC"),
     ("py:class", "pydantic.main.BaseModel"),
     ("py:class", "scipy.stats._multivariate.dirichlet_multinomial_gen.cov"),
+    ("py:class", "scipy.stats._multivariate.random_table_gen.rvs"),
     ("py:class", "pandas.core.series.Series"),
     ("py:class", "numpy.ndarray"),
     ("py:class", "pandas.core.frame.DataFrame"),

@@ -159,8 +159,8 @@ PDF and images handling
         * :meth:`dedoc.readers.ReaderComposition.read`
       - This option is used to enable GOST (Russian government standard) frame recognition for PDF documents or images.
         The GOST frame recognizer is used in :meth:`dedoc.readers.PdfBaseReader.read`. Its main function is to recognize and
-        ignore the GOST frame on the document. It allows :class:`dedoc.readers.PdfImageReader` and :class:`dedoc.readers.PdfTxtlayerReader`
-        to properly process the content of the document containing GOST frame.
+        ignore the GOST frame on the document. It allows :class:`dedoc.readers.PdfImageReader`, :class:`dedoc.readers.PdfTxtlayerReader`
+        and :class:`dedoc.readers.PdfTabbyReader` to properly process the content of the document containing GOST frame, see :ref:`gost_frame_handling` for more details
 
     * - orient_analysis_cells
       - True, False
@@ -185,3 +185,9 @@ PDF and images handling
 
             * **270** -- cells are rotated 90 degrees clockwise;
             * **90** -- cells are rotated 90 degrees counterclockwise (or 270 clockwise).
+
+
+.. toctree::
+   :maxdepth: 1
+
+   gost_frame_handling
