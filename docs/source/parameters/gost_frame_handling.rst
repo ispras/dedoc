@@ -18,16 +18,16 @@ GOST frame handling
       - True, False
       - False
       - * :meth:`dedoc.DedocManager.parse`
-        * method :meth:`~dedoc.readers.BaseReader.read` of inheritors of :class:`~dedoc.readers.BaseReader`
-        * :meth:`dedoc.readers.PdfTabbyReader.read`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfTabbyReader.read`, :meth:`dedoc.readers.PdfTxtlayerReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
+        * :meth:`dedoc.readers.ReaderComposition.read`
       - This option is used to enable GOST (Russian government standard "ГОСТ Р 21.1101") frame recognition for PDF documents or images.
 
 
 The content of each page of some technical documents is placed in special GOST frames. An example of GOST frames is shown in the example below (:ref:`example_gost_frame`).
-Such frames contain meta-information and are not part of the text content of the document.Based on this, we have implemented the functionality for ignoring GOST frames in documents, which works for:
+Such frames contain meta-information and are not part of the text content of the document. Based on this, we have implemented the functionality for ignoring GOST frames in documents, which works for:
 
-    * Copyable and non-copyable PDF documents (:class:`dedoc.readers.PdfTxtlayerReader` and :class:`dedoc.readers.PdfTabbyReader`);
-    * Images (:class:`dedoc.readers.PdfImageReader`).
+    * Copyable PDF documents (:class:`dedoc.readers.PdfTxtlayerReader` and :class:`dedoc.readers.PdfTabbyReader`);
+    * Non-copyable PDF documents and Images (:class:`dedoc.readers.PdfImageReader`).
 
 If parameter ``need_gost_frame_analysis=True``, the GOST frame itself is ignored and only the contents inside the frame are extracted.
 
@@ -35,11 +35,11 @@ If parameter ``need_gost_frame_analysis=True``, the GOST frame itself is ignored
 
 Examples of GOST frame
 ----------------------
-For example your send PDF-document with two pages:
+For example, your send PDF-document with two pages  :download:`PDF-document with two pages <../_static/gost_frame_data/document_with_gost_frame.pdf>`:
 
-.. image:: ../_static/page_with_gost_frame_1.png
+.. image:: ../_static/gost_frame_data/page_with_gost_frame_1.png
    :width: 30%
-.. image:: ../_static/page_with_gost_frame_2.png
+.. image:: ../_static/gost_frame_data/page_with_gost_frame_2.png
    :width: 30%
 
 Parameter's usage
@@ -62,7 +62,5 @@ Parameter's usage
 Request's result
 ----------------
 
-.. image:: ../_static/result_gost_frame.png
+.. image:: ../_static/gost_frame_data/result_gost_frame.png
    :width: 50%
-
-
