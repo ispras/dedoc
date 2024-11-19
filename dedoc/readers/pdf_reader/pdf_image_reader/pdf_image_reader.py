@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple
 
 from numpy import ndarray
 
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
@@ -52,6 +53,9 @@ class PdfImageReader(PdfBaseReader):
                                                                           config=self.config)
         self.binarizer = AdaptiveBinarizer()
         self.ocr = OCRLineExtractor(config=self.config)
+
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        return super().read(file_path, parameters)
 
     def _process_one_page(self,
                           image: ndarray,

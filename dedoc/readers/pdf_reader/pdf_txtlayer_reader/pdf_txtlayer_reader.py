@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple
 from dedocutils.data_structures import BBox
 from numpy import ndarray
 
+from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
@@ -36,6 +37,9 @@ class PdfTxtlayerReader(PdfBaseReader):
         """
         from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
         return super().can_read(file_path=file_path, mime=mime, extension=extension) and get_param_pdf_with_txt_layer(parameters) == "true"
+
+    def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
+        return super().read(file_path, parameters)
 
     def _process_one_page(self,
                           image: ndarray,
