@@ -2,7 +2,6 @@ from abc import abstractmethod
 from collections import namedtuple
 from typing import Dict, Iterator, List, Optional, Set, Tuple
 
-import numpy as np
 from dedocutils.data_structures.bbox import BBox
 from numpy import ndarray
 
@@ -13,7 +12,7 @@ from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.gost_frame_recognizer import GOSTFrameRecognizer
+
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "orient_analysis_cells",
@@ -45,6 +44,7 @@ class PdfBaseReader(BaseReader):
 
         from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
         from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
+        from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.gost_frame_recognizer import GOSTFrameRecognizer
         from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import TableRecognizer
         from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
         from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
@@ -153,8 +153,8 @@ class PdfBaseReader(BaseReader):
             metadata["rotated_page_angles"] = page_angles
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
-    def _process_document_with_gost_frame(self, images: Iterator[np.ndarray], first_page: int, parameters: ParametersForParseDoc, path: str) -> \
-            Tuple[Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]], Dict[int, Tuple[np.ndarray, BBox, Tuple[int, ...]]]]:
+    def _process_document_with_gost_frame(self, images: Iterator[ndarray], first_page: int, parameters: ParametersForParseDoc, path: str) -> \
+            Tuple[Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]], Dict[int, Tuple[ndarray, BBox, Tuple[int, ...]]]]:
         from joblib import Parallel, delayed
         from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 
@@ -162,7 +162,7 @@ class PdfBaseReader(BaseReader):
         page_range = range(first_page, first_page + len(gost_analyzed_images))
         gost_analyzed_images = dict(zip(page_range, gost_analyzed_images))
         if isinstance(self, PdfTxtlayerReader):
-            self.gost_frame_boxes = dict(zip(page_range, [item[1] for item in gost_analyzed_images.values()]))
+            self.gost_frame_boxes = dict(zip(page_range, [(item[1], item[2]) for item in gost_analyzed_images.values()]))
         result = Parallel(n_jobs=self.config["n_jobs"])(
             delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box, original_image_shape) in
             gost_analyzed_images.items()
@@ -170,7 +170,7 @@ class PdfBaseReader(BaseReader):
         return result, gost_analyzed_images
 
     def _shift_all_contents(self, lines: List[LineWithMeta], unref_tables: List[ScanTable], attachments: List[PdfImageAttachment],
-                            gost_analyzed_images: Dict[int, Tuple[np.ndarray, BBox, Tuple[int, ...]]]) -> None:
+                            gost_analyzed_images: Dict[int, Tuple[ndarray, BBox, Tuple[int, ...]]]) -> None:
         # shift unref_tables
         for scan_table in unref_tables:
             for location in scan_table.locations:

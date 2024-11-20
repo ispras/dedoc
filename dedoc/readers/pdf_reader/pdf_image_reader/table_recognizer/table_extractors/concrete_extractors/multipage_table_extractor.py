@@ -1,3 +1,4 @@
+import copy
 import logging
 from typing import List
 
@@ -155,24 +156,26 @@ class MultiPageTableExtractor(BaseTableExtractor):
         # condition 2. Exclusion of the duplicated header (if any)
         attr1 = TableAttributeExtractor.get_header_table(t1.matrix_cells)
         attr2 = TableAttributeExtractor.get_header_table(t2.matrix_cells)
+        t2_update = copy.deepcopy(t2)
         if TableAttributeExtractor.is_equal_attributes(attr1, attr2):
-            t2.matrix_cells = t2.matrix_cells[len(attr2):]
+            t2_update.matrix_cells = t2_update.matrix_cells[len(attr2):]
 
-        if len(t2.matrix_cells) == 0 or len(t1.matrix_cells) == 0:
+        if len(t2_update.matrix_cells) == 0 or len(t1.matrix_cells) == 0:
             return False
 
-        TableAttributeExtractor.clear_attributes(t2.matrix_cells)
+        TableAttributeExtractor.clear_attributes(t2_update.matrix_cells)
 
         # condition 3. Number of columns should be equal
-        if len(t1.matrix_cells[-1]) != len(t2.matrix_cells[0]):
+        if len(t1.matrix_cells[-1]) != len(t2_update.matrix_cells[0]):
             if self.config.get("debug_mode", False):
                 self.logger.debug("Different count column")
             return False
 
         # condition 4. Comparison of the widths of last and first rows
-        if not self.__is_equal_width_cells(t1.matrix_cells, t2.matrix_cells):
+        if t1.check_on_cell_instance() and t2_update.check_on_cell_instance() and not self.__is_equal_width_cells(t1.matrix_cells, t2_update.matrix_cells):
             if self.config.get("debug_mode", False):
                 self.logger.debug("Different width columns")
             return False
 
+        t2.matrix_cells = copy.deepcopy(t2_update.matrix_cells)  # save changes
         return True

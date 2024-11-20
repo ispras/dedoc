@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from dedoc.api.schema.cell_with_meta import CellWithMeta as ApiCellWithMeta
 from dedoc.data_structures.annotation import Annotation
@@ -20,14 +20,14 @@ class CellWithMeta(Serializable):
     :vartype rowspan: int
     :vartype invisible: bool
     """
-    def __init__(self, lines: List[LineWithMeta], colspan: int = 1, rowspan: int = 1, invisible: bool = False) -> None:
+    def __init__(self, lines: Optional[List[LineWithMeta]], colspan: int = 1, rowspan: int = 1, invisible: bool = False) -> None:
         """
         :param lines: textual lines of the cell
         :param colspan: number of columns to span like in HTML format
         :param rowspan: number of rows to span like in HTML format
         :param invisible: indicator for displaying or hiding cell text
         """
-        self.lines: List[LineWithMeta] = lines
+        self.lines: List[LineWithMeta] = [] if lines is None else lines
         self.colspan: int = colspan
         self.rowspan: int = rowspan
         self.invisible: bool = invisible
