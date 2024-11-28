@@ -1,0 +1,27 @@
+Version = 
+
+--- Balanced Accuracy --- = 0.843482905982906
+--- Accuracy --- = 0.9534883720930233
+--- Weighted --- Precision = 0.9519564983695847, Recall=0.9534883720930233, F1=0.9525762106576597
+--- Class corrected --- : Precision = 0.9703389830508474, Recall=0.9786324786324786, F1=0.9744680851063829
+--- Class incorrected --- : Precision = 0.7727272727272727, Recall=0.7083333333333334, F1=0.7391304347826088
+--- AVG Time corrected pdfs --- = 3.2058254999992175
+--- AVG Time incorrected pdfs --- = 4.9308231472969055
+--- AVG Time all pdfs --- = 3.3662903974222584
+
+
+--- Failed corrected pdfs --- : 
+hogans-federal-motion-for-a-preliminary-injunction_1616093696_24.pdf
+demystifying-nge-rock-ridge_1643518222_537.pdf
+b96a__usmc-combat-camera-directory.pdf
+afcea-spy.pdf
+access-the-vision-for-2013.pdf
+
+--- Failed incorrected pdfs --- : 
+Gromov_Dubova_-_Primenenie_metodov_TFKP_k_vychisleniyu_opredelennykh_integralov.pdf
+PE157_1616278053_181.pdf
+╨º╨£╨£╨ñ_╨É╨▒╨░╨║╤â╨╝╨╛╨▓_╤â╤ç╨╡╨▒╨╜╨╕╨║.pdf
+EXTERNAL FORMS - SUPPORTING DOCUMENTATION-ESHS9615401 2017_07_27 11_22_39_1616049888_455.pdf
+slides.pdf
+PE20_1616439522_1.pdf
+Catalog-2020_dealers mail (1).pdf
