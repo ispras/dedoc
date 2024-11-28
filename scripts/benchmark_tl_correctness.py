@@ -1,7 +1,5 @@
-import json
 import os
 import zipfile
-from collections import OrderedDict, namedtuple
 from time import time
 
 import numpy as np
@@ -28,53 +26,6 @@ Here (in this script) we calculate an accuracy of selected model (XGboost on cus
 """
 
 host = "http://localhost:1231"
-param_dist_errors = namedtuple("Param", ("total_file_size", "total_incorrect_files", "failed"))
-
-
-def send_request_mineru(file_path: str, url: str) -> dict:
-    """
-    send file `file_name` in post request with `data` as parameters. Expects that response return code
-    `expected_code`
-
-    :param file_name: name of file (should lie  src/tests/data folder
-    :param data: parameter dictionary (here you can put language for example)
-    :param expected_code: expected http response code. 200 for normal request
-    :return: result from json
-    """
-    data = {"parse_method": "auto", "is_json_md_dump": True}
-    file_name = file_path.split("/")[-1]
-
-    with open(file_path, "rb") as file:
-        files = {"pdf_file": (file_name, file)}
-        r = requests.post(url, files=files, data=data)
-
-        if r.status_code != 200:
-            return r.content.decode()
-        else:
-            return json.loads(r.content.decode())
-
-
-def errors_param_for_text_layer(path_base: str, tl_type: str, tl_path: str, parameters: dict) -> namedtuple:
-    failed = []
-    total_incorrect_files = 0
-    directory = os.path.join(path_base, tl_path)
-    files_list = [file_name for file_name in os.listdir(directory) if file_name.endswith(".pdf")]
-    total_file_size = len(files_list)
-    print(f"Files: {files_list}\nFiles number: {total_file_size}")
-    for file in tqdm(files_list):
-        file_path = os.path.join(directory, file)
-        r = send_file(host=host, file_name=file, file_path=file_path, parameters=parameters)
-
-        found = False  # found error of classifier
-        for warning in r["warnings"]:
-            if warning.find(tl_type) != -1:
-                found = True
-                break
-
-        if found:
-            total_incorrect_files += 1  # count, where label != predict
-            failed.append(file)         # file, where classifier failed
-    return param_dist_errors(total_file_size, total_incorrect_files, failed)
 
 
 def download_dataset(data_dir: str) -> str:
@@ -92,31 +43,6 @@ def download_dataset(data_dir: str) -> str:
     assert os.path.isdir(benchmark_data_dir)
 
     return benchmark_data_dir
-
-
-def evaluation_dedoc() -> None:
-    data_dir = os.path.join(get_config()["intermediate_data_path"], "text_layer_correctness_data")
-    os.makedirs(data_dir, exist_ok=True)
-
-    benchmark_data_dir = download_dataset(data_dir)
-
-    result = OrderedDict()
-    result["version"] = requests.get(f"{host}/version").text
-    parameters = dict(pdf_with_text_layer="auto", pages="1:1")
-    result_item = OrderedDict()
-
-    incorrect_tl_result = errors_param_for_text_layer(benchmark_data_dir, " incorrect ", "data_correct_text_layer", parameters)
-    result_item["percentage_of_guessed_correct_tl"] = 1 - incorrect_tl_result.total_incorrect_files / incorrect_tl_result.total_file_size
-    result_item["list_of_file_with_incorrect_tl"] = incorrect_tl_result.failed
-
-    correct_tl_result = errors_param_for_text_layer(benchmark_data_dir, " correct ", "data_incorrect_text_layer", parameters)
-    result_item["percentage_of_guessed_incorrect_tl"] = 1 - correct_tl_result.total_incorrect_files / correct_tl_result.total_file_size
-    result_item["list_of_file_with_correct_tl"] = correct_tl_result.failed
-    result["guessing_the_correctness_of_the_text"] = result_item
-
-    with open(path_result, "w") as file_out:
-        json.dump(obj=result, fp=file_out, indent=4, ensure_ascii=False)
-    print(f"Save result in {path_result}")
 
 
 def get_metrics(max_eval_pdf: int = 10000, with_shuffle: bool = False) -> None:
@@ -177,7 +103,9 @@ def get_metrics(max_eval_pdf: int = 10000, with_shuffle: bool = False) -> None:
     w_avg = precision_recall_fscore_support(labels, predicts, average="weighted")
     avg = precision_recall_fscore_support(labels, predicts, average=None, labels=[0, 1])
 
-    output = f"--- Balanced Accuracy --- = {b_accuracy}\n"
+    output = f"Version = {requests.get(host + '/version').text}\n\n"
+
+    output += f"--- Balanced Accuracy --- = {b_accuracy}\n"
     output += f"--- Accuracy --- = {accuracy}\n"
     output += f"--- Weighted --- Precision = {w_avg[0]}, Recall={w_avg[1]}, F1={w_avg[2]}\n"
     output += f"--- Class corrected --- : Precision = {avg[0][0]}, Recall={avg[1][0]}, F1={avg[2][0]}\n"
@@ -187,8 +115,8 @@ def get_metrics(max_eval_pdf: int = 10000, with_shuffle: bool = False) -> None:
     output += f"--- AVG Time incorrected pdfs --- = {np.array(times_incorrect).mean()}\n"
     output += f"--- AVG Time all pdfs --- = {np.array(times_correct + times_incorrect).mean()}\n"
 
-    output += "--- Failed corrected pdfs --- : \n" + '\n'.join(failed_corrected_pdfs)  # noqa
-    output += "--- Failed incorrected pdfs --- : \n" + '\n'.join(failed_incorrected_pdfs)  # noqa
+    output += "\n\n--- Failed corrected pdfs --- : \n" + '\n'.join(failed_corrected_pdfs)  # noqa
+    output += "\n\n--- Failed incorrected pdfs --- : \n" + '\n'.join(failed_incorrected_pdfs)  # noqa
 
     print(output)
     with open(path_result, "w") as file_out:
@@ -197,5 +125,4 @@ def get_metrics(max_eval_pdf: int = 10000, with_shuffle: bool = False) -> None:
 
 
 if __name__ == "__main__":
-    # evaluation_dedoc()
-    get_metrics(max_eval_pdf=50, with_shuffle=True)
+    get_metrics()
