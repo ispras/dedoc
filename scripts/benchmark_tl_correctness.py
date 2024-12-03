@@ -5,7 +5,6 @@ from time import time
 import numpy as np
 import requests
 import wget
-from Cryptodome.Random.random import shuffle
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
 
@@ -45,7 +44,7 @@ def download_dataset(data_dir: str) -> str:
     return benchmark_data_dir
 
 
-def get_metrics(max_eval_pdf: int = 10000, with_shuffle: bool = False) -> None:
+def get_metrics(max_eval_pdf: int = 10000) -> None:
     data_dir = os.path.join(get_config()["intermediate_data_path"], "text_layer_correctness_data")
     os.makedirs(data_dir, exist_ok=True)
 
@@ -70,8 +69,6 @@ def get_metrics(max_eval_pdf: int = 10000, with_shuffle: bool = False) -> None:
     parameters = dict(pdf_with_text_layer="auto", pages="1:1")
     times_correct, times_incorrect = [], []
 
-    if with_shuffle:
-        shuffle(files)
     count = min(max_eval_pdf, len(files))
 
     for i, file_path in enumerate(tqdm(files[:count])):
@@ -111,9 +108,9 @@ def get_metrics(max_eval_pdf: int = 10000, with_shuffle: bool = False) -> None:
     output += f"--- Class corrected --- : Precision = {avg[0][0]}, Recall={avg[1][0]}, F1={avg[2][0]}\n"
     output += f"--- Class incorrected --- : Precision = {avg[0][1]}, Recall={avg[1][1]}, F1={avg[2][1]}\n"
 
-    output += f"--- AVG Time corrected pdfs --- = {np.array(times_correct).mean()}\n"
-    output += f"--- AVG Time incorrected pdfs --- = {np.array(times_incorrect).mean()}\n"
-    output += f"--- AVG Time all pdfs --- = {np.array(times_correct + times_incorrect).mean()}\n"
+    output += f"--- AVG Time corrected pdfs --- = {np.mean(times_correct)}\n"
+    output += f"--- AVG Time incorrected pdfs --- = {np.mean(times_incorrect)}\n"
+    output += f"--- AVG Time all pdfs --- = {np.mean(times_correct + times_incorrect)}\n"
 
     output += "\n\n--- Failed corrected pdfs --- : \n" + '\n'.join(failed_corrected_pdfs)  # noqa
     output += "\n\n--- Failed incorrected pdfs --- : \n" + '\n'.join(failed_incorrected_pdfs)  # noqa
