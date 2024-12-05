@@ -25,6 +25,9 @@ class Cell(CellWithMeta):
                     y_bottom_right=y_bottom_right,
                     id_con=cell.id_con,
                     lines=cell.lines,
+                    colspan=cell.colspan,
+                    rowspan=cell.rowspan,
+                    invisible=cell.invisible,
                     is_attribute=cell.is_attribute,
                     is_attribute_required=cell.is_attribute_required,
                     rotated_angle=cell.rotated_angle,
@@ -44,7 +47,7 @@ class Cell(CellWithMeta):
 
     def __init__(self, x_top_left: int, x_bottom_right: int, y_top_left: int, y_bottom_right: int, id_con: int = -1, lines: Optional[List[LineWithMeta]] = None,
                  is_attribute: bool = False, is_attribute_required: bool = False, rotated_angle: int = 0, uid: str = None,
-                 contour_coord: Optional[BBox] = None) -> None:
+                 contour_coord: Optional[BBox] = None, colspan: int = 1, rowspan: int = 1, invisible: bool = False) -> None:
 
         import uuid
 
@@ -52,7 +55,7 @@ class Cell(CellWithMeta):
         assert y_top_left <= y_bottom_right
 
         self.lines = [] if lines is None else lines
-        super().__init__(lines)
+        super().__init__(lines=lines, colspan=colspan, rowspan=rowspan, invisible=invisible)
 
         self.x_top_left = x_top_left
         self.x_bottom_right = x_bottom_right

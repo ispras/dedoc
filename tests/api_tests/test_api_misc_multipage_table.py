@@ -47,12 +47,10 @@ class TestMultipageTable(AbstractTestApiDocReader):
 
     def test_api_ml_table_recognition_synthetic_data_3(self) -> None:
         file_name = "example_mp_table_with_repeate_header_2.pdf"
-        for pdf_param in ["false", "true"]:
-            # for "tabby" doesn't work because need to unify the output of table in matrix form and set attribute cells,
-            # without this tables won't be merge.
+        for pdf_param in ["false", "true", "tabby"]:
             tables = self._get_tables(file_name, pdf_with_text_layer=pdf_param)
 
-            self.assertEqual(len(tables), 1)
+            self.assertEqual(len(tables), 1, f"Error when pdf_with_text_layer={pdf_param}")
             table = tables[0]["cells"]
 
             self.assertListEqual(

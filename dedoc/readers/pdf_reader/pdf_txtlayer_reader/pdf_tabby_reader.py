@@ -159,7 +159,7 @@ class PdfTabbyReader(PdfBaseReader):
 
     def __get_tables(self, page: dict) -> List[ScanTable]:
         import uuid
-        from dedoc.data_structures.cell_with_meta import CellWithMeta
+        from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
         from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
         from dedoc.data_structures.line_metadata import LineMetadata
 
@@ -188,15 +188,19 @@ class PdfTabbyReader(PdfBaseReader):
                         cell_bbox = BBox(x_top_left=int(c["x_top_left"]), y_top_left=int(c["y_top_left"]), width=int(c["width"]), height=int(c["height"]))
                         annotations.append(BBoxAnnotation(c["start"], c["end"], cell_bbox, page_width=page_width, page_height=page_height))
                     """
-                        TODO: change to Cell class after tabby can return cell coordinates. Then set type Cell in class "ScanTable"
-                        https://jira.intra.ispras.ru/browse/TLDR-851
+                    TODO: change to Cell class after tabby can return cell coordinates. Then set type Cell in class "ScanTable"
+                    https://jira.intra.ispras.ru/browse/TLDR-851
                     """
-
-                    result_row.append(CellWithMeta(
+                    current_cell_properties = cell_properties[num_row][num_col]
+                    result_row.append(Cell(
                         lines=[LineWithMeta(line=cell["text"], metadata=LineMetadata(page_id=page_number, line_id=0), annotations=annotations)],
-                        colspan=cell_properties[num_row][num_col]["col_span"],
-                        rowspan=cell_properties[num_row][num_col]["row_span"],
-                        invisible=bool(cell_properties[num_row][num_col]["invisible"])
+                        colspan=current_cell_properties["col_span"],
+                        rowspan=current_cell_properties["row_span"],
+                        invisible=bool(current_cell_properties["invisible"]),
+                        x_top_left=int(current_cell_properties["x_top_left"]),
+                        x_bottom_right=int(current_cell_properties["x_top_left"]) + int(current_cell_properties["width"]),
+                        y_top_left=int(current_cell_properties["y_top_left"]),
+                        y_bottom_right=int(current_cell_properties["y_top_left"]) + int(current_cell_properties["height"])
                     ))
                 cells.append(result_row)
 
