@@ -15,6 +15,7 @@ from starlette.responses import FileResponse, HTMLResponse, JSONResponse, PlainT
 import dedoc.version
 from dedoc.api.api_args import QueryParameters
 from dedoc.api.api_utils import json2collapsed_tree, json2html, json2tree, json2txt
+from dedoc.api.cancellation import cancel_on_disconnect
 from dedoc.api.schema.parsed_document import ParsedDocument
 from dedoc.common.exceptions.dedoc_error import DedocError
 from dedoc.common.exceptions.missing_file_error import MissingFileError
@@ -69,19 +70,20 @@ def __add_base64_info_to_attachments(document_tree: ParsedDocument, attachments_
 
 
 @app.post("/upload", response_model=ParsedDocument)
-async def upload(file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:
+async def upload(request: Request, file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:
     parameters = dataclasses.asdict(query_params)
     if not file or file.filename == "":
         raise MissingFileError("Error: Missing content in request_post file parameter", version=dedoc.version.__version__)
 
     return_format = str(parameters.get("return_format", "json")).lower()
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        file_path = save_upload_file(file, tmpdir)
-        document_tree = manager.parse(file_path, parameters={**dict(parameters), "attachments_dir": tmpdir})
+    async with cancel_on_disconnect(request):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            file_path = save_upload_file(file, tmpdir)
+            document_tree = manager.parse(file_path, parameters={**dict(parameters), "attachments_dir": tmpdir})
 
-        if return_format == "html":
-            __add_base64_info_to_attachments(document_tree, tmpdir)
+            if return_format == "html":
+                __add_base64_info_to_attachments(document_tree, tmpdir)
 
     if return_format == "html":
         html_content = json2html(
