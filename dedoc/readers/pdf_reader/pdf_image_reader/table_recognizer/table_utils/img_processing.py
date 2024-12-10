@@ -246,15 +246,9 @@ def __paint_bounds(image: np.ndarray) -> np.ndarray:
     return image
 
 
-def detect_tables_by_contours(img: np.ndarray,
-                              language: str = "rus",
-                              orient_analysis_cells: bool = False,
-                              table_type: str = "",
-                              *,
-                              config: dict) -> [TableTree, List[np.ndarray], float]:
+def detect_tables_by_contours(img: np.ndarray, language: str = "rus", table_type: str = "", *, config: dict) -> [TableTree, List[np.ndarray], float]:
     """
     detecting contours and TreeTable with help contour analysis. TreeTable is
-    :param orient_analysis_cells:
     :param img: input image
     :param language: parameter language for Tesseract
     :param config: dict from config.py

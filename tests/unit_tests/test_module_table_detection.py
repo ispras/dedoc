@@ -21,12 +21,7 @@ class TestRecognizedTable(unittest.TestCase):
     table_recognizer = TableRecognizer(config=get_test_config())
 
     def get_table(self, image: np.ndarray, language: str = "rus", table_type: str = "") -> List[ScanTable]:
-        image, tables = self.table_recognizer.recognize_tables_from_image(image=image,
-                                                                          page_number=0,
-                                                                          language=language,
-                                                                          orient_analysis_cells=False,
-                                                                          orient_cell_angle=0,
-                                                                          table_type=table_type)
+        image, tables = self.table_recognizer.recognize_tables_from_image(image=image, page_number=0, language=language, table_type=table_type)
         return tables
 
     def test_table_wo_external_bounds(self) -> None:
@@ -50,13 +45,13 @@ class TestRecognizedTable(unittest.TestCase):
         image = cv2.imread(path_image, 0)
 
         tables = self.get_table(image, "rus+eng", table_type="split_last_column+wo_external_bounds")
-        self.assertTrue(tables[0].matrix_cells[4][-1].get_text(), "40703978900000345077")
-        self.assertTrue(tables[0].matrix_cells[5][-1].get_text(), "049401814")
-        self.assertTrue(tables[0].matrix_cells[6][-1].get_text(), "30101810200000000814")
-        self.assertTrue(tables[0].matrix_cells[7][-1].get_text(), "049401814")
-        self.assertTrue(tables[0].matrix_cells[8][-1].get_text(), "30101810200000000814")
-        self.assertTrue(tables[0].matrix_cells[9][-1].get_text(), "30110978700000070815")
-        self.assertTrue(tables[0].matrix_cells[10][-1].get_text(), "30110978700000070815")
+        self.assertTrue(tables[0].cells[4][-1].get_text(), "40703978900000345077")
+        self.assertTrue(tables[0].cells[5][-1].get_text(), "049401814")
+        self.assertTrue(tables[0].cells[6][-1].get_text(), "30101810200000000814")
+        self.assertTrue(tables[0].cells[7][-1].get_text(), "049401814")
+        self.assertTrue(tables[0].cells[8][-1].get_text(), "30101810200000000814")
+        self.assertTrue(tables[0].cells[9][-1].get_text(), "30110978700000070815")
+        self.assertTrue(tables[0].cells[10][-1].get_text(), "30110978700000070815")
 
     def test_table_extract_one_cell_and_one_cell_tables(self) -> None:
         path_image = get_full_path("data/lising/platezhka.jpg")
@@ -115,73 +110,73 @@ class TestRecognizedTable(unittest.TestCase):
         image = cv2.imread(get_full_path("data/tables/example_with_table3.png"), 0)
         tables = self.get_table(image)
 
-        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].matrix_cells)
+        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].cells)
 
         self.assertEqual(cnt_rows, 8)
         self.assertEqual(cnt_columns, 3)
         self.assertEqual(cnt_a_cell, 3)
         self.assertEqual(cnt_cell, 24)
-        self.assertTrue(similarity(tables[0].matrix_cells[0][1].get_text(), "Наименование данных"))
-        self.assertTrue(similarity(tables[0].matrix_cells[0][2].get_text(), "Данные"))
-        self.assertTrue(similarity(tables[0].matrix_cells[4][1].get_text().capitalize(), "Инн"))
-        self.assertTrue(similarity(tables[0].matrix_cells[3][1].get_text(), "Руководитель (ФИО, телефон,\nфакс, электронный адрес)"))
+        self.assertTrue(similarity(tables[0].cells[0][1].get_text(), "Наименование данных"))
+        self.assertTrue(similarity(tables[0].cells[0][2].get_text(), "Данные"))
+        self.assertTrue(similarity(tables[0].cells[4][1].get_text().capitalize(), "Инн"))
+        self.assertTrue(similarity(tables[0].cells[3][1].get_text(), "Руководитель (ФИО, телефон,\nфакс, электронный адрес)"))
 
     def test_table_recognition_2(self) -> None:
         image = cv2.imread(get_full_path("data/tables/example_with_table4.jpg"), 0)
         tables = self.get_table(image)
 
-        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].matrix_cells)
+        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].cells)
 
         self.assertEqual(cnt_rows, 5)
         self.assertEqual(cnt_columns, 3)
         self.assertEqual(cnt_a_cell, 3)
         self.assertEqual(cnt_cell, 15)
-        self.assertTrue(similarity(tables[0].matrix_cells[0][1].get_text(), "Перечень основных данных и\nтребований"))
-        self.assertTrue(similarity(tables[0].matrix_cells[0][2].get_text(), "Основные данные и требования"))
-        self.assertTrue(similarity(tables[0].matrix_cells[3][1].get_text(), "Количество"))
-        self.assertTrue(similarity(tables[0].matrix_cells[4][1].get_text(), "Технические параметры оборудования"))
+        self.assertTrue(similarity(tables[0].cells[0][1].get_text(), "Перечень основных данных и\nтребований"))
+        self.assertTrue(similarity(tables[0].cells[0][2].get_text(), "Основные данные и требования"))
+        self.assertTrue(similarity(tables[0].cells[3][1].get_text(), "Количество"))
+        self.assertTrue(similarity(tables[0].cells[4][1].get_text(), "Технические параметры оборудования"))
 
     def test_table_recognition_3(self) -> None:
         image = cv2.imread(get_full_path("data/tables/example_with_table5.png"), 0)
         tables = self.get_table(image)
 
-        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].matrix_cells)
+        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].cells)
 
         self.assertEqual(cnt_rows, 13)
         self.assertEqual(cnt_columns, 3)
         self.assertEqual(cnt_a_cell, 3)
         self.assertEqual(cnt_cell, 39)
-        self.assertTrue(similarity(tables[0].matrix_cells[0][1].get_text(), "Техническая характеристика"))
-        self.assertTrue(similarity(tables[0].matrix_cells[0][2].get_text(), "Показатель"))
-        self.assertTrue(similarity(tables[0].matrix_cells[6][1].get_text(), "Использование крана и его механизмов"))
-        self.assertTrue(similarity(tables[0].matrix_cells[7][1].get_text(), "Тип привода:"))
+        self.assertTrue(similarity(tables[0].cells[0][1].get_text(), "Техническая характеристика"))
+        self.assertTrue(similarity(tables[0].cells[0][2].get_text(), "Показатель"))
+        self.assertTrue(similarity(tables[0].cells[6][1].get_text(), "Использование крана и его механизмов"))
+        self.assertTrue(similarity(tables[0].cells[7][1].get_text(), "Тип привода:"))
 
     def test_table_recognition_4(self) -> None:
         image = cv2.imread(get_full_path("data/tables/example_with_table5.png"), 0)
         tables = self.get_table(image)
 
-        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].matrix_cells)
+        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].cells)
 
         self.assertEqual(cnt_rows, 13)
         self.assertEqual(cnt_columns, 3)
         self.assertEqual(cnt_a_cell, 3)
         self.assertEqual(cnt_cell, 39)
-        self.assertTrue(similarity(tables[0].matrix_cells[0][1].get_text(), "Техническая характеристика"))
-        self.assertTrue(similarity(tables[0].matrix_cells[0][2].get_text(), "Показатель"))
-        self.assertTrue(similarity(tables[0].matrix_cells[6][1].get_text(), "Использование крана и его механизмов"))
-        self.assertTrue(similarity(tables[0].matrix_cells[7][1].get_text(), "Тип привода:"))
+        self.assertTrue(similarity(tables[0].cells[0][1].get_text(), "Техническая характеристика"))
+        self.assertTrue(similarity(tables[0].cells[0][2].get_text(), "Показатель"))
+        self.assertTrue(similarity(tables[0].cells[6][1].get_text(), "Использование крана и его механизмов"))
+        self.assertTrue(similarity(tables[0].cells[7][1].get_text(), "Тип привода:"))
 
     def test_table_recognition_with_rotate_5(self) -> None:
         image = cv2.imread(get_full_path("data/tables/example_with_table6.png"), 0)
         tables = self.get_table(image)
 
-        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].matrix_cells)
+        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].cells)
 
         self.assertEqual(cnt_rows, 3)
         self.assertEqual(cnt_columns, 7)
         self.assertEqual(cnt_a_cell, 7)
         self.assertEqual(cnt_cell, 21)
-        self.assertTrue(similarity(tables[0].matrix_cells[0][1].get_text(), "Группа"))
-        self.assertTrue(similarity(tables[0].matrix_cells[0][3].get_text(), "Наименование"))
-        self.assertTrue(similarity(tables[0].matrix_cells[2][2].get_text(), "Новая\nпозиция"))
-        self.assertTrue(similarity(tables[0].matrix_cells[2][5].get_text(), "3 (три)\nшт."))
+        self.assertTrue(similarity(tables[0].cells[0][1].get_text(), "Группа"))
+        self.assertTrue(similarity(tables[0].cells[0][3].get_text(), "Наименование"))
+        self.assertTrue(similarity(tables[0].cells[2][2].get_text(), "Новая\nпозиция"))
+        self.assertTrue(similarity(tables[0].cells[2][5].get_text(), "3 (три)\nшт."))

@@ -14,6 +14,8 @@ from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLoc
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.onepage_table_extractor import OnePageTableExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableAttributeExtractor
 
 
 class PdfTabbyReader(PdfBaseReader):
@@ -36,6 +38,8 @@ class PdfTabbyReader(PdfBaseReader):
         self.jar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "tabbypdf", "jars"))
         self.java_not_found_error = "`java` command is not found from this Python process. Please ensure Java is installed and PATH is set for `java`"
         self.default_config = {"JAR_PATH": os.path.join(self.jar_dir, self.jar_name)}
+        self.attribute_selector = TableAttributeExtractor(logger=self.logger)
+        self.table_extractor = OnePageTableExtractor(config=config, logger=self.logger)
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
@@ -158,7 +162,6 @@ class PdfTabbyReader(PdfBaseReader):
         return result_json_path
 
     def __get_tables(self, page: dict) -> List[ScanTable]:
-        import uuid
         from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
         from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
         from dedoc.data_structures.line_metadata import LineMetadata
@@ -204,7 +207,15 @@ class PdfTabbyReader(PdfBaseReader):
                     ))
                 cells.append(result_row)
 
-            scan_tables.append(ScanTable(page_number=page_number, matrix_cells=cells, bbox=table_bbox, name=str(uuid.uuid4()), order=order))
+            try:
+                cells = self.table_extractor.handle_cells(cells)
+                table = ScanTable(page_number=page_number, cells=cells, bbox=table_bbox, order=order)
+                table = self.attribute_selector.set_attributes(table)
+                scan_tables.append(table)
+            except Exception as ex:
+                self.logger.warning(f"Warning: unrecognized table into page {self.page_number}. {ex}")
+                if self.config.get("debug_mode", False):
+                    raise ex
 
         return scan_tables
 

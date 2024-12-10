@@ -75,7 +75,7 @@ def calc_agreement(matrix_gt: List[List[Cell]], matrix: List[List[Cell]]) -> flo
 def draw_recognized_cell(tables: List[ScanTable], path_image: str, path_save: str) -> None:
     img = cv2.imread(path_image)
     for t_index in range(0, len(tables)):
-        table = tables[t_index].matrix_cells
+        table = tables[t_index].cells
         bbox = tables[t_index].locations.location
         blue_color, green_color, red_color = (255, 0, 0), (0, 255, 0), (0, 0, 255)
         cv2.rectangle(img, (bbox.x_top_left, bbox.y_top_left), (bbox.width, bbox.height), blue_color, 6)
@@ -127,7 +127,7 @@ def calc_accuracy(path_image: str, path_gt_struct: str, path_gt_text: str, path_
                 elif len(tables) <= index_table:
                     agreements.append(0)
                 else:
-                    agreement = calc_agreement(matrix_cell_gt, tables[index_table].matrix_cells)
+                    agreement = calc_agreement(matrix_cell_gt, tables[index_table].cells)
                     agreements.append(agreement)
 
 
