@@ -6,6 +6,8 @@ from fastapi import Request
 
 from dedoc.config import get_config
 
+logger = get_config().get("logger", logging.getLogger())
+
 
 @asynccontextmanager
 async def cancel_on_disconnect(request: Request) -> None:
@@ -16,7 +18,6 @@ async def cancel_on_disconnect(request: Request) -> None:
     Source: https://github.com/dorinclisu/runner-with-api
     See discussion: https://github.com/fastapi/fastapi/discussions/8805
     """
-    logger = get_config().get("logger", logging.getLogger())
     async with create_task_group() as task_group:
         async def watch_disconnect() -> None:
             while True:

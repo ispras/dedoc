@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import dataclasses
 import importlib
@@ -7,6 +8,7 @@ import tempfile
 import traceback
 from typing import Optional
 
+from anyio import get_cancelled_exc_class
 from fastapi import Depends, FastAPI, File, Request, Response, UploadFile
 from fastapi.responses import ORJSONResponse, UJSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -75,16 +77,18 @@ async def upload(request: Request, file: UploadFile = File(...), query_params: Q
     if not file or file.filename == "":
         raise MissingFileError("Error: Missing content in request_post file parameter", version=dedoc.version.__version__)
 
-    return_format = str(parameters.get("return_format", "json")).lower()
-
+    loop = asyncio.get_running_loop()
     async with cancel_on_disconnect(request):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            file_path = save_upload_file(file, tmpdir)
-            document_tree = manager.parse(file_path, parameters={**dict(parameters), "attachments_dir": tmpdir})
+        try:
+            future = loop.run_in_executor(None, __parse_file, parameters, file)
+            document_tree = await future
+        except get_cancelled_exc_class():
+            future.cancel(DedocError)
+            loop.stop()
+            loop.close()
+            return JSONResponse(status_code=499, content={})
 
-            if return_format == "html":
-                __add_base64_info_to_attachments(document_tree, tmpdir)
-
+    return_format = str(parameters.get("return_format", "json")).lower()
     if return_format == "html":
         html_content = json2html(
             text="",
@@ -115,6 +119,17 @@ async def upload(request: Request, file: UploadFile = File(...), query_params: Q
 
     logger.info(f"Send result. File {file.filename} with parameters {parameters}")
     return ORJSONResponse(content=document_tree.to_api_schema().model_dump())
+
+
+def __parse_file(parameters: dict, file: UploadFile) -> ParsedDocument:
+    return_format = str(parameters.get("return_format", "json")).lower()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        file_path = save_upload_file(file, tmpdir)
+        document_tree = manager.parse(file_path, parameters={**dict(parameters), "attachments_dir": tmpdir})
+
+        if return_format == "html":
+            __add_base64_info_to_attachments(document_tree, tmpdir)
+    return document_tree
 
 
 @app.get("/upload_example")
