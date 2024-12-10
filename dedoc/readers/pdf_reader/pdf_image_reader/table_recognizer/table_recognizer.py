@@ -30,25 +30,13 @@ class TableRecognizer(object):
         self.table_type = TableTypeAdditionalOptions()
 
     def convert_to_multipages_tables(self, all_single_tables: List[ScanTable], lines_with_meta: List[LineWithMeta]) -> List[ScanTable]:
-
         multipage_tables = self.multipage_tables_extractor.extract_multipage_tables(single_tables=all_single_tables, lines_with_meta=lines_with_meta)
         return multipage_tables
 
-    def recognize_tables_from_image(self,
-                                    image: np.ndarray,
-                                    page_number: int,
-                                    language: str,
-                                    orient_analysis_cells: bool,
-                                    orient_cell_angle: int,
-                                    table_type: str = "") -> Tuple[np.ndarray, List[ScanTable]]:
+    def recognize_tables_from_image(self, image: np.ndarray, page_number: int, language: str, table_type: str = "") -> Tuple[np.ndarray, List[ScanTable]]:
         self.logger.debug(f"Page {page_number}")
         try:
-            cleaned_image, matrix_tables = self.__rec_tables_from_img(image,
-                                                                      page_num=page_number,
-                                                                      language=language,
-                                                                      orient_analysis_cells=orient_analysis_cells,
-                                                                      orient_cell_angle=orient_cell_angle,
-                                                                      table_type=table_type)
+            cleaned_image, matrix_tables = self.__rec_tables_from_img(image, page_num=page_number, language=language, table_type=table_type)
             return cleaned_image, matrix_tables
         except Exception as ex:
             logging.warning(ex)
@@ -56,22 +44,15 @@ class TableRecognizer(object):
                 raise ex
             return image, []
 
-    def __rec_tables_from_img(self,
-                              src_image: np.ndarray,
-                              page_num: int,
-                              language: str,
-                              orient_analysis_cells: bool,
-                              orient_cell_angle: int,
-                              table_type: str) -> Tuple[np.ndarray, List[ScanTable]]:
+    def __rec_tables_from_img(self, src_image: np.ndarray, page_num: int, language: str, table_type: str) -> Tuple[np.ndarray, List[ScanTable]]:
         gray_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY) if len(src_image.shape) == 3 else src_image
 
         single_page_tables = self.onepage_tables_extractor.extract_onepage_tables_from_image(
             image=gray_image,
             page_number=page_num,
             language=language,
-            orient_analysis_cells=orient_analysis_cells,
-            orient_cell_angle=orient_cell_angle,
             table_type=table_type)
+
         if self.config.get("labeling_mode", False):
             self.__save_tables(tables=single_page_tables, image=src_image, table_path=self.config.get("table_path", "/tmp/tables"))
         if self.table_type.detect_one_cell_table in table_type:
@@ -130,7 +111,7 @@ class TableRecognizer(object):
         black_mean = (table_image < 225).mean()
         table_area = bbox.width * bbox.height
         cells_area = 0
-        for row in table.matrix_cells:
+        for row in table.cells:
             for cell in row:
                 cells_area += cell.width * cell.height
 

@@ -15,8 +15,6 @@ from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
-    "orient_analysis_cells",
-    "orient_cell_angle",
     "is_one_column_document",
     "document_orientation",
     "language",
@@ -73,8 +71,6 @@ class PdfBaseReader(BaseReader):
 
         params_for_parse = ParametersForParseDoc(
             language=param_utils.get_param_language(parameters),
-            orient_analysis_cells=param_utils.get_param_orient_analysis_cells(parameters),
-            orient_cell_angle=param_utils.get_param_orient_cell_angle(parameters),
             is_one_column_document=param_utils.get_param_is_one_column_document(parameters),
             document_orientation=param_utils.get_param_document_orientation(parameters),
             need_header_footers_analysis=param_utils.get_param_need_header_footers_analysis(parameters),
@@ -177,7 +173,7 @@ class PdfBaseReader(BaseReader):
                 table_page_number = location.page_number
                 location.shift(shift_x=gost_analyzed_images[table_page_number][1].x_top_left, shift_y=gost_analyzed_images[table_page_number][1].y_top_left)
             page_number = scan_table.locations[0].page_number
-            for row in scan_table.matrix_cells:
+            for row in scan_table.cells:
                 for cell in row:
                     image_width, image_height = gost_analyzed_images[page_number][2][1], gost_analyzed_images[page_number][2][0]
                     shift_x, shift_y = (gost_analyzed_images[page_number][1].x_top_left, gost_analyzed_images[page_number][1].y_top_left)
@@ -275,16 +271,3 @@ class PdfBaseReader(BaseReader):
             binary_mask = gray_image >= np.quantile(gray_image, 0.05)
             gray_image[binary_mask] = 255
         return gray_image
-
-    def eval_tables_by_batch(self,
-                             batch: Iterator[ndarray],
-                             page_number_begin: int,
-                             language: str,
-                             orient_analysis_cells: bool = False,
-                             orient_cell_angle: int = 270,
-                             table_type: str = "") -> Tuple[List[ndarray], List[ScanTable]]:
-        from joblib import Parallel, delayed
-
-        result_batch = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.table_recognizer.recognize_tables_from_image)(
-            image, page_number_begin + i, language, orient_analysis_cells, orient_cell_angle, table_type) for i, image in enumerate(batch))
-        return result_batch
