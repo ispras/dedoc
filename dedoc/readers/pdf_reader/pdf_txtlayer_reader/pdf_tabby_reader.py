@@ -136,9 +136,7 @@ class PdfTabbyReader(PdfBaseReader):
         mp_tables = self.table_recognizer.convert_to_multipages_tables(all_scan_tables, lines_with_meta=all_lines)
         all_lines = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=all_attached_images)
 
-        tables = [scan_table.to_table() for scan_table in mp_tables]
-
-        return all_lines, tables, all_attached_images, document_metadata
+        return all_lines, mp_tables, all_attached_images, document_metadata
 
     def __save_gost_frame_boxes_to_json(self, first_page: Optional[int], last_page: Optional[int], page_count: int, path: str, tmp_dir: str) -> str:
         from joblib import Parallel, delayed

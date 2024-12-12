@@ -33,9 +33,6 @@ class ScanTable(Table):
             return False
         return True
 
-    def to_table(self) -> Table:
-        return super()
-
     @staticmethod
     def get_cells_text(cells: List[List[CellWithMeta]]) -> List[List[str]]:
         return [[cell.get_text() for cell in row] for row in cells]
