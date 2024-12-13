@@ -7,7 +7,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.base_table_extractor import BaseTableExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableAttributeExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableHeaderExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.utils import equal_with_eps
 
 
@@ -117,12 +117,12 @@ class MultiPageTableExtractor(BaseTableExtractor):
         end = None
         for cell_id, cell in enumerate(row):
             if prev_uid is None:
-                start = cell.x_top_left
+                start = cell.bbox.x_top_left
                 prev_uid = cell.uuid
             elif prev_uid != cell.uuid:
                 widths.append(end - start)
-                start = cell.x_top_left
-            end = cell.x_bottom_right
+                start = cell.bbox.x_top_left
+            end = cell.bbox.x_bottom_right
             if cell_id == len(row) - 1:
                 widths.append(end - start)
         return widths
@@ -154,16 +154,16 @@ class MultiPageTableExtractor(BaseTableExtractor):
             return False
 
         # condition 2. Exclusion of the duplicated header (if any)
-        attr1 = TableAttributeExtractor.get_header_table(t1.cells)
-        attr2 = TableAttributeExtractor.get_header_table(t2.cells)
+        attr1 = TableHeaderExtractor.get_header_table(t1.cells)
+        attr2 = TableHeaderExtractor.get_header_table(t2.cells)
         t2_update = copy.deepcopy(t2)
-        if TableAttributeExtractor.is_equal_attributes(attr1, attr2):
+        if TableHeaderExtractor.is_equal_header(attr1, attr2):
             t2_update.cells = t2_update.cells[len(attr2):]
 
         if len(t2_update.cells) == 0 or len(t1.cells) == 0:
             return False
 
-        TableAttributeExtractor.clear_attributes(t2_update.cells)
+        TableHeaderExtractor.clear_attributes(t2_update.cells)
 
         # condition 3. Number of columns should be equal
         if len(t1.cells[-1]) != len(t2_update.cells[0]):

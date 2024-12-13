@@ -127,8 +127,8 @@ def _split_row(cell_splitter: Cell, union_cell: List[Cell], language: str, image
 
     # Get width of all union cell
     eps = len(union_cell)
-    x_left = union_cell[0].x_top_left + eps
-    x_right = union_cell[-1].x_bottom_right
+    x_left = union_cell[0].bbox.x_top_left + eps
+    x_right = union_cell[-1].bbox.x_bottom_right
     # get y coordinate from cell before union cell
     y_top_split = cell_splitter.con_coord.y_top_left
     y_bottom_split = cell_splitter.con_coord.y_top_left + cell_splitter.con_coord.height
@@ -141,8 +141,8 @@ def _split_row(cell_splitter: Cell, union_cell: List[Cell], language: str, image
     col_id = len(union_cell) - 1
     result_row = copy.deepcopy(union_cell)
     while col_id >= 0:
-        union_cell[col_id].y_top_left = y_top_split
-        union_cell[col_id].y_bottom_right = y_bottom_split
+        union_cell[col_id].bbox.y_top_left = y_top_split
+        union_cell[col_id].bbox.height = y_bottom_split - union_cell[col_id].bbox.y_top_left
 
         cell_image, padding_value = OCRCellExtractor.upscale(image[y_top_split:y_bottom_split, x_left:x_right])
         result_row[col_id].lines = __get_ocr_lines(cell_image, language, page_image=image,
@@ -163,10 +163,8 @@ def __get_ocr_lines(cell_image: np.ndarray, language: str, page_image: np.ndarra
         text_line = OCRCellExtractor.get_line_with_meta("")
         for word in line.words:
             # do absolute coordinate on src_image (inside src_image)
-            word.bbox.y_top_left -= padding_cell_value
-            word.bbox.x_top_left -= padding_cell_value
-            word.bbox.y_top_left += cell_bbox.y_top_left
-            word.bbox.x_top_left += cell_bbox.x_top_left
+            word.bbox.shift(shift_x=-padding_cell_value, shift_y=-padding_cell_value)
+            word.bbox.shift(shift_x=cell_bbox.x_top_left, shift_y=cell_bbox.y_top_left)
 
             # add space between words
             if len(text_line) != 0:

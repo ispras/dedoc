@@ -12,7 +12,7 @@ from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdd
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.cell_splitter import CellSplitter
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.split_last_hor_union_cells import split_last_column
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.base_table_extractor import BaseTableExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableAttributeExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableHeaderExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.img_processing import detect_tables_by_contours
 
 
@@ -23,7 +23,7 @@ class OnePageTableExtractor(BaseTableExtractor):
 
         self.image = None
         self.page_number = 0
-        self.attribute_selector = TableAttributeExtractor(logger=self.logger)
+        self.table_header_selector = TableHeaderExtractor(logger=self.logger)
         self.count_vertical_extended = 0
         self.splitter = CellSplitter()
         self.table_options = TableTypeAdditionalOptions()
@@ -50,17 +50,6 @@ class OnePageTableExtractor(BaseTableExtractor):
                 location.bbox.rotate_coordinates(angle_rotate=-angle_rotate, image_shape=image.shape)
                 location.rotated_angle = angle_rotate
 
-        tables = self.__select_attributes_tables(tables=tables)
-
-        return tables
-
-    def __select_attributes_tables(self, tables: List[ScanTable]) -> List[ScanTable]:
-        for table in tables:
-            table = self.attribute_selector.set_attributes(table)
-
-            if self.config.get("debug_mode", False):
-                self._print_table_attr(table.cells)
-
         return tables
 
     def __get_matrix_table_from_tree(self, table_tree: TableTree) -> ScanTable:
@@ -71,15 +60,12 @@ class OnePageTableExtractor(BaseTableExtractor):
         matrix = []
         line = []
         for cell in table_tree.children:
-            if len(line) != 0 and abs(cell.cell_box.y_top_left - line[-1].y_top_left) > 15:  # add eps
+            if len(line) != 0 and abs(cell.cell_box.y_top_left - line[-1].bbox.y_top_left) > 15:  # add eps
                 cpy_line = copy.deepcopy(line)
                 matrix.append(cpy_line)
                 line.clear()
 
-            cell_ = Cell(x_top_left=cell.cell_box.x_top_left,
-                         x_bottom_right=cell.cell_box.x_bottom_right,
-                         y_top_left=cell.cell_box.y_top_left,
-                         y_bottom_right=cell.cell_box.y_bottom_right,
+            cell_ = Cell(bbox=cell.cell_box,
                          id_con=cell.id_contours,
                          lines=cell.lines,
                          contour_coord=cell.cell_box)
@@ -88,7 +74,7 @@ class OnePageTableExtractor(BaseTableExtractor):
 
         # sorting column in each row
         for i in range(0, len(matrix)):
-            matrix[i] = sorted(matrix[i], key=lambda cell: cell.x_top_left, reverse=False)
+            matrix[i] = sorted(matrix[i], key=lambda cell: cell.bbox.x_top_left, reverse=False)
 
         matrix_table = ScanTable(cells=matrix, bbox=table_tree.cell_box, page_number=self.page_number)
 
@@ -124,5 +110,10 @@ class OnePageTableExtractor(BaseTableExtractor):
         # Postprocess table
         if self.table_options.split_last_column in table_type:
             cells = split_last_column(cells, language=self.language, image=self.image)
+
+        self.table_header_selector.set_header_cells(cells)
+
+        if self.config.get("debug_mode", False):
+            self._print_table_attr(cells)
 
         return cells

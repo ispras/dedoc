@@ -1,3 +1,4 @@
+import copy
 from typing import List, Optional
 
 from dedocutils.data_structures import BBox
@@ -9,64 +10,33 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 class Cell(CellWithMeta):
 
     @staticmethod
-    def copy_from(cell: "Cell",
-                  x_top_left: Optional[int] = None,
-                  x_bottom_right: Optional[int] = None,
-                  y_top_left: Optional[int] = None,
-                  y_bottom_right: Optional[int] = None) -> "Cell":
-        x_top_left = cell.x_top_left if x_top_left is None else x_top_left
-        x_bottom_right = cell.x_bottom_right if x_bottom_right is None else x_bottom_right
-        y_top_left = cell.y_top_left if y_top_left is None else y_top_left
-        y_bottom_right = cell.y_bottom_right if y_bottom_right is None else y_bottom_right
+    def copy_from(cell: "Cell", bbox: Optional[BBox] = None) -> "Cell":
+        copy_cell = copy.deepcopy(cell)
+        if bbox:
+            copy_cell.bbox = bbox
 
-        # TODO change x_top_left ... y_bottom_right to BBox
-
-        return Cell(x_top_left=x_top_left,
-                    x_bottom_right=x_bottom_right,
-                    y_top_left=y_top_left,
-                    y_bottom_right=y_bottom_right,
-                    id_con=cell.id_con,
-                    lines=cell.lines,
-                    colspan=cell.colspan,
-                    rowspan=cell.rowspan,
-                    invisible=cell.invisible,
-                    is_attribute=cell.is_attribute,
-                    is_attribute_required=cell.is_attribute_required,
-                    rotated_angle=cell.rotated_angle,
-                    uid=cell.uuid,
-                    contour_coord=cell.con_coord)
+        return copy_cell
 
     def shift(self, shift_x: int, shift_y: int, image_width: int, image_height: int) -> None:
         if self.lines:
             for line in self.lines:
                 line.shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
-        self.x_top_left += shift_x
-        self.x_bottom_right += shift_x
-        self.y_top_left += shift_y
-        self.y_bottom_right += shift_y
+
+        self.bbox.shift(shift_x=shift_x, shift_y=shift_y)
         if self.con_coord:
             self.con_coord.shift(shift_x=shift_x, shift_y=shift_y)
 
-    def __init__(self, x_top_left: int, x_bottom_right: int, y_top_left: int, y_bottom_right: int, id_con: int = -1, lines: Optional[List[LineWithMeta]] = None,
+    def __init__(self, bbox: BBox, id_con: int = -1, lines: Optional[List[LineWithMeta]] = None,
                  is_attribute: bool = False, is_attribute_required: bool = False, rotated_angle: int = 0, uid: str = Optional[None],
                  contour_coord: Optional[BBox] = None, colspan: int = 1, rowspan: int = 1, invisible: bool = False) -> None:
 
         import uuid
 
-        assert x_top_left <= x_bottom_right
-        assert y_top_left <= y_bottom_right
-
         self.lines = [] if lines is None else lines
         super().__init__(lines=lines, colspan=colspan, rowspan=rowspan, invisible=invisible)
 
-        # TODO change to BBox
-        self.x_top_left = x_top_left
-        self.x_bottom_right = x_bottom_right
-        self.y_top_left = y_top_left
-        self.y_bottom_right = y_bottom_right
-
+        self.bbox = bbox
         self.id_con = id_con
-
         self.is_attribute = is_attribute
         self.is_attribute_required = is_attribute_required
         self.rotated_angle = rotated_angle
@@ -96,11 +66,3 @@ class Cell(CellWithMeta):
 
     def __repr__(self) -> str:
         return self.__str__()
-
-    @property
-    def width(self) -> int:
-        return self.x_bottom_right - self.x_top_left
-
-    @property
-    def height(self) -> int:
-        return self.y_bottom_right - self.y_top_left

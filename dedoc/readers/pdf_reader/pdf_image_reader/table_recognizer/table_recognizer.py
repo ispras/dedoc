@@ -36,8 +36,8 @@ class TableRecognizer(object):
     def recognize_tables_from_image(self, image: np.ndarray, page_number: int, language: str, table_type: str = "") -> Tuple[np.ndarray, List[ScanTable]]:
         self.logger.debug(f"Page {page_number}")
         try:
-            cleaned_image, matrix_tables = self.__rec_tables_from_img(image, page_num=page_number, language=language, table_type=table_type)
-            return cleaned_image, matrix_tables
+            cleaned_image, scan_tables = self.__rec_tables_from_img(image, page_num=page_number, language=language, table_type=table_type)
+            return cleaned_image, scan_tables
         except Exception as ex:
             logging.warning(ex)
             if self.config.get("debug_mode", False):
@@ -113,7 +113,7 @@ class TableRecognizer(object):
         cells_area = 0
         for row in table.cells:
             for cell in row:
-                cells_area += cell.width * cell.height
+                cells_area += cell.bbox.width * cell.bbox.height
 
         ratio = cells_area / table_area
         res = (white_mean < 0.5) or (black_mean > 0.3) or (std < 30) or (mean < 150) or (mean < 200 and std < 80) or ratio < 0.65

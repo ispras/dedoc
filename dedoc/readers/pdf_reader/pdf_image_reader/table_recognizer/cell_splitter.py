@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+from dedocutils.data_structures import BBox
 
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
 from dedoc.utils.utils import flatten
@@ -55,25 +56,26 @@ class CellSplitter:
         for row_id, row in enumerate(result_matrix):
             for col_id, cell in enumerate(row):
                 if cell is None:
-                    result_matrix[row_id][col_id] = Cell(x_top_left=horizontal_borders[row_id],
-                                                         x_bottom_right=horizontal_borders[row_id + 1],
-                                                         y_top_left=vertical_borders[col_id],
-                                                         y_bottom_right=vertical_borders[col_id + 1])
+                    bbox = BBox(x_top_left=int(horizontal_borders[row_id]),
+                                y_top_left=int(vertical_borders[col_id]),
+                                width=int(horizontal_borders[row_id + 1] - horizontal_borders[row_id]),
+                                height=int(vertical_borders[col_id + 1] - vertical_borders[col_id]))
+                    result_matrix[row_id][col_id] = Cell(bbox=bbox)
         return result_matrix
 
     @staticmethod
     def __split_one_cell(cell: Cell, horizontal_borders: np.ndarray, vertical_borders: np.ndarray, result_matrix: List[List[Cell]]) -> None:
-        left_id, right_id = np.searchsorted(vertical_borders, [cell.x_top_left, cell.x_bottom_right])
-        top_id, bottom_id = np.searchsorted(horizontal_borders, [cell.y_top_left, cell.y_bottom_right])
+        left_id, right_id = np.searchsorted(vertical_borders, [cell.bbox.x_top_left, cell.bbox.x_bottom_right])
+        top_id, bottom_id = np.searchsorted(horizontal_borders, [cell.bbox.y_top_left, cell.bbox.y_bottom_right])
         colspan = right_id - left_id
         rowspan = bottom_id - top_id
         for row_id in range(top_id, bottom_id):
             for column_id in range(left_id, right_id):
-                new_cell = Cell.copy_from(cell,
-                                          x_top_left=vertical_borders[column_id],
-                                          x_bottom_right=vertical_borders[column_id + 1],
-                                          y_top_left=horizontal_borders[row_id],
-                                          y_bottom_right=horizontal_borders[row_id + 1])
+                bbox = BBox(x_top_left=int(vertical_borders[column_id]),
+                            y_top_left=int(horizontal_borders[row_id]),
+                            width=int(vertical_borders[column_id + 1] - vertical_borders[column_id]),
+                            height=int(horizontal_borders[row_id + 1] - horizontal_borders[row_id]))
+                new_cell = Cell.copy_from(cell, bbox)
                 new_cell.invisible = True
                 result_matrix[row_id][column_id] = new_cell
 
@@ -106,20 +108,21 @@ class CellSplitter:
         @return: cells with merged borders
         """
         horizontal_borders, vertical_borders = self.__get_borders(cells)
-        eps_vertical = self.eps * min((cell.width for cell in flatten(cells)), default=0)
-        eps_horizontal = self.eps * min((cell.height for cell in flatten(cells)), default=0)
+        eps_vertical = self.eps * min((cell.bbox.width for cell in flatten(cells)), default=0)
+        eps_horizontal = self.eps * min((cell.bbox.height for cell in flatten(cells)), default=0)
         horizontal_dict = self.__get_border_dict(borders=horizontal_borders, threshold=eps_horizontal)
         vertical_dict = self.__get_border_dict(borders=vertical_borders, threshold=eps_vertical)
         result = []
         for row in cells:
             new_row = []
             for cell in row:
-                x_top_left = vertical_dict[cell.x_top_left]
-                x_bottom_right = vertical_dict[cell.x_bottom_right]
-                y_top_left = horizontal_dict[cell.y_top_left]
-                y_bottom_right = horizontal_dict[cell.y_bottom_right]
+                x_top_left = vertical_dict[cell.bbox.x_top_left]
+                x_bottom_right = vertical_dict[cell.bbox.x_bottom_right]
+                y_top_left = horizontal_dict[cell.bbox.y_top_left]
+                y_bottom_right = horizontal_dict[cell.bbox.y_bottom_right]
                 if y_top_left < y_bottom_right and x_top_left < x_bottom_right:
-                    new_cell = Cell.copy_from(cell, x_top_left=x_top_left, x_bottom_right=x_bottom_right, y_top_left=y_top_left, y_bottom_right=y_bottom_right)
+                    bbox = BBox(x_top_left=x_top_left, y_top_left=y_top_left, width=x_bottom_right - x_top_left, height=y_bottom_right - y_top_left)
+                    new_cell = Cell.copy_from(cell, bbox)
                     new_row.append(new_cell)
             result.append(new_row)
         return result
@@ -130,8 +133,8 @@ class CellSplitter:
         vertical_borders = []
         for row in cells:
             for cell in row:
-                horizontal_borders.append(cell.y_top_left)
-                horizontal_borders.append(cell.y_bottom_right)
-                vertical_borders.append(cell.x_top_left)
-                vertical_borders.append(cell.x_bottom_right)
+                horizontal_borders.append(cell.bbox.y_top_left)
+                horizontal_borders.append(cell.bbox.y_bottom_right)
+                vertical_borders.append(cell.bbox.x_top_left)
+                vertical_borders.append(cell.bbox.x_bottom_right)
         return horizontal_borders, vertical_borders

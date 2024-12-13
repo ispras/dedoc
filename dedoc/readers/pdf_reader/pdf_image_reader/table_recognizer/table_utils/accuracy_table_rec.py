@@ -4,6 +4,7 @@ import os
 from typing import List, Tuple
 
 import cv2
+from dedocutils.data_structures import BBox
 
 from dedoc.config import get_config
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
@@ -12,7 +13,7 @@ from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageR
 
 
 def _create_cell(c: str, text_cells: list) -> Cell:
-    cell = Cell(x_bottom_right=-1, x_top_left=-1, y_top_left=-1, y_bottom_right=-1)
+    cell = Cell(BBox(x_top_left=-1, y_top_left=-1, width=0, height=0))
     if "a" in c:
         cell.is_attribute = True
     # loading cell text
@@ -81,8 +82,15 @@ def draw_recognized_cell(tables: List[ScanTable], path_image: str, path_save: st
         cv2.rectangle(img, (bbox.x_top_left, bbox.y_top_left), (bbox.width, bbox.height), blue_color, 6)
         for i in range(0, len(table)):
             for j in range(0, len(table[i])):
-                cv2.rectangle(img, (table[i][j].x_top_left, table[i][j].y_top_left), (table[i][j].x_bottom_right, table[i][j].y_bottom_right), red_color, 4)
-                cv2.putText(img, str(table[i][j].id_con), (table[i][j].x_top_left, table[i][j].y_bottom_right), cv2.FONT_HERSHEY_PLAIN, 4, green_color)
+                cv2.rectangle(img,
+                              (table[i][j].bbox.x_top_left, table[i][j].bbox.y_top_left),
+                              (table[i][j].bbox.x_bottom_right, table[i][j].bbox.y_bottom_right),
+                              red_color, 4
+                              )
+                cv2.putText(img, str(table[i][j].id_con),
+                            (table[i][j].bbox.x_top_left, table[i][j].bbox.y_bottom_right),
+                            cv2.FONT_HERSHEY_PLAIN, 4, green_color
+                            )
     cv2.imwrite(path_save, img)
 
 
