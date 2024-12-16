@@ -65,10 +65,7 @@ class OnePageTableExtractor(BaseTableExtractor):
                 matrix.append(cpy_line)
                 line.clear()
 
-            cell_ = Cell(bbox=cell.cell_box,
-                         id_con=cell.id_contours,
-                         lines=cell.lines,
-                         contour_coord=cell.cell_box)
+            cell_ = Cell(bbox=cell.cell_box, id_con=cell.id_contours, lines=cell.lines, contour_coord=cell.cell_box)
             line.append(cell_)
         matrix.append(line)
 
