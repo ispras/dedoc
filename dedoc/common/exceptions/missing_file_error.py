@@ -13,7 +13,3 @@ class MissingFileError(DedocError):
 
     def __str__(self) -> str:
         return f"MissingFileError({self.msg})"
-
-    @property
-    def code(self) -> int:
-        return 400

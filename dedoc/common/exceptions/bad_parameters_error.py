@@ -14,7 +14,3 @@ class BadParametersError(DedocError):
 
     def __str__(self) -> str:
         return f"BadParametersError({self.msg})"
-
-    @property
-    def code(self) -> int:
-        return 400

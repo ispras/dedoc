@@ -4,13 +4,9 @@ from contextlib import asynccontextmanager
 from anyio import create_task_group
 from fastapi import Request
 
-from dedoc.config import get_config
-
-logger = get_config().get("logger", logging.getLogger())
-
 
 @asynccontextmanager
-async def cancel_on_disconnect(request: Request) -> None:
+async def cancel_on_disconnect(request: Request, logger: logging.Logger) -> None:
     """
     Async context manager for async code that needs to be cancelled if client disconnects prematurely.
     The client disconnect is monitored through the Request object.
@@ -25,7 +21,7 @@ async def cancel_on_disconnect(request: Request) -> None:
 
                 if message["type"] == "http.disconnect":
                     client = f"{request.client.host}:{request.client.port}" if request.client else "-:-"
-                    logger.info(f"{client} - `{request.method} {request.url.path}` 499 DISCONNECTED")
+                    logger.warning(f"{client} - `{request.method} {request.url.path}` 499 DISCONNECTED")
 
                     task_group.cancel_scope.cancel()
                     break
