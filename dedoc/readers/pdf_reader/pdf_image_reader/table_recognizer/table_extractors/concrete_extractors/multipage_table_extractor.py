@@ -7,7 +7,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.base_table_extractor import BaseTableExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableAttributeExtractor
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableHeaderExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.utils import equal_with_eps
 
 
@@ -21,11 +21,11 @@ class MultiPageTableExtractor(BaseTableExtractor):
         self.single_tables = single_tables
         multipages_tables = []
         list_page_with_tables = []
-        total_pages = max((table.page_number + 1 for table in single_tables), default=0)
+        total_pages = max((table.location.page_number + 1 for table in single_tables), default=0)
         for cur_page in range(total_pages):
             # 1. get possible diapason of neighbors pages with tables
             # pages distribution
-            list_mp_table = [t for t in self.single_tables if t.page_number == cur_page]
+            list_mp_table = [t for t in self.single_tables if t.location.page_number == cur_page]
             list_page_with_tables.append(list_mp_table)
 
         total_cur_page = 0
@@ -86,7 +86,7 @@ class MultiPageTableExtractor(BaseTableExtractor):
                 # t2 is merged with t1
                 t1.extended(t2)
                 list_page_with_tables[cur_page].pop(0)
-                self.__delete_ref_table(lines=lines_with_meta, table_name=t2.name)
+                self.__delete_ref_table(lines=lines_with_meta, table_name=t2.uid)
             else:
                 if len(list_page_with_tables[cur_page]) > 0:
                     cur_page -= 1  # analysis from the current page, not the next one
@@ -117,12 +117,12 @@ class MultiPageTableExtractor(BaseTableExtractor):
         end = None
         for cell_id, cell in enumerate(row):
             if prev_uid is None:
-                start = cell.x_top_left
-                prev_uid = cell.cell_uid
-            elif prev_uid != cell.cell_uid:
+                start = cell.bbox.x_top_left
+                prev_uid = cell.uuid
+            elif prev_uid != cell.uuid:
                 widths.append(end - start)
-                start = cell.x_top_left
-            end = cell.x_bottom_right
+                start = cell.bbox.x_top_left
+            end = cell.bbox.x_bottom_right
             if cell_id == len(row) - 1:
                 widths.append(end - start)
         return widths
@@ -154,28 +154,28 @@ class MultiPageTableExtractor(BaseTableExtractor):
             return False
 
         # condition 2. Exclusion of the duplicated header (if any)
-        attr1 = TableAttributeExtractor.get_header_table(t1.matrix_cells)
-        attr2 = TableAttributeExtractor.get_header_table(t2.matrix_cells)
+        attr1 = TableHeaderExtractor.get_header_table(t1.cells)
+        attr2 = TableHeaderExtractor.get_header_table(t2.cells)
         t2_update = copy.deepcopy(t2)
-        if TableAttributeExtractor.is_equal_attributes(attr1, attr2):
-            t2_update.matrix_cells = t2_update.matrix_cells[len(attr2):]
+        if TableHeaderExtractor.is_equal_header(attr1, attr2):
+            t2_update.cells = t2_update.cells[len(attr2):]
 
-        if len(t2_update.matrix_cells) == 0 or len(t1.matrix_cells) == 0:
+        if len(t2_update.cells) == 0 or len(t1.cells) == 0:
             return False
 
-        TableAttributeExtractor.clear_attributes(t2_update.matrix_cells)
+        TableHeaderExtractor.clear_attributes(t2_update.cells)
 
         # condition 3. Number of columns should be equal
-        if len(t1.matrix_cells[-1]) != len(t2_update.matrix_cells[0]):
+        if len(t1.cells[-1]) != len(t2_update.cells[0]):
             if self.config.get("debug_mode", False):
                 self.logger.debug("Different count column")
             return False
 
         # condition 4. Comparison of the widths of last and first rows
-        if t1.check_on_cell_instance() and t2_update.check_on_cell_instance() and not self.__is_equal_width_cells(t1.matrix_cells, t2_update.matrix_cells):
+        if t1.check_on_cell_instance() and t2_update.check_on_cell_instance() and not self.__is_equal_width_cells(t1.cells, t2_update.cells):
             if self.config.get("debug_mode", False):
                 self.logger.debug("Different width columns")
             return False
 
-        t2.matrix_cells = copy.deepcopy(t2_update.matrix_cells)  # save changes
+        t2.cells = copy.deepcopy(t2_update.cells)  # save changes
         return True

@@ -31,8 +31,6 @@ class TestGOSTFrameRecognizer(unittest.TestCase):
         file_path = file_path if file_path else ""
         params_for_parse = ParametersForParseDoc(
             language=param_utils.get_param_language(parameters),
-            orient_analysis_cells=param_utils.get_param_orient_analysis_cells(parameters),
-            orient_cell_angle=param_utils.get_param_orient_cell_angle(parameters),
             is_one_column_document=param_utils.get_param_is_one_column_document(parameters),
             document_orientation=param_utils.get_param_document_orientation(parameters),
             need_header_footers_analysis=param_utils.get_param_need_header_footers_analysis(parameters),

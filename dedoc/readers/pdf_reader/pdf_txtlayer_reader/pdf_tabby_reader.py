@@ -29,6 +29,10 @@ class PdfTabbyReader(PdfBaseReader):
     def __init__(self, *, config: Optional[dict] = None) -> None:
         import os
         from dedoc.extensions import recognized_extensions, recognized_mimes
+        from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.onepage_table_extractor import \
+            OnePageTableExtractor
+        from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import \
+            TableHeaderExtractor
 
         super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
         self.tabby_java_version = "2.0.0"
@@ -36,6 +40,8 @@ class PdfTabbyReader(PdfBaseReader):
         self.jar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "tabbypdf", "jars"))
         self.java_not_found_error = "`java` command is not found from this Python process. Please ensure Java is installed and PATH is set for `java`"
         self.default_config = {"JAR_PATH": os.path.join(self.jar_dir, self.jar_name)}
+        self.table_header_selector = TableHeaderExtractor(logger=self.logger)
+        self.table_extractor = OnePageTableExtractor(config=config, logger=self.logger)
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
@@ -132,9 +138,7 @@ class PdfTabbyReader(PdfBaseReader):
         mp_tables = self.table_recognizer.convert_to_multipages_tables(all_scan_tables, lines_with_meta=all_lines)
         all_lines = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=all_attached_images)
 
-        tables = [scan_table.to_table() for scan_table in mp_tables]
-
-        return all_lines, tables, all_attached_images, document_metadata
+        return all_lines, mp_tables, all_attached_images, document_metadata
 
     def __save_gost_frame_boxes_to_json(self, first_page: Optional[int], last_page: Optional[int], page_count: int, path: str, tmp_dir: str) -> str:
         from joblib import Parallel, delayed
@@ -158,8 +162,7 @@ class PdfTabbyReader(PdfBaseReader):
         return result_json_path
 
     def __get_tables(self, page: dict) -> List[ScanTable]:
-        import uuid
-        from dedoc.data_structures.cell_with_meta import CellWithMeta
+        from dedoc.readers.pdf_reader.data_classes.tables.cell import Cell
         from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
         from dedoc.data_structures.line_metadata import LineMetadata
 
@@ -170,7 +173,7 @@ class PdfTabbyReader(PdfBaseReader):
 
         for table in page["tables"]:
             table_bbox = BBox(x_top_left=table["x_top_left"], y_top_left=table["y_top_left"], width=table["width"], height=table["height"])
-            order = table["order"]  # TODO add table order into TableMetadata
+            order = table["order"]
             rows = table["rows"]
             cell_properties = table["cell_properties"]
             assert len(rows) == len(cell_properties)
@@ -187,20 +190,29 @@ class PdfTabbyReader(PdfBaseReader):
                     for c in cell_blocks:
                         cell_bbox = BBox(x_top_left=int(c["x_top_left"]), y_top_left=int(c["y_top_left"]), width=int(c["width"]), height=int(c["height"]))
                         annotations.append(BBoxAnnotation(c["start"], c["end"], cell_bbox, page_width=page_width, page_height=page_height))
-                    """
-                        TODO: change to Cell class after tabby can return cell coordinates. Then set type Cell in class "ScanTable"
-                        https://jira.intra.ispras.ru/browse/TLDR-851
-                    """
 
-                    result_row.append(CellWithMeta(
+                    current_cell_properties = cell_properties[num_row][num_col]
+                    bbox = BBox(x_top_left=int(current_cell_properties["x_top_left"]),
+                                y_top_left=int(current_cell_properties["y_top_left"]),
+                                width=int(current_cell_properties["width"]),
+                                height=int(current_cell_properties["height"]))
+
+                    result_row.append(Cell(
+                        bbox=bbox,
                         lines=[LineWithMeta(line=cell["text"], metadata=LineMetadata(page_id=page_number, line_id=0), annotations=annotations)],
-                        colspan=cell_properties[num_row][num_col]["col_span"],
-                        rowspan=cell_properties[num_row][num_col]["row_span"],
-                        invisible=bool(cell_properties[num_row][num_col]["invisible"])
+                        colspan=current_cell_properties["col_span"],
+                        rowspan=current_cell_properties["row_span"],
+                        invisible=bool(current_cell_properties["invisible"])
                     ))
                 cells.append(result_row)
 
-            scan_tables.append(ScanTable(page_number=page_number, matrix_cells=cells, bbox=table_bbox, name=str(uuid.uuid4()), order=order))
+            try:
+                cells = self.table_extractor.handle_cells(cells)
+                scan_tables.append(ScanTable(page_number=page_number, cells=cells, bbox=table_bbox, order=order))
+            except Exception as ex:
+                self.logger.warning(f"Warning: unrecognized table on page {self.page_number}. {ex}")
+                if self.config.get("debug_mode", False):
+                    raise ex
 
         return scan_tables
 

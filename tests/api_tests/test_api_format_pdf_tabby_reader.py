@@ -182,7 +182,7 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
 
         table = tables[3]["cells"]
         self.assertListEqual(["", "2016", "2017", "2018", "2019"], self._get_text_of_row(table[0]))
-        self.assertListEqual(["", "Прогноз", "Прогноз бюджета"], self._get_text_of_row(table[1]))
+        self.assertListEqual(["", "Прогноз", "Прогноз бюджета", "Прогноз бюджета", "Прогноз бюджета"], self._get_text_of_row(table[1]))
         self.assertListEqual(["Ненефтегазов\nые доходы", "10,4", "9,6", "9,6", "9,6"], self._get_text_of_row(table[21]))
         self.assertListEqual(["Сальдо\nбюджета", "-3,7", "-3,2", "-2,2", "-1,2"], self._get_text_of_row(table[22]))
 
@@ -227,7 +227,7 @@ class TestApiPdfTabbyReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, data=dict(pdf_with_text_layer="tabby"))
         table = result["content"]["tables"][0]["cells"]
 
-        hidden_cells_big_table_with_colspan = [[(1, 0), 10], [(5, 1), 5]]
+        hidden_cells_big_table_with_colspan = [[(1, 0), 10], [(5, 5), 5]]
 
         for (i, j), k in hidden_cells_big_table_with_colspan:
             self.assertFalse(table[i][j]["invisible"])

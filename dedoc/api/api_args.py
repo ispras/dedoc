@@ -22,9 +22,6 @@ class QueryParameters:
     # tables handling
     need_pdf_table_analysis: str = Form("true", enum=["true", "false"], description="Enable table recognition for pdf")
     table_type: str = Form("", description="Pipeline mode for table recognition")
-    orient_analysis_cells: str = Form("false", enum=["true", "false"], description="Enable analysis of rotated cells in table headers")
-    orient_cell_angle: str = Form("90", enum=["90", "270"],
-                                  description='Set cells orientation in table headers, "90" means 90 degrees counterclockwise cells rotation')
 
     # pdf handling
     pdf_with_text_layer: str = Form("auto_tabby", enum=["true", "false", "auto", "auto_tabby", "tabby"],
