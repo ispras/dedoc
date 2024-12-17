@@ -2,7 +2,7 @@ import dataclasses
 import importlib
 import json
 import os
-import traceback
+import tempfile
 from typing import Optional
 
 from fastapi import Depends, FastAPI, File, Request, Response, UploadFile
@@ -18,6 +18,7 @@ from dedoc.api.schema.parsed_document import ParsedDocument
 from dedoc.common.exceptions.dedoc_error import DedocError
 from dedoc.common.exceptions.missing_file_error import MissingFileError
 from dedoc.config import get_config
+from dedoc.utils.utils import save_upload_file
 
 config = get_config()
 logger = config["logger"]
@@ -64,7 +65,10 @@ async def upload(request: Request, file: UploadFile = File(...), query_params: Q
     if not file or file.filename == "":
         raise MissingFileError("Error: Missing content in request_post file parameter", version=dedoc.version.__version__)
 
-    document_tree = await process_handler.handle(request=request, parameters=parameters, file=file)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        file_path = save_upload_file(file, tmpdir)
+        document_tree = await process_handler.handle(request=request, parameters=parameters, file_path=file_path, tmpdir=tmpdir)
+
     if document_tree is None:
         return JSONResponse(status_code=499, content={})
 
@@ -88,24 +92,25 @@ async def upload(request: Request, file: UploadFile = File(...), query_params: Q
         return HTMLResponse(content=html_content)
 
     if return_format == "ujson":
-        return UJSONResponse(content=document_tree.to_api_schema().model_dump())
+        return UJSONResponse(content=document_tree.model_dump())
 
     if return_format == "collapsed_tree":
         html_content = json2collapsed_tree(paragraph=document_tree.content.structure)
         return HTMLResponse(content=html_content)
 
     if return_format == "pretty_json":
-        return PlainTextResponse(content=json.dumps(document_tree.to_api_schema().model_dump(), ensure_ascii=False, indent=2))
+        return PlainTextResponse(content=json.dumps(document_tree.model_dump(), ensure_ascii=False, indent=2))
 
     logger.info(f"Send result. File {file.filename} with parameters {parameters}")
-    return ORJSONResponse(content=document_tree.to_api_schema().model_dump())
+    return ORJSONResponse(content=document_tree.model_dump())
 
 
 @app.get("/upload_example")
 async def upload_example(request: Request, file_name: str, return_format: Optional[str] = None) -> Response:
     file_path = os.path.join(static_path, "examples", file_name)
     parameters = {} if return_format is None else {"return_format": return_format}
-    document_tree = await process_handler.handle(request=request, parameters=parameters, file=file_path)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        document_tree = await process_handler.handle(request=request, parameters=parameters, file_path=file_path, tmpdir=tmpdir)
 
     if return_format == "html":
         html_page = json2html(
@@ -116,7 +121,7 @@ async def upload_example(request: Request, file_name: str, return_format: Option
             tabs=0
         )
         return HTMLResponse(content=html_page)
-    return ORJSONResponse(content=document_tree.to_api_schema().model_dump(), status_code=200)
+    return ORJSONResponse(content=document_tree.model_dump(), status_code=200)
 
 
 @app.exception_handler(DedocError)

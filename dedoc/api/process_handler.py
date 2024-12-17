@@ -4,21 +4,18 @@ import logging
 import os
 import pickle
 import signal
-import tempfile
 import traceback
 from multiprocessing import Process, Queue
-from typing import Optional, Union
+from typing import Optional
 from urllib.request import Request
 
 from anyio import get_cancelled_exc_class
-from fastapi import UploadFile
 
-from dedoc import DedocManager
 from dedoc.api.cancellation import cancel_on_disconnect
+from dedoc.api.schema import ParsedDocument
 from dedoc.common.exceptions.dedoc_error import DedocError
 from dedoc.config import get_config
-from dedoc.data_structures import ParsedDocument
-from dedoc.utils.utils import save_upload_file
+from dedoc.dedoc_manager import DedocManager
 
 
 class ProcessHandler:
@@ -41,7 +38,7 @@ class ProcessHandler:
         self.process = Process(target=self.__parse_file, args=[self.input_queue, self.output_queue])
         self.process.start()
 
-    async def handle(self, request: Request, parameters: dict, file: Union[UploadFile, str]) -> Optional[ParsedDocument]:
+    async def handle(self, request: Request, parameters: dict, file_path: str, tmpdir: str) -> Optional[ParsedDocument]:
         """
         Handle request in a separate process.
         Checks for client disconnection and terminate the child process if client disconnected.
@@ -50,7 +47,7 @@ class ProcessHandler:
             self.__init__(logger=self.logger)
 
         self.logger.info("Putting file to the input queue")
-        self.input_queue.put(pickle.dumps((parameters, file)), block=True)
+        self.input_queue.put(pickle.dumps((parameters, file_path, tmpdir)), block=True)
 
         loop = asyncio.get_running_loop()
         async with cancel_on_disconnect(request, self.logger):
@@ -88,17 +85,15 @@ class ProcessHandler:
 
         while True:
             try:
-                parameters, file = pickle.loads(input_queue.get(block=True))
+                parameters, file_path, tmp_dir = pickle.loads(input_queue.get(block=True))
                 manager.logger.info("Parsing process got task from the input queue")
                 return_format = str(parameters.get("return_format", "json")).lower()
-                with tempfile.TemporaryDirectory() as tmpdir:
-                    file_path = file if isinstance(file, str) else save_upload_file(file, tmpdir)
-                    document_tree = manager.parse(file_path, parameters={**dict(parameters), "attachments_dir": tmpdir})
+                document_tree = manager.parse(file_path, parameters={**dict(parameters), "attachments_dir": tmp_dir})
 
-                    if return_format == "html":
-                        self.__add_base64_info_to_attachments(document_tree, tmpdir)
+                if return_format == "html":
+                    self.__add_base64_info_to_attachments(document_tree, tmp_dir)
 
-                output_queue.put(pickle.dumps(document_tree), block=True)
+                output_queue.put(pickle.dumps(document_tree.to_api_schema()), block=True)
                 manager.logger.info("Parsing process put task to the output queue")
             except Exception as e:
                 tb = traceback.format_exc()
