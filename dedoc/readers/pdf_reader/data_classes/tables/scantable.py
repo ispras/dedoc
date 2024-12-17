@@ -33,8 +33,7 @@ class ScanTable(Table):
             return False
         return True
 
-    @staticmethod
-    def get_cells_text(cells: List[List[CellWithMeta]]) -> List[List[str]]:
+    def __get_cells_text(self, cells: List[List[CellWithMeta]]) -> List[List[str]]:
         return [[cell.get_text() for cell in row] for row in cells]
 
     @property
@@ -48,7 +47,7 @@ class ScanTable(Table):
     def to_dict(self) -> dict:
         from collections import OrderedDict
 
-        data_text = ScanTable.get_cells_text(self.cells)
+        data_text = self.__get_cells_text(self.cells)
 
         res = OrderedDict()
         res["locations"] = [location.to_dict() for location in self.locations]

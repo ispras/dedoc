@@ -87,7 +87,6 @@ class PdfBaseReader(BaseReader):
         )
 
         lines, scan_tables, attachments, warnings, metadata = self._parse_document(file_path, params_for_parse)
-        # tables = [scan_table.to_table() for scan_table in scan_tables]
 
         if params_for_parse.with_attachments and self.attachment_extractor.can_extract(file_path):
             attachments += self.attachment_extractor.extract(file_path=file_path, parameters=parameters)

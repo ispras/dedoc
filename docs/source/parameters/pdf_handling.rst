@@ -161,30 +161,6 @@ PDF and images handling
         It allows :class:`dedoc.readers.PdfImageReader`, :class:`dedoc.readers.PdfTxtlayerReader` and :class:`dedoc.readers.PdfTabbyReader`
         to properly process the content of the document containing GOST frame, see :ref:`gost_frame_handling` for more details.
 
-    * - orient_analysis_cells
-      - True, False
-      - False
-      - * :meth:`dedoc.DedocManager.parse`
-        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfTxtlayerReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
-        * :meth:`dedoc.readers.ReaderComposition.read`
-      - This option is used for a table recognition for PDF documents or images.
-        It is ignored when ``need_pdf_table_analysis=False``.
-        When set to ``True``, it enables analysis of rotated cells in table headers.
-        Use this option if you are sure that the cells of the table header are rotated.
-
-    * - orient_cell_angle
-      - 90, 270
-      - 90
-      - * :meth:`dedoc.DedocManager.parse`
-        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfTxtlayerReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
-        * :meth:`dedoc.readers.ReaderComposition.read`
-      - This option is used for a table recognition for PDF documents or images.
-        It is ignored when ``need_pdf_table_analysis=False`` or ``orient_analysis_cells=False``.
-        The option is used to set orientation of cells in table headers:
-
-            * **270** -- cells are rotated 90 degrees clockwise;
-            * **90** -- cells are rotated 90 degrees counterclockwise (or 270 clockwise).
-
 
 .. toctree::
    :maxdepth: 1

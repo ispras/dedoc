@@ -23,7 +23,7 @@ class OnePageTableExtractor(BaseTableExtractor):
 
         self.image = None
         self.page_number = 0
-        self.table_header_selector = TableHeaderExtractor(logger=self.logger)
+        self.table_header_extractor = TableHeaderExtractor(logger=self.logger)
         self.count_vertical_extended = 0
         self.splitter = CellSplitter()
         self.table_options = TableTypeAdditionalOptions()
@@ -108,7 +108,7 @@ class OnePageTableExtractor(BaseTableExtractor):
         if self.table_options.split_last_column in table_type:
             cells = split_last_column(cells, language=self.language, image=self.image)
 
-        self.table_header_selector.set_header_cells(cells)
+        self.table_header_extractor.set_header_cells(cells)
 
         if self.config.get("debug_mode", False):
             self._print_table_attr(cells)

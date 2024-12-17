@@ -7,13 +7,12 @@ import numpy as np
 
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import TableRecognizer
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.accuracy_table_rec import get_quantitative_parameters
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.utils import equal_with_eps, similarity as utils_similarity
+from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.utils import equal_with_eps, get_statistic_values, similarity as sim
 from tests.test_utils import get_full_path, get_test_config
 
 
 def similarity(s1: str, s2: str, threshold: float = 0.8) -> bool:
-    return True if utils_similarity(s1, s2) > threshold else False
+    return True if sim(s1, s2) > threshold else False
 
 
 class TestRecognizedTable(unittest.TestCase):
@@ -110,7 +109,7 @@ class TestRecognizedTable(unittest.TestCase):
         image = cv2.imread(get_full_path("data/tables/example_with_table3.png"), 0)
         tables = self.get_table(image)
 
-        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].cells)
+        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_statistic_values(tables[0].cells)
 
         self.assertEqual(cnt_rows, 8)
         self.assertEqual(cnt_columns, 3)
@@ -125,7 +124,7 @@ class TestRecognizedTable(unittest.TestCase):
         image = cv2.imread(get_full_path("data/tables/example_with_table4.jpg"), 0)
         tables = self.get_table(image)
 
-        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].cells)
+        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_statistic_values(tables[0].cells)
 
         self.assertEqual(cnt_rows, 5)
         self.assertEqual(cnt_columns, 3)
@@ -140,7 +139,7 @@ class TestRecognizedTable(unittest.TestCase):
         image = cv2.imread(get_full_path("data/tables/example_with_table5.png"), 0)
         tables = self.get_table(image)
 
-        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].cells)
+        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_statistic_values(tables[0].cells)
 
         self.assertEqual(cnt_rows, 13)
         self.assertEqual(cnt_columns, 3)
@@ -155,7 +154,7 @@ class TestRecognizedTable(unittest.TestCase):
         image = cv2.imread(get_full_path("data/tables/example_with_table5.png"), 0)
         tables = self.get_table(image)
 
-        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].cells)
+        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_statistic_values(tables[0].cells)
 
         self.assertEqual(cnt_rows, 13)
         self.assertEqual(cnt_columns, 3)
@@ -170,7 +169,7 @@ class TestRecognizedTable(unittest.TestCase):
         image = cv2.imread(get_full_path("data/tables/example_with_table6.png"), 0)
         tables = self.get_table(image)
 
-        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_quantitative_parameters(tables[0].cells)
+        cnt_a_cell, cnt_cell, cnt_columns, cnt_rows = get_statistic_values(tables[0].cells)
 
         self.assertEqual(cnt_rows, 3)
         self.assertEqual(cnt_columns, 7)

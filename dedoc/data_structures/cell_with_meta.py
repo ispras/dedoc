@@ -48,7 +48,7 @@ class CellWithMeta(Serializable):
         return LineWithMeta.join(lines=self.lines, delimiter="\n").annotations
 
     def __str__(self) -> str:
-        return f"CellWithMeta((cs={self.colspan}, rs={self.rowspan}, {self.get_text()})"
+        return f"CellWithMeta(cs={self.colspan}, rs={self.rowspan}, {self.get_text()})"
 
     def to_api_schema(self) -> ApiCellWithMeta:
         import numpy as np

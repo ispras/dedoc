@@ -23,16 +23,15 @@ class Cell(CellWithMeta):
                 line.shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
 
         self.bbox.shift(shift_x=shift_x, shift_y=shift_y)
-        if self.con_coord:
-            self.con_coord.shift(shift_x=shift_x, shift_y=shift_y)
+        if self.contour_coord:
+            self.contour_coord.shift(shift_x=shift_x, shift_y=shift_y)
 
     def __init__(self, bbox: BBox, id_con: int = -1, lines: Optional[List[LineWithMeta]] = None,
-                 is_attribute: bool = False, is_attribute_required: bool = False, rotated_angle: int = 0, uid: str = Optional[None],
+                 is_attribute: bool = False, is_attribute_required: bool = False, rotated_angle: int = 0, uid: Optional[str] = None,
                  contour_coord: Optional[BBox] = None, colspan: int = 1, rowspan: int = 1, invisible: bool = False) -> None:
 
         import uuid
 
-        self.lines = [] if lines is None else lines
         super().__init__(lines=lines, colspan=colspan, rowspan=rowspan, invisible=invisible)
 
         self.bbox = bbox
@@ -40,9 +39,8 @@ class Cell(CellWithMeta):
         self.is_attribute = is_attribute
         self.is_attribute_required = is_attribute_required
         self.rotated_angle = rotated_angle
-
         self.uuid = uuid.uuid4() if uuid is None else uid
-        self.con_coord = contour_coord or BBox(0, 0, 0, 0)
+        self.contour_coord = contour_coord or BBox(0, 0, 0, 0)
 
     def change_lines_boxes_page_width_height(self, new_page_width: int, new_page_height: int) -> None:
         from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation

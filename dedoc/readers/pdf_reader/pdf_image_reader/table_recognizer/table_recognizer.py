@@ -21,9 +21,7 @@ from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors
 class TableRecognizer(object):
 
     def __init__(self, *, config: dict = None) -> None:
-
         self.logger = config.get("logger", logging.getLogger())
-
         self.onepage_tables_extractor = OnePageTableExtractor(config=config, logger=self.logger)
         self.multipage_tables_extractor = MultiPageTableExtractor(config=config, logger=self.logger)
         self.config = config
@@ -109,11 +107,8 @@ class TableRecognizer(object):
         std = table_image.std()
         white_mean = (table_image > 225).mean()
         black_mean = (table_image < 225).mean()
-        table_area = bbox.width * bbox.height
-        cells_area = 0
-        for row in table.cells:
-            for cell in row:
-                cells_area += cell.bbox.width * cell.bbox.height
+        table_area = bbox.square
+        cells_area = sum([cell.bbox.square for row in table.cells for cell in row])
 
         ratio = cells_area / table_area
         res = (white_mean < 0.5) or (black_mean > 0.3) or (std < 30) or (mean < 150) or (mean < 200 and std < 80) or ratio < 0.65

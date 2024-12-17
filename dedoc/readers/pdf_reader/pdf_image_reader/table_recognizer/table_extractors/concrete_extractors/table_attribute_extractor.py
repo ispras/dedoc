@@ -68,25 +68,23 @@ class TableHeaderExtractor:
 
     def __is_indexable_column(self, matrix_table: List[List[Cell]], column_id: int, max_raw_of_search: int) -> bool:
         # № п/п
-        for i in range(0, max_raw_of_search + 1):
+        for i in range(max_raw_of_search + 1):
             if column_id < len(matrix_table[i]) and "№" in matrix_table[i][column_id].get_text() and len(
                     matrix_table[i][column_id].get_text()) < len("№ п/п\n"):
                 return True
         return False
 
     def __set_attributes_for_type_top(self, cells: List[List[Cell]]) -> List[List[Cell]]:
-        vertical_union_columns = self.__analyze_attr_for_vertical_union_columns(cells)
         horizontal_union_rows = self.__analyze_attr_for_horizontal_union_raws(cells)
 
-        # simple table
-        if (0 not in horizontal_union_rows) and len(vertical_union_columns) == 0:
+        if 0 not in horizontal_union_rows:
             self.__analyze_attr_for_simple_table(cells)
 
         return cells
 
     def __is_empty_column(self, matrix_table: List[List[Cell]], column_id: int) -> bool:
         all_empty = True
-        for i in range(0, len(matrix_table)):
+        for i in range(len(matrix_table)):
             if len(matrix_table[i]) <= column_id:
                 break
             if matrix_table[i][column_id].get_text() != "":
@@ -96,37 +94,17 @@ class TableHeaderExtractor:
 
     def __is_empty_row(self, matrix_table: List[List[Cell]], row_index: int) -> bool:
         all_empty = True
-        for j in range(0, len(matrix_table[row_index])):
+        for j in range(len(matrix_table[row_index])):
             if matrix_table[row_index][j].get_text() != "":
                 all_empty = False
                 break
         return all_empty
 
-    def __analyze_attr_for_vertical_union_columns(self, cells: List[List[Cell]]) -> List[int]:
-        vertical_union_columns = []
-        if len(vertical_union_columns) != 0 and len(cells) > 1:
-            self.logger.debug("ATTR_TYPE: vertical union table")
-            row_max_attr = 1
-
-            # Установка атрибутов таблицы
-            for i in range(0, row_max_attr):
-                for j in range(0, len(cells[i])):
-                    cells[i][j].is_attribute = True
-
-            # Установка обязательных атрибутов
-            cells[0][0].is_attribute_required = True
-            for j in range(1, len(cells[0])):
-                is_attribute_required = True
-                if is_attribute_required:
-                    cells[0][j].is_attribute_required = True
-
-        return vertical_union_columns
-
     def __analyze_attr_for_horizontal_union_raws(self, cells: List[List[Cell]]) -> List[int]:
         horizontal_union_rows = []
         union_first = False
 
-        for i in range(0, len(cells)):
+        for i in range(len(cells)):
             if len(horizontal_union_rows) > 0 and i not in horizontal_union_rows:
                 horizontal_union_rows.append(i)
                 if not self.__is_empty_row(cells, i):
@@ -134,8 +112,8 @@ class TableHeaderExtractor:
 
         if union_first and len(horizontal_union_rows) != 0:
             self.logger.debug("ATTR_TYPE: horizontal_union_rows")
-            for i in range(0, len(horizontal_union_rows)):
-                for j in range(0, len(cells[i])):
+            for i in range(len(horizontal_union_rows)):
+                for j in range(len(cells[i])):
                     cells[i][j].is_attribute = True
             cells[0][0].is_attribute_required = True
             first_required_column = 0
@@ -160,20 +138,19 @@ class TableHeaderExtractor:
 
     def __analyze_attr_for_simple_table(self, cells: List[List[Cell]]) -> None:
         self.logger.debug("ATTR_TYPE: simple table")
-        for j in range(0, len(cells[0])):
-            cells[0][j].is_attribute = True
+        for cell in cells[0]:
+            cell.is_attribute = True
+
         # set first required column
-        j = 0
-        first_required_column = j
-        while j < len(cells[0]):
+        first_required_column = 0
+        for j in range(len(cells[0])):
             if not self.__is_empty_column(cells, j):
                 cells[0][j].is_attribute_required = True
                 first_required_column = j
                 break
-            j += 1
         # search indexable_column
-        # один один столбец должен быть (0) - нумерованным,
-        # один (1) - с обязательными поляями, один (2) - с необязательными
+        # один столбец должен быть (0) - нумерованным,
+        # один (1) - с обязательными полями, один (2) - с необязательными
         # поэтому len(matrix_table) > first_required_column + 2
         if self.__is_indexable_column(cells, first_required_column, 0) and len(cells) > first_required_column + 2:
             cells[0][first_required_column + 1].is_attribute_required = True

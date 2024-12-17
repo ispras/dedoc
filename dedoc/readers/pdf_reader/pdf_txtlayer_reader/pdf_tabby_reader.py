@@ -14,8 +14,6 @@ from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLoc
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc, PdfBaseReader
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.onepage_table_extractor import OnePageTableExtractor
-from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import TableHeaderExtractor
 
 
 class PdfTabbyReader(PdfBaseReader):
@@ -31,6 +29,10 @@ class PdfTabbyReader(PdfBaseReader):
     def __init__(self, *, config: Optional[dict] = None) -> None:
         import os
         from dedoc.extensions import recognized_extensions, recognized_mimes
+        from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.onepage_table_extractor import \
+            OnePageTableExtractor
+        from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.table_attribute_extractor import \
+            TableHeaderExtractor
 
         super().__init__(config=config, recognized_extensions=recognized_extensions.pdf_like_format, recognized_mimes=recognized_mimes.pdf_like_format)
         self.tabby_java_version = "2.0.0"

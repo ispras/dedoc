@@ -162,25 +162,6 @@ Api parameters description
         If the document has a textual layer, it is recommended to use ``pdf_with_text_layer=tabby``,
         in this case tables will be parsed much easier and faster.
 
-    * - orient_analysis_cells
-      - true, false
-      - false
-      - This option is used for a table recognition in case of PDF documents without a textual layer
-        (images, scanned documents or when ``pdf_with_text_layer`` is ``true``, ``false`` or ``auto``).
-        When set to ``true``, it enables analysis of rotated cells in table headers.
-        Use this option if you are sure that the cells of the table header are rotated.
-
-    * - orient_cell_angle
-      - 90, 270
-      - 90
-      - This option is used for a table recognition in case of PDF documents without a textual layer
-        (images, scanned documents or when ``pdf_with_text_layer`` is ``true``, ``false`` or ``auto``).
-        It is ignored when ``orient_analysis_cells=false``.
-        The option is used to set orientation of cells in table headers:
-
-            * **270** -- cells are rotated 90 degrees clockwise;
-            * **90** -- cells are rotated 90 degrees counterclockwise (or 270 clockwise).
-
     * - :cspan:`3` **PDF handling**
 
     * - pdf_with_text_layer
