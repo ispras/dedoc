@@ -13,7 +13,3 @@ class StructureExtractorError(DedocError):
 
     def __str__(self) -> str:
         return f"StructureExtractorError({self.msg})"
-
-    @property
-    def code(self) -> int:
-        return 400

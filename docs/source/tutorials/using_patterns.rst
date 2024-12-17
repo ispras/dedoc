@@ -91,7 +91,7 @@ which applies patterns if lines match them, else line becomes simple raw text li
     :language: python
     :lines: 30-37
 
-Let's see the resulting tree. In the code below we use an auxiliary function to convert :class:`~dedoc.data_structures.ParsedDocument`
+Let's see the resulting tree. In the code below we use an auxiliary function to convert :class:`~dedoc.api.schema.ParsedDocument`
 to the HTML representation and print it:
 
 .. literalinclude:: ../_static/code_examples/dedoc_using_patterns_tutorial.py

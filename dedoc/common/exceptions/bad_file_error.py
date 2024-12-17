@@ -9,11 +9,7 @@ class BadFileFormatError(DedocError):
     """
 
     def __init__(self, msg: str, msg_api: Optional[str] = None, filename: Optional[str] = None, version: Optional[str] = None) -> None:
-        super(BadFileFormatError, self).__init__(msg_api=msg_api, msg=msg, filename=filename, version=version)
+        super(BadFileFormatError, self).__init__(msg_api=msg_api, msg=msg, filename=filename, version=version, code=415)
 
     def __str__(self) -> str:
         return f"BadFileFormatError({self.msg})"
-
-    @property
-    def code(self) -> int:
-        return 415

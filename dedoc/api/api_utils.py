@@ -1,5 +1,6 @@
 from typing import Dict, Iterator, List, Optional, Set
 
+from dedoc.api.schema import LineMetadata, ParsedDocument, Table, TreeNode
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
@@ -10,10 +11,6 @@ from dedoc.data_structures.concrete_annotations.superscript_annotation import Su
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.concrete_annotations.underlined_annotation import UnderlinedAnnotation
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
-from dedoc.data_structures.line_metadata import LineMetadata
-from dedoc.data_structures.parsed_document import ParsedDocument
-from dedoc.data_structures.table import Table
-from dedoc.data_structures.tree_node import TreeNode
 from dedoc.extensions import converted_mimes, recognized_mimes
 
 
@@ -39,7 +36,7 @@ def _node2tree(paragraph: TreeNode, depth: int, depths: Set[int] = None) -> str:
     space = "".join(space)
     node_result = []
 
-    node_result.append(f"  {space} {paragraph.metadata.hierarchy_level.line_type}&nbsp{paragraph.node_id} ")
+    node_result.append(f"  {space} {paragraph.metadata.paragraph_type}&nbsp{paragraph.node_id} ")
     for text in __prettify_text(paragraph.text):
         space = [space_symbol] * 4 * (depth - 1) + 4 * [space_symbol]
         space = "".join(space)
@@ -98,7 +95,7 @@ def json2tree(paragraph: TreeNode) -> str:
         depths = {d for d in depths if d <= depth}
         space = [space_symbol] * 4 * (depth - 1) + 4 * ["-"]
         space = __add_vertical_line(depths, space)
-        node_result.append(f"<p> <tt> <em>  {space} {node.metadata.hierarchy_level.line_type}&nbsp{node.node_id} </em> </tt> </p>")
+        node_result.append(f"<p> <tt> <em>  {space} {node.metadata.paragraph_type}&nbsp{node.node_id} </em> </tt> </p>")
         for text in __prettify_text(node.text):
             space = [space_symbol] * 4 * (depth - 1) + 4 * [space_symbol]
             space = __add_vertical_line(depths, space)
@@ -136,14 +133,14 @@ def json2html(text: str,
 
     ptext = __annotations2html(paragraph=paragraph, table2id=table2id, attach2id=attach2id, tabs=tabs)
 
-    if paragraph.metadata.hierarchy_level.line_type in [HierarchyLevel.header, HierarchyLevel.root]:
+    if paragraph.metadata.paragraph_type in [HierarchyLevel.header, HierarchyLevel.root]:
         ptext = f"<strong>{ptext.strip()}</strong>"
-    elif paragraph.metadata.hierarchy_level.line_type == HierarchyLevel.list_item:
+    elif paragraph.metadata.paragraph_type == HierarchyLevel.list_item:
         ptext = f"<em>{ptext.strip()}</em>"
     else:
         ptext = ptext.strip()
 
-    ptext = f'<p> {"&nbsp;" * tabs} {ptext}     <sub> id = {paragraph.node_id} ; type = {paragraph.metadata.hierarchy_level.line_type} </sub></p>'
+    ptext = f'<p> {"&nbsp;" * tabs} {ptext}     <sub> id = {paragraph.node_id} ; type = {paragraph.metadata.paragraph_type} </sub></p>'
     if hasattr(paragraph.metadata, "uid"):
         ptext = f'<div id="{paragraph.metadata.uid}">{ptext}</div>'
     text += ptext
@@ -259,11 +256,10 @@ def table2html(table: Table, table2id: Dict[str, int]) -> str:
                 text += ' style="display: none" '
             cell_node = TreeNode(
                 node_id="0",
-                text=cell.get_text(),
-                annotations=cell.get_annotations(),
-                metadata=LineMetadata(page_id=table.metadata.page_id, line_id=0),
-                subparagraphs=[],
-                parent=None
+                text="\n".join([line.text for line in cell.lines]),
+                annotations=cell.lines[0].annotations if cell.lines else [],
+                metadata=LineMetadata(page_id=0, line_id=0, paragraph_type=HierarchyLevel.raw_text),
+                subparagraphs=[]
             )
             text += f' colspan="{cell.colspan}" rowspan="{cell.rowspan}">{__annotations2html(cell_node, {}, {})}</td>\n'
 
