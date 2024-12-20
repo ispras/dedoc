@@ -17,14 +17,10 @@ class DedocError(Exception):
         self.filename = filename
         self.version = version if version is not None else dedoc.version.__version__
         self.metadata = metadata
-        self._code = 400 if code is None else code
+        self.code = 400 if code is None else code
 
     def __str__(self) -> str:
         return f"DedocError({self.msg})"
-
-    @property
-    def code(self) -> int:
-        return self._code
 
     @staticmethod
     def from_dict(error_dict: dict) -> "DedocError":
@@ -34,5 +30,5 @@ class DedocError(Exception):
             filename=error_dict.get("filename", ""),
             version=error_dict.get("version", dedoc.version.__version__),
             metadata=error_dict.get("metadata", {}),
-            code=error_dict.get("_code", 500)
+            code=error_dict.get("code", 500)
         )
