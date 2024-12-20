@@ -1,7 +1,9 @@
 import json
 import os
+import time
 
 import requests
+from requests import ReadTimeout
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
 
@@ -13,6 +15,26 @@ class TestApi(AbstractTestApiDocReader):
         with open(path) as file:
             version = file.read().strip()
             return version
+
+    def test_cancellation(self) -> None:
+        file_name = "article.pdf"
+        start_time = time.time()
+        with open(self._get_abs_path(os.path.join("pdf_with_text_layer", file_name)), "rb") as file:
+            files = {"file": (file_name, file)}
+            parameters = dict(pdf_with_text_layer=False)
+            try:
+                requests.post(f"http://{self._get_host()}:{self._get_port()}/upload", files=files, data=parameters, timeout=1)
+            except ReadTimeout:
+                pass
+
+        file_name = "example.txt"
+        with open(self._get_abs_path(os.path.join("txt", file_name)), "rb") as file:
+            files = {"file": (file_name, file)}
+            r = requests.post(f"http://{self._get_host()}:{self._get_port()}/upload", files=files, data={}, timeout=60)
+
+        end_time = time.time()
+        self.assertLess(end_time - start_time, 60)
+        self.assertEqual(200, r.status_code)
 
     def test_bin_file(self) -> None:
         file_name = "file.bin"

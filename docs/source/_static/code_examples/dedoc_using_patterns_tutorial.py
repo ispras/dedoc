@@ -34,7 +34,7 @@ patterns = [
 docx_document = structure_extractor.extract(document=docx_document, parameters={"patterns": patterns})
 
 docx_document.metadata = docx_metadata_extractor.extract(file_path=docx_file_path)
-docx_parsed_document = structure_constructor.construct(document=docx_document)
+docx_parsed_document = structure_constructor.construct(document=docx_document).to_api_schema()
 html = json2html(
     paragraph=docx_parsed_document.content.structure,
     attachments=docx_parsed_document.attachments,
@@ -46,7 +46,7 @@ print(f"\n\nDocument tree\n{html2text.html2text(html)}")
 
 def print_document_tree(document: UnstructuredDocument, patterns: List[AbstractPattern]) -> None:
     document = structure_extractor.extract(document=document, parameters={"patterns": patterns})
-    parsed_document = structure_constructor.construct(document=document)
+    parsed_document = structure_constructor.construct(document=document).to_api_schema()
     html = json2html(paragraph=parsed_document.content.structure, attachments=parsed_document.attachments, tables=parsed_document.content.tables, text="")
     print(f"\n\nDocument tree\n{html2text.html2text(html)}")
 
