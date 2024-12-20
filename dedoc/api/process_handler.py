@@ -43,7 +43,8 @@ class ProcessHandler:
         Handle request in a separate process.
         Checks for client disconnection and terminate the child process if client disconnected.
         """
-        if not self.process.is_alive():
+        if self.process is None:
+            self.logger.info("Initialization of a new parsing process")
             self.__init__(logger=self.logger)
 
         self.logger.info("Putting file to the input queue")
@@ -56,7 +57,9 @@ class ProcessHandler:
                 result = await future
             except get_cancelled_exc_class():
                 self.logger.warning("Terminating the parsing process")
-                self.process.terminate()
+                if self.process is not None:
+                    self.process.terminate()
+                self.process = None
                 future.cancel(DedocError)
                 return None
 
@@ -84,6 +87,7 @@ class ProcessHandler:
         manager.logger.info("Parsing process is waiting for the task in the input queue")
 
         while True:
+            file_path = None
             try:
                 parameters, file_path, tmp_dir = pickle.loads(input_queue.get(block=True))
                 manager.logger.info("Parsing process got task from the input queue")
@@ -95,10 +99,15 @@ class ProcessHandler:
 
                 output_queue.put(pickle.dumps(document_tree.to_api_schema()), block=True)
                 manager.logger.info("Parsing process put task to the output queue")
-            except Exception as e:
+            except DedocError as e:
                 tb = traceback.format_exc()
-                manager.logger.error(f"Exception {e}\n{tb}")
+                manager.logger.error(f"Exception {e}: {e.msg_api}\n{tb}")
                 output_queue.put(pickle.dumps(e.__dict__), block=True)
+            except Exception as e:
+                exc_message = f"Exception {e}\n{traceback.format_exc()}"
+                filename = "" if file_path is None else os.path.basename(file_path)
+                manager.logger.error(exc_message)
+                output_queue.put(pickle.dumps({"msg": exc_message, "filename": filename}), block=True)
 
     def __add_base64_info_to_attachments(self, document_tree: ParsedDocument, attachments_dir: str) -> None:
         for attachment in document_tree.attachments:
