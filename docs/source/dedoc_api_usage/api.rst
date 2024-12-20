@@ -150,7 +150,7 @@ Api parameters description
         The encoded contents will be saved in the attachment's metadata in the ``base64_encode`` field.
         Use ``true`` value to enable this behaviour.
 
-    * - :cspan:`3` **Tables handling**
+    * - :cspan:`3` **PDF handling**
 
     * - need_pdf_table_analysis
       - true, false
@@ -162,7 +162,6 @@ Api parameters description
         If the document has a textual layer, it is recommended to use ``pdf_with_text_layer=tabby``,
         in this case tables will be parsed much easier and faster.
 
-    * - :cspan:`3` **PDF handling**
 
     * - pdf_with_text_layer
       - true, false, tabby, auto, auto_tabby

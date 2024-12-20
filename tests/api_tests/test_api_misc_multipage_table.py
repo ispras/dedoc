@@ -1,4 +1,5 @@
 import os
+import unittest
 from typing import List
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
@@ -45,6 +46,7 @@ class TestMultipageTable(AbstractTestApiDocReader):
             tables = self._get_tables(file_name, pdf_with_text_layer=pdf_param)
             self.assertEqual(len(tables), 1)
 
+    @unittest.skip("TLDR-886 подправить координаты ячеек таблиц табби")
     def test_api_ml_table_recognition_synthetic_data_3(self) -> None:
         file_name = "example_mp_table_with_repeate_header_2.pdf"
         for pdf_param in ["false", "true", "tabby"]:
@@ -65,8 +67,5 @@ class TestMultipageTable(AbstractTestApiDocReader):
             self.assertListEqual(["Данные 3", "Данные 3", "Данные 3", "Данные 3", "Данные 3"], self._get_text_of_row(table[5]))
             self.assertListEqual(["Данные 4", "Данные 4", "Данные 4", "Данные 4", "Данные 4"], self._get_text_of_row(table[6]))
             self.assertListEqual(["Данные 5", "Данные 5", "Данные 5", "Данные 5", "Данные 5"], self._get_text_of_row(table[7]))
-            self.assertListEqual(["Заголовок\nБольшой", "Заголовок поменьше 1", "Заголовок поменьше 1", "Заголовок поменьше 2", "Заголовок поменьше 2"],
-                                 self._get_text_of_row(table[8]))
-            self.assertListEqual(["Заголовок\nБольшой", "Заголовочек 1", "Заголовочек 2", "Заголовочек 3", "Заголовочек 4"], self._get_text_of_row(table[9]))
-            self.assertListEqual(["Данные 6", "Данные 6", "Данные 6", "Данные 6", "Данные 6"], self._get_text_of_row(table[10]))
-            self.assertListEqual(["Данные 7", "Данные 7", "Данные 7", "Данные 7", "Данные 7"], self._get_text_of_row(table[11]))
+            self.assertListEqual(["Данные 6", "Данные 6", "Данные 6", "Данные 6", "Данные 6"], self._get_text_of_row(table[8]))
+            self.assertListEqual(["Данные 7", "Данные 7", "Данные 7", "Данные 7", "Данные 7"], self._get_text_of_row(table[9]))

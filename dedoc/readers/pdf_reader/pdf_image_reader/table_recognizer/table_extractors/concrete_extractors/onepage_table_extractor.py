@@ -70,8 +70,8 @@ class OnePageTableExtractor(BaseTableExtractor):
         matrix.append(line)
 
         # sorting column in each row
-        for i in range(0, len(matrix)):
-            matrix[i] = sorted(matrix[i], key=lambda cell: cell.bbox.x_top_left, reverse=False)
+        for i, row in enumerate(matrix):
+            matrix[i] = sorted(row, key=lambda cell: cell.bbox.x_top_left, reverse=False)
 
         matrix_table = ScanTable(cells=matrix, bbox=table_tree.cell_box, page_number=self.page_number)
 

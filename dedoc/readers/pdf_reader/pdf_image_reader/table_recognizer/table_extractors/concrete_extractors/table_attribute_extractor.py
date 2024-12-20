@@ -66,11 +66,10 @@ class TableHeaderExtractor:
                 cell.is_attribute = False
                 cell.is_attribute_required = False
 
-    def __is_indexable_column(self, matrix_table: List[List[Cell]], column_id: int, max_raw_of_search: int) -> bool:
+    def __is_indexable_column(self, matrix_table: List[List[Cell]], column_id: int, max_row_of_search: int) -> bool:
         # № п/п
-        for i in range(max_raw_of_search + 1):
-            if column_id < len(matrix_table[i]) and "№" in matrix_table[i][column_id].get_text() and len(
-                    matrix_table[i][column_id].get_text()) < len("№ п/п\n"):
+        for row in matrix_table[:max_row_of_search + 1]:
+            if column_id < len(row) and "№" in row[column_id].get_text() and len(row[column_id].get_text()) < len("№ п/п\n"):
                 return True
         return False
 
@@ -83,22 +82,19 @@ class TableHeaderExtractor:
         return cells
 
     def __is_empty_column(self, matrix_table: List[List[Cell]], column_id: int) -> bool:
-        all_empty = True
-        for i in range(len(matrix_table)):
-            if len(matrix_table[i]) <= column_id:
-                break
-            if matrix_table[i][column_id].get_text() != "":
-                all_empty = False
-                break
-        return all_empty
+        for row in matrix_table:
+            if len(row) <= column_id:
+                return True
+            if row[column_id].get_text() != "":
+                return False
+        return True
 
     def __is_empty_row(self, matrix_table: List[List[Cell]], row_index: int) -> bool:
-        all_empty = True
-        for j in range(len(matrix_table[row_index])):
-            if matrix_table[row_index][j].get_text() != "":
-                all_empty = False
-                break
-        return all_empty
+
+        for cell in matrix_table[row_index]:
+            if cell.get_text() != "":
+                return False
+        return True
 
     def __analyze_attr_for_horizontal_union_raws(self, cells: List[List[Cell]]) -> List[int]:
         horizontal_union_rows = []
