@@ -52,8 +52,6 @@ class PdfTxtlayerReader(PdfBaseReader):
                 image=gray_image,
                 page_number=page_number,
                 language=parameters.language,
-                orient_analysis_cells=parameters.orient_analysis_cells,
-                orient_cell_angle=parameters.orient_cell_angle,
                 table_type=parameters.table_type
             )
         else:
@@ -87,7 +85,7 @@ class PdfTxtlayerReader(PdfBaseReader):
             shift_x, shift_y = page_shift.x_top_left, page_shift.y_top_left  # shift tables to original coordinates
             for location in table.locations:
                 location.bbox.shift(shift_x=shift_x, shift_y=shift_y)
-            for row in table.matrix_cells:
+            for row in table.cells:
                 for cell in row:
                     cell.shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
 
@@ -97,7 +95,7 @@ class PdfTxtlayerReader(PdfBaseReader):
         """
 
         for table in tables:
-            for row in table.matrix_cells:
+            for row in table.cells:
 
                 for cell in row:
                     cell.change_lines_boxes_page_width_height(new_page_width=pdf_width, new_page_height=pdf_height)

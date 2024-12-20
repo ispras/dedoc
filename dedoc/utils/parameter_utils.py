@@ -33,13 +33,6 @@ def get_param_document_type(parameters: Optional[dict]) -> str:
     return document_type
 
 
-def get_param_orient_analysis_cells(parameters: Optional[dict]) -> bool:
-    if parameters is None:
-        return False
-    orient_analysis_cells = str(parameters.get("orient_analysis_cells", "False")).lower() == "true"
-    return orient_analysis_cells
-
-
 def get_param_with_attachments(parameters: Optional[dict]) -> bool:
     if parameters is None:
         return False
@@ -78,16 +71,6 @@ def get_param_need_binarization(parameters: Optional[dict]) -> bool:
         return False
     need_binarization = str(parameters.get("need_binarization", "False")).lower() == "true"
     return need_binarization
-
-
-def get_param_orient_cell_angle(parameters: Optional[dict]) -> int:
-    if parameters is None:
-        return 90
-
-    orient_cell_angle = str(parameters.get("orient_cell_angle", "90"))
-    if orient_cell_angle == "":
-        orient_cell_angle = "90"
-    return int(orient_cell_angle)
 
 
 def get_param_is_one_column_document(parameters: Optional[dict]) -> Optional[bool]:

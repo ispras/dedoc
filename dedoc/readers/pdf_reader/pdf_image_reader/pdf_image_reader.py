@@ -85,8 +85,6 @@ class PdfImageReader(PdfBaseReader):
                 image=rotated_image,
                 page_number=page_number,
                 language=parameters.language,
-                orient_analysis_cells=parameters.orient_analysis_cells,
-                orient_cell_angle=parameters.orient_cell_angle,
                 table_type=parameters.table_type
             )
         else:
