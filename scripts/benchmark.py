@@ -100,7 +100,10 @@ with TemporaryDirectory() as path_base:
             file_size = os.path.getsize(file_path)
             total_size += file_size
             time_start = time.time()
-            send_file(host=host, file_name=file, file_path=file_path, parameters=parameters)
+            try:
+                send_file(host=host, file_name=file, file_path=file_path, parameters=parameters)
+            except AssertionError as e:
+                print(f"Error on file {file_path}: {e}")
             time_finish = time.time()
             spend_file_time = time_finish - time_start
             pages = page_func(file_path)

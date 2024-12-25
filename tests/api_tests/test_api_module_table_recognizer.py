@@ -1,6 +1,5 @@
 import json
 import os
-import unittest
 from typing import List
 
 from tests.api_tests.abstract_api_test import AbstractTestApiDocReader
@@ -97,21 +96,6 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         self._check_similarity(row0[8], "По филиалу ОПИМ")
         self._check_similarity(row0[9], "Систетематический\nконтроль")
         self._check_similarity(row0[10], "Экспертная оценка")
-
-    @unittest.skip("TODO")
-    def test_api_table_recognition_with_diff_orient_cells_90(self) -> None:
-        file_name = "example_table_with_90_orient_cells.pdf"
-        response = self._send_request(file_name, dict(orient_analysis_cells=True, orient_cell_angle="90"))
-        table = response["content"]["tables"][0]
-
-        self._check_header_table(table["cells"])
-
-    @unittest.skip
-    def test_api_table_recognition_with_diff_orient_cells_270(self) -> None:
-        file_name = "example_table_with_270_orient_cells.pdf"
-        response = self._send_request(file_name, dict(orient_analysis_cells=True, orient_cell_angle="270"))
-        table = response["content"]["tables"][0]
-        self._check_header_table(table["cells"])
 
     def test_pdf_table(self) -> None:
         file_name = "example_with_table1.pdf"

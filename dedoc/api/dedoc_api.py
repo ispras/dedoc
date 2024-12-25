@@ -1,10 +1,8 @@
-import base64
 import dataclasses
 import importlib
 import json
 import os
 import tempfile
-import traceback
 from typing import Optional
 
 from fastapi import Depends, FastAPI, File, Request, Response, UploadFile
@@ -15,24 +13,23 @@ from starlette.responses import FileResponse, HTMLResponse, JSONResponse, PlainT
 import dedoc.version
 from dedoc.api.api_args import QueryParameters
 from dedoc.api.api_utils import json2collapsed_tree, json2html, json2tree, json2txt
+from dedoc.api.process_handler import ProcessHandler
 from dedoc.api.schema.parsed_document import ParsedDocument
 from dedoc.common.exceptions.dedoc_error import DedocError
 from dedoc.common.exceptions.missing_file_error import MissingFileError
 from dedoc.config import get_config
-from dedoc.dedoc_manager import DedocManager
 from dedoc.utils.utils import save_upload_file
 
 config = get_config()
+logger = config["logger"]
 PORT = config["api_port"]
 static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 static_files_dirs = config.get("static_files_dirs")
 
 app = FastAPI()
 app.mount("/web", StaticFiles(directory=config.get("static_path", static_path)), name="web")
-
 module_api_args = importlib.import_module(config["import_path_init_api_args"])
-logger = config["logger"]
-manager = DedocManager(config=config)
+process_handler = ProcessHandler(logger=logger)
 
 
 @app.get("/")
@@ -62,27 +59,20 @@ def _get_static_file_path(request: Request) -> str:
     return os.path.abspath(os.path.join(directory, file))
 
 
-def __add_base64_info_to_attachments(document_tree: ParsedDocument, attachments_dir: str) -> None:
-    for attachment in document_tree.attachments:
-        with open(os.path.join(attachments_dir, attachment.metadata.temporary_file_name), "rb") as attachment_file:
-            attachment.metadata.add_attribute("base64", base64.b64encode(attachment_file.read()).decode("utf-8"))
-
-
 @app.post("/upload", response_model=ParsedDocument)
-async def upload(file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:
+async def upload(request: Request, file: UploadFile = File(...), query_params: QueryParameters = Depends()) -> Response:
     parameters = dataclasses.asdict(query_params)
     if not file or file.filename == "":
         raise MissingFileError("Error: Missing content in request_post file parameter", version=dedoc.version.__version__)
 
-    return_format = str(parameters.get("return_format", "json")).lower()
-
     with tempfile.TemporaryDirectory() as tmpdir:
         file_path = save_upload_file(file, tmpdir)
-        document_tree = manager.parse(file_path, parameters={**dict(parameters), "attachments_dir": tmpdir})
+        document_tree = await process_handler.handle(request=request, parameters=parameters, file_path=file_path, tmpdir=tmpdir)
 
-        if return_format == "html":
-            __add_base64_info_to_attachments(document_tree, tmpdir)
+    if document_tree is None:
+        return JSONResponse(status_code=499, content={})
 
+    return_format = str(parameters.get("return_format", "json")).lower()
     if return_format == "html":
         html_content = json2html(
             text="",
@@ -102,24 +92,25 @@ async def upload(file: UploadFile = File(...), query_params: QueryParameters = D
         return HTMLResponse(content=html_content)
 
     if return_format == "ujson":
-        return UJSONResponse(content=document_tree.to_api_schema().model_dump())
+        return UJSONResponse(content=document_tree.model_dump())
 
     if return_format == "collapsed_tree":
         html_content = json2collapsed_tree(paragraph=document_tree.content.structure)
         return HTMLResponse(content=html_content)
 
     if return_format == "pretty_json":
-        return PlainTextResponse(content=json.dumps(document_tree.to_api_schema().model_dump(), ensure_ascii=False, indent=2))
+        return PlainTextResponse(content=json.dumps(document_tree.model_dump(), ensure_ascii=False, indent=2))
 
     logger.info(f"Send result. File {file.filename} with parameters {parameters}")
-    return ORJSONResponse(content=document_tree.to_api_schema().model_dump())
+    return ORJSONResponse(content=document_tree.model_dump())
 
 
 @app.get("/upload_example")
-async def upload_example(file_name: str, return_format: Optional[str] = None) -> Response:
+async def upload_example(request: Request, file_name: str, return_format: Optional[str] = None) -> Response:
     file_path = os.path.join(static_path, "examples", file_name)
     parameters = {} if return_format is None else {"return_format": return_format}
-    document_tree = manager.parse(file_path, parameters=parameters)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        document_tree = await process_handler.handle(request=request, parameters=parameters, file_path=file_path, tmpdir=tmpdir)
 
     if return_format == "html":
         html_page = json2html(
@@ -130,12 +121,11 @@ async def upload_example(file_name: str, return_format: Optional[str] = None) ->
             tabs=0
         )
         return HTMLResponse(content=html_page)
-    return ORJSONResponse(content=document_tree.to_api_schema().model_dump(), status_code=200)
+    return ORJSONResponse(content=document_tree.model_dump(), status_code=200)
 
 
 @app.exception_handler(DedocError)
 async def exception_handler(request: Request, exc: DedocError) -> Response:
-    logger.error(f"Exception {exc}\n{traceback.format_exc()}")
     result = {"message": exc.msg}
     if exc.filename:
         result["file_name"] = exc.filename

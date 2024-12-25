@@ -1,15 +1,22 @@
 Changelog
 =========
 
+v2.3.2 (2024-12-25)
+-------------------
+Release note: `v2.3.2 <https://github.com/ispras/dedoc/releases/tag/v2.3.2>`_
+
+* Improve merging multi-page tables in `PdfTabbyReader`.
+* Stop parsing after client disconnection (for API usage, see `issue 488 <https://github.com/ispras/dedoc/issues/488>`_).
+
 v2.3.1 (2024-11-15)
 -------------------
 Release note: `v2.3.1 <https://github.com/ispras/dedoc/releases/tag/v2.3.1>`_
 
-* Fix bug with bold lines in `DocxReader` (see `issue 479 <https://github.com/ispras/dedoc/issues/479>`_)
-* Upgraded requirements.txt (beautifulsoup4 to 4.12.3 version)
-* Added support for external grobid (added support parameter "Authorization")
-* Added GOST (Russian government standard) frame recognition in `PdfTabbyReader` (`need_gost_frame_analysis` parameter)
-* Update documentation (added GOST frame recognition)
+* Fix bug with bold lines in `DocxReader` (see `issue 479 <https://github.com/ispras/dedoc/issues/479>`_).
+* Upgraded requirements.txt (beautifulsoup4 to 4.12.3 version).
+* Added support for external grobid (added support env variable `GROBID_AUTH_KEY` for "Authorization" in request header).
+* Added GOST (Russian government standard) frame recognition in `PdfTabbyReader` (`need_gost_frame_analysis` parameter).
+* Update documentation (added GOST frame recognition).
 
 v2.3 (2024-09-19)
 -----------------
