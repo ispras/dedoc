@@ -58,13 +58,13 @@ class PdfMetadataExtractor(AbstractMetadataExtractor):
         return result
 
     def _get_pdf_info(self, path: str) -> dict:
-        from PyPDF2 import PdfFileReader
-        from PyPDF2.utils import PdfReadError
+        from pypdf import PdfReader
+        from pypdf.errors import PdfReadError
 
         try:
             with open(path, "rb") as file:
-                document = PdfFileReader(file)
-                document_info = document.getDocumentInfo() if document.getDocumentInfo() is not None else {}
+                document = PdfReader(file)
+                document_info = document.metadata if document.metadata is not None else {}
                 result = self.__prettify_metadata(document_info)
             return result
         except PdfReadError:
