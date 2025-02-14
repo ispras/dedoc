@@ -1,7 +1,6 @@
 from typing import List, Optional
 
 import tabula
-from PyPDF2 import PdfFileReader
 from pdf_attachment_extractor import PdfAttachmentsExtractor
 
 from dedoc.data_structures import CellWithMeta, LineMetadata
@@ -41,13 +40,12 @@ class PdfReader(BaseReader):
         return tables
 
     def __process_lines(self, path: str) -> List[LineWithMeta]:
+        from pypdf import PdfReader as PdfFileReader
         with open(path, "rb") as file:
             lines_with_meta = []
             pdf = PdfFileReader(file)
-            num_pages = pdf.getNumPages()
-            for page_id in range(num_pages):
-                page = pdf.getPage(page_id)
-                text = page.extractText()
+            for page_id, page in enumerate(pdf.pages):
+                text = page.extract_text()
                 lines = text.split("\n")
                 for line_id, line in enumerate(lines):
                     metadata = LineMetadata(page_id=page_id, line_id=line_id)

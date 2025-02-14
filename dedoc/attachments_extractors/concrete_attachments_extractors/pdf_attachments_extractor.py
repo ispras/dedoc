@@ -1,6 +1,6 @@
 from typing import List, Optional, Tuple
 
-from PyPDF2.pdf import PageObject, PdfFileReader
+from pypdf import PageObject, PdfReader
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
@@ -22,15 +22,15 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
         the methods' parameters.
         """
         import os
-        from PyPDF2.utils import PdfReadError
         from dedoc.utils.parameter_utils import get_param_attachments_dir, get_param_need_content_analysis
+        from pypdf.errors import PdfReadError
 
         parameters = {} if parameters is None else parameters
         filename = os.path.basename(file_path)
 
         with open(file_path, "rb") as handler:
             try:
-                reader = PdfFileReader(handler)
+                reader = PdfReader(handler)
             except Exception as e:
                 self.logger.warning(f"can't handle {filename}, get {e}")
                 return []
@@ -55,13 +55,13 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
         if "/Annots" in page.keys():
             for annot in page["/Annots"]:
                 # Other subtypes, such as /Link, cause errors
-                subtype = annot.getObject().get("/Subtype")
+                subtype = annot.get_object().get("/Subtype")
                 if subtype == "/FileAttachment":
-                    name = annot.getObject()["/FS"]["/UF"]
-                    data = annot.getObject()["/FS"]["/EF"]["/F"].getData()  # The file containing the stream data.
+                    name = annot.get_object()["/FS"]["/UF"]
+                    data = annot.get_object()["/FS"]["/EF"]["/F"].get_data()  # The file containing the stream data.
                     attachments.append([name, data])
-                if subtype == "/Text" and annot.getObject().get("/Name") == "/Comment":  # it is messages (notes) in PDF
-                    note = annot.getObject()
+                if subtype == "/Text" and annot.get_object().get("/Name") == "/Comment":  # it is messages (notes) in PDF
+                    note = annot.get_object()
                     created_time = convert_datetime(note["/CreationDate"]) if "/CreationDate" in note else None
                     modified_time = convert_datetime(note["/M"]) if "/M" in note else None
                     user = note.get("/T")
@@ -71,17 +71,15 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
                     attachments.append((name, bytes(content)))
         return attachments
 
-    def __get_page_level_attachments(self, reader: PdfFileReader) -> List[Tuple[str, bytes]]:
-        cnt_page = reader.getNumPages()
+    def __get_page_level_attachments(self, reader: PdfReader) -> List[Tuple[str, bytes]]:
         attachments = []
-        for i in range(cnt_page):
-            page = reader.getPage(i)
+        for page in reader.pages:
             attachments_on_page = self.__get_notes(page)
             attachments.extend(attachments_on_page)
 
         return attachments
 
-    def __get_root_attachments(self, reader: PdfFileReader) -> List[Tuple[str, bytes]]:
+    def __get_root_attachments(self, reader: PdfReader) -> List[Tuple[str, bytes]]:
         """
         Retrieves the file attachments of the PDF as a dictionary of file names and the file data as a bytestring.
 
@@ -96,9 +94,9 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
             for f in file_names:
                 if isinstance(f, str):
                     data_index = file_names.index(f) + 1
-                    dict_object = file_names[data_index].getObject()
+                    dict_object = file_names[data_index].get_object()
                     if "/EF" in dict_object and "/F" in dict_object["/EF"]:
-                        data = dict_object["/EF"]["/F"].getData()
+                        data = dict_object["/EF"]["/F"].get_data()
                         name = dict_object.get("/UF", f"pdf_attach_{uuid.uuid4()}")
                         attachments.append((name, data))
 
