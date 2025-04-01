@@ -23,7 +23,7 @@ from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.fun
 ROOT_DIR = get_project_root()
 
 english_words = set(words.words())
-with open(f'{ROOT_DIR}/data/russian.txt') as f:
+with open(f'{ROOT_DIR}/data/russian.txt', encoding='utf8') as f:
     russian_words = set(f.read().splitlines())
 
 rus_and_eng_names = list(english_words | russian_words)

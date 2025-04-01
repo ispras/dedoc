@@ -7,6 +7,7 @@ from pathlib import Path, PurePath
 from sys import platform
 from typing import Any, Iterable
 from typing import Union
+from itertools import zip_longest
 
 import fitz
 from fontTools.ttLib import TTFont
@@ -25,6 +26,8 @@ from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.fun
     correctly_resize
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.model import Model
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.pdf_worker import pdf_text_correcter
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.pdf_worker.pdf_text_correcter import \
+    correct_string_incorrect_chars
 
 
 class PDFReader:
@@ -37,7 +40,7 @@ class PDFReader:
         self.__fontname2basefont = {}
         self.__unicodemaps = {}
         self.__need2correct = False
-
+        self.__name2code = {}
         self.__fonts_path = config.folders.get('extracted_fonts_folder')
         self.__glyphs_path = config.folders.get('extracted_glyphs_folder')
 
@@ -159,6 +162,15 @@ class PDFReader:
             eval_list = list(ast.literal_eval(result))
             imgs_to_resize_set = set(eval_list[0])
             empty_glyphs = eval_list[1]
+            names = eval_list[2]
+            codes = eval_list[3]
+            name2code = dict(zip_longest(names, codes))
+
+            if font_name not in self.__name2code:
+                self.__name2code[font_name] = name2code
+            else:
+                self.__name2code[font_name].update(name2code)
+
             for img in imgs_to_resize_set:
                 if functions.is_empty(img) and "png" in img:
                     uni_whitespace = (PurePath(img).parts[-1]).split('.')[0]
@@ -352,17 +364,22 @@ class PDFReader:
                     return
             try:
                 glyph_name = cached_fonts[o.fontname][index]
-                o._text = self.match_dict[match_dict_key][glyph_name]
+                actual_code = self.__name2code[match_dict_key][glyph_name]
+                o._text = self.match_dict[match_dict_key][chr(actual_code)]
+
             except:
-                o._text = char
+                o._text = ' '
         elif isinstance(o, Iterable):
             for i in o:
                 self.__correct_pages_text(i, cached_fonts, fulltext)
 
         if isinstance(o, LTTextLineHorizontal):
+            text = o.get_text()
+            o._text = correct_string_incorrect_chars(text)
             fulltext.append(o.get_text())
 
     def get_correct_layout(self, pdf_path):
+
         self.text = ''
         self.match_dict = {}
         self.__read_pdf(pdf_path)

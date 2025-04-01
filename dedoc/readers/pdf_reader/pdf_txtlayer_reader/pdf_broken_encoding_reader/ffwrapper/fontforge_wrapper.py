@@ -43,6 +43,8 @@ def generate_all_images(save_path: Path, font_path: Path) -> list:
     save_paths = []
     not_worth_outputting = []
     font_white_spaces = {}
+    names = []
+    codes = []
     for name in font:
         if 'superior' in name:
             continue
@@ -95,9 +97,11 @@ def generate_all_images(save_path: Path, font_path: Path) -> list:
         try:
             font[name].export(char_save_path, image_size)
             save_paths.append(char_save_path)
+            names.append(name)
+            codes.append(unicode_val)
         except Exception:
             continue
-    return [save_paths, font_white_spaces]
+    return [save_paths, font_white_spaces, names, codes]
 
 
 if __name__ == "__main__":

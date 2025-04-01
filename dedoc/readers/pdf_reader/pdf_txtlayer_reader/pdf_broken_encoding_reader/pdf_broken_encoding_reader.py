@@ -2,11 +2,13 @@ import binascii
 import itertools
 import logging
 import os
+import re
 import uuid
 from collections import namedtuple
 from typing import List, Optional, Tuple
 
 import cv2
+import fitz
 import numpy as np
 from PIL import Image
 from dedocutils.data_structures import BBox
@@ -25,6 +27,7 @@ from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicA
 from dedoc.data_structures.concrete_annotations.size_annotation import SizeAnnotation
 from dedoc.data_structures.concrete_annotations.style_annotation import StyleAnnotation
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.readers import PdfTxtlayerReader
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.page_with_bboxes import PageWithBBox
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
@@ -59,6 +62,7 @@ class PdfBrokenEncodingReader(PdfBaseReader):
 
         from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_extractor import PdfminerExtractor
         self.extractor_layer = PdfminerExtractor(config=self.config)
+        self.__pdf_txtlayer_reader = PdfTxtlayerReader(config=config)
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None,
                  parameters: Optional[dict] = None) -> bool:
@@ -76,6 +80,10 @@ class PdfBrokenEncodingReader(PdfBaseReader):
             parameters) == "bad_encoding_reader"
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
+
+        if PdfBrokenEncodingReader.check_pdf_text_valid(file_path):
+            print('balls')
+            return self.__pdf_txtlayer_reader.read(file_path)
 
         import dedoc.utils.parameter_utils as param_utils
         parameters = {} if parameters is None else parameters
@@ -413,3 +421,30 @@ class PdfBrokenEncodingReader(PdfBaseReader):
             if block.have_intersection_with_box(obj_bbox):
                 return True
         return False
+
+    @staticmethod
+    def contains_russian_or_english(text):
+        russian_words = re.findall(r'[а-яА-ЯёЁ]{3,}', text)
+        english_words = re.findall(r'[a-zA-Z]{3,}', text)
+        return len(russian_words) > 3 or len(english_words) > 3
+
+    @staticmethod
+    def check_pdf_text_valid(file_path):
+        doc = fitz.open(file_path)
+        has_text = False
+        corrupted_chars = False
+
+        for page in doc:
+            text = page.get_text()
+            if text.strip():
+                if not PdfBrokenEncodingReader.contains_russian_or_english(text):
+                    corrupted_chars = True
+                    # print(f"Подозрительный текст: {text[:100]}...")  # Для отладки
+                    break
+
+        doc.close()
+
+        if corrupted_chars:
+            return False
+        else:
+            return True
