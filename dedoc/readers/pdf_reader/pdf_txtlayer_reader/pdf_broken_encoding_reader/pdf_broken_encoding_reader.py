@@ -80,11 +80,6 @@ class PdfBrokenEncodingReader(PdfBaseReader):
             parameters) == "bad_encoding_reader"
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
-
-        if PdfBrokenEncodingReader.check_pdf_text_valid(file_path):
-            print('balls')
-            return self.__pdf_txtlayer_reader.read(file_path)
-
         import dedoc.utils.parameter_utils as param_utils
         parameters = {} if parameters is None else parameters
         first_page, last_page = param_utils.get_param_page_slice(parameters)
@@ -421,30 +416,3 @@ class PdfBrokenEncodingReader(PdfBaseReader):
             if block.have_intersection_with_box(obj_bbox):
                 return True
         return False
-
-    @staticmethod
-    def contains_russian_or_english(text):
-        russian_words = re.findall(r'[а-яА-ЯёЁ]{3,}', text)
-        english_words = re.findall(r'[a-zA-Z]{3,}', text)
-        return len(russian_words) > 3 or len(english_words) > 3
-
-    @staticmethod
-    def check_pdf_text_valid(file_path):
-        doc = fitz.open(file_path)
-        has_text = False
-        corrupted_chars = False
-
-        for page in doc:
-            text = page.get_text()
-            if text.strip():
-                if not PdfBrokenEncodingReader.contains_russian_or_english(text):
-                    corrupted_chars = True
-                    # print(f"Подозрительный текст: {text[:100]}...")  # Для отладки
-                    break
-
-        doc.close()
-
-        if corrupted_chars:
-            return False
-        else:
-            return True
