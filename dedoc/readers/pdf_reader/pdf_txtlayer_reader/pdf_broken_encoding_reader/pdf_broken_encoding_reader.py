@@ -2,13 +2,11 @@ import binascii
 import itertools
 import logging
 import os
-import re
 import uuid
 from collections import namedtuple
 from typing import List, Optional, Tuple
 
 import cv2
-import fitz
 import numpy as np
 from PIL import Image
 from dedocutils.data_structures import BBox
