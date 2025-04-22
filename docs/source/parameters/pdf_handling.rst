@@ -15,7 +15,7 @@ PDF and images handling
       - Description
 
     * - pdf_with_text_layer
-      - true, false, tabby, auto, auto_tabby
+      - true, false, tabby, auto, auto_tabby, bad_encoding_reader
       - auto_tabby
       - * :meth:`dedoc.DedocManager.parse`
         * :meth:`dedoc.readers.PdfAutoReader.can_read`, :meth:`dedoc.readers.PdfTxtlayerReader.can_read`, :meth:`dedoc.readers.PdfTabbyReader.can_read`
@@ -46,6 +46,10 @@ PDF and images handling
               If the document has a textual layer (is copyable), :class:`dedoc.readers.PdfTabbyReader` will be used for parsing.
               If the document doesn't have a textual layer (it is an image, scanned document), :class:`dedoc.readers.PdfImageReader` will be used.
               It is highly recommended to use this option value for any PDF document parsing.
+
+            * **bad_encoding_reader** -- parsing PDF files with a textual layer with broken encoding (text is copiable, but incorrect).
+              This option is used to choose :class:`dedoc.readers.PdfBrokenEncodingReader` for parsing.
+              It is highly recommended to use this option value for PDF file with text layer and complex background parsing, otherwise use auto_tabby
 
     * - fast_textual_layer_detection
       - true, false

@@ -77,3 +77,7 @@ dedoc.readers
 .. autoclass:: dedoc.readers.ArticleReader
     :show-inheritance:
     :members:
+
+.. autoclass:: dedoc.readers.PdfBrokenEncodingReader
+    :show-inheritance:
+    :members:
