@@ -1,16 +1,13 @@
-import os
-import tensorflow
-
-from dedoc.config import get_config
-
 class Model:
     """
     TensorFlow CNN model(Soon Pytorch) for font's glyphs prediction.
     Used in PDFBrokenEncodingReader.
     """
+
     def __init__(self):
         from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.config import Language
-        self.model = self.__load_weights()
+        self.model = None
+        self.__load_weights()
         s = sorted(Language.Russian_and_English.value, key=lambda i: str(ord(i)))
         self.labels = [ord(i) for i in s]
 
@@ -39,7 +36,9 @@ class Model:
 
         return predictions
 
-    def __load_weights(self) -> tensorflow.keras.models.Model:
+    def __load_weights(self) -> None:
+        import os
+        from dedoc.config import get_config
         from keras.models import load_model
         from huggingface_hub import hf_hub_download
         out_dir = get_config()["resources_path"]
@@ -47,4 +46,4 @@ class Model:
         os.makedirs(out_dir, exist_ok=True)
         real_path = os.path.realpath(hf_hub_download(repo_id=f"sinkudo/tf_cnn", filename=out_name))
         model = load_model(real_path)
-        return model
+        self.model = model
