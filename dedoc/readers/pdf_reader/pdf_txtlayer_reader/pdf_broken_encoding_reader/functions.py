@@ -1,15 +1,11 @@
-import json
-import os
 from pathlib import Path
-
-import PIL.ImageOps
-from PIL import Image
-from pdfminer.high_level import extract_text
 
 junk_string = "_junkstring"
 
 
 def correctly_resize(image_path, size: tuple = (28, 28)):
+    import PIL.ImageOps
+    from PIL import Image
     im = Image.open(image_path)
     im.thumbnail((28, 28), Image.LANCZOS)
     new_image = Image.new("L", size, color=255)
@@ -21,6 +17,7 @@ def correctly_resize(image_path, size: tuple = (28, 28)):
 
 
 def is_empty(image_path) -> bool:
+    from PIL import Image
     if not image_path.lower().endswith('.png'):
         raise Exception("problems with extracted glyphs png path")
     img = Image.open(image_path)
@@ -46,6 +43,10 @@ def remove_hyphenations(text):
 
 
 def extract_pdf_text2json(pdf_path: Path, pages: tuple = None):
+    import os
+    import json
+
+    from pdfminer.high_level import extract_text
     pages = (0, 1) if pages is None else pages
     assert len(pages) == 2, "pages should be of len 2"
     assert pages[0] == pages[1] == 0 or pages[0] < pages[1], "wrong range"

@@ -16,26 +16,28 @@ eng = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o'
 onlyRus = ['я', 'й', 'ц', 'б', 'ж', 'з', 'д', 'л', 'ф', 'ш', 'щ', "ч", "ъ", "ь", "э", "ю", 'г']
 onlyEng = ['q', 'w', 'f', 'i', 'j', 'l', 'z', 's', 'v', 'g']
 
-from nltk.corpus import words
 
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.functions import get_project_root
 
-ROOT_DIR = get_project_root()
 
-english_words = set(words.words())
-with open(f'{ROOT_DIR}/data/russian.txt', encoding='utf8') as f:
-    russian_words = set(f.read().splitlines())
+def get_russian_and_english_words():
+    from nltk.corpus import words
 
-rus_and_eng_names = list(english_words | russian_words)
+    english_words = set(words.words())
 
-max_length = max(len(s) for s in rus_and_eng_names)
-result = [[] for _ in range(max_length + 1)]
+    ROOT_DIR = get_project_root()
+    with open(f'{ROOT_DIR}/data/russian.txt', encoding='utf8') as f:
+        russian_words = set(f.read().splitlines())
 
-for string in rus_and_eng_names:
-    length = len(string)
-    result[length].append(string)
+    rus_and_eng_names = list(english_words | russian_words)
 
-rus_and_eng_names = result
+    max_length = max(len(s) for s in rus_and_eng_names)
+    result = [[] for _ in range(max_length + 1)]
+
+    for string in rus_and_eng_names:
+        length = len(string)
+        result[length].append(string)
+    return result
 
 
 def correct_string_incorrect_chars(input_string: str):
@@ -86,10 +88,12 @@ def correct_case(input_string: str):
     for i in range(len(input_string)):
         if i == 0:
             new_string += input_string[i]
-        elif input_string[i - 1].isalpha() and input_string[i - 1].islower() and i + 1 < len(input_string) and input_string[i + 1].isalpha() and \
+        elif input_string[i - 1].isalpha() and input_string[i - 1].islower() and i + 1 < len(input_string) and \
+                input_string[i + 1].isalpha() and \
                 input_string[i + 1].islower():
             new_string += input_string[i].lower()
-        elif input_string[i - 1].isalpha() and input_string[i - 1].isupper() and i + 1 < len(input_string) and input_string[i + 1].isalpha() and \
+        elif input_string[i - 1].isalpha() and input_string[i - 1].isupper() and i + 1 < len(input_string) and \
+                input_string[i + 1].isalpha() and \
                 input_string[i + 1].isupper():
             new_string += input_string[i].upper()
         else:
@@ -112,15 +116,19 @@ def t9_text(text):
 
 
 def find_closest_word(word):
+    rus_and_eng_names = get_russian_and_english_words()
     lower_word = word.lower()
-    distances = np.array([distance(lower_word, i.lower(), weights=(1000, 1000, 1)) for i in rus_and_eng_names[len(lower_word)]])
+    distances = np.array(
+        [distance(lower_word, i.lower(), weights=(1000, 1000, 1)) for i in rus_and_eng_names[len(lower_word)]])
     if distances.size == 0:
         return word
     if 1 - np.min(distances) / len(lower_word) < 0.8:
         russian_chars_word = substitute_chars_by_dict(convertdictrus, lower_word)
         english_chars_word = substitute_chars_by_dict(convertdicteng, lower_word)
-        russian_dict = np.array([distance(russian_chars_word, i.lower(), weights=(1000, 1000, 1)) for i in rus_and_eng_names[len(lower_word)]])
-        english_dict = np.array([distance(english_chars_word, i.lower(), weights=(1000, 1000, 1)) for i in rus_and_eng_names[len(lower_word)]])
+        russian_dict = np.array([distance(russian_chars_word, i.lower(), weights=(1000, 1000, 1)) for i in
+                                 rus_and_eng_names[len(lower_word)]])
+        english_dict = np.array([distance(english_chars_word, i.lower(), weights=(1000, 1000, 1)) for i in
+                                 rus_and_eng_names[len(lower_word)]])
         actual_word_dict = russian_dict if np.min(russian_dict) < np.min(english_dict) else english_dict
         if actual_word_dict.size == 0 or 1 - (np.min(actual_word_dict) / len(lower_word)) < 0.8:
             return word

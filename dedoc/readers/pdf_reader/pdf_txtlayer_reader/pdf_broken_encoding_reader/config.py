@@ -1,13 +1,5 @@
 import enum
-import glob
-import os
-from pathlib import Path
-
-from keras.models import load_model
-
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.functions import get_project_root
-
-ROOT_DIR = get_project_root()
+from functools import cached_property
 
 char_pool = dict(
     rus_eng=['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
@@ -55,23 +47,39 @@ convert = dict(
                           'p': 'р', 'r': 'г', 'y': 'у', "t": "т", "u": "и", 'x': 'х', },
 )
 
-folders = dict(
-    fonts_folders=Path(ROOT_DIR, 'data', 'fonts_folders'),
-    images_folder=Path(ROOT_DIR, "data/datasets/test2"),
-    output_train=Path(ROOT_DIR, "data/datasets/images/output"),
-    last_prepared_data=Path(ROOT_DIR, "data/datasets/last_prepared"),
-    extracted_data_folder=Path(ROOT_DIR, "data/pdfdata"),
-    extracted_fonts_folder=Path(ROOT_DIR, "data/pdfdata/extracted_fonts"),
-    extracted_glyphs_folder=Path(ROOT_DIR, "data/pdfdata/glyph_images"),
-    default_models_folder=Path(ROOT_DIR, "data/models/default_models"),
-    custom_models_folder=Path(ROOT_DIR, "data/models/custom_models"),
-    datasets_folder=Path(ROOT_DIR, 'data', 'datasets'),
-    ffwraper_folder=Path(ROOT_DIR, 'ffwrapper', 'fontforge_wrapper.py')
-)
 
-default_models = [i.split('\\')[-1].split('.')[0] for i in
-                  glob.glob(os.path.join(folders.get('default_models_folder'), "*.h5"))]
+class FolderPaths:
+    @cached_property
+    def paths(self):
+        from pathlib import Path
+        from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.functions import get_project_root
+        ROOT_DIR = get_project_root()
+        return dict(
+            fonts_folders=Path(ROOT_DIR, 'data', 'fonts_folders'),
+            images_folder=Path(ROOT_DIR, "data/datasets/test2"),
+            output_train=Path(ROOT_DIR, "data/datasets/images/output"),
+            last_prepared_data=Path(ROOT_DIR, "data/datasets/last_prepared"),
+            extracted_data_folder=Path(ROOT_DIR, "data/pdfdata"),
+            extracted_fonts_folder=Path(ROOT_DIR, "data/pdfdata/extracted_fonts"),
+            extracted_glyphs_folder=Path(ROOT_DIR, "data/pdfdata/glyph_images"),
+            default_models_folder=Path(ROOT_DIR, "data/models/default_models"),
+            custom_models_folder=Path(ROOT_DIR, "data/models/custom_models"),
+            datasets_folder=Path(ROOT_DIR, 'data', 'datasets'),
+            ffwraper_folder=Path(ROOT_DIR, 'ffwrapper', 'fontforge_wrapper.py')
+        )
 
+
+folders = FolderPaths().paths
+
+
+def get_default_models():
+    from pathlib import Path
+
+    models_folder = Path(folders.get('default_models_folder'))
+    return [f.stem for f in models_folder.glob("*.h5")]
+
+
+default_models = get_default_models()
 
 
 def chars_to_code(char_list: list):
@@ -85,15 +93,6 @@ class Language(enum.Enum):
     Russian_and_English = char_pool['rus_eng']
     Russian = char_pool['rus']
     English = char_pool['eng']
-
-
-class DefaultModel(enum.Enum):
-    Russian_and_English = {'model': load_model(Path(folders['default_models_folder'], 'rus_eng.h5')),
-                           'labels': Language.Russian_and_English.value}
-    Russian = {'model': load_model(Path(folders['default_models_folder'], 'rus.h5')),
-               'labels': Language.Russian_no_reg_diff.value}
-    English = {'model': load_model(Path(folders['default_models_folder'], 'eng.h5')),
-               'labels': Language.English_no_reg_diff.value}
 
     @classmethod
     def from_string(cls, model_name: str):

@@ -1,16 +1,10 @@
-import sys
-import warnings
 from pathlib import Path
-
-import fontforge
-
-warnings.filterwarnings("ignore", category=UserWarning)  # общие предупреждения
-warnings.filterwarnings("ignore", category=DeprecationWarning)  # устаревшие функции
 
 image_size = 80
 
 
 def generate_images(save_path: Path, font_path: Path, index: int, uni_char_pool: list) -> list:
+    import fontforge
     font = fontforge.open(str(font_path), 1)
     save_paths = []
     for uni in uni_char_pool:
@@ -39,6 +33,7 @@ def generate_images(save_path: Path, font_path: Path, index: int, uni_char_pool:
 
 
 def generate_all_images(save_path: Path, font_path: Path) -> list:
+    import fontforge
     font = fontforge.open(str(font_path))
     save_paths = []
     not_worth_outputting = []
@@ -105,6 +100,7 @@ def generate_all_images(save_path: Path, font_path: Path) -> list:
 
 
 if __name__ == "__main__":
+    import sys
     args = sys.argv[1:]
     if args[0] == "True":
         print(generate_images(Path(args[1]), Path(args[2]), int(args[3]), args[4:]))
