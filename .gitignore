@@ -26,7 +26,6 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-dedoc/readers/pdf_reader/pdf_txtlayer_reader/pdf_broken_encoding_reader/data/pdfdata
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

@@ -1,13 +1,12 @@
 import ast
 import os
 import re
-import shutil
 import subprocess
+import tempfile
+from itertools import zip_longest
 from pathlib import Path, PurePath
 from sys import platform
 from typing import Any, Iterable
-from typing import Union
-from itertools import zip_longest
 
 import fitz
 from fontTools.ttLib import TTFont
@@ -31,54 +30,18 @@ from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.pdf
 
 
 class PDFReader:
-    def __init__(self, model: Model):
+    def __init__(self):
         self.extract_path = config.folders.get('extracted_data_folder')
-        self.model = model
+        self.model = Model()
         self.text = None
         self.match_dict = {}
         self.__cached_fonts = None
         self.__fontname2basefont = {}
         self.__unicodemaps = {}
-        self.__need2correct = False
         self.__name2code = {}
         self.__fonts_path = config.folders.get('extracted_fonts_folder')
         self.__glyphs_path = config.folders.get('extracted_glyphs_folder')
-
-        assert len(self.model.labels) > 0
-
-        rus = False
-        eng = False
-        for i in self.model.labels:
-            if ord('a') <= i <= ord('z'):
-                eng = True
-
-            elif ord('а') <= i <= ord('я'):
-                rus = True
-
-            if rus and eng:
-                self.__need2correct = True
-                break
-
-    @classmethod
-    def load_default_model(cls, default_model: Union[config.DefaultModel, str] = config.DefaultModel.Russian_and_English):
-        if type(default_model) == config.DefaultModel:
-            new_model = Model.load_default_model(default_model=default_model)
-        else:
-            new_model = config.DefaultModel.from_string(default_model)
-        new_model = Model.load_default_model(new_model)
-        reader = cls(model=new_model)
-        return reader
-
-    @classmethod
-    def load_model(cls, model_and_labels_path: Path):
-        """
-        h5/keras and json with model's labels should be in folder
-        """
-        assert len([name for name in model_and_labels_path.iterdir() if model_and_labels_path.joinpath(name).is_file()]) == 2,\
-            "should be two files in folder: h5, json"
-
-        new_model = Model.load_by_model_and_labels_folder(model_and_labels_path)
-        return cls(new_model)
+        self.__need2correct = True
 
     def restore_text(self, pdf_path: Path, start_page: int = 0, end_page: int = 0) -> str:
         assert end_page > start_page or start_page == end_page == 0, "wrong pages range"
@@ -92,14 +55,11 @@ class PDFReader:
             text = pdf_text_correcter.correct_collapsed_text(text)
         return text
 
-    def __read_pdf(self, pdf_path: Path):
-        self.__extract_fonts(pdf_path)
-        self.__extract_glyphs()
+    def __read_pdf(self, pdf_path: Path, fonts_path, glyphs_path):
+        self.__extract_fonts(pdf_path, fonts_path)
+        self.__extract_glyphs(fonts_path, glyphs_path)
 
-    def __extract_fonts(self, pdf_path: Path):
-        if os.path.isdir(self.__fonts_path):
-            shutil.rmtree(self.__fonts_path)
-        os.makedirs(self.__fonts_path)
+    def __extract_fonts(self, pdf_path: Path, fonts_path):
         doc = fitz.open(pdf_path)
         xref_visited = []
 
@@ -114,28 +74,23 @@ class PDFReader:
                 xref_visited.append(xref)
                 font = doc.extract_font(xref, named=True)
                 if font['ext'] != 'n/a':
-                    font_path = self.__fonts_path.joinpath(f"{font['name']}{junk_string}{str(junk)}.{font['ext']}")
+                    font_path = fonts_path.joinpath(f"{font['name']}{junk_string}{str(junk)}.{font['ext']}")
                     ofile = open(font_path, 'wb')
                     ofile.write(font['content'])
                     ofile.close()
         doc.close()
 
-    def __extract_glyphs(self):
-        if os.path.isdir(self.__glyphs_path):
-            shutil.rmtree(self.__glyphs_path)
-        os.makedirs(self.__glyphs_path)
-        font_files = os.listdir(os.fsencode(self.__fonts_path))
+    def __extract_glyphs(self, fonts_path, glyphs_path):
+        font_files = list(fonts_path.iterdir())
         white_spaces = {}
         for font_file in font_files:
             font_white_spaces = {}
-            font_name = os.fsdecode(font_file)
-            font_name = font_name.split('.')[0]
+            font_name = Path(font_file).parts[-1].split('.')[0]
             font_name = re.split(junk_string, font_name)[0]
-            save_path = self.__glyphs_path.joinpath(font_name)
-            if not os.path.isdir(save_path):
-                os.makedirs(save_path)
-            font_path = self.__fonts_path.joinpath(os.fsdecode(font_file))
+            save_path = glyphs_path.joinpath(font_name)
+            font_path = fonts_path.joinpath(os.fsdecode(font_file))
 
+            save_path.mkdir()
             save_path = str(save_path)
             font_path = str(font_path)
             ff_path = config.folders.get('ffwraper_folder')
@@ -157,7 +112,7 @@ class PDFReader:
                     font.save(font_path)
 
                     result = subprocess.check_output(console_command, stderr=devnull)
-
+            devnull.close()
             result = result.decode('utf-8')
             eval_list = list(ast.literal_eval(result))
             imgs_to_resize_set = set(eval_list[0])
@@ -187,16 +142,15 @@ class PDFReader:
             white_spaces[font_name] = empty_glyphs
         self.white_spaces = white_spaces
 
-    def __match_glyphs_and_encoding_for_all(self):
+    def __match_glyphs_and_encoding_for_all(self, fonts_path, glyphs_path):
         extracted_fonts_folder = config.folders.get("extracted_fonts_folder")
-        fonts = extracted_fonts_folder.glob("*")
-        dicts = {}
+        fonts = fonts_path.iterdir()
         dicts = self.white_spaces
         for font_file in fonts:
             fontname_with_ext = PurePath(font_file).parts[-1]
             fontname = fontname_with_ext.split('.')[0]
             fontname = fontname.split(junk_string)[0]
-            matching_res = self.__match_glyphs_and_encoding(self.__glyphs_path.joinpath(fontname))
+            matching_res = self.__match_glyphs_and_encoding(glyphs_path.joinpath(fontname))
             font_name_without_prefix = fontname.split('+')[1] if '+' in fontname else fontname
             if fontname in dicts:
                 dicts[fontname].update(matching_res)
@@ -382,8 +336,11 @@ class PDFReader:
 
         self.text = ''
         self.match_dict = {}
-        self.__read_pdf(pdf_path)
-        self.__match_glyphs_and_encoding_for_all()
+        with tempfile.TemporaryDirectory() as fonts_temp_dir, tempfile.TemporaryDirectory() as glyphs_temp_dir:
+            fonts_temp_path = Path(fonts_temp_dir)
+            glyphs_temp_path = Path(glyphs_temp_dir)
+            self.__read_pdf(pdf_path, fonts_temp_path, glyphs_temp_path)
+            self.__match_glyphs_and_encoding_for_all(fonts_temp_path, glyphs_temp_path)
         layouts = self.__restore_layout(pdf_path)
 
         return layouts
