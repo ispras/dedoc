@@ -1,5 +1,3 @@
-import os
-
 import logging
 from collections import namedtuple
 from typing import List, Optional, Tuple
@@ -10,7 +8,7 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers import PdfTxtlayerReader
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
-from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
+from dedoc.readers.pdf_reader.data_classes.tables.scacntable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc
 from dedoc.readers.pdf_reader.pdf_base_reader import PdfBaseReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.pdf_worker.pdf_reader import PDFReader
@@ -34,10 +32,6 @@ class PdfBrokenEncodingReader(PdfBaseReader):
         from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdfminer_reader.pdfminer_extractor import PdfminerExtractor
         self.extractor_layer = PdfminerExtractor(config=self.config)
         self.__pdf_txtlayer_reader = PdfTxtlayerReader(config=config)
-        try:
-            self.reader = PDFReader()
-        except Exception as e:
-            raise Exception(f"some problem occured: {e}")
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None,
                  parameters: Optional[dict] = None) -> bool:

@@ -5,6 +5,7 @@ import numpy as np
 from Levenshtein import distance
 
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader import config
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.functions import get_project_root
 
 convertdictrus = config.convert.get("convert_chars_to_rus")
 convertdicteng = dict((v, k) for k, v in convertdictrus.items())
@@ -13,14 +14,11 @@ rus = ['а', 'б', 'в', 'г', 'д', 'е', 'ж', 'з', 'и', 'й', 'к', 'л', '
        'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я', 'o', 'a', 'c', 'e', 'x', 'k']
 eng = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
        'w', 'x', 'y', 'z', 'о', "а", "с"]
-onlyRus = ['я', 'й', 'ц', 'б', 'ж', 'з', 'д', 'л', 'ф', 'ш', 'щ', "ч", "ъ", "ь", "э", "ю", 'г']
-onlyEng = ['q', 'w', 'f', 'i', 'j', 'l', 'z', 's', 'v', 'g']
+only_rus = ['я', 'й', 'ц', 'б', 'ж', 'з', 'д', 'л', 'ф', 'ш', 'щ', "ч", "ъ", "ь", "э", "ю", 'г']
+only_eng = ['q', 'w', 'f', 'i', 'j', 'l', 'z', 's', 'v', 'g']
 
 
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.functions import get_project_root
-
-
-def get_russian_and_english_words():
+def get_russian_and_english_words() -> List[list]:
     from nltk.corpus import words
 
     english_words = set(words.words())
@@ -40,7 +38,7 @@ def get_russian_and_english_words():
     return result
 
 
-def correct_string_incorrect_chars(input_string: str):
+def correct_string_incorrect_chars(input_string: str) -> str:
     strings = input_string.split(' ')
     ans = []
     for word in strings:
@@ -50,16 +48,16 @@ def correct_string_incorrect_chars(input_string: str):
     return " ".join(ans)
 
 
-def correct_word_incorrect_chars(input_string: str):
+def correct_word_incorrect_chars(input_string: str) -> str:
     list_of_strings = list(input_string)
     letters = {x: input_string.count(x) for x in input_string}
     latin = sum([val for val, key in zip(letters.values(), letters.keys()) if key in eng])
     cyrrilic = sum([val for val, key in zip(letters.values(), letters.keys()) if key in rus])
 
     converted = input_string
-    if any(char in input_string.lower() for char in onlyRus):
+    if any(char in input_string.lower() for char in only_rus):
         converted = substitute_chars_by_dict(convertdictrus, list_of_strings)
-    elif any(char in input_string.lower() for char in onlyEng):
+    elif any(char in input_string.lower() for char in only_eng):
         converted = substitute_chars_by_dict(convertdicteng, list_of_strings)
     elif cyrrilic >= latin and latin + cyrrilic > 0:
         converted = substitute_chars_by_dict(convertdictrus, list_of_strings)
@@ -68,12 +66,12 @@ def correct_word_incorrect_chars(input_string: str):
     return converted
 
 
-def substitute_chars_by_dict(substitutions_dict, word):
+def substitute_chars_by_dict(substitutions_dict, word) -> str:
     return "".join([(substitutions_dict[item] if item.islower() else substitutions_dict[item.lower()].upper())
                     if item.lower() in substitutions_dict else item for item in word])
 
 
-def correct_text(text: List[str]):
+def correct_text(text: List[str]) -> List[str]:
     corrected_text = []
     for page in text:
         if not page.isspace():
@@ -83,7 +81,7 @@ def correct_text(text: List[str]):
     return corrected_text
 
 
-def correct_case(input_string: str):
+def correct_case(input_string: str) -> str:
     new_string = ''
     for i in range(len(input_string)):
         if i == 0:
@@ -101,7 +99,7 @@ def correct_case(input_string: str):
     return new_string
 
 
-def t9_text(text):
+def t9_text(text) -> str:
     words = re.findall(r'(?:\S+(?=[,\.]\s)|(?:\S+(?=\s|$))|(?:\s))', text)
     new_words = []
     for i in words:
@@ -115,7 +113,7 @@ def t9_text(text):
     return new_text
 
 
-def find_closest_word(word):
+def find_closest_word(word) -> str:
     rus_and_eng_names = get_russian_and_english_words()
     lower_word = word.lower()
     distances = np.array(
@@ -142,15 +140,15 @@ def find_closest_word(word):
     return correct_word
 
 
-def correct_collapsed_text(text):
+def correct_collapsed_text(text) -> str:
     text = correct_string_incorrect_chars(text)
     text = correct_case(text)
     return text
 
 
-def correct_text_str(text):
+def correct_text_str(text) -> str:
     return correct_string_incorrect_chars(text)
 
 
-def remove_redundant_whitespaces(text):
+def remove_redundant_whitespaces(text) -> str:
     return ' '.join(text.split())
