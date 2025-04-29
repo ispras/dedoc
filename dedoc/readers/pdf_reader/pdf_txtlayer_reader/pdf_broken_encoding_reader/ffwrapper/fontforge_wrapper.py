@@ -41,13 +41,13 @@ def generate_all_images(save_path: Path, font_path: Path) -> list:
     names = []
     codes = []
     for name in font:
-        if 'superior' in name:
+        if "superior" in name:
             continue
-        if not font[name].isWorthOutputting() and name != 'space':
+        if not font[name].isWorthOutputting() and name != "space":
             continue
 
         filename = None
-        if name == '.notdef':
+        if name == ".notdef":
             continue
 
         try:
@@ -74,13 +74,13 @@ def generate_all_images(save_path: Path, font_path: Path) -> list:
             if all_empty:
                 continue
 
-            name_whitespace = ''
+            name_whitespace = ""
             try:
                 name_whitespace = chr(int(filename)) if filename.isdigit() else filename
             except (ValueError, TypeError):
                 name_whitespace = filename
 
-            font_white_spaces[name_whitespace] = ' '
+            font_white_spaces[name_whitespace] = " "
             not_worth_outputting.append(filename)
             continue
 

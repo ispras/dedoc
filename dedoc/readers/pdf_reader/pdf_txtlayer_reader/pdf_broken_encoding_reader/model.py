@@ -42,7 +42,7 @@ class Model:
         from keras.models import load_model
         from huggingface_hub import hf_hub_download
         out_dir = get_config()["resources_path"]
-        out_name = 'rus_eng.h5'
+        out_name = "rus_eng.h5"
         os.makedirs(out_dir, exist_ok=True)
         real_path = os.path.realpath(hf_hub_download(repo_id=f"sinkudo/tf_cnn", filename=out_name))
         model = load_model(real_path)

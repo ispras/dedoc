@@ -14,6 +14,6 @@ class TestPDFReader(unittest.TestCase):
         reader = PdfBrokenEncodingReader()
         result = reader.read(file_path=pdf_path)
         lines = ''.join([i.line for i in result.lines[0:10]])
-        with open(orig_path, encoding='utf8', mode='r') as txt:
+        with open(orig_path, encoding="utf8", mode="r") as txt:
             accuracy = Levenshtein.ratio(txt.read(), lines)
             self.assertTrue(accuracy > 0.7)

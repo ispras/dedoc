@@ -18,7 +18,7 @@ def correctly_resize(image_path, size: tuple = (28, 28)):
 
 def is_empty(image_path) -> bool:
     from PIL import Image
-    if not image_path.lower().endswith('.png'):
+    if not image_path.lower().endswith(".png"):
         raise Exception("problems with extracted glyphs png path")
     img = Image.open(image_path)
     extrema = img.convert("L").getextrema()
@@ -33,13 +33,13 @@ def get_project_root() -> Path:
 
 
 def collapse_text(text):
-    text = ' '.join(text.splitlines())
-    text = ' '.join(text.split())
+    text = " ".join(text.splitlines())
+    text = " ".join(text.split())
     return text
 
 
 def remove_hyphenations(text):
-    return text.replace('- ', '')
+    return text.replace("- ", "")
 
 
 def extract_pdf_text2json(pdf_path: Path, pages: tuple = None):
@@ -52,12 +52,12 @@ def extract_pdf_text2json(pdf_path: Path, pages: tuple = None):
     assert pages[0] == pages[1] == 0 or pages[0] < pages[1], "wrong range"
     pages_range = list(range(pages[0], pages[1]))
     pdf_path = os.path.normpath(pdf_path)
-    pdf_name = pdf_path.split('\\')[-1].split('.')[0]
-    json_path = os.path.normpath(f'{get_project_root()}/data/jsons/{pdf_name}.json')
+    pdf_name = pdf_path.split("\\")[-1].split(".")[0]
+    json_path = os.path.normpath(f"{get_project_root()}/data/jsons/{pdf_name}.json")
 
     text = extract_text(pdf_path, page_numbers=pages_range)
     text = collapse_text(text)
     text = remove_hyphenations(text)
     json_dict = {"pages": pages, "text": text}
-    with open(json_path, 'w', encoding='utf-8') as file:
+    with open(json_path, "w", encoding="utf-8") as file:
         json.dump(json_dict, file, indent=4, ensure_ascii=False)
