@@ -94,7 +94,7 @@ def generate_all_images(save_path: Path, font_path: Path) -> list:
             save_paths.append(char_save_path)
             names.append(name)
             codes.append(unicode_val)
-        except Exception:
+        except OSError:
             continue
     return [save_paths, font_white_spaces, names, codes]
 
