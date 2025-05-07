@@ -58,7 +58,7 @@ other = dict(
 )
 convert = dict(
     convert_chars_to_rus={
-        "a": "а", "b": "в", "c": "с", "d": "д", "e": "е", "h": "н", "k": "к", "m": "м", "o": "о","p": "р", "r": "г",
+        "a": "а", "b": "в", "c": "с", "d": "д", "e": "е", "h": "н", "k": "к", "m": "м", "o": "о", "p": "р", "r": "г",
         "y": "у", "t": "т", "u": "и", "x": "х"
     },
 )
@@ -120,4 +120,4 @@ class Language(enum.Enum):
         try:
             return mapping[model_name.lower()]
         except KeyError:
-            raise ValueError(f"Incorrect model_name (rus, eng, ruseng)")
+            raise ValueError("Incorrect model_name (rus, eng, ruseng)")

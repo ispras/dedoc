@@ -6,7 +6,7 @@ import tempfile
 from itertools import zip_longest
 from pathlib import Path, PurePath
 from sys import platform
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional
 
 import fitz
 from fontTools.ttLib import TTFont
@@ -49,7 +49,6 @@ class PDFReader:
         self.match_dict = {}
         self.__read_pdf(pdf_path)
         self.__match_glyphs_and_encoding_for_all()
-        fonts_match_dict = self.match_dict
         text = self.__restore_text(pdf_path, start=start_page, end=end_page)
         if self.__need2correct:
             text = pdf_text_correcter.correct_collapsed_text(text)
@@ -97,12 +96,13 @@ class PDFReader:
 
             devnull = open(os.devnull, 'wb')
             if platform == 'linux' or platform == 'linux2':
-                result = subprocess.check_output(f"fontforge -script {str(ff_path)} False {save_path} {font_path}", shell=True, stderr=devnull)
+                result = subprocess.check_output(f"fontforge -script {str(ff_path)} False {save_path} {font_path}",
+                                                 shell=True, stderr=devnull)
             else:
                 console_command = f"ffpython {str(ff_path)} False {save_path} {font_path}"
                 try:
                     result = subprocess.check_output(console_command, stderr=devnull)
-                except:
+                except Exception:
                     if Path(font_file.decode()).suffix not in ['.ttf', '.otf']:
                         continue
                     font = TTFont(font_path)
@@ -132,7 +132,7 @@ class PDFReader:
                     name_whitespace = ''
                     try:
                         name_whitespace = chr(int(uni_whitespace))
-                    except:
+                    except Exception:
                         name_whitespace = uni_whitespace
                     finally:
                         font_white_spaces[name_whitespace] = ' '
@@ -143,7 +143,6 @@ class PDFReader:
         self.white_spaces = white_spaces
 
     def __match_glyphs_and_encoding_for_all(self, fonts_path, glyphs_path):
-        extracted_fonts_folder = config.folders.get("extracted_fonts_folder")
         fonts = fonts_path.iterdir()
         dicts = self.white_spaces
         for font_file in fonts:
@@ -151,13 +150,11 @@ class PDFReader:
             fontname = fontname_with_ext.split('.')[0]
             fontname = fontname.split(junk_string)[0]
             matching_res = self.__match_glyphs_and_encoding(glyphs_path.joinpath(fontname))
-            font_name_without_prefix = fontname.split('+')[1] if '+' in fontname else fontname
             if fontname in dicts:
                 dicts[fontname].update(matching_res)
             else:
                 dicts[fontname] = matching_res
         self.match_dict = dicts
-
 
     def __match_glyphs_and_encoding(self, images_path: Path):
         images = images_path.glob("*")
@@ -176,7 +173,7 @@ class PDFReader:
                 try:
                     dictionary[chr(int(key))] = chr(int(pred))
                     k = chr(int(key))
-                except:
+                except Exception:
                     dictionary[key] = chr(int(pred))
                     k = key
                 if char.isalpha():
@@ -229,7 +226,6 @@ class PDFReader:
                     char_set_arr = [q.name if isinstance(q, PSLiteral) else '' for q in encoding['Differences']]
                     cached_fonts[f.fontname] = char_set_arr
 
-
                 self.__cached_fonts = rsrcmgr._cached_fonts
                 page_text = []
 
@@ -242,95 +238,117 @@ class PDFReader:
 
         return full_text
 
-    def __extract_text_str(self, o: Any, cached_fonts: dict, page_text: list):
+    def __extract_text_str(self, o: Any, cached_fonts: dict, page_text: list) -> None:
         if isinstance(o, LTChar):
-            char = o.get_text()
-            match_dict_key = o.fontname
-            if cached_fonts.get(o.fontname) is None or not cached_fonts[o.fontname]:
-                try:
-                    o._text = self.match_dict[match_dict_key][char]
-                except:
-                    o._text = char
-                    return
-                return
-            index = -1
-            if 'cid' in char:
-                index = int(char[1:-1].split(':')[-1])
-            elif 'glyph' in char:
-                glyph_unicode = int(char[5:])
-                index = ord(self.__unicodemaps[glyph_unicode])
-            else:
-                try:
-                    index = ord(char)
-                    if ord(char) > len(cached_fonts[o.fontname]) and char == '’':
-                        char = "'"
-                        index = ord(char)
-                    elif ord(char) > len(cached_fonts[o.fontname]):
-                        o._text = self.match_dict[match_dict_key][char]
-                        return
-                except:
-                    o._text = char
-                    return
-            try:
-                glyph_name = cached_fonts[o.fontname][index]
-                o._text = self.match_dict[match_dict_key][glyph_name]
-            except:
-                o._text = char
+            self.process_char(o, cached_fonts)
+        elif isinstance(o, LTTextLineHorizontal):
+            self.process_text_line(o, page_text)
         elif isinstance(o, Iterable):
-            for i in o:
-                self.__extract_text_str(i, cached_fonts, page_text)
+            self.process_iterable(o, cached_fonts, page_text)
 
-        if isinstance(o, LTTextLineHorizontal):
-            text = o.get_text()
-            text = text.replace('\n', ' ')
-            text = text.replace('\r', '')
-            text = text.replace('\t', ' ')
-            page_text.append(text)
+    def process_iterable(self, iterable_obj: Iterable, cached_fonts: dict, page_text: list) -> None:
+        for item in iterable_obj:
+            self.__extract_text_str(item, cached_fonts, page_text)
 
-    def __correct_pages_text(self, o: Any, cached_fonts: dict, fulltext: list):
+    def process_text_line(self, text_line: LTTextLineHorizontal, page_text: list) -> None:
+        # LTTextLineHorizontal
+        text = text_line.get_text()
+        text = text.replace('\n', ' ').replace('\r', '').replace('\t', ' ')
+        page_text.append(text)
+
+    def process_char(self, char_obj: LTChar, cached_fonts: dict) -> None:
+        # LTChar
+        char = char_obj.get_text()
+        match_dict_key = char_obj.fontname
+
+        if not cached_fonts.get(char_obj.fontname):
+            try:
+                char_obj._text = self.match_dict[match_dict_key][char]
+            except Exception:
+                char_obj._text = char
+            return
+
+        index = -1
+        if 'cid' in char:
+            index = int(char[1:-1].split(':')[-1])
+        elif 'glyph' in char:
+            glyph_unicode = int(char[5:])
+            index = ord(self.__unicodemaps[glyph_unicode])
+        else:
+            try:
+                index = ord(char)
+                if ord(char) > len(cached_fonts[char_obj.fontname]) and char == '’':
+                    char = "'"
+                    index = ord(char)
+                elif ord(char) > len(cached_fonts[char_obj.fontname]):
+                    char_obj._text = self.match_dict[match_dict_key][char]
+                    return
+            except Exception:
+                char_obj._text = char
+                return
+
+        try:
+            glyph_name = cached_fonts[char_obj.fontname][index]
+            char_obj._text = self.match_dict[match_dict_key][glyph_name]
+        except Exception:
+            char_obj._text = char
+
+    def __correct_pages_text(self, o: Any, cached_fonts: dict, fulltext: list) -> None:
         if isinstance(o, LTChar):
-            char = o.get_text()
-            match_dict_key = o.fontname
-            if cached_fonts.get(o.fontname) is None or not cached_fonts[o.fontname]:
-                try:
-                    o._text = self.match_dict[match_dict_key][char]
-                except:
-                    o._text = char
-                    return
-                return
-            index = -1
-            if 'cid' in char:
-                index = int(char[1:-1].split(':')[-1])
-            elif 'glyph' in char:
-                glyph_unicode = int(char[5:])
-                index = ord(self.__unicodemaps[glyph_unicode])
-            else:
-                try:
-                    index = ord(char)
-                    if ord(char) > len(cached_fonts[o.fontname]) and char == '’':
-                        char = "'"
-                        index = ord(char)
-                    elif ord(char) > len(cached_fonts[o.fontname]):
-                        o._text = self.match_dict[match_dict_key][char]
-                        return
-                except:
-                    o._text = char
-                    return
-            try:
-                glyph_name = cached_fonts[o.fontname][index]
-                actual_code = self.__name2code[match_dict_key][glyph_name]
-                o._text = self.match_dict[match_dict_key][chr(actual_code)]
-
-            except:
-                o._text = ' '
+            self.__correct_char_text(o, cached_fonts)
         elif isinstance(o, Iterable):
-            for i in o:
-                self.__correct_pages_text(i, cached_fonts, fulltext)
+            self.__correct_iterable_text(o, cached_fonts, fulltext)
+        elif isinstance(o, LTTextLineHorizontal):
+            self.__correct_line_text(o, fulltext)
 
-        if isinstance(o, LTTextLineHorizontal):
-            text = o.get_text()
-            o._text = correct_string_incorrect_chars(text)
-            fulltext.append(o.get_text())
+    def __correct_char_text(self, char_obj: LTChar, cached_fonts: dict) -> None:
+        char = char_obj.get_text()
+        fontname = char_obj.fontname
+
+        if not cached_fonts.get(fontname):
+            self.__apply_match_dict(char_obj, fontname, char)
+            return
+
+        index = self.__get_char_index(char)
+        if index is None:
+            char_obj._text = char if char != "’" else "'"
+            return
+
+        self.__apply_correct_glyph(char_obj, fontname, index, cached_fonts)
+
+    def __get_char_index(self, char: str) -> Optional[int]:
+        if 'cid' in char:
+            return int(char[1:-1].split(':')[-1])
+        elif 'glyph' in char:
+            glyph_unicode = int(char[5:])
+            return ord(self.__unicodemaps[glyph_unicode])
+        try:
+            return ord(char)
+        except Exception:
+            return None
+
+    def __apply_match_dict(self, char_obj: LTChar, fontname: str, char: str) -> None:
+        try:
+            char_obj._text = self.match_dict[fontname][char]
+        except Exception:
+            char_obj._text = char
+
+    def __apply_correct_glyph(self, char_obj: LTChar, fontname: str, index: int, cached_fonts: dict) -> None:
+        try:
+            glyph_name = cached_fonts[fontname][index]
+            actual_code = self.__name2code[fontname][glyph_name]
+            char_obj._text = self.match_dict[fontname][chr(actual_code)]
+        except Exception:
+            char_obj._text = ' '
+
+    def __correct_iterable_text(self, iterable: Iterable, cached_fonts: dict, fulltext: list) -> None:
+        for item in iterable:
+            self.__correct_pages_text(item, cached_fonts, fulltext)
+
+    def __correct_line_text(self, line: LTTextLineHorizontal, fulltext: list) -> None:
+        text = line.get_text()
+        line._text = correct_string_incorrect_chars(text)
+        fulltext.append(line.get_text())
 
     def get_correct_layout(self, pdf_path):
 
@@ -358,13 +376,10 @@ class PDFReader:
             rsrcmgr = PDFResourceManager()
             laparams = LAParams()
 
-            # Create a PDF device object
             device = PDFPageAggregator(rsrcmgr, laparams=laparams)
             interpreter = PDFPageInterpreter(rsrcmgr, device)
-            pages_text = []
             fixed_layouts = []
             pages = []
-            # Iterate through each page of the PDF
             for page_num, page in enumerate(PDFPage.create_pages(document)):
                 if page_num < start:
                     continue

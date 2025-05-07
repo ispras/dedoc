@@ -1,6 +1,7 @@
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+
 class CNNModel(nn.Module):
     def __init__(self, num_classes):
         super(CNNModel, self).__init__()
@@ -22,6 +23,8 @@ class CNNModel(nn.Module):
         x = self.dropout2(x)
         x = self.fc2(x)
         return x
+
+
 class Model:
     """
     PyTorch CNN model for font's glyphs prediction.
@@ -31,12 +34,11 @@ class Model:
     def __init__(self):
         from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.config import Language
         self.model = None
-        self.__load_weights()  # Загрузим модель
+        self.__load_weights()
         s = sorted(Language.Russian_and_English.value, key=lambda i: str(ord(i)))
         self.labels = [ord(i) for i in s]
 
     def __assert_labels_and_model(self):
-        # Проверка, что последний слой модели соответствует числу классов
         assert self.model.fc1.out_features == len(self.labels)
 
     def recognize_glyph(self, images):
@@ -50,21 +52,20 @@ class Model:
                 bytes_data = bytearray(stream.read())
                 numpyarray = np.asarray(bytes_data, dtype=np.uint8)
                 img = cv2.imdecode(numpyarray, cv2.IMREAD_UNCHANGED)
-                img = np.array(img).reshape(28, 28)  # (H, W)
+                img = np.array(img).reshape(28, 28)
                 images_readen.append(img)
 
-        images_readen = np.array(images_readen, dtype=np.float32)  # (N, H, W)
-        images_readen = images_readen / 255.0  # Нормализация значений
+        images_readen = np.array(images_readen, dtype=np.float32)
+        images_readen = images_readen / 255.0
 
-        images_tensor = torch.tensor(images_readen).unsqueeze(1)  # (N, 1, 28, 28)
+        images_tensor = torch.tensor(images_readen).unsqueeze(1)
 
-        with torch.no_grad():  # отключаем градиенты
+        with torch.no_grad():
             probs = self.model(images_tensor)
             problabels = probs.argmax(dim=-1).tolist()
 
         predictions = [self.labels[label] for label in problabels]
         return predictions
-
 
     def __load_weights(self) -> None:
         import os
@@ -84,4 +85,3 @@ class Model:
         model.eval()
 
         self.model = model
-

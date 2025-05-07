@@ -19,7 +19,8 @@ WordObj = namedtuple("Word", ["start", "end", "value"])
 
 class PdfBrokenEncodingReader(PdfBaseReader):
     """
-    This class allows to extract text from the .pdf documents with a textual layer with broken encoding (copyable documents, but copied text is incorrect) with complex background.
+    This class allows to extract text from the .pdf documents with a textual layer with broken encoding
+    (copyable documents, but copied text is incorrect) with complex background.
     It uses a pdfminer library for text extraction and CNN for font's glyphs prediction.
     """
 
@@ -86,8 +87,7 @@ class PdfBrokenEncodingReader(PdfBaseReader):
                           image: ndarray,
                           parameters: ParametersForParseDoc,
                           page_number: int,
-                          path: str) -> Tuple[
-        List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]]:
+                          path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]]:
         if parameters.need_pdf_table_analysis:
             gray_image = self._convert_to_gray(image)
             cleaned_image, tables = self.table_recognizer.recognize_tables_from_image(
@@ -96,16 +96,12 @@ class PdfBrokenEncodingReader(PdfBaseReader):
                 language=parameters.language,
                 table_type=parameters.table_type
             )
-        else:
-            tables = []
 
         layout = self.reader.get_correct_layout(path)
 
         lines = []
-        # в цикле из pages с помощью metadata_extractor.py достаю bbox
         for idx, page in enumerate(layout):
             page_bb = self.extractor_layer.handle_page(page, idx, path, parameters)
-            unreadable_blocks = [location.bbox for table in tables for location in table.locations]
             page_bb.bboxes = [bbox for bbox in page_bb.bboxes]
             lines.append(self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page_bb,
                                                                                       call_classifier=False))
