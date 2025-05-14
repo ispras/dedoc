@@ -1,10 +1,12 @@
 from pathlib import Path
+from typing import List, Dict, Tuple
+import fontforge
 
 image_size = 80
 
 
-def generate_images(save_path: Path, font_path: Path, index: int, uni_char_pool: list) -> list:
-    import fontforge
+def generate_images(save_path: Path, font_path: Path, index: int, uni_char_pool: List[str]) -> List[str]:
+    """Generate images for specified unicode characters from font."""
     font = fontforge.open(str(font_path), 1)
     save_paths = []
     for uni in uni_char_pool:
@@ -18,7 +20,7 @@ def generate_images(save_path: Path, font_path: Path, index: int, uni_char_pool:
                     continue
         except Exception:
             continue
-            ##
+
         if glyph_name == -1:
             continue
         char_save_path = str(save_path.joinpath(str(uni), f"{font.fontname}_{index}.png"))
@@ -32,9 +34,8 @@ def generate_images(save_path: Path, font_path: Path, index: int, uni_char_pool:
     return save_paths
 
 
-def generate_all_images(save_path: Path, font_path: Path) -> list:
-    import fontforge
-
+def generate_all_images(save_path: Path, font_path: Path) -> Tuple[List[str], Dict[str, str], List[str], List[int]]:
+    """Generate images for all glyphs in font."""
     font = fontforge.open(str(font_path))
     save_paths = []
     not_worth_outputting = []
@@ -43,33 +44,30 @@ def generate_all_images(save_path: Path, font_path: Path) -> list:
     codes = []
 
     for name in font:
-        process_glyph(
-            name, font, save_path,
-            save_paths, font_white_spaces,
-            names, codes, not_worth_outputting
-        )
+        process_glyph(name, font, save_path, save_paths, font_white_spaces, names, codes, not_worth_outputting)
 
-    return [save_paths, font_white_spaces, names, codes]
+    return save_paths, font_white_spaces, names, codes
 
 
 def process_glyph(
-        name: str,
-        font,
-        save_path: Path,
-        save_paths: list,
-        font_white_spaces: dict,
-        names: list,
-        codes: list,
-        not_worth_outputting: list
+    name: str,
+    font: Dict[str, any],
+    save_path: Path,
+    save_paths: List[str],
+    font_white_spaces: Dict[str, str],
+    names: List[str],
+    codes: List[int],
+    not_worth_outputting: List[str]
 ) -> None:
+    """Process individual glyph from font."""
     if should_skip_glyph(name, font):
         return
 
     unicode_val = get_unicode_value(name, font)
     filename = get_filename(name, unicode_val)
 
-    if is_empty_glyph(font, name, filename):
-        handle_empty_glyph(name, filename, font_white_spaces, not_worth_outputting)
+    if is_empty_glyph(font, name):
+        handle_empty_glyph(filename, font_white_spaces, not_worth_outputting)
         return
 
     if filename == -1:
@@ -78,7 +76,8 @@ def process_glyph(
     export_glyph(name, font, save_path, filename, save_paths, names, codes, unicode_val)
 
 
-def should_skip_glyph(name: str, font) -> bool:
+def should_skip_glyph(name: str, font: Dict[str, any]) -> bool:
+    """Check if glyph should be skipped."""
     if "superior" in name:
         return True
     if name == ".notdef":
@@ -88,8 +87,8 @@ def should_skip_glyph(name: str, font) -> bool:
     return False
 
 
-def get_unicode_value(name: str, font) -> int:
-    import fontforge
+def get_unicode_value(name: str, font: Dict[str, any]) -> int:
+    """Get unicode value for glyph name."""
     try:
         return ord(name)
     except TypeError:
@@ -100,10 +99,12 @@ def get_unicode_value(name: str, font) -> int:
 
 
 def get_filename(name: str, unicode_val: int) -> str:
+    """Get filename for glyph based on unicode value or name."""
     return str(unicode_val) if unicode_val != -1 else name
 
 
-def is_empty_glyph(font, name: str, filename: str) -> bool:
+def is_empty_glyph(font: Dict[str, any], name: str) -> bool:
+    """Check if glyph is empty."""
     if not font[name].isWorthOutputting() or font[name].width == 0:
         for i in range(len(font[name].layers)):
             if font[name].layers[i] != 1:
@@ -112,12 +113,8 @@ def is_empty_glyph(font, name: str, filename: str) -> bool:
     return False
 
 
-def handle_empty_glyph(
-        name: str,
-        filename: str,
-        font_white_spaces: dict,
-        not_worth_outputting: list
-) -> None:
+def handle_empty_glyph(filename: str, font_white_spaces: Dict[str, str], not_worth_outputting: List[str]) -> None:
+    """Handle empty glyph case."""
     name_whitespace = ""
     try:
         name_whitespace = chr(int(filename)) if filename.isdigit() else filename
@@ -128,16 +125,8 @@ def handle_empty_glyph(
     not_worth_outputting.append(filename)
 
 
-def export_glyph(
-        name: str,
-        font,
-        save_path: Path,
-        filename: str,
-        save_paths: list,
-        names: list,
-        codes: list,
-        unicode_val: int
-) -> None:
+def export_glyph(name: str, font: Dict[str, Dict[str, any]], save_path: Path, filename: str, save_paths: List[str], names: List[str], codes: List[int], unicode_val: int) -> None:
+    """Export glyph to image file."""
     char_save_path = f"{save_path}/{filename}.png"
     try:
         font[name].export(char_save_path, image_size)

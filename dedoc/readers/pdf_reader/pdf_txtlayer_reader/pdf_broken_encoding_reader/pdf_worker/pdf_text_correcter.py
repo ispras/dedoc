@@ -1,5 +1,5 @@
 import re
-from typing import List
+from typing import List, Union
 
 import numpy as np
 from Levenshtein import distance
@@ -10,12 +10,16 @@ from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.fun
 convertdictrus = config.convert.get("convert_chars_to_rus")
 convertdicteng = dict((v, k) for k, v in convertdictrus.items())
 
-rus = ['а', 'б', 'в', 'г', 'д', 'е', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х',
-       'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я', 'o', 'a', 'c', 'e', 'x', 'k']
-eng = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-       'w', 'x', 'y', 'z', 'о', "а", "с"]
-only_rus = ['я', 'й', 'ц', 'б', 'ж', 'з', 'д', 'л', 'ф', 'ш', 'щ', "ч", "ъ", "ь", "э", "ю", 'г']
-only_eng = ['q', 'w', 'f', 'i', 'j', 'l', 'z', 's', 'v', 'g']
+rus = [
+    "а", "б", "в", "г", "д", "е", "ж", "з", "и", "й", "к", "л", "м", "н", "о", "п", "р", "с", "т", "у", "ф", "х",
+    "ц", "ч", "ш", "щ", "ъ", "ы", "ь", "э", "ю", "я", "o", "a", "c", "e", "x", "k"
+]
+eng = [
+    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
+    "w", "x", "y", "z", "о", "а", "с"
+]
+only_rus = ["я", "й", "ц", "б", "ж", "з", "д", "л", "ф", "ш", "щ", "ч", "ъ", "ь", "э", "ю", "г"]
+only_eng = ["q", "w", "f", "i", "j", "l", "z", "s", "v", "g"]
 
 
 def get_russian_and_english_words() -> List[list]:
@@ -23,8 +27,8 @@ def get_russian_and_english_words() -> List[list]:
 
     english_words = set(words.words())
 
-    ROOT_DIR = get_project_root()
-    with open(f'{ROOT_DIR}/data/russian.txt', encoding='utf8') as f:
+    root_dir = get_project_root()
+    with open(f"{root_dir}/data/russian.txt", encoding="utf8") as f:
         russian_words = set(f.read().splitlines())
 
     rus_and_eng_names = list(english_words | russian_words)
@@ -39,7 +43,7 @@ def get_russian_and_english_words() -> List[list]:
 
 
 def correct_string_incorrect_chars(input_string: str) -> str:
-    strings = input_string.split(' ')
+    strings = input_string.split(" ")
     ans = []
     for word in strings:
         analized = correct_word_incorrect_chars(word)
@@ -66,9 +70,13 @@ def correct_word_incorrect_chars(input_string: str) -> str:
     return converted
 
 
-def substitute_chars_by_dict(substitutions_dict, word) -> str:
-    return "".join([(substitutions_dict[item] if item.islower() else substitutions_dict[item.lower()].upper())
-                    if item.lower() in substitutions_dict else item for item in word])
+def substitute_chars_by_dict(substitutions_dict: dict, word: Union[str, List[str]]) -> str:
+    return "".join([
+        (substitutions_dict[item] if item.islower() else substitutions_dict[item.lower()].upper())
+        if item.lower() in substitutions_dict
+        else item
+        for item in word
+    ])
 
 
 def correct_text(text: List[str]) -> List[str]:
@@ -82,7 +90,7 @@ def correct_text(text: List[str]) -> List[str]:
 
 
 def correct_case(input_string: str) -> str:
-    new_string = ''
+    new_string = ""
     for i in range(len(input_string)):
         if i == 0:
             new_string += input_string[i]
@@ -99,8 +107,8 @@ def correct_case(input_string: str) -> str:
     return new_string
 
 
-def t9_text(text) -> str:
-    words = re.findall(r'(?:\S+(?=[,\.]\s)|(?:\S+(?=\s|$))|(?:\s))', text)
+def t9_text(text: str) -> str:
+    words = re.findall(r"(?:\S+(?=[,\.]\s)|(?:\S+(?=\s|$))|(?:\s))", text)
     new_words = []
     for i in words:
         if len(i) == 1:
@@ -109,24 +117,21 @@ def t9_text(text) -> str:
         corrected_word = find_closest_word(i)
         new_words.append(corrected_word)
 
-    new_text = ''.join(new_words)
+    new_text = "".join(new_words)
     return new_text
 
 
-def find_closest_word(word) -> str:
+def find_closest_word(word: str) -> str:
     rus_and_eng_names = get_russian_and_english_words()
     lower_word = word.lower()
-    distances = np.array(
-        [distance(lower_word, i.lower(), weights=(1000, 1000, 1)) for i in rus_and_eng_names[len(lower_word)]])
+    distances = np.array([distance(lower_word, i.lower(), weights=(1000, 1000, 1)) for i in rus_and_eng_names[len(lower_word)]])
     if distances.size == 0:
         return word
     if 1 - np.min(distances) / len(lower_word) < 0.8:
         russian_chars_word = substitute_chars_by_dict(convertdictrus, lower_word)
         english_chars_word = substitute_chars_by_dict(convertdicteng, lower_word)
-        russian_dict = np.array([distance(russian_chars_word, i.lower(), weights=(1000, 1000, 1)) for i in
-                                 rus_and_eng_names[len(lower_word)]])
-        english_dict = np.array([distance(english_chars_word, i.lower(), weights=(1000, 1000, 1)) for i in
-                                 rus_and_eng_names[len(lower_word)]])
+        russian_dict = np.array([distance(russian_chars_word, i.lower(), weights=(1000, 1000, 1)) for i in rus_and_eng_names[len(lower_word)]])
+        english_dict = np.array([distance(english_chars_word, i.lower(), weights=(1000, 1000, 1)) for i in rus_and_eng_names[len(lower_word)]])
         actual_word_dict = russian_dict if np.min(russian_dict) < np.min(english_dict) else english_dict
         if actual_word_dict.size == 0 or 1 - (np.min(actual_word_dict) / len(lower_word)) < 0.8:
             return word
@@ -140,15 +145,15 @@ def find_closest_word(word) -> str:
     return correct_word
 
 
-def correct_collapsed_text(text) -> str:
+def correct_collapsed_text(text: str) -> str:
     text = correct_string_incorrect_chars(text)
     text = correct_case(text)
     return text
 
 
-def correct_text_str(text) -> str:
+def correct_text_str(text: str) -> str:
     return correct_string_incorrect_chars(text)
 
 
-def remove_redundant_whitespaces(text) -> str:
-    return ' '.join(text.split())
+def remove_redundant_whitespaces(text: str) -> str:
+    return " ".join(text.split())

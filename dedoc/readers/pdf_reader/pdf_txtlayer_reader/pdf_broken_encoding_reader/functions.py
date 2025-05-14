@@ -3,7 +3,7 @@ from pathlib import Path
 junk_string = "_junkstring"
 
 
-def correctly_resize(image_path, size: tuple = (28, 28)):
+def correctly_resize(image_path: str, size: tuple = (28, 28)) -> None:
     import PIL.ImageOps
     from PIL import Image
     im = Image.open(image_path)
@@ -16,7 +16,7 @@ def correctly_resize(image_path, size: tuple = (28, 28)):
     new_image.save(image_path)
 
 
-def is_empty(image_path) -> bool:
+def is_empty(image_path: str) -> bool:
     from PIL import Image
     if not image_path.lower().endswith(".png"):
         raise Exception("problems with extracted glyphs png path")
@@ -32,17 +32,17 @@ def get_project_root() -> Path:
     return Path(__file__).parent
 
 
-def collapse_text(text):
+def collapse_text(text: str) -> str:
     text = " ".join(text.splitlines())
     text = " ".join(text.split())
     return text
 
 
-def remove_hyphenations(text):
+def remove_hyphenations(text: str) -> str:
     return text.replace("- ", "")
 
 
-def extract_pdf_text2json(pdf_path: Path, pages: tuple = None):
+def extract_pdf_text2json(pdf_path: Path, pages: tuple = None) -> None:
     import os
     import json
 

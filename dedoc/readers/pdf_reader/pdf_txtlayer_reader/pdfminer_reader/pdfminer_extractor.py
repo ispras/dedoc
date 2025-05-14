@@ -10,7 +10,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from pdfminer.converter import PDFPageAggregator
-from pdfminer.layout import LAParams, LTAnno, LTChar, LTContainer, LTCurve, LTFigure, LTImage, LTRect, LTPage
+from pdfminer.layout import LAParams, LTAnno, LTChar, LTContainer, LTCurve, LTFigure, LTImage, LTPage, LTRect
 from pdfminer.layout import LTTextBox, LTTextBoxHorizontal, LTTextContainer, LTTextLineHorizontal
 from pdfminer.pdfinterp import PDFPageInterpreter
 from pdfminer.pdfinterp import PDFResourceManager
@@ -153,15 +153,13 @@ class PdfminerExtractor:
 
         bboxes = []
         for line_num, lobj in enumerate(lobjs_textline):
-            text_with_bbox = self.get_info_layout_object(lobj, page_num=page_number, line_num=line_num, k_w=k_w,
-                                                         k_h=k_h, height=height, width=width)
+            text_with_bbox = self.get_info_layout_object(lobj, page_num=page_number, line_num=line_num, k_w=k_w, k_h=k_h, height=height, width=width)
             if text_with_bbox.bbox.width * text_with_bbox.bbox.height > 0:
                 bboxes.append(text_with_bbox)
 
         attachments = images if len(images) < 10 else []
 
-        return PageWithBBox(bboxes=bboxes, image=image_page, page_num=page_number, attachments=attachments,
-                            pdf_page_height=height, pdf_page_width=width)
+        return PageWithBBox(bboxes=bboxes, image=image_page, page_num=page_number, attachments=attachments, pdf_page_height=height, pdf_page_width=width)
 
     def __extract_image(self,
                         parameters: ParametersForParseDoc,
