@@ -134,7 +134,8 @@ def export_glyph(
     save_paths: List[str],
     names: List[str],
     codes: List[int],
-    unicode_val: int) -> None:
+    unicode_val: int
+) -> None:
     """Export glyph to image file."""
     char_save_path = f"{save_path}/{filename}.png"
     try:
