@@ -1,6 +1,8 @@
+from typing import List
+
 import torch
-from torch import nn
 import torch.nn.functional as f
+from torch import nn
 
 
 class CNNModel(nn.Module):
@@ -44,7 +46,7 @@ class Model:
     def __assert_labels_and_model(self) -> None:
         assert self.model.fc1.out_features == len(self.labels)
 
-    def recognize_glyph(self, images) -> list:
+    def recognize_glyph(self, images: List[str]) -> list:
         import cv2
         import numpy as np
         import torch

@@ -6,7 +6,7 @@ import tempfile
 from itertools import zip_longest
 from pathlib import Path, PurePath
 from sys import platform
-from typing import Any, Iterable, Optional, Union, Dict, List
+from typing import Dict, Iterable, List, Optional, Union
 
 import fitz
 from fontTools.ttLib import TTFont
@@ -43,7 +43,7 @@ class PDFReader:
 
     def restore_text(self, pdf_path: Path, start_page: int = 0, end_page: int = 0) -> str:
         assert end_page > start_page or start_page == end_page == 0, "wrong pages range"
-        self.text = ''
+        self.text = ""
         self.match_dict = {}
         self.__read_pdf(pdf_path)
         self.__match_glyphs_and_encoding_for_all()
@@ -94,9 +94,9 @@ class PDFReader:
 
             devnull = open(os.devnull, "wb")
             if platform == "linux" or platform == "linux2":
-                result = subprocess.check_output(f"fontforge -script {str(ff_path)} False {save_path} {font_path}", shell=True, stderr=devnull)
+                result = subprocess.check_output(f"fontforge -script {str(ff_path)} generate_all_images {save_path} {font_path}", shell=True, stderr=devnull)
             else:
-                console_command = f"ffpython {str(ff_path)} False {save_path} {font_path}"
+                console_command = f"ffpython {str(ff_path)} generate_all_images {save_path} {font_path}"
                 try:
                     result = subprocess.check_output(console_command, stderr=devnull)
                 except Exception:
@@ -178,7 +178,7 @@ class PDFReader:
 
         return dictionary
 
-    def __restore_text(self, pdf_path: Path, start: int=0, end: int=0) -> str:
+    def __restore_text(self, pdf_path: Path, start: int = 0, end: int = 0) -> str:
         self.__cached_fonts = None
         self.__fontname2basefont = {}
         self.__unicodemaps = {}
@@ -208,7 +208,7 @@ class PDFReader:
 
                 if not isinstance(fonts, dict):
                     Exception("fonts should be dictionary")
-                for font_key, font_obj in fonts.items():
+                for _, font_obj in fonts.items():
                     font_dict = resolve1(font_obj)
                     encoding = resolve1(font_dict.get("Encoding"))
                     f = rsrcmgr.get_font(objid=font_obj.objid, spec={"name": resolve1(font_obj)["BaseFont"].name})
@@ -267,7 +267,7 @@ class PDFReader:
 
         index = -1
         if "cid" in char:
-            index = int(char[1:-1].split(':')[-1])
+            index = int(char[1:-1].split(":")[-1])
         elif "glyph" in char:
             glyph_unicode = int(char[5:])
             index = ord(self.__unicodemaps[glyph_unicode])
@@ -315,7 +315,7 @@ class PDFReader:
 
     def __get_char_index(self, char: str) -> Optional[int]:
         if "cid" in char:
-            return int(char[1:-1].split(':')[-1])
+            return int(char[1:-1].split(":")[-1])
         elif "glyph" in char:
             glyph_unicode = int(char[5:])
             return ord(self.__unicodemaps[glyph_unicode])
@@ -360,7 +360,7 @@ class PDFReader:
 
         return layouts
 
-    def __restore_layout(self, pdf_path: Path, start: int=0, end: int=0) -> List[list]:
+    def __restore_layout(self, pdf_path: Path, start: int = 0, end: int = 0) -> List[list]:
         self.__cached_fonts = None
         self.__fontname2basefont = {}
         self.__unicodemaps = {}
@@ -401,7 +401,7 @@ class PDFReader:
                     if not (isinstance(encoding, dict) and ("/Differences" in encoding or "Differences" in encoding)):
                         cached_fonts[f.fontname] = []
                         continue
-                    char_set_arr = [q.name if isinstance(q, PSLiteral) else '' for q in encoding["Differences"]]
+                    char_set_arr = [q.name if isinstance(q, PSLiteral) else "" for q in encoding["Differences"]]
                     cached_fonts[f.fontname] = char_set_arr
 
                 fulltext = []

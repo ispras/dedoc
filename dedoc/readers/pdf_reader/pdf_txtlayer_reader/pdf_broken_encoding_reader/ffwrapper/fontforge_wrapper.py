@@ -1,5 +1,7 @@
+import json
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import Dict, List, Tuple
+
 import fontforge
 
 image_size = 80
@@ -125,7 +127,14 @@ def handle_empty_glyph(filename: str, font_white_spaces: Dict[str, str], not_wor
     not_worth_outputting.append(filename)
 
 
-def export_glyph(name: str, font: Dict[str, Dict[str, any]], save_path: Path, filename: str, save_paths: List[str], names: List[str], codes: List[int], unicode_val: int) -> None:
+def export_glyph(
+    name: str,
+    font: Dict[str, Dict[str, any]],
+    save_path: Path, filename: str,
+    save_paths: List[str],
+    names: List[str],
+    codes: List[int],
+    unicode_val: int) -> None:
     """Export glyph to image file."""
     char_save_path = f"{save_path}/{filename}.png"
     try:
@@ -141,7 +150,9 @@ if __name__ == "__main__":
     import sys
 
     args = sys.argv[1:]
-    if args[0] == "True":
-        print(generate_images(Path(args[1]), Path(args[2]), int(args[3]), args[4:]))
-    elif args[0] == "False":
-        print(generate_all_images(Path(args[1]), Path(args[2])))
+    if args[0] == "generate_images":
+        result = generate_images(Path(args[1]), Path(args[2]), int(args[3]), args[4:])
+        sys.stdout.write(json.dumps(result))
+    elif args[0] == "generate_all_images":
+        result = generate_all_images(Path(args[1]), Path(args[2]))
+        sys.stdout.write(json.dumps(result))

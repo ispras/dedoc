@@ -1,7 +1,7 @@
 import enum
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List, Type
 
 char_pool = dict(
     rus_eng=[
@@ -111,7 +111,7 @@ class Language(enum.Enum):
     English = char_pool["eng"]
 
     @classmethod
-    def from_string(cls, model_name: str) -> "Language":
+    def from_string(cls: Type["Language"], model_name: str) -> "Language":
         mapping = {
             "ruseng": cls.Russian_and_English,
             "rus": cls.Russian,
