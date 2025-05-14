@@ -6,12 +6,12 @@ from numpy import ndarray
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.pdf_base_reader import ParametersForParseDoc
 from dedoc.readers.pdf_reader.pdf_base_reader import PdfBaseReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.pdf_worker.pdf_reader import PDFReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 
 logging.getLogger("pdfminer").setLevel(logging.ERROR)
 WordObj = namedtuple("Word", ["start", "end", "value"])
