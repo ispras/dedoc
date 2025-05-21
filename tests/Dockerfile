@@ -4,8 +4,9 @@ FROM dedocproject/dedoc_p3.9_base:version_2023_08_28
 ENV PYTHONPATH "${PYTHONPATH}:/dedoc_root:/dedoc_root/tests:/dedoc_root/langchain"
 
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
 RUN pip3 install "langchain-community<1.0"
+RUN pip3 install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends fontforge
 
 RUN mkdir /dedoc_root
 COPY docs/source/_static/code_examples/langchain /dedoc_root/langchain
