@@ -210,7 +210,7 @@ class PdfTabbyReader(PdfBaseReader):
                 cells = self.table_extractor.handle_cells(cells)
                 scan_tables.append(ScanTable(page_number=page_number, cells=cells, bbox=table_bbox, order=order))
             except Exception as ex:
-                self.logger.warning(f"Warning: unrecognized table on page {self.page_number}. {ex}")
+                self.logger.warning(f"Warning: unrecognized table on page {page_number}. {ex}")
                 if self.config.get("debug_mode", False):
                     raise ex
 
