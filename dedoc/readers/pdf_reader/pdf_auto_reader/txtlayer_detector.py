@@ -12,6 +12,7 @@ from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier.ml_txtlayer_cl
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier.simple_txtlayer_classifier import SimpleTxtlayerClassifier
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
 from dedoc.utils.parameter_utils import get_bool_parameter, get_param_page_slice
+from dedoc.utils.pdf_utils import get_pdf_page_count
 
 
 @dataclass
@@ -76,6 +77,9 @@ class TxtLayerDetector:
         if not is_correct:
             return [TxtLayerResult(correct=False, start=start, end=end)]
 
+        if start > 1:  # no need to classify correctness of the first page
+            return [TxtLayerResult(correct=True, start=start, end=end)]
+
         first_page_lines = [line for line in document.lines if line.metadata.page_id == 0]
         first_page_correct = txtlayer_classifier.predict([first_page_lines])[0]
         if first_page_correct:
@@ -88,35 +92,36 @@ class TxtLayerDetector:
         Classify each page of the document correct/not correct textual layer.
         """
         document = self.pdf_reader.read(path, parameters=parameters)
+        start, end = get_param_page_slice(parameters)
+        start = 1 if start is None else start + 1
         if not document.lines:
-            start, end = get_param_page_slice(parameters)
-            start = 1 if start is None else start + 1
             return [TxtLayerResult(correct=False, start=start, end=end)]
 
         # Prepare lines for prediction - list of pages
         lines = sorted(document.lines, key=lambda l: (l.metadata.page_id, l.metadata.line_id))
         lines_for_predict = []
-        prev_page_id = lines[0].metadata.page_id
-        current_lines = []
-        for line in lines:
-            if line.metadata.page_id == prev_page_id:
+        fisrt_page_id = start - 1
+        last_page_id = lines[-1].metadata.page_id
+        current_line_idx = 0
+
+        for page_id in range(fisrt_page_id, last_page_id + 1):
+            current_lines = []
+            for line_idx, line in enumerate(lines[current_line_idx:]):
+                if line.metadata.page_id != page_id:
+                    current_line_idx += line_idx
+                    break
                 current_lines.append(line)
-                continue
             lines_for_predict.append(current_lines)
-            current_lines = [line]
-            prev_page_id = line.metadata.page_id
-        lines_for_predict.append(current_lines)
 
         predictions = txtlayer_classifier.predict(lines_for_predict)
         # e.g. predictions = [0, 0, 1, 1, 0, 1, 0, 0, 1], transitions = [2, 4, 5, 6, 8]
         transitions = list(np.where(predictions[:-1] != predictions[1:])[0] + 1)
-        transitions.append(len(transitions))
+        transitions.append(len(predictions))
         result: List[TxtLayerResult] = []
 
         # Split document into chunks with different value of the textual layer correctness
         is_correct = predictions[0]
         prev_idx = 0
-        fisrt_page_id = lines[0].metadata.page_id
         for transition_idx in transitions:
             chunk_lines = list(chain.from_iterable(lines_for_predict[prev_idx:transition_idx]))
             chunk_document = UnstructuredDocument(lines=chunk_lines, tables=document.tables, attachments=document.attachments)
@@ -124,4 +129,11 @@ class TxtLayerDetector:
             result.append(chunk_result)
             is_correct = not is_correct
             prev_idx = transition_idx
+
+        # Handle last pages without textual layer
+        page_count = get_pdf_page_count(path)
+        page_count = end if page_count is None else page_count
+        if page_count is None or prev_idx < min(end, page_count):
+            result.append(TxtLayerResult(start=prev_idx + fisrt_page_id + 1, end=end, correct=False))
+
         return result

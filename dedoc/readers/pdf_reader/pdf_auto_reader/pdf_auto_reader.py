@@ -107,7 +107,9 @@ class PdfAutoReader(BaseReader):
         from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
         from dedoc.data_structures.line_with_meta import LineWithMeta
 
-        tables, attachments, dropped_tables, dropped_attachments = self.__prepare_tables_attachments(documents)
+        tables, attachments = self.__prepare_tables_attachments(documents)
+        table_uids = set([table.metadata.uid for table in tables])
+        attachment_uids = set([attachment.uid for attachment in attachments])
         lines, line_id = [], 0
 
         for line in chain.from_iterable([document.lines for document in documents]):
@@ -115,35 +117,32 @@ class PdfAutoReader(BaseReader):
             line_id += 1
             annotations = []
             for annotation in line.annotations:
-                if isinstance(annotation, TableAnnotation) and annotation.value in dropped_tables:
+                if isinstance(annotation, TableAnnotation) and annotation.value not in table_uids:
                     continue
-                if isinstance(annotation, AttachAnnotation) and annotation.value in dropped_attachments:
+                if isinstance(annotation, AttachAnnotation) and annotation.value not in attachment_uids:
                     continue
                 annotations.append(annotation)
             lines.append(LineWithMeta(line=line.line, metadata=line.metadata, annotations=annotations, uid=line.uid))
 
         return UnstructuredDocument(tables=tables, lines=lines, attachments=attachments, metadata=documents[0].metadata)
 
-    def __prepare_tables_attachments(self, documents: List[UnstructuredDocument]) -> Tuple[list, list, set, set]:
+    def __prepare_tables_attachments(self, documents: List[UnstructuredDocument]) -> Tuple[list, list]:
         from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 
-        tables, attachments = [], []
-        dropped_tables, dropped_attachments = [], []
-
+        tables, attachments, attachment_uids = [], [], set()
         for document in documents:
             if not document.lines:
-                dropped_tables.extend([table.metadata.uid for table in document.tables])
-                dropped_attachments.extend([attachment.uid for attachment in document.attachments])
                 continue
 
             lines = sorted(document.lines, key=lambda l: l.metadata.page_id)
             min_page, max_page = lines[0].metadata.page_id, lines[-1].metadata.page_id
             tables.extend([table for table in document.tables if min_page <= table.metadata.page_id <= max_page])
-            dropped_tables.extend([table.metadata.uid for table in document.tables if not (min_page <= table.metadata.page_id <= max_page)])
             for attachment in document.attachments:
+                if not isinstance(attachment, PdfImageAttachment) and attachment.uid not in attachment_uids:
+                    attachment_uids.add(attachment.uid)
+                    attachments.append(attachment)
+
                 if isinstance(attachment, PdfImageAttachment) and min_page <= attachment.location.page_number <= max_page:
                     attachments.append(attachment)
-                else:
-                    dropped_attachments.append(attachment.uid)
 
-        return tables, attachments, set(dropped_tables), set(dropped_attachments)
+        return tables, attachments
