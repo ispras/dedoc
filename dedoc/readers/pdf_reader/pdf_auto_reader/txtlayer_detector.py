@@ -34,11 +34,11 @@ class TxtLayerDetector:
         :param parameters: parameters for the txtlayer classifier
         :return: information about a textual layer in the PDF document
         """
-        if get_bool_parameter(parameters, "fast_textual_layer_detection", "false"):
+        if get_bool_parameter(parameters, "fast_textual_layer_detection", False):
             txtlayer_classifier = self.simple_txtlayer_classifier
         else:
             txtlayer_classifier = self.ml_txtlayer_classifier
-        classify_each_page = get_bool_parameter(parameters, "each_page_textual_layer_detection", "false")
+        classify_each_page = get_bool_parameter(parameters, "each_page_textual_layer_detection", False)
         detect_function = self.__classify_each_page if classify_each_page else self.__classify_all_pages
         try:
             return detect_function(path, parameters, txtlayer_classifier)
