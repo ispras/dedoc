@@ -2,6 +2,7 @@ from typing import List, Optional, Tuple
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
+from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_result import TxtLayerResult
 
 
 class PdfAutoReader(BaseReader):
@@ -58,43 +59,35 @@ class PdfAutoReader(BaseReader):
 
         documents = []
         for txtlayer_result_chunk in txtlayer_result:
-            if txtlayer_result_chunk.document:
-                documents.append(txtlayer_result_chunk.document)
-                continue
-
-            document = self.__parse_document(
-                correct=txtlayer_result_chunk.correct,
-                start=txtlayer_result_chunk.start,
-                end=txtlayer_result_chunk.end,
-                parameters=parameters,
-                path=file_path,
-                warnings=warnings
-            )
+            document = self.__parse_document(txtlayer_result=txtlayer_result_chunk, parameters=parameters, path=file_path, warnings=warnings)
             documents.append(document)
 
         result_document = self.__merge_documents(documents)
         result_document.warnings.extend(warnings)
         return result_document
 
-    def __parse_document(self, correct: bool, start: int, end: Optional[int], parameters: dict, path: str, warnings: list) -> UnstructuredDocument:
-        import copy
+    def __parse_document(self, txtlayer_result: TxtLayerResult, parameters: dict, path: str, warnings: list) -> UnstructuredDocument:
         import os
-        from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
 
-        end = "" if end is None else end
-        correct_text = "correct" if correct else "incorrect"
-        log_text = f"Assume document {os.path.basename(path)} has {correct_text} textual layer on pages [{start}:{end}]"
+        end = "" if txtlayer_result.end is None else txtlayer_result.end
+        correct_text = "correct" if txtlayer_result.correct else "incorrect"
+        log_text = f"Assume document {os.path.basename(path)} has {correct_text} textual layer on pages [{txtlayer_result.start}:{end}]"
         self.logger.info(log_text)
         warnings.append(log_text)
+        if txtlayer_result.document:
+            return txtlayer_result.document
 
-        if correct:
+        import copy
+        from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
+
+        if txtlayer_result.correct:
             pdf_with_txt_layer = get_param_pdf_with_txt_layer(parameters)
             reader = self.pdf_txtlayer_reader if pdf_with_txt_layer == "auto" else self.pdf_tabby_reader
         else:
             reader = self.pdf_image_reader
 
         copy_parameters = copy.deepcopy(parameters)
-        copy_parameters["pages"] = f"{start}:{end}"
+        copy_parameters["pages"] = f"{txtlayer_result.start}:{end}"
         result = reader.read(file_path=path, parameters=copy_parameters)
         return result
 

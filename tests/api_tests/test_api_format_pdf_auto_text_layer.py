@@ -105,6 +105,44 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         self.assertIn("Assume document has incorrect textual layer on pages [1:1]", warnings)
         self.assertIn("Assume document has correct textual layer on pages [2:]", warnings)
 
+    def test_each_page_textual_layer_detection(self) -> None:
+        file_name = "prospectus_merged.pdf"
+        parameters = dict(each_page_textual_layer_detection=True)
+        result = self._send_request(file_name, parameters)
+        warnings = self.__prepare_warnings(result["warnings"])
+        self.assertIn("Assume document has correct textual layer on pages [1:6]", warnings)
+        self.assertIn("Assume document has incorrect textual layer on pages [7:8]", warnings)
+        self.assertIn("Assume document has correct textual layer on pages [9:9]", warnings)
+
+        parameters = dict(each_page_textual_layer_detection=True, fast_textual_layer_detection=True)
+        result = self._send_request(file_name, parameters)
+        warnings = self.__prepare_warnings(result["warnings"])
+        self.assertIn("Assume document has correct textual layer on pages [1:7]", warnings)
+        self.assertIn("Assume document has incorrect textual layer on pages [8:8]", warnings)
+        self.assertIn("Assume document has correct textual layer on pages [9:9]", warnings)
+
+        parameters = dict(each_page_textual_layer_detection=True, pages=":5")
+        result = self._send_request(file_name, parameters)
+        warnings = self.__prepare_warnings(result["warnings"])
+        self.assertIn("Assume document has correct textual layer on pages [1:5]", warnings)
+
+        parameters = dict(each_page_textual_layer_detection=True, pages="5:8")
+        result = self._send_request(file_name, parameters)
+        warnings = self.__prepare_warnings(result["warnings"])
+        self.assertIn("Assume document has correct textual layer on pages [5:6]", warnings)
+        self.assertIn("Assume document has incorrect textual layer on pages [7:8]", warnings)
+
+        parameters = dict(each_page_textual_layer_detection=True, pages="7:8")
+        result = self._send_request(file_name, parameters)
+        warnings = self.__prepare_warnings(result["warnings"])
+        self.assertIn("Assume document has incorrect textual layer on pages [7:8]", warnings)
+
+        parameters = dict(each_page_textual_layer_detection=True, pages="7:")
+        result = self._send_request(file_name, parameters)
+        warnings = self.__prepare_warnings(result["warnings"])
+        self.assertIn("Assume document has incorrect textual layer on pages [7:8]", warnings)
+        self.assertIn("Assume document has correct textual layer on pages [9:9]", warnings)
+
     def __prepare_warnings(self, warnings: List[str]) -> List[str]:
         preprocessed_warnings = []
         for warning in warnings:

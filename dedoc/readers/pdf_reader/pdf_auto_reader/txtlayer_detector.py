@@ -1,8 +1,8 @@
 import logging
+import math
 from copy import deepcopy
-from dataclasses import dataclass
 from itertools import chain
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 
@@ -10,24 +10,10 @@ from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier.abstract_txtlayer_classifier import AbstractTxtlayerClassifier
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier.ml_txtlayer_classifier import MlTxtlayerClassifier
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier.simple_txtlayer_classifier import SimpleTxtlayerClassifier
+from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_result import TxtLayerResult
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
 from dedoc.utils.parameter_utils import get_bool_parameter, get_param_page_slice
 from dedoc.utils.pdf_utils import get_pdf_page_count
-
-
-@dataclass
-class TxtLayerResult:
-    """
-    Class for saving information about textual layer correctness of the document chunk.
-    - correct - if the document chunk contains correct textual layer or not
-    - start - start page of the document chunk (numeration starts with 1)
-    - end - end page of the document chunk (numeration starts with 1, end included)
-    - document - UnstructuredDocument of document pages[start:end]
-    """
-    correct: bool
-    start: int
-    end: Optional[int]
-    document: Optional[UnstructuredDocument] = None
 
 
 class TxtLayerDetector:
@@ -132,8 +118,13 @@ class TxtLayerDetector:
 
         # Handle last pages without textual layer
         page_count = get_pdf_page_count(path)
-        page_count = end if page_count is None else page_count
-        if page_count is None or prev_idx < min(end, page_count):
-            result.append(TxtLayerResult(start=prev_idx + fisrt_page_id + 1, end=end, correct=False))
+        end_numeric_value = min(page_count or math.inf, end or math.inf)
+        start_value = prev_idx + fisrt_page_id + 1
+        end_value = end or page_count
+        if end_value is None or start_value <= end_numeric_value:
+            if result and not result[-1].correct:
+                result[-1].end = end_value
+            else:
+                result.append(TxtLayerResult(start=start_value, end=end_value, correct=False))
 
         return result
