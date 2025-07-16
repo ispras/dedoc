@@ -78,7 +78,7 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         result = self._send_request(file_name, data)
         structure = result["content"]["structure"]
         self.assertEqual("", structure["subparagraphs"][0]["text"])
-        list_items = structure["subparagraphs"][1]["subparagraphs"]
+        list_items = structure["subparagraphs"][0]["subparagraphs"]
         self.assertEqual("3) продолжаем список\n", list_items[0]["text"])
         self.assertEqual("4) Список идёт своим чередом\n", list_items[1]["text"])
         self.assertEqual("5) заканчиваем список\n", list_items[2]["text"])

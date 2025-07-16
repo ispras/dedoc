@@ -102,12 +102,16 @@ class PdfAutoReader(BaseReader):
         if len(documents) == 0:
             raise ValueError("No documents to merge")
 
+        if len(documents) == 1:
+            return documents[0]
+
         from itertools import chain
         from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
         from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
         from dedoc.data_structures.line_with_meta import LineWithMeta
 
         tables, attachments = self.__prepare_tables_attachments(documents)
+        warnings = list(set(chain.from_iterable([document.warnings for document in documents])))
         table_uids = set([table.metadata.uid for table in tables])
         attachment_uids = set([attachment.uid for attachment in attachments])
         lines, line_id = [], 0
@@ -124,7 +128,7 @@ class PdfAutoReader(BaseReader):
                 annotations.append(annotation)
             lines.append(LineWithMeta(line=line.line, metadata=line.metadata, annotations=annotations, uid=line.uid))
 
-        return UnstructuredDocument(tables=tables, lines=lines, attachments=attachments, metadata=documents[0].metadata)
+        return UnstructuredDocument(tables=tables, lines=lines, attachments=attachments, metadata=documents[0].metadata, warnings=warnings)
 
     def __prepare_tables_attachments(self, documents: List[UnstructuredDocument]) -> Tuple[list, list]:
         from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
