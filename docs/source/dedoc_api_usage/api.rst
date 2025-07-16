@@ -204,6 +204,14 @@ Api parameters description
         * **true** -- if any text is detected in a PDF file, Dedoc assumes that textual layer is detected and it is correct. Much faster but less accurate.
         * **false** -- use the textual layer classifier to detect textual layer and prove its correctness.
 
+    * - each_page_textual_layer_detection
+      - true, false
+      - false
+      - Enable textual layer detection separately on each document page. Works only when **auto** or **auto_tabby** is selected at **pdf_with_text_layer**.
+
+        * **true** -- classify text of each page if it's correct or not. Classification algorythm depends on the **fast_textual_layer_detection** parameter. This option is recommended for PDF documents with scanned (or corrupted) pages in the middle.
+        * **false** -- classify text of only first 8 pages if it's correct or not. First page is handled separately. Much faster but less accurate.
+
     * - need_gost_frame_analysis
       - true, false
       - false

@@ -7,7 +7,7 @@ from dedoc.data_structures.line_metadata import LineMetadata
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.tables.location import Location
-from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier import TxtlayerClassifier
+from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier.ml_txtlayer_classifier import MlTxtlayerClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
 from dedoc.structure_extractors.concrete_structure_extractors.law_structure_excractor import LawStructureExtractor
@@ -43,9 +43,9 @@ class TestOnGpu(AbstractTestApiDocReader):
             self.assertEqual(orientation, 0)
 
     def test_txtlayer_classifier(self) -> None:
-        classify_lines = TxtlayerClassifier(config=self.config)
-        lines = [LineWithMeta("Line1"), LineWithMeta("Line 2 is a bit longer")]
-        self.assertEqual(classify_lines.predict(lines), True)
+        classify_lines = MlTxtlayerClassifier(config=self.config)
+        lines = [[LineWithMeta("Line1"), LineWithMeta("Line 2 is a bit longer")]]
+        self.assertEqual(classify_lines.predict(lines)[0], True)
 
     def test_scan_paragraph_classifier_extractor(self) -> None:
         classify_lines_with_location = ScanParagraphClassifierExtractor(config=self.config)
