@@ -38,7 +38,7 @@ class LineObjectLinker:
             lines = [LineWithLocation(line="", metadata=metadata, annotations=[], location=Location(page_number=0, bbox=BBox(0, 0, 1, 1)))]
         last_page_line = self._get_last_page_line(lines)
         all_objects = list(lines + tables + images)
-        all_objects.sort(key=lambda o: (o.order, o.location))
+        all_objects.sort(key=lambda o: (o.location.page_number, o.order, o.location))
         objects_with_line_candidate = defaultdict(dict)
         self._add_lines(all_objects, "previous_lines", objects_with_line_candidate)
         self._add_lines(all_objects[::-1], "next_lines", objects_with_line_candidate)
