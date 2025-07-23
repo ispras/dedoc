@@ -176,6 +176,7 @@ class PdfTabbyReader(PdfBaseReader):
 
         for table in page["tables"]:
             table_bbox = BBox(x_top_left=table["x_top_left"], y_top_left=table["y_top_left"], width=table["width"], height=table["height"])
+            order = table["order"]
             rows = table["rows"]
             cell_properties = table["cell_properties"]
             assert len(rows) == len(cell_properties)
@@ -210,7 +211,7 @@ class PdfTabbyReader(PdfBaseReader):
 
             try:
                 cells = self.table_extractor.handle_cells(cells)
-                scan_tables.append(ScanTable(page_number=page_number, cells=cells, bbox=table_bbox))
+                scan_tables.append(ScanTable(page_number=page_number, cells=cells, bbox=table_bbox, order=order))
             except Exception as ex:
                 self.logger.warning(f"Warning: unrecognized table on page {page_number}. {ex}")
                 if self.config.get("debug_mode", False):
@@ -308,7 +309,8 @@ class PdfTabbyReader(PdfBaseReader):
                                                   metadata=metadata,
                                                   annotations=annotations,
                                                   uid=uid,
-                                                  location=Location(bbox=bbox, page_number=page_number))
+                                                  location=Location(bbox=bbox, page_number=page_number),
+                                                  order=order)
             line_with_location.metadata.tag_hierarchy_level = self.__get_tag(line_with_location, meta)
 
             lines.append(line_with_location)
