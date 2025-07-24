@@ -28,6 +28,7 @@ class QueryParameters:
                                     description="Extract text from a text layer of PDF or using OCR methods for image-like documents")
     fast_textual_layer_detection: str = Form("false", enum=["true", "false"],
                                              description="Use non-ML solution to detect textual layer. Much faster but less accurate.")
+    each_page_textual_layer_detection: str = Form("false", enum=["true", "false"], description="Detect textual layer on each page. Slower but more accurate.")
     language: str = Form("rus+eng", description="Recognition language ('rus+eng', 'rus', 'eng', 'fra', 'spa')")
     pages: str = Form(":", description='Page numbers range for reading PDF or images, "left:right" means read pages from left to right')
     is_one_column_document: str = Form("auto", enum=["auto", "true", "false"],

@@ -13,6 +13,11 @@ def get_bool_value(parameter: Optional[bool or str], default_value: bool = False
     return parameter if isinstance(parameter, bool) else str(parameter).lower() == "true"
 
 
+def get_bool_parameter(parameters: Optional[dict], parameter_name: str, default_value: bool = False) -> bool:
+    parameters = {} if parameters is None else parameters
+    return get_bool_value(parameters.get(parameter_name), default_value)
+
+
 def get_param_language(parameters: Optional[dict]) -> str:
     if parameters is None:
         return "rus+eng"

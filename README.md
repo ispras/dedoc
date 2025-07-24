@@ -94,6 +94,7 @@ Relevant documentation of dedoc is available [here](https://dedoc.readthedocs.io
 * Article [ISPRAS@FinTOC-2022 shared task: Two-stage TOC generation model](https://aclanthology.org/2022.fnp-1.13.pdf) for the [FinTOC 2022 Shared Task](https://wp.lancs.ac.uk/cfie/fintoc2022/). We are the winners :smiley: :trophy:!
 * Article on habr.com [Dedoc: как автоматически извлечь из текстового документа всё и даже немного больше](https://habr.com/ru/companies/isp_ras/articles/779390/) in Russian (2023)
 * Article [Dedoc: A Universal System for Extracting Content and Logical Structure From Textual Documents](https://ieeexplore.ieee.org/abstract/document/10508151/) in English (2023)
+* Article [Automatic verification of the text layer correctness in PDF documents](https://ieeexplore.ieee.org/abstract/document/10659388/) in English (2024)
 
 # Join Our Community
 

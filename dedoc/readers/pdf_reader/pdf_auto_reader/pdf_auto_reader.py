@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import List, Optional, Tuple
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
+from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_result import TxtLayerResult
 
 
 class PdfAutoReader(BaseReader):
@@ -54,100 +55,91 @@ class PdfAutoReader(BaseReader):
         """
         parameters = {} if parameters is None else parameters
         warnings = []
-        txtlayer_parameters = self.txtlayer_detector.detect_txtlayer(path=file_path, parameters=parameters)
+        txtlayer_result = self.txtlayer_detector.detect_txtlayer(path=file_path, parameters=parameters)
 
-        if txtlayer_parameters.is_correct_text_layer:
-            result = self.__handle_correct_text_layer(is_first_page_correct=txtlayer_parameters.is_first_page_correct,
-                                                      parameters=parameters,
-                                                      path=file_path,
-                                                      warnings=warnings)
-        else:
-            result = self.__handle_incorrect_text_layer(parameters, file_path, warnings)
+        documents = []
+        for txtlayer_result_chunk in txtlayer_result:
+            document = self.__parse_document(txtlayer_result=txtlayer_result_chunk, parameters=parameters, path=file_path, warnings=warnings)
+            documents.append(document)
 
-        result.warnings.extend(warnings)
-        return result
+        result_document = self.__merge_documents(documents)
+        result_document.warnings.extend(warnings)
+        return result_document
 
-    def __handle_incorrect_text_layer(self, parameters_copy: dict, path: str, warnings: list) -> UnstructuredDocument:
+    def __parse_document(self, txtlayer_result: TxtLayerResult, parameters: dict, path: str, warnings: list) -> UnstructuredDocument:
         import os
 
-        self.logger.info(f"Assume document {os.path.basename(path)} has incorrect textual layer")
-        warnings.append("Assume document has incorrect textual layer")
-        result = self.pdf_image_reader.read(file_path=path, parameters=parameters_copy)
-        return result
+        end = "" if txtlayer_result.end is None else txtlayer_result.end
+        correct_text = "correct" if txtlayer_result.correct else "incorrect"
+        log_text = f"Assume document {os.path.basename(path)} has {correct_text} textual layer on pages [{txtlayer_result.start}:{end}]"
+        self.logger.info(log_text)
+        warnings.append(log_text)
+        if txtlayer_result.document:
+            return txtlayer_result.document
 
-    def __handle_correct_text_layer(self, is_first_page_correct: bool, parameters: dict, path: str, warnings: list) -> UnstructuredDocument:
-        import os
+        import copy
         from dedoc.utils.parameter_utils import get_param_pdf_with_txt_layer
 
-        self.logger.info(f"Assume document {os.path.basename(path)} has a correct textual layer")
-        warnings.append("Assume document has a correct textual layer")
-        recognized_first_page = None
+        if txtlayer_result.correct:
+            pdf_with_txt_layer = get_param_pdf_with_txt_layer(parameters)
+            reader = self.pdf_txtlayer_reader if pdf_with_txt_layer == "auto" else self.pdf_tabby_reader
+        else:
+            reader = self.pdf_image_reader
 
-        if not is_first_page_correct:
-            message = "Assume the first page hasn't a textual layer"
-            warnings.append(message)
-            self.logger.info(message)
-
-            # GET THE FIRST PAGE: recognize the first page like a scanned page
-            scan_parameters = self.__preparing_first_page_parameters(parameters)
-            recognized_first_page = self.pdf_image_reader.read(file_path=path, parameters=scan_parameters)
-
-            # PREPARE PARAMETERS: from the second page we recognize the content like PDF with a textual layer
-            parameters = self.__preparing_other_pages_parameters(parameters)
-
-        pdf_with_txt_layer = get_param_pdf_with_txt_layer(parameters)
-        reader = self.pdf_txtlayer_reader if pdf_with_txt_layer == "auto" else self.pdf_tabby_reader
-        result = reader.read(file_path=path, parameters=parameters)
-        result = self.__merge_documents(recognized_first_page, result) if recognized_first_page is not None else result
+        copy_parameters = copy.deepcopy(parameters)
+        copy_parameters["pages"] = f"{txtlayer_result.start}:{end}"
+        result = reader.read(file_path=path, parameters=copy_parameters)
         return result
 
-    def __preparing_first_page_parameters(self, parameters: dict) -> dict:
-        import copy
-        from dedoc.utils.parameter_utils import get_param_page_slice
+    def __merge_documents(self, documents: List[UnstructuredDocument]) -> UnstructuredDocument:
+        if len(documents) == 0:
+            raise ValueError("No documents to merge")
 
-        first_page, last_page = get_param_page_slice(parameters)
-        # calculate indexes for the first page parsing
-        first_page_index = 0 if first_page is None else first_page
-        last_page_index = 0
-        scan_parameters = copy.deepcopy(parameters)
+        if len(documents) == 1:
+            return documents[0]
 
-        # page numeration in parameters starts with 1, both ends are included
-        scan_parameters["pages"] = f"{first_page_index + 1}:{last_page_index + 1}"
-        # if the first page != 0 then we won't read it (because first_page_index > last_page_index)
-        return scan_parameters
-
-    def __preparing_other_pages_parameters(self, parameters: dict) -> dict:
-        from dedoc.utils.parameter_utils import get_param_page_slice
-
-        first_page, last_page = get_param_page_slice(parameters)
-        # parameters for reading pages from the second page
-        first_page_index = 1 if first_page is None else first_page
-        last_page_index = "" if last_page is None else last_page
-        parameters["pages"] = f"{first_page_index + 1}:{last_page_index}"
-
-        return parameters
-
-    def __merge_documents(self, first: UnstructuredDocument, second: UnstructuredDocument) -> UnstructuredDocument:
         from itertools import chain
+        from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
         from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
         from dedoc.data_structures.line_with_meta import LineWithMeta
 
-        tables = first.tables
-        dropped_tables = set()
-        for table in second.tables:
-            if table.metadata.page_id != 0:
-                tables.append(table)
-            else:
-                dropped_tables.add(table.metadata.uid)
+        tables, attachments = self.__prepare_tables_attachments(documents)
+        warnings = list(set(chain.from_iterable([document.warnings for document in documents])))
+        table_uids = set([table.metadata.uid for table in tables])
+        attachment_uids = set([attachment.uid for attachment in attachments])
+        lines, line_id = [], 0
 
-        lines = []
-        line_id = 0
-        for line in chain(first.lines, second.lines):
+        for line in chain.from_iterable([document.lines for document in documents]):
             line.metadata.line_id = line_id
             line_id += 1
-            annotations = [
-                annotation for annotation in line.annotations if not (isinstance(annotation, TableAnnotation) and annotation.value in dropped_tables)
-            ]
-            new_line = LineWithMeta(line=line.line, metadata=line.metadata, annotations=annotations, uid=line.uid)
-            lines.append(new_line)
-        return UnstructuredDocument(tables=tables, lines=lines, attachments=first.attachments + second.attachments, metadata=second.metadata)
+            annotations = []
+            for annotation in line.annotations:
+                if isinstance(annotation, TableAnnotation) and annotation.value not in table_uids:
+                    continue
+                if isinstance(annotation, AttachAnnotation) and annotation.value not in attachment_uids:
+                    continue
+                annotations.append(annotation)
+            lines.append(LineWithMeta(line=line.line, metadata=line.metadata, annotations=annotations, uid=line.uid))
+
+        return UnstructuredDocument(tables=tables, lines=lines, attachments=attachments, metadata=documents[0].metadata, warnings=warnings)
+
+    def __prepare_tables_attachments(self, documents: List[UnstructuredDocument]) -> Tuple[list, list]:
+        from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
+
+        tables, attachments, attachment_uids = [], [], set()
+        for document in documents:
+            if not document.lines:
+                continue
+
+            lines = sorted(document.lines, key=lambda l: l.metadata.page_id)
+            min_page, max_page = lines[0].metadata.page_id, lines[-1].metadata.page_id
+            tables.extend([table for table in document.tables if min_page <= table.metadata.page_id <= max_page])
+            for attachment in document.attachments:
+                if not isinstance(attachment, PdfImageAttachment) and attachment.uid not in attachment_uids:
+                    attachment_uids.add(attachment.uid)
+                    attachments.append(attachment)
+
+                if isinstance(attachment, PdfImageAttachment) and min_page <= attachment.location.page_number <= max_page:
+                    attachments.append(attachment)
+
+        return tables, attachments
