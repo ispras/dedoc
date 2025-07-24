@@ -39,3 +39,5 @@ wget==3.2
 xgbfir>=0.3.1,<1.0
 xgboost>=1.6.0,<2.0  # lower versions aren't compatible with pandas>2
 xlrd>=1.2.0,<2.0
+nltk==3.9.1
+fontTools==4.56.0
