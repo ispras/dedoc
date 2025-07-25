@@ -78,7 +78,7 @@ class CancellationProcessHandler(AbstractProcessHandler):
         super().__init__(logger=logger)
         self.input_queue = Queue()
         self.output_queue = Queue()
-        self.process = Process(target=self.__parse_file, args=[self.input_queue, self.output_queue])
+        self.process = Process(target=self._parse_file, args=[self.input_queue, self.output_queue])
         self.process.start()
         self.logger.info("Using CancellationProcessHandler, support parsing process termination when client disconnects")
 
@@ -114,7 +114,7 @@ class CancellationProcessHandler(AbstractProcessHandler):
 
         raise DedocError.from_dict(result)
 
-    def __parse_file(self, input_queue: Queue, output_queue: Queue) -> None:
+    def _parse_file(self, input_queue: Queue, output_queue: Queue) -> None:
         """
         Function for file parsing in a separate (child) process.
         It's a background process, i.e. it is waiting for a task in the input queue.
