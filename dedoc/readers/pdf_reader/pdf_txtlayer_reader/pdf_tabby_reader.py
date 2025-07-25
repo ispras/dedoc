@@ -1,5 +1,5 @@
 import os.path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from dedocutils.data_structures import BBox
 from numpy import ndarray
@@ -8,7 +8,6 @@ from dedoc.common.exceptions.java_not_found_error import JavaNotFoundError
 from dedoc.common.exceptions.tabby_pdf_error import TabbyPdfError
 from dedoc.data_structures.hierarchy_level import HierarchyLevel
 from dedoc.data_structures.line_with_meta import LineWithMeta
-from dedoc.data_structures.table import Table
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
@@ -42,6 +41,7 @@ class PdfTabbyReader(PdfBaseReader):
         self.default_config = {"JAR_PATH": os.path.join(self.jar_dir, self.jar_name)}
         self.table_header_selector = TableHeaderExtractor(logger=self.logger)
         self.table_extractor = OnePageTableExtractor(config=config, logger=self.logger)
+        self.debug_save_path = os.path.join(self.config.get("path_debug", os.path.join(os.path.abspath(os.sep), "tmp", "dedoc")), "tabby")
 
     def can_read(self, file_path: Optional[str] = None, mime: Optional[str] = None, extension: Optional[str] = None, parameters: Optional[dict] = None) -> bool:
         """
@@ -81,7 +81,7 @@ class PdfTabbyReader(PdfBaseReader):
         return self._postprocess(result)
 
     def __extract(self, path: str, parameters: dict, warnings: List[str], tmp_dir: str)\
-            -> Tuple[List[LineWithMeta], List[Table], List[PdfImageAttachment], Optional[dict]]:
+            -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], Optional[dict]]:
         import math
         from dedoc.utils.pdf_utils import get_pdf_page_count
         from dedoc.utils.utils import calculate_file_hash
@@ -137,6 +137,9 @@ class PdfTabbyReader(PdfBaseReader):
 
         mp_tables = self.table_recognizer.convert_to_multipages_tables(all_scan_tables, lines_with_meta=all_lines)
         all_lines = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=all_attached_images)
+
+        if self.config.get("debug_mode", False):
+            self.__save_objects_bboxes(all_lines + mp_tables + all_attached_images, path)
 
         return all_lines, mp_tables, all_attached_images, document_metadata
 
@@ -210,7 +213,7 @@ class PdfTabbyReader(PdfBaseReader):
                 cells = self.table_extractor.handle_cells(cells)
                 scan_tables.append(ScanTable(page_number=page_number, cells=cells, bbox=table_bbox, order=order))
             except Exception as ex:
-                self.logger.warning(f"Warning: unrecognized table on page {self.page_number}. {ex}")
+                self.logger.warning(f"Warning: unrecognized table on page {page_number}. {ex}")
                 if self.config.get("debug_mode", False):
                     raise ex
 
@@ -381,3 +384,49 @@ class PdfTabbyReader(PdfBaseReader):
                           path: str) -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]]:
 
         return [], [], [], []
+
+    def __save_objects_bboxes(self, all_objects: List[Union[LineWithLocation, ScanTable, PdfImageAttachment]], path: str) -> None:
+        if not all_objects:
+            return
+
+        import json
+        import os
+        from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
+
+        os.makedirs(self.debug_save_path, exist_ok=True)
+        dsize = None
+        lines = [line for line in all_objects if isinstance(line, LineWithLocation)]
+        if lines:
+            annotations = [ann for ann in lines[0].annotations if isinstance(ann, BBoxAnnotation)]
+            if annotations:
+                bbox = json.loads(annotations[0].value)
+                dsize = (bbox["page_width"], bbox["page_height"])
+
+        import cv2
+        import numpy as np
+        from dedoc.utils.pdf_utils import get_page_image
+
+        current_page_id = None
+        current_image = None
+        all_objects.sort(key=lambda o: (o.location.page_number, o.order, o.location))
+        for current_object in all_objects:
+            if current_object.location.page_number != current_page_id:
+                if current_image is not None:
+                    cv2.imwrite(os.path.join(self.debug_save_path, f"{current_page_id}.png"), current_image)
+                current_page_id = current_object.location.page_number
+                current_image = np.asarray(get_page_image(path, current_page_id))
+                if dsize:
+                    current_image = cv2.resize(current_image, dsize=dsize, interpolation=cv2.INTER_CUBIC)
+
+            p1 = (current_object.location.bbox.x_top_left, current_object.location.bbox.y_top_left)
+            p2 = (current_object.location.bbox.x_bottom_right, current_object.location.bbox.y_bottom_right)
+            if isinstance(current_object, LineWithLocation):
+                color = (0, 255, 0)
+            elif isinstance(current_object, ScanTable):
+                color = (255, 0, 0)
+            else:
+                color = (0, 0, 255)
+            cv2.rectangle(current_image, p1, p2, color)
+
+        if current_image is not None:
+            cv2.imwrite(os.path.join(self.debug_save_path, f"{current_page_id}.png"), current_image)
