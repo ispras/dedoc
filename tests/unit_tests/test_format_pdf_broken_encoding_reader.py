@@ -3,13 +3,13 @@ import unittest
 
 import Levenshtein
 
-from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.pdf_broken_encoding_reader import PdfBrokenEncodingReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader import PdfBrokenEncodingReader
 
 
-class TestPDFReader(unittest.TestCase):
-    def test_pdf_text_extraction(self) -> None:
-        pdf_path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer/mongolo.pdf")
-        orig_path = os.path.join(os.path.dirname(__file__), "../data/txt/mongolo.txt")
+class TestPdfBrokenEncodingReader(unittest.TestCase):
+    def test_pdf_broken_encoding(self) -> None:
+        pdf_path = os.path.join(os.path.dirname(__file__), "..", "data", "pdf_with_text_layer", "mongolo.pdf")
+        orig_path = os.path.join(os.path.dirname(__file__), "..", "data", "txt", "mongolo.txt")
         reader = PdfBrokenEncodingReader()
         result = reader.read(file_path=pdf_path)
         lines = "".join([i.line for i in result.lines[0:10]])

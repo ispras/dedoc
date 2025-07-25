@@ -10,17 +10,18 @@ model_hash_dict = dict(
     font_classifier="db4481ad60ab050cbb42079b64f97f9e431feb07",
     paragraph_classifier="97c4b78bc20d87ec7d53389e09f1ca35c6ade067",
     line_type_classifiers="6ad0eacbfdea065b658cb6f039d13f75245d51ae",
-    fintoc_classifiers="6a907b7d2437c3f61ac9c506f67175207982fae8"
+    fintoc_classifiers="6a907b7d2437c3f61ac9c506f67175207982fae8",
+    torch_cnn="5333909f858f5f632df478ef5a53af6dfd26f2e1"
 )
 
 
-def download_from_hub(out_dir: str, out_name: str, repo_name: str, hub_name: str) -> None:
+def download_from_hub(out_dir: str, out_name: str, repo_name: str, hub_name: str, user_name: str = "dedoc") -> None:
     import os
     import shutil
     from huggingface_hub import hf_hub_download
 
     os.makedirs(out_dir, exist_ok=True)
-    path = os.path.realpath(hf_hub_download(repo_id=f"dedoc/{repo_name}", filename=hub_name, revision=model_hash_dict[repo_name]))
+    path = os.path.realpath(hf_hub_download(repo_id=f"{user_name}/{repo_name}", filename=hub_name, revision=model_hash_dict[repo_name]))
     shutil.move(path, os.path.join(out_dir, out_name))
 
 
@@ -50,6 +51,8 @@ def download(resources_path: str) -> None:
                               out_name=f"{classifier_type}_classifier_{language}.json",
                               repo_name="fintoc_classifiers",
                               hub_name=f"{classifier_type}_classifier_{language}_txt_layer.json")
+
+    download_from_hub(out_dir=resources_path, out_name="glyph_recognizer.pt", repo_name="torch_cnn", hub_name="rus_eng.pt", user_name="sinkudo")
 
 
 if __name__ == "__main__":

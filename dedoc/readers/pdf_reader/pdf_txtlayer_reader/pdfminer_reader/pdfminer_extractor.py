@@ -63,16 +63,18 @@ class PdfminerExtractor:
             for page_num, page in enumerate(pages):
                 if page_num != page_number:
                     continue
-                return self.__handle_page(page=page, page_number=page_number, path=path, parameters=parameters)
+                return self._handle_page(page=page, page_number=page_number, path=path, parameters=parameters)
 
-    def __handle_page(self, page: PDFPage, page_number: int, path: str, parameters: ParametersForParseDoc) -> PageWithBBox:
+    def _handle_page(self, page: PDFPage, page_number: int, path: str, parameters: ParametersForParseDoc, layout: Optional[LTPage] = None) -> PageWithBBox:
         device, interpreter = self.__get_interpreter()
         try:
             interpreter.process_page(page)
         except Exception as e:
             raise BadFileFormatError(f"can't handle file {path} get {e}")
 
-        layout = device.get_result()
+        if not layout:
+            layout = device.get_result()
+
         image_page = self.__get_image(path=path, page_num=page_number)
         image_height, image_width, *_ = image_page.shape
 
@@ -89,52 +91,6 @@ class PdfminerExtractor:
             self.__debug_extract_layout(image_page, layout, page_number, k_w, k_h, page, width, height)
 
         # 1. extract textline objects and image (as LTImage)
-        images = []
-        layout_objects = [lobj for lobj in layout]
-        lobjs_textline = []
-        for lobj in layout_objects:
-            if isinstance(lobj, LTTextBoxHorizontal):
-                lines = [lobj_text for lobj_text in lobj if isinstance(lobj_text, LTTextLineHorizontal)]
-                lines.sort(key=lambda lobj: float(height - lobj.y1))
-                lobjs_textline.extend(lines)
-            elif isinstance(lobj, LTTextLineHorizontal):
-                lobjs_textline.append(lobj)
-
-            elif isinstance(lobj, LTFigure) and not page_broken and parameters.with_attachments:
-                attachment = self.__extract_image(parameters, height, image_page, k_h, k_w, lobj, page_number)
-                if attachment is not None:
-                    images.append(attachment)
-
-        bboxes = []
-        for line_num, lobj in enumerate(lobjs_textline):
-            text_with_bbox = self.get_info_layout_object(lobj, page_num=page_number, line_num=line_num, k_w=k_w, k_h=k_h, height=height, width=width)
-            if text_with_bbox.bbox.width * text_with_bbox.bbox.height > 0:
-                bboxes.append(text_with_bbox)
-
-        attachments = images if len(images) < 10 else []
-
-        return PageWithBBox(bboxes=bboxes, image=image_page, page_num=page_number, attachments=attachments, pdf_page_height=height, pdf_page_width=width)
-
-    def handle_page(self, page: PDFPage, page_number: int, path: str, parameters: ParametersForParseDoc, layout: Optional[LTPage] = None) -> PageWithBBox:
-        image_page = self.__get_image(path=path, page_num=page_number)
-        image_height, image_width, *_ = image_page.shape
-
-        height = int(page.mediabox[3])
-        width = int(page.mediabox[2])
-        if height > 0 and width > 0:
-            k_w, k_h = image_width / page.mediabox[2], image_height / page.mediabox[3]
-            page_broken = False
-        else:
-            page_broken = True
-            k_w, k_h = None, None
-
-        device, interpreter = self.__get_interpreter()
-        if not layout:
-            layout = device.get_result()
-
-        if self.config.get("debug_mode", False):
-            self.__debug_extract_layout(image_page, layout, page_number, k_w, k_h, page, width, height)
-
         images = []
         layout_objects = [lobj for lobj in layout]
         lobjs_textline = []

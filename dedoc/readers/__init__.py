@@ -12,7 +12,7 @@ from .note_reader.note_reader import NoteReader
 from .pdf_reader.pdf_auto_reader.pdf_auto_reader import PdfAutoReader
 from .pdf_reader.pdf_base_reader import PdfBaseReader
 from .pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
-from .pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader.pdf_broken_encoding_reader import PdfBrokenEncodingReader
+from .pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader import PdfBrokenEncodingReader
 from .pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
 from .pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 from .pptx_reader.pptx_reader import PptxReader
