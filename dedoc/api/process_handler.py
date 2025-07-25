@@ -5,7 +5,6 @@ import os
 import pickle
 import signal
 import traceback
-from abc import abstractmethod
 from multiprocessing import Process, Queue
 from typing import Optional
 from urllib.request import Request
@@ -19,49 +18,7 @@ from dedoc.config import get_config
 from dedoc.dedoc_manager import DedocManager
 
 
-class AbstractProcessHandler:
-
-    def __init__(self, logger: logging.Logger) -> None:
-        self.logger = logger
-
-    @abstractmethod
-    async def handle(self, request: Request, parameters: dict, file_path: str, tmpdir: str) -> Optional[ParsedDocument]:
-        pass
-
-    def _add_base64_info_to_attachments(self, document_tree: ParsedDocument, attachments_dir: str) -> None:
-        for attachment in document_tree.attachments:
-            with open(os.path.join(attachments_dir, attachment.metadata.temporary_file_name), "rb") as attachment_file:
-                attachment.metadata.add_attribute("base64", base64.b64encode(attachment_file.read()).decode("utf-8"))
-
-
-class ProcessHandler(AbstractProcessHandler):
-    """
-    Simple synchronous document handler.
-    """
-    def __init__(self, logger: logging.Logger) -> None:
-        super().__init__(logger=logger)
-        self.manager = DedocManager(config=get_config())
-        self.logger.info("Using ProcessHandler, do not support parsing process termination")
-
-    async def handle(self, request: Request, parameters: dict, file_path: str, tmpdir: str) -> Optional[ParsedDocument]:
-        try:
-            return_format = str(parameters.get("return_format", "json")).lower()
-            document_tree = self.manager.parse(file_path, parameters={**dict(parameters), "attachments_dir": tmpdir})
-
-            if return_format == "html":
-                self._add_base64_info_to_attachments(document_tree, tmpdir)
-            return document_tree.to_api_schema()
-
-        except DedocError as e:
-            self.logger.error(f"Exception {e}: {e.msg_api}\n{traceback.format_exc()}")
-            raise e
-        except Exception as e:
-            exc_message = f"Exception {e}\n{traceback.format_exc()}"
-            self.logger.error(exc_message)
-            raise e
-
-
-class CancellationProcessHandler(AbstractProcessHandler):
+class ProcessHandler:
     """
     Class for file parsing by DedocManager with support for client disconnection.
     If client disconnects during file parsing, the process of parsing is fully terminated and API is available to receive new connections.
@@ -75,12 +32,11 @@ class CancellationProcessHandler(AbstractProcessHandler):
     6. If client disconnects, the child process is terminated. The new child process with queues will start with the new request
     """
     def __init__(self, logger: logging.Logger) -> None:
-        super().__init__(logger=logger)
         self.input_queue = Queue()
         self.output_queue = Queue()
-        self.process = Process(target=self.__parse_file, args=[self.input_queue, self.output_queue])
+        self.logger = logger
+        self.process = Process(target=self._parse_file, args=[self.input_queue, self.output_queue])
         self.process.start()
-        self.logger.info("Using CancellationProcessHandler, support parsing process termination when client disconnects")
 
     async def handle(self, request: Request, parameters: dict, file_path: str, tmpdir: str) -> Optional[ParsedDocument]:
         """
@@ -114,7 +70,7 @@ class CancellationProcessHandler(AbstractProcessHandler):
 
         raise DedocError.from_dict(result)
 
-    def __parse_file(self, input_queue: Queue, output_queue: Queue) -> None:
+    def _parse_file(self, input_queue: Queue, output_queue: Queue) -> None:
         """
         Function for file parsing in a separate (child) process.
         It's a background process, i.e. it is waiting for a task in the input queue.
@@ -139,7 +95,7 @@ class CancellationProcessHandler(AbstractProcessHandler):
                 document_tree = manager.parse(file_path, parameters={**dict(parameters), "attachments_dir": tmp_dir})
 
                 if return_format == "html":
-                    self._add_base64_info_to_attachments(document_tree, tmp_dir)
+                    self.__add_base64_info_to_attachments(document_tree, tmp_dir)
 
                 output_queue.put(pickle.dumps(document_tree.to_api_schema()), block=True)
                 manager.logger.info("Parsing process put task to the output queue")
@@ -152,3 +108,8 @@ class CancellationProcessHandler(AbstractProcessHandler):
                 filename = "" if file_path is None else os.path.basename(file_path)
                 manager.logger.error(exc_message)
                 output_queue.put(pickle.dumps({"msg": exc_message, "filename": filename}), block=True)
+
+    def __add_base64_info_to_attachments(self, document_tree: ParsedDocument, attachments_dir: str) -> None:
+        for attachment in document_tree.attachments:
+            with open(os.path.join(attachments_dir, attachment.metadata.temporary_file_name), "rb") as attachment_file:
+                attachment.metadata.add_attribute("base64", base64.b64encode(attachment_file.read()).decode("utf-8"))
