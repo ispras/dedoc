@@ -164,7 +164,7 @@ Api parameters description
 
 
     * - pdf_with_text_layer
-      - true, false, tabby, auto, auto_tabby
+      - true, false, tabby, auto, auto_tabby, bad_encoding
       - auto_tabby
       - This option is used for choosing a specific reader of PDF documents.
         The following options are available:
@@ -195,6 +195,11 @@ Api parameters description
               If the document has a textual layer (is copyable), PDF document parsing works like with ``need_pdf_table_analysis=tabby``.
               If the document doesn't have a textual layer (it is an image, scanned document), PDF document parsing works like with ``need_pdf_table_analysis=false``.
               It is highly recommended to use this option value for any PDF document parsing.
+
+            * **bad_encoding** -- automatic correction of PDF with textual layer but broken encoding (for Russian and English languages).
+              Use this option if you are sure that PDF file has a textual layer with broken encoding,
+              i.e. its text is copyable, but incorrect (gibberish).
+              Otherwise use ``pdf_with_text_layer=auto_tabby``, because it's faster and it will provide better results on usual PDF files.
 
     * - fast_textual_layer_detection
       - true, false

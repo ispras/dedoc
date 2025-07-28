@@ -10,7 +10,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from pdfminer.converter import PDFPageAggregator
-from pdfminer.layout import LAParams, LTAnno, LTChar, LTContainer, LTCurve, LTFigure, LTImage, LTRect
+from pdfminer.layout import LAParams, LTAnno, LTChar, LTContainer, LTCurve, LTFigure, LTImage, LTPage, LTRect
 from pdfminer.layout import LTTextBox, LTTextBoxHorizontal, LTTextContainer, LTTextLineHorizontal
 from pdfminer.pdfinterp import PDFPageInterpreter
 from pdfminer.pdfinterp import PDFResourceManager
@@ -63,16 +63,18 @@ class PdfminerExtractor:
             for page_num, page in enumerate(pages):
                 if page_num != page_number:
                     continue
-                return self.__handle_page(page=page, page_number=page_number, path=path, parameters=parameters)
+                return self._handle_page(page=page, page_number=page_number, path=path, parameters=parameters)
 
-    def __handle_page(self, page: PDFPage, page_number: int, path: str, parameters: ParametersForParseDoc) -> PageWithBBox:
+    def _handle_page(self, page: PDFPage, page_number: int, path: str, parameters: ParametersForParseDoc, layout: Optional[LTPage] = None) -> PageWithBBox:
         device, interpreter = self.__get_interpreter()
         try:
             interpreter.process_page(page)
         except Exception as e:
             raise BadFileFormatError(f"can't handle file {path} get {e}")
 
-        layout = device.get_result()
+        if not layout:
+            layout = device.get_result()
+
         image_page = self.__get_image(path=path, page_num=page_number)
         image_height, image_width, *_ = image_page.shape
 

@@ -24,7 +24,7 @@ class QueryParameters:
     table_type: str = Form("", description="Pipeline mode for table recognition")
 
     # pdf handling
-    pdf_with_text_layer: str = Form("auto_tabby", enum=["true", "false", "auto", "auto_tabby", "tabby"],
+    pdf_with_text_layer: str = Form("auto_tabby", enum=["true", "false", "auto", "auto_tabby", "tabby", "bad_encoding"],
                                     description="Extract text from a text layer of PDF or using OCR methods for image-like documents")
     fast_textual_layer_detection: str = Form("false", enum=["true", "false"],
                                              description="Use non-ML solution to detect textual layer. Much faster but less accurate.")

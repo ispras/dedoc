@@ -34,6 +34,7 @@ def _get_manager_config(config: dict) -> dict:
     from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
     from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
     from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
+    from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_broken_encoding_reader import PdfBrokenEncodingReader
     from dedoc.readers.pptx_reader.pptx_reader import PptxReader
     from dedoc.readers.reader_composition import ReaderComposition
     from dedoc.readers.txt_reader.raw_text_reader import RawTextReader
@@ -73,6 +74,7 @@ def _get_manager_config(config: dict) -> dict:
         PdfAutoReader(config=config),
         PdfTabbyReader(config=config),
         PdfTxtlayerReader(config=config),
+        PdfBrokenEncodingReader(config=config),
         PdfImageReader(config=config),
         EmailReader(config=config),
         MhtmlReader(config=config)
