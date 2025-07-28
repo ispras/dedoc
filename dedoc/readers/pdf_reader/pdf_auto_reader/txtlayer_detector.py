@@ -110,7 +110,10 @@ class TxtLayerDetector:
         prev_idx = 0
         for transition_idx in transitions:
             chunk_lines = list(chain.from_iterable(lines_for_predict[prev_idx:transition_idx]))
-            chunk_document = UnstructuredDocument(lines=chunk_lines, tables=document.tables, attachments=document.attachments)
+            if is_correct:
+                chunk_document = UnstructuredDocument(lines=chunk_lines, tables=document.tables, attachments=document.attachments)
+            else:
+                chunk_document = None
             chunk_result = TxtLayerResult(start=prev_idx + fisrt_page_id + 1, end=transition_idx + fisrt_page_id, correct=is_correct, document=chunk_document)
             result.append(chunk_result)
             is_correct = not is_correct
