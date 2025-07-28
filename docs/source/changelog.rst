@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v2.4 (2025-07-28)
+-----------------
+Release note: `v2.4 <https://github.com/ispras/dedoc/releases/tag/v2.4>`_
+
+* Upgrade `PyPDF2` to `pypdf>4` and fix bugs in attachments extraction from PDF files.
+* Added `each_page_textual_layer_detection` parameter for textual layer detection on each page of PDF documents (for `PdfAutoReader`).
+* Added `ENABLE_CANCELLATION` env variable for enabling/disabling parsing cancellation after client disconnection (enabled by default).
+* Fixed location coordinates of attached images extracted by `PdfTabbyReader`.
+* Added new reader `PdfBrokenEncodingReader` for PDF documents with textual layer but broken encoding (`pdf_with_text_layer=bad_encoding`).
+
 v2.3.2 (2024-12-25)
 -------------------
 Release note: `v2.3.2 <https://github.com/ispras/dedoc/releases/tag/v2.3.2>`_
