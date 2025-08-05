@@ -7,7 +7,7 @@ ENV PYTHONPATH "${PYTHONPATH}:/dedoc_root"
 ENV RESOURCES_PATH "/dedoc_root/resources"
 
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir .[achive]
 RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends fontforge
 
 RUN mkdir /dedoc_root

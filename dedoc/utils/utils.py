@@ -224,7 +224,7 @@ def similarity(s1: str, s2: str) -> float:
 
 
 def similarity_levenshtein(str1: str, str2: str) -> float:
-    from Levenshtein._levenshtein import ratio
+    from Levenshtein import ratio
 
     str1 = str1.lower()
     str2 = str2.lower()

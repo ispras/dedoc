@@ -11,7 +11,8 @@ model_hash_dict = dict(
     paragraph_classifier="97c4b78bc20d87ec7d53389e09f1ca35c6ade067",
     line_type_classifiers="6ad0eacbfdea065b658cb6f039d13f75245d51ae",
     fintoc_classifiers="6a907b7d2437c3f61ac9c506f67175207982fae8",
-    torch_cnn="5333909f858f5f632df478ef5a53af6dfd26f2e1"
+    torch_cnn="5333909f858f5f632df478ef5a53af6dfd26f2e1",
+    language_detector="a8b912286f8ad166c1e078c7540d1f913a9ddc22"
 )
 
 
@@ -53,6 +54,7 @@ def download(resources_path: str) -> None:
                               hub_name=f"{classifier_type}_classifier_{language}_txt_layer.json")
 
     download_from_hub(out_dir=resources_path, out_name="glyph_recognizer.pt", repo_name="torch_cnn", hub_name="rus_eng.pt", user_name="sinkudo")
+    download_from_hub(out_dir=resources_path, out_name="language_detector.bin", repo_name="language_detector", hub_name="language_detector.bin")
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Dict, Iterator, List, Optional, Tuple
 
 import pandas as pd
-from Levenshtein._levenshtein import ratio
+from Levenshtein import ratio
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.structure_extractors.feature_extractors.abstract_extractor import AbstractFeatureExtractor

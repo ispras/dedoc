@@ -100,7 +100,7 @@
 
         <div class="parameters">
             <h4>PDF handling</h4>
-            <details><summary>pdf_with_text_layer, need_pdf_table_analysis, fast_textual_layer_detection, each_page_textual_layer_detection, language, pages, is_one_column_document, document_orientation, need_header_footer_analysis, need_binarization, need_gost_frame_analysis</summary>
+            <details><summary>pdf_with_text_layer, need_pdf_table_analysis, textual_layer_classifier, each_page_textual_layer_detection, language, pages, is_one_column_document, document_orientation, need_header_footer_analysis, need_binarization, need_gost_frame_analysis</summary>
                 <br>
                 <p>
                     <label>
@@ -116,7 +116,13 @@
                 </p>
 
                 <p>
-                    <label><input name="fast_textual_layer_detection" type="checkbox" value="true"> fast_textual_layer_detection</label>
+                    <label>
+                        <select name="textual_layer_classifier">
+                            <option value="ml">true</option>
+                            <option value="simple">false</option>
+                            <option value="language">auto</option>
+                        </select> textual_layer_classifier
+                    </label>
                 </p>
 
                 <p>

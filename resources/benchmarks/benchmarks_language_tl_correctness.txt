@@ -1,0 +1,6 @@
+Correct texts: 1200, incorrect texts: 1219
+--- Balanced Accuracy --- = 0.7584085315832649
+--- Accuracy --- = 0.7565109549400578
+--- Weighted --- Precision = 0.8366758781040076, Recall=0.7565109549400578, F1=0.7417196411435406
+--- Class corrected --- : Precision = 1.0, Recall=0.51681706316653, F1=0.6814494321254733
+--- Class incorrected --- : Precision = 0.6707657909446618, Recall=1.0, F1=0.8029441284710606

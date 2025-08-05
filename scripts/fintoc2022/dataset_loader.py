@@ -10,7 +10,7 @@ from collections import Counter, defaultdict
 from typing import Dict, List
 
 import wget
-from Levenshtein._levenshtein import ratio
+from Levenshtein import ratio
 
 from dedoc.config import get_config
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader

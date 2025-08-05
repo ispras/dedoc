@@ -87,7 +87,7 @@ def get_metrics(max_eval_pdf: int = 10000) -> None:
         for warning in r["warnings"]:
             if "has incorrect textual layer" in warning:
                 predicts[i] = 1  # "incorrect"
-            if "has a correct textual layer" in warning:
+            if "has correct textual layer" in warning:
                 predicts[i] = 0  # "correct"
 
         if predicts[i] != labels[i]:
