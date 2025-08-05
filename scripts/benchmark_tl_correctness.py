@@ -11,9 +11,13 @@ from tqdm import tqdm
 from dedoc.config import get_config
 from dedoc.utils.utils import send_file
 
+language = False
 path_result = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "resources", "benchmarks"))
 os.makedirs(path_result, exist_ok=True)
-path_result = os.path.join(path_result, "benchmarks_tl_correctness.txt")
+if language:
+    path_result = os.path.join(path_result, "benchmarks_tl_correctness_language.txt")
+else:
+    path_result = os.path.join(path_result, "benchmarks_tl_correctness.txt")
 
 """
 Experiments are available -> https://github.com/alexander1999-hub/txt_layer_correctness/tree/main :
@@ -66,7 +70,10 @@ def get_metrics(max_eval_pdf: int = 10000) -> None:
 
     # run pipeline for prediction
     predicts = np.empty(files.size)
-    parameters = dict(pdf_with_text_layer="auto", pages="1:1")
+    if language:
+        parameters = dict(pdf_with_text_layer="auto", pages="1:1", textual_layer_classifier="language")
+    else:
+        parameters = dict(pdf_with_text_layer="auto", pages="1:1")
     times_correct, times_incorrect = [], []
 
     count = min(max_eval_pdf, len(files))

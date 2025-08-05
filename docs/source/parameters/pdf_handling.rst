@@ -53,16 +53,17 @@ PDF and images handling
               Otherwise use :class:`dedoc.readers.PdfAutoReader` or :class:`dedoc.readers.PdfTabbyReader`,
               because it's faster and it will provide better results on usual PDF files.
 
-    * - fast_textual_layer_detection
-      - true, false
-      - false
+    * - textual_layer_classifier
+      - ml, simple, language
+      - ml
       - * :meth:`dedoc.readers.PdfAutoReader.read`
         * :meth:`dedoc.DedocManager.parse`
         * :meth:`dedoc.readers.ReaderComposition.read`
-      - Enable fast textual layer detection. Works only when **auto** or **auto_tabby** is selected at **pdf_with_text_layer**.
+      - Type of the classifier for textual layer detection. Works only when **auto** or **auto_tabby** is selected at **pdf_with_text_layer**.
 
-        * **true** -- if any text is detected in a PDF file, Dedoc assumes that textual layer is detected and it is correct. Much faster but less accurate.
-        * **false** -- use the textual layer classifier to detect textual layer and prove its correctness.
+        * **ml** -- use ML textual layer classifier trained on heuristic features, works only for Russian and English languages.
+        * **simple** -- if any text is detected in a PDF file, Dedoc assumes that textual layer is detected and it is correct. Much faster but less accurate.
+        * **language** -- try to detect language of the textual layer. The textual layer is considered as a correct if its language was detected.
 
     * - each_page_textual_layer_detection
       - true, false

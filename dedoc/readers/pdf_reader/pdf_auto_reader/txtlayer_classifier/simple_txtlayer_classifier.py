@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 
@@ -12,6 +12,6 @@ class SimpleTxtlayerClassifier(AbstractTxtlayerClassifier):
     The textual layer is considered as a correct if it isn't empty.
     """
 
-    def predict(self, lines: List[List[LineWithMeta]]) -> np.ndarray:
+    def predict(self, lines: List[List[LineWithMeta]], parameters: Optional[dict] = None) -> np.ndarray:
         result = np.array([any(line.line.strip() for line in line_list) for line_list in lines])
         return result

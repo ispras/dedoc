@@ -3,10 +3,13 @@ charset-normalizer>=2.0.12,<=3.2.0
 Cython>=0.29.28,<=3.0.2
 dedoc-utils==0.3.8
 fastapi>=0.77.0,<1.0
+fasttext>=0.9.1,<0.10
 fontTools>=4.0,<5.0
 huggingface-hub>=0.14.1,<1.0
 imutils==0.5.4
 itsdangerous>=2.1.0,<=2.1.2
+langcodes>=3,<4.0
+levenshtein>=0.12.2,<1
 numpy>=1.22.0,<2.0
 olefile~=0.46
 opencv-python>=4.5.5.64,<4.6.0
@@ -20,7 +23,6 @@ puremagic>=1.0,<2.0 # needs libmagic to be installed in the system
 pypdf>=4.0,<6.0
 pytesseract==0.3.10
 python-docx==0.8.11
-levenshtein>=0.12.2,<1
 python-logstash-async>=2.5.0,<=2.7.0
 python-magic<1.0
 python-multipart==0.0.6
