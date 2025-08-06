@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 from xgboost import XGBClassifier
@@ -44,7 +44,7 @@ class MlTxtlayerClassifier(AbstractTxtlayerClassifier):
 
         return self.__model
 
-    def predict(self, lines: List[List[LineWithMeta]], parameters: Optional[dict] = None) -> np.ndarray:
+    def predict(self, lines: List[List[LineWithMeta]]) -> np.ndarray:
         result = np.zeros(len(lines))
 
         idx_list = []

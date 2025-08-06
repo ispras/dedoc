@@ -58,7 +58,7 @@ class TxtLayerDetector:
         parameters_copy["need_pdf_table_analysis"] = "false"
 
         document = self.pdf_reader.read(path, parameters=parameters_copy)
-        is_correct = txtlayer_classifier.predict([document.lines], parameters)[0]
+        is_correct = txtlayer_classifier.predict([document.lines])[0]
         if not is_correct:
             return [TxtLayerResult(correct=False, start=start, end=end)]
 
@@ -98,7 +98,7 @@ class TxtLayerDetector:
                 current_lines.append(line)
             lines_for_predict.append(current_lines)
 
-        predictions = txtlayer_classifier.predict(lines_for_predict, parameters)
+        predictions = txtlayer_classifier.predict(lines_for_predict)
         # e.g. predictions = [0, 0, 1, 1, 0, 1, 0, 0, 1], transitions = [2, 4, 5, 6, 8]
         transitions = list(np.where(predictions[:-1] != predictions[1:])[0] + 1)
         transitions.append(len(predictions))

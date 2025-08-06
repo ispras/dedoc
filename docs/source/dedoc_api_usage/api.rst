@@ -202,13 +202,13 @@ Api parameters description
               Otherwise use ``pdf_with_text_layer=auto_tabby``, because it's faster and it will provide better results on usual PDF files.
 
     * - textual_layer_classifier
-      - ml, simple, language
+      - ml, simple, letter
       - ml
       - Type of the classifier for textual layer detection. Works only when **auto** or **auto_tabby** is selected at **pdf_with_text_layer**.
 
         * **ml** -- use ML textual layer classifier trained on heuristic features, works only for Russian and English languages.
         * **simple** -- if any text is detected in a PDF file, Dedoc assumes that textual layer is detected and it is correct. Much faster but less accurate.
-        * **language** -- try to detect language of the textual layer. The textual layer is considered as a correct if its language was detected.
+        * **letter** -- textual layer is considered as correct if percent of letters in the text > 50%.
 
     * - each_page_textual_layer_detection
       - true, false

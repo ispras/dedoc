@@ -7,6 +7,7 @@ ENV PYTHONPATH "${PYTHONPATH}:/dedoc_root"
 ENV RESOURCES_PATH "/dedoc_root/resources"
 
 COPY requirements.txt .
+COPY pyproject.toml .
 RUN pip3 install --no-cache-dir .[achive]
 RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends fontforge
 

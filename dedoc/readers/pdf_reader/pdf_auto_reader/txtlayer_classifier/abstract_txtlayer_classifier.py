@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 
@@ -14,7 +14,7 @@ class AbstractTxtlayerClassifier(ABC):
         self.logger = config.get("logger", logging.getLogger())
 
     @abstractmethod
-    def predict(self, lines: List[List[LineWithMeta]], parameters: Optional[dict] = None) -> np.ndarray:
+    def predict(self, lines: List[List[LineWithMeta]]) -> np.ndarray:
         """
         Classifies the correctness of the text layer in a PDF document.
 
