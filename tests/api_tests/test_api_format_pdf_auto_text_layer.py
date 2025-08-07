@@ -84,26 +84,35 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         self.assertEqual("5) заканчиваем список\n", list_items[2]["text"])
         self.assertEqual("6) последний элемент списка.\n", list_items[3]["text"])
 
-    def test_fast_textual_layer_detection(self) -> None:
+    def test_simple_textual_layer_detection(self) -> None:
         file_name = "0004057v1.pdf"
-        parameters = dict(pdf_with_text_layer="auto", fast_textual_layer_detection=True)
+        parameters = dict(pdf_with_text_layer="auto", textual_layer_classifier="simple")
         result = self._send_request(file_name, parameters)
         warnings = self.__prepare_warnings(result["warnings"])
         self.assertIn("Assume document has correct textual layer on pages [1:]", warnings)
         self.assertIn("FinTOC-2019", result["content"]["structure"]["subparagraphs"][0]["text"])
 
         file_name = "tz_scan_1page.pdf"
-        parameters = dict(pdf_with_text_layer="auto_tabby", fast_textual_layer_detection=True)
+        parameters = dict(pdf_with_text_layer="auto_tabby", textual_layer_classifier="simple")
         result = self._send_request(file_name, parameters)
         warnings = self.__prepare_warnings(result["warnings"])
         self.assertIn("Assume document has incorrect textual layer on pages [1:]", warnings)
 
         file_name = "mixed_pdf.pdf"
-        parameters = dict(pdf_with_text_layer="auto", fast_textual_layer_detection=True)
+        parameters = dict(pdf_with_text_layer="auto", textual_layer_classifier="simple")
         result = self._send_request(file_name, parameters)
         warnings = self.__prepare_warnings(result["warnings"])
         self.assertIn("Assume document has incorrect textual layer on pages [1:1]", warnings)
         self.assertIn("Assume document has correct textual layer on pages [2:]", warnings)
+
+    def test_letter_textual_layer_detection(self) -> None:
+        file_name = "prospectus_merged.pdf"
+        parameters = dict(each_page_textual_layer_detection=True, textual_layer_classifier="letter", language="eng")
+        result = self._send_request(file_name, parameters)
+        warnings = self.__prepare_warnings(result["warnings"])
+        self.assertIn("Assume document has correct textual layer on pages [1:7]", warnings)
+        self.assertIn("Assume document has incorrect textual layer on pages [8:8]", warnings)
+        self.assertIn("Assume document has correct textual layer on pages [9:9]", warnings)
 
     def test_each_page_textual_layer_detection(self) -> None:
         file_name = "prospectus_merged.pdf"
@@ -114,7 +123,7 @@ class TestApiPdfAutoTextLayer(AbstractTestApiDocReader):
         self.assertIn("Assume document has incorrect textual layer on pages [7:8]", warnings)
         self.assertIn("Assume document has correct textual layer on pages [9:9]", warnings)
 
-        parameters = dict(each_page_textual_layer_detection=True, fast_textual_layer_detection=True)
+        parameters = dict(each_page_textual_layer_detection=True, textual_layer_classifier="simple")
         result = self._send_request(file_name, parameters)
         warnings = self.__prepare_warnings(result["warnings"])
         self.assertIn("Assume document has correct textual layer on pages [1:7]", warnings)

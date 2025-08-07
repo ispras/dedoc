@@ -7,6 +7,7 @@ fontTools>=4.0,<5.0
 huggingface-hub>=0.14.1,<1.0
 imutils==0.5.4
 itsdangerous>=2.1.0,<=2.1.2
+levenshtein>=0.12.2,<1
 numpy>=1.22.0,<2.0
 olefile~=0.46
 opencv-python>=4.5.5.64,<4.6.0
@@ -21,7 +22,6 @@ pylzma==0.5.0
 pypdf>=4.0,<6.0
 pytesseract==0.3.10
 python-docx==0.8.11
-python-Levenshtein==0.12.2
 python-logstash-async>=2.5.0,<=2.7.0
 python-magic<1.0
 python-multipart==0.0.6

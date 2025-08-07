@@ -2,7 +2,7 @@ import re
 from typing import List, Optional, Tuple
 
 import numpy as np
-from Levenshtein._levenshtein import ratio
+from Levenshtein import ratio
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 

@@ -7,9 +7,8 @@ from typing import List
 import numpy as np
 
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
+from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier import get_classifiers
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier.abstract_txtlayer_classifier import AbstractTxtlayerClassifier
-from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier.ml_txtlayer_classifier import MlTxtlayerClassifier
-from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier.simple_txtlayer_classifier import SimpleTxtlayerClassifier
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_result import TxtLayerResult
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
 from dedoc.utils.parameter_utils import get_bool_parameter, get_param_page_slice
@@ -22,8 +21,7 @@ class TxtLayerDetector:
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
 
-        self.ml_txtlayer_classifier = MlTxtlayerClassifier(config=config)
-        self.simple_txtlayer_classifier = SimpleTxtlayerClassifier(config=config)
+        self.classifiers = get_classifiers(config=config)
         self.pdf_reader = pdf_reader
 
     def detect_txtlayer(self, path: str, parameters: dict) -> List[TxtLayerResult]:
@@ -34,10 +32,11 @@ class TxtLayerDetector:
         :param parameters: parameters for the txtlayer classifier
         :return: information about a textual layer in the PDF document
         """
-        if get_bool_parameter(parameters, "fast_textual_layer_detection", False):
-            txtlayer_classifier = self.simple_txtlayer_classifier
-        else:
-            txtlayer_classifier = self.ml_txtlayer_classifier
+        classifier_name = str(parameters.get("textual_layer_classifier", "ml")).lower()
+        txtlayer_classifier = self.classifiers.get(classifier_name)
+        if txtlayer_classifier is None:
+            raise ValueError(f"Unknown textual layer classifier `{classifier_name}`")
+
         classify_each_page = get_bool_parameter(parameters, "each_page_textual_layer_detection", False)
         detect_function = self.__classify_each_page if classify_each_page else self.__classify_all_pages
         try:

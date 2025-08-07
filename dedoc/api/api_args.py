@@ -26,8 +26,7 @@ class QueryParameters:
     # pdf handling
     pdf_with_text_layer: str = Form("auto_tabby", enum=["true", "false", "auto", "auto_tabby", "tabby", "bad_encoding"],
                                     description="Extract text from a text layer of PDF or using OCR methods for image-like documents")
-    fast_textual_layer_detection: str = Form("false", enum=["true", "false"],
-                                             description="Use non-ML solution to detect textual layer. Much faster but less accurate.")
+    textual_layer_classifier: str = Form("ml", enum=["ml", "simple", "letter"], description="Type of classifier for PDF textual layer detection")
     each_page_textual_layer_detection: str = Form("false", enum=["true", "false"], description="Detect textual layer on each page. Slower but more accurate.")
     language: str = Form("rus+eng", description="Recognition language ('rus+eng', 'rus', 'eng', 'fra', 'spa')")
     pages: str = Form(":", description='Page numbers range for reading PDF or images, "left:right" means read pages from left to right')

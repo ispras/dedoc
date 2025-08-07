@@ -201,13 +201,14 @@ Api parameters description
               i.e. its text is copyable, but incorrect (gibberish).
               Otherwise use ``pdf_with_text_layer=auto_tabby``, because it's faster and it will provide better results on usual PDF files.
 
-    * - fast_textual_layer_detection
-      - true, false
-      - false
-      - Enable fast textual layer detection. Works only when **auto** or **auto_tabby** is selected at **pdf_with_text_layer**.
+    * - textual_layer_classifier
+      - ml, simple, letter
+      - ml
+      - Type of the classifier for textual layer detection. Works only when **auto** or **auto_tabby** is selected at **pdf_with_text_layer**.
 
-        * **true** -- if any text is detected in a PDF file, Dedoc assumes that textual layer is detected and it is correct. Much faster but less accurate.
-        * **false** -- use the textual layer classifier to detect textual layer and prove its correctness.
+        * **ml** -- use ML textual layer classifier trained on heuristic features, works only for Russian and English languages.
+        * **simple** -- if any text is detected in a PDF file, Dedoc assumes that textual layer is detected and it is correct. Much faster but less accurate.
+        * **letter** -- textual layer is considered as correct if percent of letters in the text > 50%.
 
     * - each_page_textual_layer_detection
       - true, false
