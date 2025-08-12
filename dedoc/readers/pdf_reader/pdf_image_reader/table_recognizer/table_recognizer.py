@@ -95,11 +95,11 @@ class TableRecognizer(object):
     def __filter_bad_tables(self, tables: List[ScanTable], image: np.ndarray) -> List[ScanTable]:
         filtered = []
         for table in tables:
-            if not self.__if_not_table(table, image):
+            if not self.__is_not_table(table, image):
                 filtered.append(table)
         return filtered
 
-    def __if_not_table(self, table: ScanTable, image: np.ndarray) -> bool:
+    def __is_not_table(self, table: ScanTable, image: np.ndarray) -> bool:
         bbox = table.location.bbox
         height, width = image.shape
         table_image = image[max(bbox.y_top_left, 0): min(bbox.y_bottom_right, height), max(bbox.x_top_left, 0): min(bbox.x_bottom_right, width)]
