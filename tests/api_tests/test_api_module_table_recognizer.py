@@ -283,3 +283,13 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         row0 = self._get_text_of_row(table[0])
 
         self.assertEqual(row0[:2], ["Сумма\nпрописью\nв валюте", "Две тысячи сто шестьдесят евро 00 евроцентов"])
+
+    def test_with_table_wo_external_bounds_2(self) -> None:
+        result = self._send_request("2312.pdf", data=dict(table_type="wo_external_bounds", language="rus", pages=":12"))
+
+        self.assertEqual(2, len(result["content"]["tables"]))
+
+        table = result["content"]["tables"][0]["cells"]
+        row0 = self._get_text_of_row(table[0])
+
+        self.assertEqual(row0[:2], ["Номер", "Извещения\nмореплавателям"])

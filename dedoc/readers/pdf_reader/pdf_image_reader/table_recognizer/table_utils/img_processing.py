@@ -123,7 +123,7 @@ def __get_contours_for_table_wo_external_bounds(img: np.ndarray, img_with_contou
     filtered_cont_id = []
     for i, c in enumerate(table_contours):
         # Returns the location and width,height for table contour
-        x, y, w, h = cv2.boundingRect(c)
+        x, y, w, h = cv2.boundingRect(c.astype(np.int32))
         table_image = img[y:y + h, x:x + w]
 
         # filter contours which not similar a table contour
@@ -134,7 +134,7 @@ def __get_contours_for_table_wo_external_bounds(img: np.ndarray, img_with_contou
         return contours, hierarchy
 
     for c in contours[np.array(filtered_cont_id)]:
-        x, y, w, h = cv2.boundingRect(c)
+        x, y, w, h = cv2.boundingRect(c.astype(np.int32))
         cv2.rectangle(img_with_contours, (x, y), (x + w, y + h), color=(0, 0, 0), thickness=5)
 
     if config.get("debug_mode", False):
@@ -151,6 +151,10 @@ def __filter_table(image: np.ndarray, table_image: np.ndarray) -> bool:
     black_mean = (table_image < 225).mean()
     table_area = table_image.shape[0] * table_image.shape[1]
     image_area = image.shape[0] * image.shape[1]
+
+    config = get_config()
+    if config.get("debug_mode", False):
+        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "table_image.jpg"), table_image)
 
     res = (white_mean < 0.5) or (black_mean > 0.3) or (std < 30) or (mean < 150) or (mean < 200 and std < 80) or (table_area < image_area * 0.2)
     return res

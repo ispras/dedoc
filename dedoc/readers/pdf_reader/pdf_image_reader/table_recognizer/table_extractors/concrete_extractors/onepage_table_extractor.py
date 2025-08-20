@@ -21,7 +21,7 @@ class OnePageTableExtractor(BaseTableExtractor):
     def __init__(self, *, config: dict, logger: logging.Logger) -> None:
         super().__init__(config=config, logger=logger)
 
-        self.language = None
+        self.language = "rus"
         self.page_number = None
         self.image = None
         self.table_header_extractor = TableHeaderExtractor(logger=self.logger)
@@ -89,8 +89,6 @@ class OnePageTableExtractor(BaseTableExtractor):
                 tables.append(table)
             except Exception as ex:
                 self.logger.warning(f"Warning: unrecognized table into page {self.page_number}. {ex}")
-                if self.config.get("debug_mode", False):
-                    raise ex
         return tables
 
     def handle_cells(self, cells: List[List[Cell]], table_type: str = "") -> List[List[Cell]]:

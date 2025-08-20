@@ -1,6 +1,7 @@
 from collections import namedtuple
 from typing import List, Optional
 
+import numpy as np
 from dedocutils.data_structures import BBox
 from numpy import ndarray
 
@@ -79,7 +80,7 @@ class TableTree(object):
         if len(contours) == 0:
             return table_tree
 
-        bbox = [cv2.boundingRect(c) for c in contours[0]][0]   # [x_begin, y_begin, width, height]
+        bbox = cv2.boundingRect(contours[0].astype(np.int32))   # [x_begin, y_begin, width, height]
         table_tree.cell_box = BBox(x_top_left=bbox[0], y_top_left=bbox[1], width=bbox[2], height=bbox[3])
 
         table_tree = table_tree.__build_childs(table_tree, hierarchy, contours)
@@ -101,7 +102,7 @@ class TableTree(object):
         list_childs = []
         for i, h in enumerate(hierarchy[0]):
             if h[3] == cur.id_contours:
-                bbox = cv2.boundingRect(contours[i])  # [x_begin, y_begin, width, height]
+                bbox = cv2.boundingRect(contours[i].astype(np.int32))  # [x_begin, y_begin, width, height]
                 # Эвристика №1 на ячейку
                 if bbox[2] < self.min_w_cell or bbox[3] < self.min_h_cell:
                     if self.config.get("debug_mode", False):

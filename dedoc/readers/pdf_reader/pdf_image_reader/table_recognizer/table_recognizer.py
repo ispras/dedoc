@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import time
+import traceback
 from typing import List, Optional, Tuple
 
 import cv2
@@ -37,9 +38,9 @@ class TableRecognizer(object):
             cleaned_image, scan_tables = self.__rec_tables_from_img(image, page_num=page_number, language=language, table_type=table_type)
             return cleaned_image, scan_tables
         except Exception as ex:
-            logging.warning(ex)
-            if self.config.get("debug_mode", False):
-                raise ex
+            traceback_message = "".join(traceback.format_exception(type(ex), value=ex, tb=ex.__traceback__))
+            logging.warning(traceback_message)
+
             return image, []
 
     def __rec_tables_from_img(self, src_image: np.ndarray, page_num: int, language: str, table_type: str) -> Tuple[np.ndarray, List[ScanTable]]:

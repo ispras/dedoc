@@ -24,7 +24,7 @@ class TestRecognizedTable(unittest.TestCase):
         return tables
 
     def test_table_wo_external_bounds(self) -> None:
-        path_image = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "lising", "platezhka.jpg"))
+        path_image = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "lising", "russian_invoice.jpg"))
 
         image = cv2.imread(path_image, 0)
 
@@ -39,7 +39,7 @@ class TestRecognizedTable(unittest.TestCase):
         self.assertTrue(equal_with_eps(bbox.height, 754, 10))
 
     def test_table_split_right_column(self) -> None:
-        path_image = get_full_path("data/lising/platezhka.jpg")
+        path_image = get_full_path("data/lising/russian_invoice.jpg")
 
         image = cv2.imread(path_image, 0)
 
@@ -53,7 +53,7 @@ class TestRecognizedTable(unittest.TestCase):
         self.assertTrue(tables[0].cells[10][-1].get_text(), "30110978700000070815")
 
     def test_table_extract_one_cell_and_one_cell_tables(self) -> None:
-        path_image = get_full_path("data/lising/platezhka.jpg")
+        path_image = get_full_path("data/lising/russian_invoice.jpg")
         image = cv2.imread(path_image, 0)
 
         tables = self.get_table(image, "rus+eng", table_type="table_wo_external_bounds+one_cell_table")
