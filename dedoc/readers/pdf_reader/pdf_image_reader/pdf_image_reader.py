@@ -53,6 +53,7 @@ class PdfImageReader(PdfBaseReader):
                                                                           config=self.config)
         self.binarizer = AdaptiveBinarizer()
         self.ocr = OCRLineExtractor(config=self.config)
+        self.page_number = None
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         return super().read(file_path, parameters)
@@ -68,6 +69,7 @@ class PdfImageReader(PdfBaseReader):
         from dedoc.utils.parameter_utils import get_path_param
 
         #  --- Step 1: correct orientation and detect column count ---
+        self.page_number = page_number
         rotated_image, is_one_column_document, angle = self._detect_column_count_and_orientation(image, parameters)
         if self.config.get("debug_mode", False):
             self.logger.info(f"Angle page rotation = {angle}")
@@ -105,7 +107,6 @@ class PdfImageReader(PdfBaseReader):
         Return: rotated_image and indicator if the page is one-column
         """
         import os
-        from datetime import datetime
         import cv2
         from dedoc.utils.parameter_utils import get_path_param
 
@@ -124,7 +125,7 @@ class PdfImageReader(PdfBaseReader):
 
         if self.config.get("debug_mode", False):
             debug_dir = get_path_param(self.config, "path_debug")
-            img_path = os.path.join(debug_dir, f"{datetime.now().strftime('%H-%M-%S')}_result_orientation.jpg")
+            img_path = os.path.join(debug_dir, f"page-{self.page_number}_result_orientation.jpg")
             self.logger.info(f"Save image to {img_path}")
             cv2.imwrite(img_path, rotated_image)
 

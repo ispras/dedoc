@@ -21,13 +21,13 @@ class OnePageTableExtractor(BaseTableExtractor):
     def __init__(self, *, config: dict, logger: logging.Logger) -> None:
         super().__init__(config=config, logger=logger)
 
+        self.language = "rus"
+        self.page_number = None
         self.image = None
-        self.page_number = 0
         self.table_header_extractor = TableHeaderExtractor(logger=self.logger)
         self.count_vertical_extended = 0
         self.splitter = CellSplitter()
         self.table_options = TableTypeAdditionalOptions()
-        self.language = "rus"
 
     def extract_onepage_tables_from_image(self, image: np.ndarray, page_number: int, language: str, table_type: str) -> List[ScanTable]:
         """
@@ -89,20 +89,18 @@ class OnePageTableExtractor(BaseTableExtractor):
                 tables.append(table)
             except Exception as ex:
                 self.logger.warning(f"Warning: unrecognized table into page {self.page_number}. {ex}")
-                if self.config.get("debug_mode", False):
-                    raise ex
         return tables
 
     def handle_cells(self, cells: List[List[Cell]], table_type: str = "") -> List[List[Cell]]:
-        # Эвристика 1: Таблица должна состоять из 1 строк и более
+        # Heuristic 1: The table must have 1 or more rows.
         if len(cells) < 1:
-            raise RecognizeError("Invalid recognized table")
+            raise RecognizeError("Invalid recognized table. Heuristic 1: The table must have 1 or more rows.")
 
         cells = self.splitter.split(cells=cells)
 
-        # Эвристика 2: таблица должна иметь больше одного столбца
+        # Heuristic 2: The table must have more than one column.
         if cells[0] == [] or (len(cells[0]) <= 1 and self.table_options.detect_one_cell_table not in table_type):
-            raise RecognizeError("Invalid recognized table")
+            raise RecognizeError("Invalid recognized table. Heuristic 2: The table must have more than one column.")
 
         # Postprocess table
         if self.table_options.split_last_column in table_type:

@@ -112,19 +112,25 @@ class MultiPageTableExtractor(BaseTableExtractor):
     @staticmethod
     def __get_width_cell_wo_separating(row: List[Cell]) -> List[int]:
         widths = []
-        prev_uid = None
-        start = None
-        end = None
-        for cell_id, cell in enumerate(row):
-            if prev_uid is None:
-                start = cell.bbox.x_top_left
-                prev_uid = cell.uuid
-            elif prev_uid != cell.uuid:
-                widths.append(end - start)
-                start = cell.bbox.x_top_left
-            end = cell.bbox.x_bottom_right
-            if cell_id == len(row) - 1:
-                widths.append(end - start)
+        prev_cell_uuid = None
+        cell_x_left = None
+        cell_x_right = None
+        for column_num, cell in enumerate(row):
+            if prev_cell_uuid is None:  # the first column
+                cell_x_left = cell.bbox.x_top_left
+                cell_x_right = cell.bbox.x_bottom_right
+                prev_cell_uuid = cell.uuid
+                continue
+
+            if prev_cell_uuid != cell.uuid:  # a new cell starts
+                widths.append(cell_x_right - cell_x_left)
+                cell_x_left = cell.bbox.x_top_left
+
+            cell_x_right = cell.bbox.x_bottom_right
+
+            if column_num == len(row) - 1:  # the last column
+                widths.append(cell_x_right - cell_x_left)
+
         return widths
 
     def __is_equal_width_cells(self, table_part_1: List[List[Cell]], table_part_2: List[List[Cell]]) -> bool:
