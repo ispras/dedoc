@@ -76,6 +76,11 @@ Helper classes
 .. autoclass:: dedoc.data_structures.AttachedFile
     :members:
 
+
+.. autoclass:: dedoc.readers.pdf_reader.data_classes.tables.scantable.ScanTable
+    :show-inheritance:
+    :members:
+
 .. _annotations:
 
 Annotations of the text lines

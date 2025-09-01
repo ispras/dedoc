@@ -169,6 +169,18 @@ PDF and images handling
         If the document has a textual layer, it is recommended to use :class:`dedoc.readers.PdfTabbyReader`,
         in this case tables will be parsed much easier and faster.
 
+    * - table_type
+      - "", wo_external_bounds, one_cell_table, split_last_column and their combinaton
+      - ""
+      - * :meth:`dedoc.DedocManager.parse`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfTxtlayerReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
+        * :meth:`dedoc.readers.ReaderComposition.read`
+      - Setting up the table recognition method. The table recognition method is used in :class:`dedoc.readers.PdfImageReader` and
+        :class:`dedoc.readers.PdfTxtlayerReader`. The value of the parameter specifies the type of tables recognized when processed by
+        class :class:`~dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer.TableRecognizer`. More details about each parameter value
+        are disclosed in the class :class:`dedoc.readers.pdf_reader.data_classes.tables.table_type.TableTypeAdditionalOptions` description.
+        You can use combination of values (for example, `wo_external_bounds+one_cell_table`).
+
     * - need_gost_frame_analysis
       - True, False
       - False
