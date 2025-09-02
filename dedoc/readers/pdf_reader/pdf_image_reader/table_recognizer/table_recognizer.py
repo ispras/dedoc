@@ -19,7 +19,18 @@ from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors
 """-------------------------------------entry class of Table Recognizer Module---------------------------------------"""
 
 
-class TableRecognizer(object):
+class TableRecognizer:
+    """
+    The class recognizes tables from document images. This class is internal to the system. It is called from readers such as .
+
+    * The class recognizes tables with borders from the document image and returns the class
+        (function :meth:`~dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer.TableRecognizer.recognize_tables_from_image`);
+
+
+    * The class also analyzes recognized single-page tables and combines them into multi-page ones
+        (function :meth:`~dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer.TableRecognizer.convert_to_multipages_tables`);
+
+    """
 
     def __init__(self, *, config: dict = None) -> None:
         self.logger = config.get("logger", logging.getLogger())
@@ -29,10 +40,20 @@ class TableRecognizer(object):
         self.table_type = TableTypeAdditionalOptions()
 
     def convert_to_multipages_tables(self, all_single_tables: List[ScanTable], lines_with_meta: List[LineWithMeta]) -> List[ScanTable]:
+        """
+        The function analyzes recognized tables from the entire document (all pages) to see if they are multi-page.
+        If single-page tables are part of one multi-page, they are combined into one multi-page table.
+        """
         multipage_tables = self.multipage_tables_extractor.extract_multipage_tables(single_tables=all_single_tables, lines_with_meta=lines_with_meta)
         return multipage_tables
 
     def recognize_tables_from_image(self, image: np.ndarray, page_number: int, language: str, table_type: str = "") -> Tuple[np.ndarray, List[ScanTable]]:
+        """
+        The function recognizes tables with borders from scanned document image.
+        Here, the contour analysis method is used to determine the boundaries of table cells.
+        Then, a set of heuristics is used to detect tables, and finally,
+        the detected table cells are converted to a matrix form (merged cells are detected and separated).
+        """
         self.logger.debug(f"Page {page_number}")
         try:
             cleaned_image, scan_tables = self.__rec_tables_from_img(image, page_num=page_number, language=language, table_type=table_type)

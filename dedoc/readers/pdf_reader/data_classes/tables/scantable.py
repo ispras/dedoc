@@ -10,6 +10,10 @@ from dedoc.readers.pdf_reader.data_classes.tables.location import Location
 
 
 class ScanTable(Table):
+    """
+    Utility class for storing recognized tables from document images. The class
+    :class:`~dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer.TableRecognizer` works with this class.
+    """
     def __init__(self, page_number: int, cells: List[List[CellWithMeta]], bbox: BBox, order: int = -1) -> None:
 
         super().__init__(cells, TableMetadata(page_id=page_number))
