@@ -1,6 +1,6 @@
 import copy
 import logging
-from typing import List
+from typing import Dict, List, Tuple
 
 from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
@@ -18,66 +18,66 @@ class MultiPageTableExtractor(BaseTableExtractor):
         self.single_tables = [[]]  # simple tables on all pages
 
     def extract_multipage_tables(self, single_tables: List[ScanTable], lines_with_meta: List[LineWithMeta]) -> List[ScanTable]:
+        if len(single_tables) == 0 or len(single_tables) == 1:
+            return single_tables
+
         self.single_tables = single_tables
         multipages_tables = []
         list_page_with_tables = []
-        total_pages = max((table.location.page_number + 1 for table in single_tables), default=0)
-        for cur_page in range(total_pages):
-            # 1. get possible diapason of neighbors pages with tables
-            # pages distribution
-            list_mp_table = [t for t in self.single_tables if t.location.page_number == cur_page]
-            list_page_with_tables.append(list_mp_table)
+        table_pages = list(map(lambda t: t.location.page_number, single_tables))
+        max_page_with_table = max(table_pages, default=0)
+        min_page_with_table = min(table_pages, default=max_page_with_table)
 
-        total_cur_page = 0
-        if total_pages == 1:
+        # 1. get tables per page
+        # pages distribution (page 0)
+        page2tables = {
+            cur_page: [t for t in self.single_tables if t.location.page_number == cur_page]
+            for cur_page in range(min_page_with_table, max_page_with_table + 1)
+        }
+
+        total_cur_page = min_page_with_table
+        if max_page_with_table == 1:  # check on unnecessary this block
             for tbls in list_page_with_tables:
                 multipages_tables.extend(tbls)
             return multipages_tables
 
-        while total_cur_page < total_pages:
+        while total_cur_page < max_page_with_table + 1:
             begin_page = total_cur_page
 
             # if tables are not found on the current page
-            if len(list_page_with_tables[begin_page]) == 0:
+            if len(page2tables[begin_page]) == 0:
                 total_cur_page += 1
                 continue
 
-            # table merging analysis
-            t1 = list_page_with_tables[begin_page][-1]
+            # table merging analysis. Get the last table of the page. It is the first part of possible multipage table
+            t1 = page2tables[begin_page][-1]
 
             # next pages cycle
             cur_page = begin_page + 1
-            cur_page = self.__handle_multipage_table(cur_page, lines_with_meta, list_page_with_tables, t1, total_pages)
+            cur_page, multipage_table = self.__handle_multipage_table(cur_page, lines_with_meta, page2tables, t1, max_page_with_table)
             total_cur_page = cur_page + 1
 
-            multipages_tables.extend(list_page_with_tables[begin_page][:-1])
-            multipages_tables.append(t1)
-            list_page_with_tables[begin_page] = []
-            for page in range(begin_page + 1, min(cur_page + 1, total_pages)):
-                if len(list_page_with_tables[page]) > 0:
-                    multipages_tables.extend(list_page_with_tables[page])
-                    list_page_with_tables[page] = []
+            multipages_tables.extend(page2tables[begin_page][:-1])  # added all single tables, except the last one (multipage_table)
+            multipages_tables.append(multipage_table)  # t1 became a multipages table
+            page2tables[begin_page] = []
 
         return multipages_tables
 
     def __handle_multipage_table(self,
                                  cur_page: int,
                                  lines_with_meta: List[LineWithMeta],
-                                 list_page_with_tables: List[List[ScanTable]],
+                                 page2tables: Dict,
                                  t1: ScanTable,
-                                 total_pages: int) -> int:
-        finish = False  # multipage table finished
-        while not finish:
-            if cur_page == total_pages:  # end of the document
-                finish = True
-                continue
+                                 max_page_with_tables: int) -> Tuple[int, ScanTable]:
+        while True:
+            if cur_page == max_page_with_tables + 1:  # end of the document
+                return cur_page, t1
 
-            if len(list_page_with_tables[cur_page]) == 0:  # tables are not found on the current page
-                finish = True
-                continue
+            if len(page2tables[cur_page]) == 0:  # tables are not found on the current page
+                return cur_page, t1
 
-            # first table on the current page
-            t2 = list_page_with_tables[cur_page][0]
+            # the first table on the current page
+            t2 = page2tables[cur_page][0]
             if self.config.get("debug_mode", False):
                 self.logger.debug(f"cur page: {cur_page}")
 
@@ -85,22 +85,19 @@ class MultiPageTableExtractor(BaseTableExtractor):
             if self.__is_one_table(t1, t2):
                 # t2 is merged with t1
                 t1.extended(t2)
-                list_page_with_tables[cur_page].pop(0)
+                page2tables[cur_page].pop(0)
                 self.__delete_ref_table(lines=lines_with_meta, table_name=t2.uid)
             else:
-                if len(list_page_with_tables[cur_page]) > 0:
+                if len(page2tables[cur_page]) > 0:
                     cur_page -= 1  # analysis from the current page, not the next one
-                finish = True
-                continue
+                return cur_page, t1
 
-            if not finish:
-                # if there are several tables on the current page, end of parsing of the current multipage table
-                if len(list_page_with_tables[cur_page]) > 0:
-                    cur_page -= 1  # analysis from the current page, not the next one
-                    finish = True
-                else:
-                    cur_page += 1
-        return cur_page
+            # if there are several tables on the current page, end of parsing of the current multipage table
+            if len(page2tables[cur_page]) > 0:
+                cur_page -= 1  # analysis from the current page, not the next one
+                return cur_page, t1
+
+            cur_page += 1
 
     def __delete_ref_table(self, lines: List[LineWithMeta], table_name: str) -> None:
         for line in lines:

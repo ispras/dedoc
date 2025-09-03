@@ -293,3 +293,24 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         row0 = self._get_text_of_row(table[0])
 
         self.assertEqual(row0[:2], ["Номер", "Извещения\nмореплавателям"])
+
+    def test_multipage_tables_0(self) -> None:
+        result = self._send_request("MIPS64.pdf", data=dict(language="rus+eng", pages="16:22"))
+
+        self.assertEqual(2, len(result["content"]["tables"]))
+
+        header_of_table_0 = self._get_text_of_row(result["content"]["tables"][0]["cells"][0])
+        self.assertEqual(header_of_table_0, ["Symbol", "Meaning"])
+
+        header_of_table_1 = self._get_text_of_row(result["content"]["tables"][1]["cells"][0])
+        self.assertEqual(header_of_table_1, ["Read/Write\nNotation", "Hardware Interpretation", "Software Interpretation"])
+
+    def test_multipage_tables_1(self) -> None:
+        result = self._send_request("MIPS64.pdf", data=dict(language="rus+eng", pages="78:79"))
+
+        self.assertEqual(2, len(result["content"]["tables"]))
+
+    def test_multipage_tables_2(self) -> None:
+        result = self._send_request("MIPS64.pdf", data=dict(language="rus+eng", pages="394:395"))
+
+        self.assertEqual(2, len(result["content"]["tables"]))
