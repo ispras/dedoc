@@ -86,6 +86,7 @@ class PdfTxtlayerReader(PdfBaseReader):
             shift_x, shift_y = page_shift.x_top_left, page_shift.y_top_left  # shift tables to original coordinates
             for location in table.locations:
                 location.bbox.shift(shift_x=shift_x, shift_y=shift_y)
+                location.page_height, location.page_width = image_height, image_width
             for row in table.cells:
                 for cell in row:
                     cell.shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)

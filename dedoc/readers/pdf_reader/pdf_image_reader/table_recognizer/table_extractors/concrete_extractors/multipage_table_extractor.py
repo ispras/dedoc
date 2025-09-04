@@ -183,7 +183,7 @@ class MultiPageTableExtractor(BaseTableExtractor):
         if t1_relative_bb and t2_relative_bb:
             t1_bottom = t1_relative_bb["y_top_left"] + t1_relative_bb["height"]  # the end of the table should be at the end of the page
             t2_top = t2_relative_bb["y_top_left"]                                # the beginning of the table should be in the beginning of the page
-            if t1_bottom < 0.75 or t2_top > 0.25:
+            if t1_bottom < 0.7 or t2_top > 0.3:
                 return False
 
         t2.cells = copy.deepcopy(t2_update.cells)  # save changes
