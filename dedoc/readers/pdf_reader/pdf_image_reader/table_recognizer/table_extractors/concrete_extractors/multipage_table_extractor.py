@@ -23,7 +23,6 @@ class MultiPageTableExtractor(BaseTableExtractor):
 
         self.single_tables = single_tables
         multipages_tables = []
-        list_page_with_tables = []
         table_pages = list(map(lambda t: t.location.page_number, single_tables))
         max_page_with_table = max(table_pages, default=0)
         min_page_with_table = min(table_pages, default=max_page_with_table)
@@ -36,10 +35,8 @@ class MultiPageTableExtractor(BaseTableExtractor):
         }
 
         total_cur_page = min_page_with_table
-        if max_page_with_table == 1:  # check on unnecessary this block
-            for tbls in list_page_with_tables:
-                multipages_tables.extend(tbls)
-            return multipages_tables
+        if max_page_with_table == 0:  # check on unnecessary this block
+            return single_tables
 
         while total_cur_page < max_page_with_table + 1:
             begin_page = total_cur_page

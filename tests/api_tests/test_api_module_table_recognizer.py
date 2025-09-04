@@ -207,7 +207,7 @@ class TestRecognizedTable(AbstractTestApiDocReader):
 
     def test_multipage_gost_table_image(self) -> None:
         file_name = "gost_multipage_table.pdf"
-        result = self._send_request(file_name, data={"need_gost_frame_analysis": "True"})  # don't pass pdf_with_text_layer to check condition in PDFBaseReader
+        result = self._send_request(file_name, data={"need_gost_frame_analysis": "True", "pdf_with_text_layer": "false"})
         self.assertTrue(len(result["content"]["tables"][0]["cells"]) > 35)
         target_bbox_dict = {
             "x_top_left": 0.14,
