@@ -311,6 +311,11 @@ class TestRecognizedTable(AbstractTestApiDocReader):
         self.assertEqual(2, len(result["content"]["tables"]))
 
     def test_multipage_tables_2(self) -> None:
+        result = self._send_request("MIPS64.pdf", data=dict(language="rus+eng", pages="78:79", pdf_with_text_layer="false"))
+
+        self.assertEqual(2, len(result["content"]["tables"]))
+
+    def test_multipage_tables_3(self) -> None:
         result = self._send_request("MIPS64.pdf", data=dict(language="rus+eng", pages="394:395"))
 
         self.assertEqual(2, len(result["content"]["tables"]))

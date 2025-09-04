@@ -14,11 +14,11 @@ class ScanTable(Table):
     Utility class for storing recognized tables from document images. The class
     :class:`~dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer.TableRecognizer` works with this class.
     """
-    def __init__(self, page_number: int, cells: List[List[CellWithMeta]], bbox: BBox, order: int = -1) -> None:
+    def __init__(self, page_number: int, cells: List[List[CellWithMeta]], bbox: BBox, order: int = -1, page_width: int = None, page_height: int = None) -> None:
 
         super().__init__(cells, TableMetadata(page_id=page_number))
         self.order = order
-        self.locations = [Location(page_number, bbox)]
+        self.locations = [Location(page_number, bbox, page_width=page_width, page_height=page_height)]
 
     def extended(self, table: "ScanTable") -> None:
         # extend locations
