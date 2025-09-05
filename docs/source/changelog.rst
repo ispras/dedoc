@@ -1,5 +1,15 @@
 Changelog
 =========
+v2.5 (2025-09-05)
+-----------------
+Release note: `v2.5 <https://github.com/ispras/dedoc/releases/tag/v2.5>`_
+
+* Added simple multilingual textual layer correctness classification based on letter percentage calculation (`textual_layer_classifier=letter`).
+* Added a new parameter `textual_layer_classifier = [simple, ml (default), letter]`.
+* Remove parameter `fast_textual_layer_detection`. Now it is a `textual_layer_classifier=simple`.
+* Fix bug with `table_type=table_wo_external_bounds` (fixed cv2.BoundingRect).
+* Some refactoring `TableRecognition`.
+* Added parameter `table_type` and `TableRecognition` info into documentation.
 
 v2.4 (2025-07-28)
 -----------------
