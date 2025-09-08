@@ -136,7 +136,7 @@ class PdfBaseReader(BaseReader):
             lines, headers, footers = footer_header_analysis(lines)
             all_lines = list(flatten(lines))
         if parameters.need_gost_frame_analysis and isinstance(self, PdfImageReader):
-            self._shift_all_contents(lines=all_lines, unref_tables=unref_tables, attachments=attachments, gost_analyzed_images=gost_analyzed_images)
+            self._shift_all_contents(lines=all_lines, onepage_tables=unref_tables, attachments=attachments, gost_analyzed_images=gost_analyzed_images)
         mp_tables = self.table_recognizer.convert_to_multipages_tables(unref_tables, lines_with_meta=all_lines)
         all_lines_with_links = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=attachments)
 
@@ -156,27 +156,35 @@ class PdfBaseReader(BaseReader):
         gost_analyzed_images = Parallel(n_jobs=self.config["n_jobs"])(delayed(self.gost_frame_recognizer.rec_and_clean_frame)(image) for image in images)
         page_range = range(first_page, first_page + len(gost_analyzed_images))
         gost_analyzed_images = dict(zip(page_range, gost_analyzed_images))
+
         if isinstance(self, PdfTxtlayerReader):
             self.gost_frame_boxes = dict(zip(page_range, [(item[1], item[2]) for item in gost_analyzed_images.values()]))
+
         result = Parallel(n_jobs=self.config["n_jobs"])(
             delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, (image, box, original_image_shape) in
             gost_analyzed_images.items()
         )
         return result, gost_analyzed_images
 
-    def _shift_all_contents(self, lines: List[LineWithMeta], unref_tables: List[ScanTable], attachments: List[PdfImageAttachment],
+    def _shift_all_contents(self, lines: List[LineWithMeta], onepage_tables: List[ScanTable], attachments: List[PdfImageAttachment],
                             gost_analyzed_images: Dict[int, Tuple[ndarray, BBox, Tuple[int, ...]]]) -> None:
+        """
+            Shift all recognized content relative to the original source image
+        """
         # shift unref_tables
-        for scan_table in unref_tables:
+        for scan_table in onepage_tables:
             for location in scan_table.locations:
-                table_page_number = location.page_number
-                location.shift(shift_x=gost_analyzed_images[table_page_number][1].x_top_left, shift_y=gost_analyzed_images[table_page_number][1].y_top_left)
+                page_number = location.page_number
+                location.shift(shift_x=gost_analyzed_images[page_number][1].x_top_left, shift_y=gost_analyzed_images[page_number][1].y_top_left)
+                location.page_width, location.page_height = gost_analyzed_images[page_number][2][1], gost_analyzed_images[page_number][2][0]
+
             page_number = scan_table.locations[0].page_number
             for row in scan_table.cells:
                 for cell in row:
-                    image_width, image_height = gost_analyzed_images[page_number][2][1], gost_analyzed_images[page_number][2][0]
-                    shift_x, shift_y = (gost_analyzed_images[page_number][1].x_top_left, gost_analyzed_images[page_number][1].y_top_left)
-                    cell.shift(shift_x=shift_x, shift_y=shift_y, image_width=image_width, image_height=image_height)
+                    orig_image_width, orig_image_height = gost_analyzed_images[page_number][2][1], gost_analyzed_images[page_number][2][0]
+                    gost_frame_bbox = gost_analyzed_images[page_number][1]
+                    shift_x, shift_y = gost_frame_bbox.x_top_left, gost_frame_bbox.y_top_left
+                    cell.shift(shift_x=shift_x, shift_y=shift_y, image_width=orig_image_width, image_height=orig_image_height)
 
         # shift attachments
         for attachment in attachments:

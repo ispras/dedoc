@@ -23,7 +23,6 @@ class MultiPageTableExtractor(BaseTableExtractor):
 
         self.single_tables = single_tables
         multipages_tables = []
-        list_page_with_tables = []
         table_pages = list(map(lambda t: t.location.page_number, single_tables))
         max_page_with_table = max(table_pages, default=0)
         min_page_with_table = min(table_pages, default=max_page_with_table)
@@ -36,10 +35,8 @@ class MultiPageTableExtractor(BaseTableExtractor):
         }
 
         total_cur_page = min_page_with_table
-        if max_page_with_table == 1:  # check on unnecessary this block
-            for tbls in list_page_with_tables:
-                multipages_tables.extend(tbls)
-            return multipages_tables
+        if max_page_with_table == 0:  # check on unnecessary this block
+            return single_tables
 
         while total_cur_page < max_page_with_table + 1:
             begin_page = total_cur_page
@@ -179,6 +176,15 @@ class MultiPageTableExtractor(BaseTableExtractor):
             if self.config.get("debug_mode", False):
                 self.logger.debug("Different width columns")
             return False
+
+        # condition 5. Check table layout
+        t1_relative_bb = t1.locations[-1].to_relative_bbox_dict()
+        t2_relative_bb = t2.locations[0].to_relative_bbox_dict()
+        if t1_relative_bb and t2_relative_bb:
+            t1_bottom = t1_relative_bb["y_top_left"] + t1_relative_bb["height"]  # the end of the table should be at the end of the page
+            t2_top = t2_relative_bb["y_top_left"]                                # the beginning of the table should be in the beginning of the page
+            if t1_bottom < 0.7 or t2_top > 0.3:
+                return False
 
         t2.cells = copy.deepcopy(t2_update.cells)  # save changes
         return True

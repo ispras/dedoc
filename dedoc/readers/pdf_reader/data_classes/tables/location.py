@@ -1,13 +1,15 @@
 from functools import total_ordering
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from dedocutils.data_structures import BBox
 
 
 @total_ordering
 class Location:
-    def __init__(self, page_number: int, bbox: BBox, name: str = "", rotated_angle: float = 0.0) -> None:
+    def __init__(self, page_number: int, bbox: BBox, name: str = "", rotated_angle: float = 0.0, page_width: int = None, page_height: int = None) -> None:
         self.page_number = page_number
+        self.page_width = page_width
+        self.page_height = page_height
         self.bbox = bbox
         self.name = name
         # TODO put self.order (change LineWithLocation, PdfImageAttachment, ScanTable)
@@ -15,6 +17,11 @@ class Location:
 
     def shift(self, shift_x: int, shift_y: int) -> None:
         self.bbox.shift(shift_x, shift_y)
+
+    def to_relative_bbox_dict(self) -> Optional[Dict]:
+        if not self.page_height or not self.page_width:
+            return None
+        return self.bbox.to_relative_dict(self.page_width, self.page_height)
 
     def to_dict(self) -> Dict[str, Any]:
         from collections import OrderedDict
