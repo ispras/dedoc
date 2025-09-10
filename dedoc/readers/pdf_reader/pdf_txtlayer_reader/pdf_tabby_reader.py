@@ -65,6 +65,7 @@ class PdfTabbyReader(PdfBaseReader):
         """
         import tempfile
         from dedoc.utils.parameter_utils import get_param_with_attachments
+
         parameters = {} if parameters is None else parameters
         warnings = []
 
@@ -84,9 +85,10 @@ class PdfTabbyReader(PdfBaseReader):
             -> Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], Optional[dict]]:
         import math
         from dedoc.utils.pdf_utils import get_pdf_page_count
-        from dedoc.utils.utils import calculate_file_hash
+        from dedoc.utils.utils import calculate_file_hash, flatten
         from dedoc.utils.parameter_utils import get_param_page_slice, get_param_with_attachments
         from dedoc.utils.parameter_utils import get_param_need_gost_frame_analysis
+        from dedoc.utils.parameter_utils import get_param_need_header_footers_analysis
 
         all_lines, all_tables, all_scan_tables, all_attached_images = [], [], [], []
         with_attachments = get_param_with_attachments(parameters)
@@ -124,16 +126,22 @@ class PdfTabbyReader(PdfBaseReader):
                                       remove_frame=remove_gost_frame)
 
         pages = document.get("pages", [])
+        lines = []
         for page in pages:
             page_lines = self.__get_lines_with_location(page, file_hash)
             if page_lines:
-                all_lines.extend(page_lines)
+                lines.append(page_lines)
             scan_tables = self.__get_tables(page)
             all_scan_tables.extend(scan_tables)
 
             attached_images = self.__get_attached_images(page=page, parameters=parameters, path=path) if with_attachments else []
             if attached_images:
                 all_attached_images.extend(attached_images)
+
+        if get_param_need_header_footers_analysis(parameters):
+            lines, headers, footers = self.header_footer_detector.detect(lines)
+
+        all_lines = list(flatten(lines))
 
         mp_tables = self.table_recognizer.convert_to_multipages_tables(all_scan_tables, lines_with_meta=all_lines)
         all_lines = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=all_attached_images)

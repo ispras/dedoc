@@ -12,7 +12,7 @@ from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
-
+from dedoc.readers.pdf_reader.utils.header_footers_analysis import HeaderFooterDetector
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "is_one_column_document",
@@ -54,6 +54,7 @@ class PdfBaseReader(BaseReader):
         self.linker = LineObjectLinker(config=self.config)
         self.paragraph_extractor = ScanParagraphClassifierExtractor(config=self.config)
         self.gost_frame_recognizer = GOSTFrameRecognizer(config=self.config)
+        self.header_footer_detector = HeaderFooterDetector()
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -94,12 +95,11 @@ class PdfBaseReader(BaseReader):
         result = UnstructuredDocument(lines=lines, tables=scan_tables, attachments=attachments, warnings=warnings, metadata=metadata)
         return self._postprocess(result)
 
-    def _parse_document(self, path: str, parameters: ParametersForParseDoc) -> (
-            Tuple)[List[LineWithMeta], List[ScanTable], List[PdfImageAttachment], List[str], Optional[dict]]:
+    def _parse_document(self, path: str, parameters: ParametersForParseDoc) \
+            -> Tuple[List[LineWithMeta], List[ScanTable], List[PdfImageAttachment], List[str], Optional[dict]]:
         import math
         from joblib import Parallel, delayed
         from dedoc.data_structures.hierarchy_level import HierarchyLevel
-        from dedoc.readers.pdf_reader.utils.header_footers_analysis import footer_header_analysis
         from dedoc.utils.pdf_utils import get_pdf_page_count
         from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
         from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
@@ -131,12 +131,15 @@ class PdfBaseReader(BaseReader):
             all_lines, unref_tables, attachments, page_angles = [], [], [], []
         else:
             all_lines, unref_tables, attachments, page_angles = map(list, map(flatten, zip(*result)))
+
         if parameters.need_header_footers_analysis:
             lines = [lines for lines, _, _, _ in result]
-            lines, headers, footers = footer_header_analysis(lines)
+            lines, headers, footers = self.header_footer_detector.detect(lines)
             all_lines = list(flatten(lines))
+
         if parameters.need_gost_frame_analysis and isinstance(self, PdfImageReader):
             self._shift_all_contents(lines=all_lines, onepage_tables=unref_tables, attachments=attachments, gost_analyzed_images=gost_analyzed_images)
+
         mp_tables = self.table_recognizer.convert_to_multipages_tables(unref_tables, lines_with_meta=all_lines)
         all_lines_with_links = self.linker.link_objects(lines=all_lines, tables=mp_tables, images=attachments)
 
