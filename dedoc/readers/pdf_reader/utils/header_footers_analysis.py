@@ -12,6 +12,7 @@ class HeaderFooterDetector:
     """
     Class detects header and footer textual lines.
     The algorithm was implemented according to the article:
+
     `Lin X. Header and footer extraction by page association //Document Recognition and Retrieval X. – SPIE, 2003. – Т. 5010. – С. 164-171.`
 
     Algorithm's notes:
@@ -26,6 +27,7 @@ class HeaderFooterDetector:
         It is not an ML algorithm it cannot work with just one page.
 
         4) The more pages the better. Remember the parameter `pages` limits the number of pages in a document.
+
     """
 
     def __init__(self) -> None:
