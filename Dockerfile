@@ -1,5 +1,5 @@
 ARG REPOSITORY="docker.io"
-FROM dedocproject/dedoc_p3.9_base:version_2023_08_28
+FROM dedocproject/dedoc_jammy_p3.10_base:version_2025_09_11
 ARG LANGUAGES=""
 RUN for lang in $LANGUAGES; do apt install -y tesseract-ocr-$(echo $lang | tr "_" "-"); done
 
