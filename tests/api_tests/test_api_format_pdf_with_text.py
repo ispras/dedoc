@@ -157,3 +157,29 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
         self.assertTrue(len(result["content"]["tables"]), len(table_refs))
         for table in result["content"]["tables"]:
             self.assertTrue(table["metadata"]["uid"] in table_refs)
+
+    def test_pdf_tabby_with_header_footer(self) -> None:
+        file_name = "riscv-spec-v2.2.pdf"
+        result = self._send_request(file_name, dict(pdf_with_text_layer="tabby", need_header_footer_analysis=True, pages="10:25"))
+
+        tree = result["content"]["structure"]
+        self._check_tree_sanity(tree)
+
+        # page 1 without a header
+        node = self._get_by_tree_path(tree, "0.0")
+        self.assertEqual("16 “P” Standard Extension for Packed-SIMD Instructions, Version 0.1 91\n", node["text"])
+
+        # page 2 without a header
+        node = self._get_by_tree_path(tree, "0.2.18")
+        self.assertEqual("22.4 Version Numbers . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 122\n", node["text"])
+
+    def test_pdf_pdfminer_with_header_footer(self) -> None:
+        file_name = "riscv-spec-v2.2.pdf"
+        result = self._send_request(file_name, dict(pdf_with_text_layer="true", need_header_footer_analysis=True, pages="10:25"))
+
+        tree = result["content"]["structure"]
+        self._check_tree_sanity(tree)
+
+        # page 1 without a header
+        node = self._get_by_tree_path(tree, "0.0")
+        self.assertEqual("16 “P” Standard Extension for Packed-SIMD Instructions, Version 0.1\n91\n", node["text"])

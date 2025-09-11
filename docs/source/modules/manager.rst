@@ -18,3 +18,7 @@ Dedoc pipeline
 .. autoclass:: dedoc.readers.pdf_reader.data_classes.tables.table_type.TableTypeAdditionalOptions
     :show-inheritance:
     :members:
+
+.. autoclass:: dedoc.readers.pdf_reader.utils.header_footers_analysis.HeaderFooterDetector
+    :show-inheritance:
+    :members:
