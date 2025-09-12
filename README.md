@@ -162,7 +162,7 @@ If you need to change some application settings, you may update `config.py` acco
 If you don't want to use docker for running the application, it's possible to run dedoc locally.
 However, it isn't suitable for any operating system (`Ubuntu 20+` is recommended) and
 there may be not enough machine resources for its work.
-You should have `python` (`python3.8`, `python3.9` are recommended) and `pip` installed.
+You should have `python` (`python3.9`, `python3.10` are recommended) and `pip` installed.
 Installation instructions via pip are available [here](https://dedoc.readthedocs.io/en/latest/getting_started/installation.html#install-dedoc-using-pip).
 
 ## Install and run dedoc from sources

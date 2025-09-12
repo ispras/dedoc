@@ -89,7 +89,8 @@ class OnePageTableExtractor(BaseTableExtractor):
                 table.cells = self.handle_cells(table.cells, table_type)
                 tables.append(table)
             except Exception as ex:
-                self.logger.warning(f"Warning: unrecognized table into page {self.page_number}. {ex}")
+                if self.config.get("debug_mode", False):
+                    self.logger.warning(f"Warning: unrecognized table into page {self.page_number}. {ex}")
         return tables
 
     def handle_cells(self, cells: List[List[Cell]], table_type: str = "") -> List[List[Cell]]:
