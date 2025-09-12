@@ -282,7 +282,8 @@ This type of structure is configurable (see :ref:`using_patterns`).
 
 .. toctree::
    :maxdepth: 2
-   :caption: Notes
+   :caption: Development Notes
    :hidden:
 
+   contributing/contributing
    changelog
