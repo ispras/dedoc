@@ -1,5 +1,19 @@
 Changelog
 =========
+v2.6 (2025-09-19)
+-----------------
+Release note: `v2.6 <https://github.com/ispras/dedoc/releases/tag/v2.6>`_
+
+* improve table merge algorithm (added check on table layout) `MultiPageTableExtractor`.
+* refactoring table merge `MultiPageTableExtractor`.
+* improve header footer analysis `HeaderFooterDetector`.
+* added header footer analysis support in Tabby.
+* added header footer analysis info (parameter `need_header_footer_analysis`) in documentation (readthedocs).
+* update to python3.10.
+* update to ubuntu22.04.
+* added `Contributing Information` (project rules, how build, how develop) in documentation (readthedocs).
+
+
 v2.5 (2025-09-05)
 -----------------
 Release note: `v2.5 <https://github.com/ispras/dedoc/releases/tag/v2.5>`_
