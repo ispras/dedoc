@@ -9,6 +9,8 @@ ENV RESOURCES_PATH "/dedoc_root/resources"
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends fontforge
+RUN apt install -y libutf8proc-dev
+RUN ln -s /usr/lib/x86_64-linux-gnu/libutf8proc.so /usr/lib/libutf8proc.so.1
 
 RUN mkdir /dedoc_root
 RUN mkdir /dedoc_root/dedoc
