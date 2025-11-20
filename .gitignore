@@ -11,6 +11,7 @@ dedoc/version.py
 
 # Distribution / packaging
 .Python
+etc/
 env/
 build/
 develop-eggs/
