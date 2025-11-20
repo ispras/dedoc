@@ -99,7 +99,7 @@ class StylesExtractor:
 
         styles = [style]
         current_style = style
-        while current_style.basedOn:
+        while current_style and current_style.basedOn:
             try:
                 parent_style_id = current_style.basedOn["w:val"]
                 current_style = self.__find_style(parent_style_id, style_type)
