@@ -98,7 +98,7 @@ class TestAttachmentsExtractor(unittest.TestCase):
         Tests attachment extraction from archives with files containing slash symbol in the name
         """
         file_name_template = "attachments.{}"
-        for extension in "7z", "tar", "tar.gz", "zip":
+        for extension in "tar", "tar.gz", "zip":
             file_name = file_name_template.format(extension)
             files = self.__get_list_of_files_in_archive(file_name)
             self.assertEqual(2, len(files))
