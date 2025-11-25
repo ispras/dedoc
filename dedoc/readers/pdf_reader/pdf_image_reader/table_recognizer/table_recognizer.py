@@ -21,15 +21,13 @@ from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors
 
 class TableRecognizer:
     """
-    The class recognizes tables from document images. This class is internal to the system. It is called from readers such as .
+    The class recognizes tables from document images. This class is internal to the system.
+    It is called from readers such as :class:`dedoc.readers.PdfTxtlayerReader` or :class:`dedoc.readers.PdfImageReader`.
 
-    * The class recognizes tables with borders from the document image and returns the class
-        (function :meth:`~dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer.TableRecognizer.recognize_tables_from_image`);
-
-
-    * The class also analyzes recognized single-page tables and combines them into multi-page ones
-        (function :meth:`~dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer.TableRecognizer.convert_to_multipages_tables`);
-
+    * The class recognizes tables with borders from the document image using
+      :meth:`~dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer.TableRecognizer.recognize_tables_from_image`;
+    * The class also analyzes recognized single-page tables and combines them into multi-page ones using
+      :meth:`~dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer.TableRecognizer.convert_to_multipages_tables`
     """
 
     def __init__(self, *, config: dict = None) -> None:

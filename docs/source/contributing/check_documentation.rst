@@ -9,12 +9,11 @@ Check documentation
 
          pip install .[docs]
 
-2. Documentation files should be located in the `docs/ <https://github.com/ispras/dedoc/blob/master/docs>`_ directory,
-   which must contain the `docs/source/conf.py <https://github.com/ispras/dedoc/blob/master/docs/source/conf.py>`_ (build settings)
-   and `docs/source/index.rst <https://github.com/ispras/dedoc/blob/master/docs/source/index.rst>`_ (documentation main page) files.
-
-3. Build documentation into HTML pages is done as follows:
+2. Documentation files should be located in the `docs/ <https://github.com/ispras/dedoc/blob/master/docs>`_ directory.
+   Build documentation into HTML pages is done as follows:
 
     .. code-block:: bash
 
          python -m sphinx -T -E -W -b html -d docs/_build/doctrees -D language=en docs/source docs/_build
+
+3. After building, the documentation can be checked locally, the main built page ``docs/_build/index.html`` can be opened in the browser.

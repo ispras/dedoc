@@ -1,5 +1,5 @@
 ARG REPOSITORY="docker.io"
-FROM dedocproject/dedoc_p3.9_base:version_2023_08_28
+FROM dedocproject/dedoc_jammy_p3.10_base:version_2025_09_11
 
 ENV PYTHONPATH "${PYTHONPATH}:/labeling_root:/labeling_root/labeling"
 ENV RESOURCES_PATH "/labeling_root/resources"

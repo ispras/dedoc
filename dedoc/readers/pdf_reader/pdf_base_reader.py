@@ -12,7 +12,7 @@ from dedoc.readers.base_reader import BaseReader
 from dedoc.readers.pdf_reader.data_classes.line_with_location import LineWithLocation
 from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
-from dedoc.readers.pdf_reader.utils.header_footers_analysis import HeaderFooterDetector
+
 
 ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "is_one_column_document",
@@ -44,6 +44,7 @@ class PdfBaseReader(BaseReader):
         from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
         from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.gost_frame_recognizer import GOSTFrameRecognizer
         from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import TableRecognizer
+        from dedoc.readers.pdf_reader.utils.header_footers_analysis import HeaderFooterDetector
         from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
         from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
 
