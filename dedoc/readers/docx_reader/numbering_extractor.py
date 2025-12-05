@@ -67,7 +67,10 @@ class NumberingExtractor:
         else:
             ilvl = ilvl["w:val"]
 
-        lvl_info: LevelInfo = self.num_dict[num_id].level_number2level_info[ilvl]
+        try:
+            lvl_info: LevelInfo = self.num_dict[num_id].level_number2level_info[ilvl]
+        except KeyError:
+            return
         text = self.__get_list_item_text(ilvl, num_id)
 
         # change style of the paragraph/run: style -> pPr -> rPr
