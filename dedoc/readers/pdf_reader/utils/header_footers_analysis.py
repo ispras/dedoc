@@ -16,18 +16,18 @@ class HeaderFooterDetector:
     `Lin X. Header and footer extraction by page association //Document Recognition and Retrieval X. – SPIE, 2003. – Т. 5010. – С. 164-171.`
 
     Algorithm's notes:
-        1) For documents of 6 pages or more, lines on even and odd pages of the document are compared to detect alternating footers-headers.
-        For documents of less than 6 pages, lines between adjacent pages (between even or odd pages) are compared.
-        Therefore, alternating footers-headers will not be detected on documents of less than 6 pages.
 
-        2) The algorithm analyzes the first 4 and last 4 lines on each page of the document and,
-        by comparing lines across pages, identifies common footer-header patterns using Levenshtein similarity.
+        1. For documents of 6 pages or more, lines on even and odd pages of the document are compared to detect alternating footers-headers.
+           For documents of less than 6 pages, lines between adjacent pages (between even or odd pages) are compared.
+           Therefore, alternating footers-headers will not be detected on documents of less than 6 pages.
 
-        3) For the algorithm to work, the document must have at least two pages of text.
-        It is not an ML algorithm it cannot work with just one page.
+        2. The algorithm analyzes the first 4 and last 4 lines on each page of the document and,
+           by comparing lines across pages, identifies common footer-header patterns using Levenshtein similarity.
 
-        4) The more pages the better. Remember the parameter `pages` limits the number of pages in a document.
+        3. For algorithm work, the document must have at least two pages of text.
+           It is not an ML algorithm so it cannot work with just one page.
 
+        4. The more pages, the better. Remember that the parameter `pages` limits the number of pages in a document.
     """
 
     def __init__(self) -> None:

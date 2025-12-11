@@ -148,19 +148,7 @@ PDF and images handling
         * :meth:`dedoc.readers.ReaderComposition.read`
       - This option is used to **remove** headers and footers of PDF documents from the output result.
         If ``need_header_footer_analysis=False``, header and footer lines will present in the output as well as all other document lines.
-        The algorithm is implemented in the class :class:`~dedoc.readers.pdf_reader.utils.header_footers_analysis.HeaderFooterDetector`.
-        A link to the article describing the algorithm is provided in the class description.
-
-        *   For documents of 6 pages or more, lines on even and odd pages of the document are compared to detect alternating footers-headers.
-            For documents of less than 6 pages, lines between adjacent pages (between even or odd pages) are compared.
-            Therefore, alternating footers-headers will not be detected on documents of less than 6 pages.
-
-        *   The algorithm analyzes the first 4 and last 4 lines on each page of the document and,
-            by comparing lines across pages, identifies common footer-header patterns using Levenshtein similarity.
-
-        *   For the algorithm to work, the document must have at least two pages of text.
-
-        *   The more pages the better. Remember the parameter `pages` limits the number of pages in a document.
+        The algorithm is implemented and described in the class :class:`~dedoc.readers.pdf_reader.utils.header_footers_analysis.HeaderFooterDetector`.
 
     * - need_binarization
       - True, False
@@ -192,8 +180,8 @@ PDF and images handling
       - Setting up the table recognition method. The table recognition method is used in :class:`dedoc.readers.PdfImageReader` and
         :class:`dedoc.readers.PdfTxtlayerReader`. The value of the parameter specifies the type of tables recognized when processed by
         class :class:`~dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer.TableRecognizer`. More details about each parameter value
-        are disclosed in the class :class:`dedoc.readers.pdf_reader.data_classes.tables.table_type.TableTypeAdditionalOptions` description.
-        You can use combination of values (for example, `wo_external_bounds+one_cell_table`).
+        are disclosed in the class :class:`~dedoc.readers.pdf_reader.data_classes.tables.table_type.TableTypeAdditionalOptions` description.
+        You can use combination of values (for example, ``wo_external_bounds+one_cell_table``).
 
     * - need_gost_frame_analysis
       - True, False

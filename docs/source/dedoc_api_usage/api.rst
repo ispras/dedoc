@@ -279,6 +279,16 @@ Api parameters description
       - false
       - This option is used to **remove** headers and footers of PDF documents from the output result.
         If ``need_header_footer_analysis=false``, header and footer lines will present in the output as well as all other document lines.
+        The algorithm is implemented and described in the class :class:`~dedoc.readers.pdf_reader.utils.header_footers_analysis.HeaderFooterDetector`.
+
+    * - table_type
+      - "", wo_external_bounds, one_cell_table, split_last_column and their combinaton
+      - ""
+      - Setting up the table recognition method. This option is used for PDF documents which are images with text (PDF without a textual layer).
+        It is also used for PDF documents when ``pdf_with_text_layer`` is ``true``, ``false``, ``auto`` or ``auto_tabby``.
+        The value of the parameter specifies the type of tables for recognition,
+        supported table types are described in :class:`~dedoc.readers.pdf_reader.data_classes.tables.table_type.TableTypeAdditionalOptions`.
+        You can use combination of values (for example, ``wo_external_bounds+one_cell_table``).
 
     * - need_binarization
       - true, false

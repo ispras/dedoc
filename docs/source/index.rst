@@ -278,6 +278,7 @@ This type of structure is configurable (see :ref:`using_patterns`).
    modules/metadata_extractors
    modules/structure_extractors
    modules/structure_constructors
+   modules/pdf_parsing
 
 
 .. toctree::
