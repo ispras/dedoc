@@ -27,7 +27,7 @@ class HeaderFooterDetector:
         3. For algorithm work, the document must have at least two pages of text.
            It is not an ML algorithm so it cannot work with just one page.
 
-        4. The more pages the better. Remember the parameter `pages` limits the number of pages in a document.
+        4. The more pages, the better. Remember that the parameter `pages` limits the number of pages in a document.
     """
 
     def __init__(self) -> None:

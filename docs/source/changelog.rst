@@ -5,13 +5,13 @@ v2.6 (2025-09-19)
 -----------------
 Release note: `v2.6 <https://github.com/ispras/dedoc/releases/tag/v2.6>`_
 
-* Improve table merge algorithm (added check on table layout) `MultiPageTableExtractor`.
-* Improve header footer analysis `HeaderFooterDetector`.
+* Improved table merge algorithm (added check on table layout) `MultiPageTableExtractor`.
+* Improved header footer analysis `HeaderFooterDetector`.
 * Added header footer analysis support in `PdfTabbyReader`.
 * Added header footer analysis info (parameter `need_header_footer_analysis`) in documentation.
-* Update to python3.10.
-* Update to ubuntu22.04.
-* Added `Contributing Information` (project rules, how to build, how to develop) in documentation.
+* Updated to python3.10.
+* Updated to ubuntu22.04.
+* Added `Support and Contributing` (project rules, how to build, how to develop) in documentation.
 
 v2.5 (2025-09-05)
 -----------------
@@ -19,9 +19,8 @@ Release note: `v2.5 <https://github.com/ispras/dedoc/releases/tag/v2.5>`_
 
 * Added simple multilingual textual layer correctness classification based on letter percentage calculation (`textual_layer_classifier=letter`).
 * Added a new parameter `textual_layer_classifier = [simple, ml (default), letter]`.
-* Remove parameter `fast_textual_layer_detection`. Now it is a `textual_layer_classifier=simple`.
-* Fix bug with `table_type=table_wo_external_bounds` (fixed cv2.BoundingRect).
-* Some refactoring `TableRecognition`.
+* Removed parameter `fast_textual_layer_detection`. Now it is a `textual_layer_classifier=simple`.
+* Fixed bug with `table_type=table_wo_external_bounds` (fixed cv2.BoundingRect).
 * Added parameter `table_type` and `TableRecognition` info into documentation.
 
 v2.4 (2025-07-28)

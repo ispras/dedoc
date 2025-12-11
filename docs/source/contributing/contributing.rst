@@ -54,6 +54,7 @@ Contributing Rules
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
 
    using_flake8
    using_precommit
