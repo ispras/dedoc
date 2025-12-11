@@ -85,14 +85,19 @@ class ArchiveReader(BaseReader):
                     yield self.__save_archive_file(tmp_dir=tmp_dir, file_name=name, file=file, need_content_analysis=need_content_analysis)
 
     def __read_7z_archive(self, path: str, tmp_dir: str, need_content_analysis: bool) -> Iterator[AttachedFile]:
-        import py7zlib
+        import os
+        import py7zr
+        import tempfile
 
-        with open(path, "rb") as content:
-            arch_file = py7zlib.Archive7z(content)
-            names = arch_file.getnames()
-            for name in names:
-                file = arch_file.getmember(name)
-                yield self.__save_archive_file(tmp_dir=tmp_dir, file_name=name, file=file, need_content_analysis=need_content_analysis)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with py7zr.SevenZipFile(path, "r") as arch_file:
+                arch_file.extractall(tmpdir)
+
+            for dir_path, _, file_names in os.walk(tmpdir):
+                for file_name in file_names:
+                    file_path = os.path.join(dir_path, file_name)
+                    with open(file_path, "rb") as file:
+                        yield self.__save_archive_file(tmp_dir=tmp_dir, file_name=file_name, file=file, need_content_analysis=need_content_analysis)
 
     def __save_archive_file(self, tmp_dir: str, file_name: str, file: IO[bytes], need_content_analysis: bool) -> AttachedFile:
         import os
