@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v2.6.1 (2025-12-16)
+-------------------
+Release note: `v2.6.1 <https://github.com/ispras/dedoc/releases/tag/v2.6.1>`_
+
+* Fixed some bugs in `DocxReader`.
+* Replace outdated `pylzma` dependency by `py7zr`.
+
 v2.6 (2025-09-19)
 -----------------
 Release note: `v2.6 <https://github.com/ispras/dedoc/releases/tag/v2.6>`_
