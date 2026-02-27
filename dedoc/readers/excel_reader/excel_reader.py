@@ -2,6 +2,7 @@ from typing import Optional
 
 from xlrd.sheet import Sheet
 
+from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
 from dedoc.data_structures.table import Table
 from dedoc.data_structures.unstructured_document import UnstructuredDocument
 from dedoc.readers.base_reader import BaseReader
@@ -54,8 +55,13 @@ class ExcelReader(BaseReader):
         for row_id in range(n_rows):
             row = []
             for col_id in range(n_cols):
-                value = str(sheet.cell_value(rowx=row_id, colx=col_id))
-                row.append(CellWithMeta(lines=[LineWithMeta(line=value, metadata=LineMetadata(page_id=sheet_id, line_id=0))]))
+                cell_text = str(sheet.cell_value(rowx=row_id, colx=col_id))
+                if (row_id, col_id) in sheet.cell_note_map:
+                    note_text = sheet.cell_note_map[(row_id, col_id)].text.replace("\n", " ")
+                    annotations = [LinkedTextAnnotation(start=0, end=len(cell_text), value=note_text)]
+                else:
+                    annotations = []
+                row.append(CellWithMeta(lines=[LineWithMeta(line=cell_text, metadata=LineMetadata(page_id=sheet_id, line_id=0), annotations=annotations)]))
             res.append(row)
         metadata = TableMetadata(page_id=sheet_id)
         return Table(cells=res, metadata=metadata)

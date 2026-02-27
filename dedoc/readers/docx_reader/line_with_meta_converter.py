@@ -24,7 +24,9 @@ class LineWithMetaConverter:
         Converts custom DOCX Paragraph to LineWithMeta class.
         :param paragraph: Paragraph for converting its properties to the unified representation.
         """
-        annotations = [BoldAnnotation, ItalicAnnotation, UnderlinedAnnotation, StrikeAnnotation, SuperscriptAnnotation, SubscriptAnnotation]
+        annotations = [
+            BoldAnnotation, ItalicAnnotation, UnderlinedAnnotation, StrikeAnnotation, SuperscriptAnnotation, SubscriptAnnotation, LinkedTextAnnotation
+        ]
         self.dict2annotation = {annotation.name: annotation for annotation in annotations}
         self.annotation_merger = AnnotationMerger()
 
@@ -37,8 +39,8 @@ class LineWithMetaConverter:
             AlignmentAnnotation(start=0, end=len(paragraph.text), value=paragraph.jc),
             SpacingAnnotation(start=0, end=len(paragraph.text), value=str(paragraph.spacing))
         ]
-        for footnote in paragraph.footnotes:
-            annotations.append(LinkedTextAnnotation(start=0, end=len(paragraph.text), value=footnote))
+        for note in paragraph.notes:
+            annotations.append(LinkedTextAnnotation(start=0, end=len(paragraph.text), value=note))
 
         if paragraph.style_name is not None:
             annotations.append(StyleAnnotation(start=0, end=len(paragraph.text), value=paragraph.style_name))
@@ -47,7 +49,7 @@ class LineWithMetaConverter:
 
         for run, (start, end) in zip(paragraph.runs, paragraph.runs_ids):
             annotations.append(SizeAnnotation(start=start, end=end, value=str(run.size / 2)))
-            for property_name in ["bold", "italic", "underlined", "strike", "superscript", "subscript"]:
+            for property_name in self.dict2annotation:
                 property_value = getattr(run, property_name)
                 if property_value:
                     annotations.append(self.dict2annotation[property_name](start=start, end=end, value=str(property_value)))
