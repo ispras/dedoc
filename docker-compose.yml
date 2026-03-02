@@ -29,6 +29,6 @@ services:
       is_test: $test
 
   grobid:
-      image: "lfoppiano/grobid:0.8.0"
+      image: "grobid/grobid:0.8.2"
       ports:
         - 8070:8070

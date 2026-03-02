@@ -40,12 +40,12 @@ class TestApiArticle(AbstractTestApiDocReader):
 
         # check bibliography list
         self.assertEqual("bibliography", self._get_by_tree_path(tree, "0.12")["metadata"]["paragraph_type"])
-        self.assertEqual(65, len(self._get_by_tree_path(tree, "0.12")["subparagraphs"]))
+        self.assertEqual(64, len(self._get_by_tree_path(tree, "0.12")["subparagraphs"]))
 
         # check bib_item 1 recognizing
         self.assertEqual("title", self._get_by_tree_path(tree, "0.12.0.0")["metadata"]["paragraph_type"])
         self.assertEqual("Leakage-resilient symmetric encryption via re-keying", self._get_by_tree_path(tree, "0.12.0.0")["text"])
-        self.assertEqual("title_conference_proceedings", self._get_by_tree_path(tree, "0.12.0.1")["metadata"]["paragraph_type"])
+        self.assertEqual("title_journal", self._get_by_tree_path(tree, "0.12.0.1")["metadata"]["paragraph_type"])
         self.assertEqual("Bertoni and Coron", self._get_by_tree_path(tree, "0.12.0.1")["text"])
         self.assertEqual("author", self._get_by_tree_path(tree, "0.12.0.2")["metadata"]["paragraph_type"])  # author 1
         self.assertEqual("Michel Abdalla", self._get_by_tree_path(tree, "0.12.0.2")["text"])
@@ -55,12 +55,12 @@ class TestApiArticle(AbstractTestApiDocReader):
         self.assertEqual("471-488", self._get_by_tree_path(tree, "0.12.0.6")["text"])
 
         # check cite on bib_item
-        bibliography_item_uuid = self._get_by_tree_path(tree, "0.12.57")["metadata"]["uid"]  # checking on [58] references
+        bibliography_item_uuid = self._get_by_tree_path(tree, "0.12.57")["metadata"]["uid"]
         section = self._get_by_tree_path(tree, "0.4.0")
         bibliography_refs_in_text = [ann for ann in section["annotations"] if ann["name"] == "reference" and ann["value"] == bibliography_item_uuid]
-        # We must found two refs [58] in Introduction section
-        self.assertEqual(len(bibliography_refs_in_text), 2)
-        self.assertEqual(["58,", "58,"], [section["text"][bibliography_refs_in_text[n]["start"]:bibliography_refs_in_text[n]["end"]] for n in range(2)])
+        # We must found ref [59] in Introduction section
+        self.assertEqual(len(bibliography_refs_in_text), 1)
+        self.assertEqual("59]", section["text"][bibliography_refs_in_text[0]["start"]:bibliography_refs_in_text[0]["end"]])
 
         # check tables
         self.assertEqual(len(result["content"]["tables"]), 2)

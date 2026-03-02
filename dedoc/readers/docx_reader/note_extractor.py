@@ -15,13 +15,13 @@ class NoteExtractor:
         if not xml:
             return
 
-        for footnote in xml.find_all(f"w:{key}"):
-            footnote_id = footnote.get("w:id")
-            footnote_text = " ".join(t.text for t in footnote.find_all("w:t") if t.text)
-            author = footnote.get("w:author")
-            footnote_text = f"{author}: {footnote_text}" if author else footnote_text
-            if footnote_id and footnote_text:
-                self.id2note[footnote_id] = footnote_text
+        for note in xml.find_all(f"w:{key}"):
+            note_id = note.get("w:id")
+            note_text = " ".join(t.text for t in note.find_all("w:t") if t.text)
+            author = note.get("w:author")
+            note_text = f"{author}: {note_text}" if author else note_text
+            if note_id and note_text:
+                self.id2note[note_id] = note_text
 
     def get_notes(self, xml: Tag) -> List[str]:
         notes_xml = xml.find_all(f"w:{self.key}Reference")

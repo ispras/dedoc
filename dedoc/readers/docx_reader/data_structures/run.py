@@ -3,7 +3,7 @@ from typing import Optional
 from bs4 import Tag
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
-from dedoc.readers.docx_reader.footnote_extractor import NoteExtractor
+from dedoc.readers.docx_reader.note_extractor import NoteExtractor
 from dedoc.readers.docx_reader.properties_extractor import change_caps
 
 

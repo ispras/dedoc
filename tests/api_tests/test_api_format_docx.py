@@ -92,7 +92,25 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self._send_request("not_stripped_xml.docx", expected_code=200)
 
     def test_docx_with_comments(self) -> None:
-        _ = self._send_request("with_comments.docx", expected_code=200)
+        content = self._send_request("with_comments.docx")["content"]
+        structure = content["structure"]
+
+        node = get_by_tree_path(structure, "0.0.0")
+        annotations = [ann for ann in node["annotations"] if ann["name"] == "linked_text"]
+        self.assertEqual(len(annotations), 2)
+        self.assertIn("Interesting   entity   type", annotations[0]["value"])
+        self.assertIn("Some reply", annotations[0]["value"])
+        self.assertIn("New comment", annotations[1]["value"])
+
+        node = get_by_tree_path(structure, "0.0.1.6")
+        annotations = [ann for ann in node["annotations"] if ann["name"] == "linked_text"]
+        self.assertEqual(len(annotations), 1)
+        self.assertIn("Примечание об организации", annotations[0]["value"])
+
+        cell_node = content["tables"][1]["cells"][1][0]["lines"][0]
+        annotations = [ann for ann in cell_node["annotations"] if ann["name"] == "linked_text"]
+        self.assertEqual(len(annotations), 1)
+        self.assertIn("Примечание о методе  LSTM", annotations[0]["value"])
 
     def test_return_html(self) -> None:
         file_name = "example.doc"

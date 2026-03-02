@@ -6,7 +6,7 @@ from typing import List
 from bs4 import Tag
 
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
-from dedoc.readers.docx_reader.footnote_extractor import NoteExtractor
+from dedoc.readers.docx_reader.note_extractor import NoteExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 

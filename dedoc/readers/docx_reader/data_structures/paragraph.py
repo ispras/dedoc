@@ -4,7 +4,7 @@ from bs4 import Tag
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.data_structures.run import Run
-from dedoc.readers.docx_reader.footnote_extractor import NoteExtractor
+from dedoc.readers.docx_reader.note_extractor import NoteExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
 from dedoc.readers.docx_reader.styles_extractor import StyleType, StylesExtractor

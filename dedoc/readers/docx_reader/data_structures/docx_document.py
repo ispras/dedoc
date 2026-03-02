@@ -12,8 +12,8 @@ from dedoc.data_structures.concrete_annotations.table_annotation import TableAnn
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.docx_reader.data_structures.table import DocxTable
 from dedoc.readers.docx_reader.data_structures.utils import Counter, ParagraphMaker
-from dedoc.readers.docx_reader.footnote_extractor import NoteExtractor
 from dedoc.readers.docx_reader.line_with_meta_converter import LineWithMetaConverter
+from dedoc.readers.docx_reader.note_extractor import NoteExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 from dedoc.utils.office_utils import get_bs_from_zip
