@@ -68,18 +68,18 @@ class PdfImageReader(PdfBaseReader):
         import cv2
         from dedoc.utils.parameter_utils import get_path_param
 
-        #  --- Step 1: correct orientation and detect column count ---
+        #  --- Step 1: do binarization ---
+        if parameters.need_binarization:
+            image, _ = self.binarizer.preprocess(image)
+            if self.config.get("debug_mode", False):
+                debug_dir = get_path_param(self.config, "path_debug")
+                cv2.imwrite(os.path.join(debug_dir, f"{datetime.now().strftime('%H-%M-%S')}_result_binarization.jpg"), image)
+
+        #  --- Step 2: correct orientation and detect column count ---
         self.page_number = page_number
         rotated_image, is_one_column_document, angle = self._detect_column_count_and_orientation(image, parameters)
         if self.config.get("debug_mode", False):
             self.logger.info(f"Angle page rotation = {angle}")
-
-        #  --- Step 2: do binarization ---
-        if parameters.need_binarization:
-            rotated_image, _ = self.binarizer.preprocess(rotated_image)
-            if self.config.get("debug_mode", False):
-                debug_dir = get_path_param(self.config, "path_debug")
-                cv2.imwrite(os.path.join(debug_dir, f"{datetime.now().strftime('%H-%M-%S')}_result_binarization.jpg"), rotated_image)
 
         #  --- Step 3: table detection and recognition ---
         if parameters.need_pdf_table_analysis:
