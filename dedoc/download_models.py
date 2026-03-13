@@ -1,18 +1,19 @@
 """Downloading models in advance inside the docker container."""
 
 """
-These are versions of the models that are used at the current moment - hashes of commits from https://huggingface.co/dedoc.
+These are versions of the models that are used at the current moment - hashes of commits from https://huggingface.co/dedoc and other users.
 Keys are the names of repositories with models.
 """
-model_hash_dict = dict(
-    txtlayer_classifier="9ca1de749d8d37147b00a3a228e03ee1776c695f",
-    scan_orientation_efficient_net_b0="c60812552a1be624476c1e5b58599867b36f8d4e",
-    font_classifier="db4481ad60ab050cbb42079b64f97f9e431feb07",
-    paragraph_classifier="97c4b78bc20d87ec7d53389e09f1ca35c6ade067",
-    line_type_classifiers="6ad0eacbfdea065b658cb6f039d13f75245d51ae",
-    fintoc_classifiers="6a907b7d2437c3f61ac9c506f67175207982fae8",
-    torch_cnn="5333909f858f5f632df478ef5a53af6dfd26f2e1"
-)
+model_hash_dict = {
+    "txtlayer_classifier": "9ca1de749d8d37147b00a3a228e03ee1776c695f",
+    "scan_orientation_efficient_net_b0": "c60812552a1be624476c1e5b58599867b36f8d4e",
+    "font_classifier": "db4481ad60ab050cbb42079b64f97f9e431feb07",
+    "paragraph_classifier": "97c4b78bc20d87ec7d53389e09f1ca35c6ade067",
+    "line_type_classifiers": "6ad0eacbfdea065b658cb6f039d13f75245d51ae",
+    "fintoc_classifiers": "6a907b7d2437c3f61ac9c506f67175207982fae8",
+    "torch_cnn": "5333909f858f5f632df478ef5a53af6dfd26f2e1",
+    "docling-layout-heron": "8f39ad3c0b4c58e9c2d2c84a38465abf757272d8"
+}
 
 
 def download_from_hub(out_dir: str, out_name: str, repo_name: str, hub_name: str, user_name: str = "dedoc") -> None:
@@ -53,6 +54,16 @@ def download(resources_path: str) -> None:
                               hub_name=f"{classifier_type}_classifier_{language}_txt_layer.json")
 
     download_from_hub(out_dir=resources_path, out_name="glyph_recognizer.pt", repo_name="torch_cnn", hub_name="rus_eng.pt", user_name="sinkudo")
+
+    layout_dir_path = os.path.join(resources_path, "layout_model")
+    download_from_hub(out_dir=layout_dir_path, out_name="config.json", repo_name="docling-layout-heron", hub_name="config.json", user_name="docling-project")
+    download_from_hub(
+        out_dir=layout_dir_path, out_name="model.safetensors", repo_name="docling-layout-heron", hub_name="model.safetensors", user_name="docling-project"
+    )
+    download_from_hub(
+        out_dir=layout_dir_path, out_name="preprocessor_config.json", repo_name="docling-layout-heron", hub_name="preprocessor_config.json",
+        user_name="docling-project"
+    )
 
 
 if __name__ == "__main__":

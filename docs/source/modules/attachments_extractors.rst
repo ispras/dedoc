@@ -30,3 +30,7 @@ dedoc.attachments_extractors
 .. autoclass:: dedoc.attachments_extractors.PDFAttachmentsExtractor
     :show-inheritance:
     :members:
+
+.. autoclass:: dedoc.attachments_extractors.ImageAttachmentsExtractor
+    :show-inheritance:
+    :members:

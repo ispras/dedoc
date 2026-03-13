@@ -1,3 +1,4 @@
+import os
 import uuid
 from typing import Dict, Iterable, List, Optional
 
@@ -6,7 +7,7 @@ from numpy import ndarray
 from torch import Tensor
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
-from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
+from dedoc.data_structures.attached_file import AttachedFile
 
 
 class ImageAttachmentsExtractor(AbstractAttachmentsExtractor):
@@ -15,6 +16,7 @@ class ImageAttachmentsExtractor(AbstractAttachmentsExtractor):
     """
     def __init__(self, *, config: Optional[dict] = None) -> None:
         from dedoc.extensions import recognized_extensions, recognized_mimes
+        from dedoc.config import get_config
         super().__init__(config=config, recognized_extensions=recognized_extensions.image_like_format, recognized_mimes=recognized_mimes.image_like_format)
         self._classes = {
             2,  # Formula
@@ -22,7 +24,14 @@ class ImageAttachmentsExtractor(AbstractAttachmentsExtractor):
         }
         self._image_processor = None
         self._model = None
-        self._model_name = "docling-project/docling-layout-heron"
+
+        model_path = os.path.join(get_config()["resources_path"], "layout_model")
+        if os.path.exists(model_path):
+            self._model_name = model_path
+            self.logger.info("Using locally saved layout analysis model")
+        else:
+            self._model_name = "docling-project/docling-layout-heron"
+            self.logger.info("Layout analysis model will be loaded from huggingface")
         self._threshold = 0.7
 
     def _predict(self, image: ndarray) -> Iterable[Dict[str, Tensor]]:
@@ -42,7 +51,7 @@ class ImageAttachmentsExtractor(AbstractAttachmentsExtractor):
         results = self._image_processor.post_process_object_detection(outputs, target_sizes=torch.tensor([image.shape[:-1]]), threshold=self._threshold)
         return results
 
-    def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[PdfImageAttachment]:
+    def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
         """
         Get attachments from the given image using a document layout analysis method https://huggingface.co/docling-project/docling-layout-heron.
 
@@ -53,6 +62,7 @@ class ImageAttachmentsExtractor(AbstractAttachmentsExtractor):
         from dedoc.utils.parameter_utils import get_param_need_content_analysis, get_param_attachments_dir
         from dedoc.utils.utils import get_unique_name
         from dedoc.readers.pdf_reader.data_classes.tables.location import Location
+        from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 
         parameters = {} if parameters is None else parameters
         tmpdir, filename = os.path.split(file_path)
