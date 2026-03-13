@@ -34,6 +34,7 @@ class PdfImageReader(PdfBaseReader):
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
         from dedocutils.preprocessing import AdaptiveBinarizer, SkewCorrector
+        from dedoc.attachments_extractors.concrete_attachments_extractors.image_attachments_extractor import ImageAttachmentsExtractor
         from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
         from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
         from dedoc.config import get_config
@@ -53,6 +54,7 @@ class PdfImageReader(PdfBaseReader):
                                                                           config=self.config)
         self.binarizer = AdaptiveBinarizer()
         self.ocr = OCRLineExtractor(config=self.config)
+        self.attachments_extractor = ImageAttachmentsExtractor(config=self.config)
         self.page_number = None
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
@@ -66,8 +68,11 @@ class PdfImageReader(PdfBaseReader):
         import os
         from datetime import datetime
         import cv2
+        from dedocutils.utils import rotate_image
         from dedoc.utils.parameter_utils import get_path_param
+        from dedoc.utils.utils import get_unique_name
 
+        initial_image = image
         #  --- Step 1: do binarization ---
         if parameters.need_binarization:
             image, _ = self.binarizer.preprocess(image)
@@ -94,8 +99,22 @@ class PdfImageReader(PdfBaseReader):
 
         # --- Step 4: plain text recognition and text style detection ---
         page = self.ocr.split_image2lines(image=clean_image, language=parameters.language, is_one_column_document=is_one_column_document, page_num=page_number)
-
         lines = self.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page)
+
+        # --- Step 5: image detection ---
+        if parameters.with_attachments:
+            tmpdir = os.path.split(path)[0]
+            tmp_file_path = os.path.join(tmpdir, get_unique_name("rotated.png"))
+            non_binarized_rotated_image = rotate_image(initial_image, angle)
+            cv2.imwrite(tmp_file_path, non_binarized_rotated_image)
+            attached_images = []
+
+            for attach in self.attachments_extractor.extract(file_path=tmp_file_path, parameters=dict(zip(parameters._fields, parameters))):
+                attach.location.page_number = page_number
+                attached_images.append(attach)
+
+            page.attachments.extend(attached_images)
+
         return lines, tables, page.attachments, [angle]
 
     def _detect_column_count_and_orientation(self, image: ndarray, parameters: ParametersForParseDoc) -> Tuple[ndarray, bool, float]:

@@ -69,8 +69,8 @@ class ImageAttachmentsExtractor(AbstractAttachmentsExtractor):
                     continue
 
                 box = [round(i) for i in box.tolist()]
-                x_top_left, x_bottom_right = box[0], min(box[2], image.shape[1])
-                y_top_left, y_bottom_right = box[1], min(box[3], image.shape[0])
+                x_top_left, x_bottom_right = max(0, box[0]), min(box[2], image.shape[1])
+                y_top_left, y_bottom_right = max(0, box[1]), min(box[3], image.shape[0])
                 part = image[y_top_left:y_bottom_right, x_top_left:x_bottom_right]
                 image_location = Location(page_number=0, bbox=BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right)))
 

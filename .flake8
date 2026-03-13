@@ -30,6 +30,7 @@ exclude =
     venv,
     .venv,
     build,
+    etc,
     dedoc.egg-info,
     docs/_build,
     scripts/fintoc2022/metric.py
