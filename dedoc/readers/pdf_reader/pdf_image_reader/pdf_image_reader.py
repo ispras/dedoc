@@ -21,6 +21,8 @@ class PdfImageReader(PdfBaseReader):
 
     * table detection and recognition;
 
+    * image detection;
+
     * document binarization (configure via `need_binarization` parameter);
 
     * document orientation correction (automatically rotate on 90, 180, 270 degrees if it's needed);
@@ -69,7 +71,7 @@ class PdfImageReader(PdfBaseReader):
         from datetime import datetime
         import cv2
         from dedocutils.utils import rotate_image
-        from dedoc.utils.image_utils import delete_bbox_on_image
+        from dedoc.utils.image_utils import fill_bbox_on_image
         from dedoc.utils.parameter_utils import get_path_param
         from dedoc.utils.utils import get_unique_name
 
@@ -110,7 +112,7 @@ class PdfImageReader(PdfBaseReader):
             for attach in self.attachments_extractor.extract(file_path=tmp_file_path, parameters=dict(zip(parameters._fields, parameters))):
                 attach.location.page_number = page_number
                 attached_images.append(attach)
-                clean_image = delete_bbox_on_image(clean_image, attach.location.bbox)
+                clean_image = fill_bbox_on_image(clean_image, attach.location.bbox)
 
         # --- Step 5: plain text recognition and text style detection ---
         page = self.ocr.split_image2lines(image=clean_image, language=parameters.language, is_one_column_document=is_one_column_document, page_num=page_number)

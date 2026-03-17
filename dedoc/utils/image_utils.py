@@ -109,7 +109,7 @@ def get_concat_v(images: List[Image.Image]) -> Image.Image:
     return dst
 
 
-def delete_bbox_on_image(image: np.ndarray, bbox: BBox, color: int = 255) -> np.ndarray:
+def fill_bbox_on_image(image: np.ndarray, bbox: BBox, color: int = 255) -> np.ndarray:
     """
     replace bboxes with given color (for example to remove tables from images)
     @param image: original image

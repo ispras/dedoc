@@ -14,7 +14,7 @@ from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdditionalOptions
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.multipage_table_extractor import MultiPageTableExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.onepage_table_extractor import OnePageTableExtractor
-from dedoc.utils.image_utils import delete_bbox_on_image
+from dedoc.utils.image_utils import fill_bbox_on_image
 
 """-------------------------------------entry class of Table Recognizer Module---------------------------------------"""
 
@@ -87,7 +87,7 @@ class TableRecognizer:
         image_copy = np.copy(image)
         for table in tables:
             for location in table.locations:
-                image_copy = delete_bbox_on_image(image_copy, location.bbox)
+                image_copy = fill_bbox_on_image(image_copy, location.bbox)
         return image_copy
 
     def __filter_bad_tables(self, tables: List[ScanTable], image: np.ndarray) -> List[ScanTable]:

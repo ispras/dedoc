@@ -32,7 +32,7 @@ class ImageAttachmentsExtractor(AbstractAttachmentsExtractor):
         else:
             self._model_name = "docling-project/docling-layout-heron"
             self.logger.info("Layout analysis model will be loaded from huggingface")
-        self._threshold = 0.7
+        self._threshold = self.config.get("image_detection_threshold", 0.7)
 
     def _predict(self, image: ndarray) -> Iterable[Dict[str, Tensor]]:
         import torch
