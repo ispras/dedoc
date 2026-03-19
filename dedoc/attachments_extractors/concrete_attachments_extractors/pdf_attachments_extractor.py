@@ -88,7 +88,10 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
         import uuid
 
         attachments = []
-        catalog = reader.trailer["/Root"]
+        catalog = reader.trailer.get("/Root")
+        if catalog is None:
+            return attachments
+
         if "/Names" in catalog.keys() and "/EmbeddedFiles" in catalog["/Names"].keys() and "/Names" in catalog["/Names"]["/EmbeddedFiles"].keys():
             file_names = catalog["/Names"]["/EmbeddedFiles"]["/Names"]
             for f in file_names:
