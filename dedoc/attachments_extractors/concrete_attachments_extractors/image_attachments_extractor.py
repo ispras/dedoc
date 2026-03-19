@@ -70,7 +70,6 @@ class ImageAttachmentsExtractor(AbstractAttachmentsExtractor):
         attachments = []
 
         image = cv2.imread(file_path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         predictions = self._predict(image)
 
         for prediction in predictions:
@@ -86,7 +85,7 @@ class ImageAttachmentsExtractor(AbstractAttachmentsExtractor):
 
                 tmp_file_name = get_unique_name(filename)
                 tmp_file_path = os.path.join(attachments_dir, tmp_file_name)
-                cv2.imwrite(tmp_file_path, cv2.cvtColor(part, cv2.COLOR_RGB2BGR))
+                cv2.imwrite(tmp_file_path, part)
 
                 image_attachment = PdfImageAttachment(
                     original_name=tmp_file_name,

@@ -240,6 +240,7 @@ class PdfBaseReader(BaseReader):
         if page_from >= page_to:
             return
 
+        import cv2
         import math
         import os
         import numpy as np
@@ -263,7 +264,8 @@ class PdfBaseReader(BaseReader):
                     left += 1
                     if left > page_to + 1:
                         break
-                    yield np.array(image)
+                    image = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
+                    yield image
         except (PDFPageCountError, PDFSyntaxError) as error:
             raise BadFileFormatError(f"Bad pdf file:\n file_name = {os.path.basename(path)} \n exception = {error.args}")
 
