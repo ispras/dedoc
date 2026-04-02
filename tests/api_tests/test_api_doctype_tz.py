@@ -56,20 +56,20 @@ class TestTZApiDocReader(AbstractTestApiDocReader):
         self.assertEqual("СОДЕРЖАНИЕ", node["text"][:30].strip())
         self.assertEqual("toc", node["metadata"]["paragraph_type"])
 
-        node = self._get_by_tree_path(tree, "0.1.5")
+        node = self._get_by_tree_path(tree, "0.1.6")
         self.assertEqual("5.\tТехнические требования к ГАС «Управление»", node["text"].strip())
         self.assertEqual("part", node["metadata"]["paragraph_type"])
 
-        node = self._get_by_tree_path(tree, "0.1.5.0")
+        node = self._get_by_tree_path(tree, "0.1.6.0")
         self.assertEqual("5.1.\tТребования к функционированию", node["text"].strip())
         self.assertEqual("named_item", node["metadata"]["paragraph_type"])
 
-        node = self._get_by_tree_path(tree, "0.1.4")
+        node = self._get_by_tree_path(tree, "0.1.5")
         self.assertIn("«Управление»", node["text"])
         self.assertEqual("4.\tОбщие требования к техническим компонентам ГАС«Управление»", node["text"].strip())
         self.assertEqual("part", node["metadata"]["paragraph_type"])
 
-        node = self._get_by_tree_path(tree, "0.1.5.0.0.19.0")
+        node = self._get_by_tree_path(tree, "0.1.6.0.0.19.2")
         self.assertIn("10 лет) ", node["text"])
         self.assertEqual("raw_text", node["metadata"]["paragraph_type"])
 
