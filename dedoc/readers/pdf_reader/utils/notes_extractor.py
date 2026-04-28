@@ -2,7 +2,7 @@ import json
 import logging
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from dedocutils.data_structures import BBox
 from pypdf import PdfReader
@@ -15,7 +15,7 @@ from dedoc.data_structures.line_with_meta import LineWithMeta
 
 @dataclass
 class PdfNote:
-    type: str | None  # noqa
+    type: Optional[str]  # noqa
     text: str
     bbox: BBox
     bbox_dict: dict[str, float]
