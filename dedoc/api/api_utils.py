@@ -4,6 +4,7 @@ from dedoc.api.schema import LineMetadata, ParsedDocument, Table, TreeNode
 from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
 from dedoc.data_structures.concrete_annotations.bold_annotation import BoldAnnotation
 from dedoc.data_structures.concrete_annotations.italic_annotation import ItalicAnnotation
+from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
 from dedoc.data_structures.concrete_annotations.reference_annotation import ReferenceAnnotation
 from dedoc.data_structures.concrete_annotations.strike_annotation import StrikeAnnotation
 from dedoc.data_structures.concrete_annotations.subscript_annotation import SubscriptAnnotation
@@ -214,7 +215,7 @@ def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int], attach2id:
         bool_annotations = [
             BoldAnnotation.name, ItalicAnnotation.name, StrikeAnnotation.name, SubscriptAnnotation.name, SuperscriptAnnotation.name, UnderlinedAnnotation.name
         ]
-        check_annotations = bool_annotations + [TableAnnotation.name, ReferenceAnnotation.name, AttachAnnotation.name]
+        check_annotations = bool_annotations + [TableAnnotation.name, ReferenceAnnotation.name, AttachAnnotation.name, LinkedTextAnnotation.name]
         if name not in check_annotations and not value.startswith("heading "):
             continue
         elif name in bool_annotations and annotation.value == "False":
@@ -230,6 +231,8 @@ def __annotations2html(paragraph: TreeNode, table2id: Dict[str, int], attach2id:
         elif name == ReferenceAnnotation.name:
             indexes[annotation.start] += f'<{tag} href="#{value}">'
             indexes[annotation.end] = f"</{tag}>" + indexes[annotation.end]
+        elif name == LinkedTextAnnotation.name:
+            indexes[annotation.end] += f" ({value})"
         else:
             indexes[annotation.start] += f"<{tag}>"
             indexes[annotation.end] = f"</{tag}>" + indexes[annotation.end]

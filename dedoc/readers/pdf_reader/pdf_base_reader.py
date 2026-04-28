@@ -28,7 +28,8 @@ ParametersForParseDoc = namedtuple("ParametersForParseDoc", [
     "attachments_dir",
     "need_content_analysis",
     "need_gost_frame_analysis",
-    "pdf_with_txt_layer"
+    "pdf_with_txt_layer",
+    "extract_notes"
 ])
 
 
@@ -46,6 +47,7 @@ class PdfBaseReader(BaseReader):
         from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import TableRecognizer
         from dedoc.readers.pdf_reader.utils.header_footers_analysis import HeaderFooterDetector
         from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
+        from dedoc.readers.pdf_reader.utils.notes_extractor import PdfNotesExtractor
         from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
 
         self.config["n_jobs"] = self.config.get("n_jobs", 1)
@@ -56,6 +58,7 @@ class PdfBaseReader(BaseReader):
         self.paragraph_extractor = ScanParagraphClassifierExtractor(config=self.config)
         self.gost_frame_recognizer = GOSTFrameRecognizer(config=self.config)
         self.header_footer_detector = HeaderFooterDetector()
+        self.notes_extractor = PdfNotesExtractor(logger=self.logger)
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """
@@ -85,7 +88,8 @@ class PdfBaseReader(BaseReader):
             attachments_dir=param_utils.get_param_attachments_dir(parameters, file_path),
             need_content_analysis=param_utils.get_param_need_content_analysis(parameters),
             need_gost_frame_analysis=param_utils.get_param_need_gost_frame_analysis(parameters),
-            pdf_with_txt_layer=param_utils.get_param_pdf_with_txt_layer(parameters)
+            pdf_with_txt_layer=param_utils.get_param_pdf_with_txt_layer(parameters),
+            extract_notes=param_utils.get_bool_parameter(parameters, "extract_notes"),
         )
 
         lines, scan_tables, attachments, warnings, metadata = self._parse_document(file_path, params_for_parse)
@@ -99,6 +103,7 @@ class PdfBaseReader(BaseReader):
     def _parse_document(self, path: str, parameters: ParametersForParseDoc) \
             -> Tuple[List[LineWithMeta], List[ScanTable], List[PdfImageAttachment], List[str], Optional[dict]]:
         import math
+        from itertools import chain
         from joblib import Parallel, delayed
         from dedoc.data_structures.hierarchy_level import HierarchyLevel
         from dedoc.utils.pdf_utils import get_pdf_page_count
@@ -150,6 +155,13 @@ class PdfBaseReader(BaseReader):
         all_lines_with_paragraphs = self.paragraph_extractor.extract(all_lines_with_links)
         if page_angles:
             metadata["rotated_page_angles"] = page_angles
+
+        if parameters.extract_notes:
+            table_lines = []
+            for table in mp_tables:
+                table_lines.extend(chain.from_iterable([cell.lines for row in table.cells for cell in row]))
+            self.notes_extractor.extract(path, all_lines_with_links + table_lines)
+
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
 
     def _process_document_with_gost_frame(self, images: Iterator[ndarray], first_page: int, parameters: ParametersForParseDoc, path: str) -> \

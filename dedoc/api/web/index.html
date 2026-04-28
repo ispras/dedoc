@@ -101,7 +101,7 @@
 
         <div class="parameters">
             <h4>PDF handling</h4>
-            <details><summary>pdf_with_text_layer, need_pdf_table_analysis, textual_layer_classifier, each_page_textual_layer_detection, language, pages, is_one_column_document, document_orientation, need_header_footer_analysis, need_binarization, need_gost_frame_analysis</summary>
+            <details><summary>pdf_with_text_layer, need_pdf_table_analysis, textual_layer_classifier, each_page_textual_layer_detection, language, pages, is_one_column_document, document_orientation, need_header_footer_analysis, need_binarization, need_gost_frame_analysis, extract_notes</summary>
                 <br>
                 <p>
                     <label>
@@ -185,8 +185,13 @@
                 <p>
                     <label><input name="need_binarization" type="checkbox" value="true"> need_binarization</label>
                 </p>
+
                 <p>
                     <label><input name="need_gost_frame_analysis" type="checkbox" value="true"> need_gost_frame_analysis</label>
+                </p>
+
+                <p>
+                    <label><input name="extract_notes" type="checkbox" value="true"> extract_notes</label>
                 </p>
             </details>
         </div>

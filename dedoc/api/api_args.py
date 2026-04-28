@@ -38,6 +38,7 @@ class QueryParameters:
     need_header_footer_analysis: str = Form("false", enum=["true", "false"], description="Exclude headers and footers from PDF parsing result")
     need_binarization: str = Form("false", enum=["true", "false"], description="Binarize document pages (for images or PDF without a textual layer)")
     need_gost_frame_analysis: str = Form("false", enum=["true", "false"], description="Parameter for detecting and ignoring GOST frame of the document")
+    extract_notes: str = Form("false", enum=["true", "false"], description="Parameter for extracting notes and comments from PDF documents")
 
     # other formats handling
     delimiter: Optional[str] = Form(None, description="Column separator for CSV files")

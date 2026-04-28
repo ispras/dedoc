@@ -1,6 +1,6 @@
 from typing import List, Optional, Tuple
 
-from pypdf import PageObject, PdfReader
+from pypdf import PdfReader
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
@@ -39,45 +39,10 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
                 attachments.extend(self.__get_root_attachments(reader))
             except PdfReadError:
                 self.logger.warning(f"{filename} is broken")
-            try:
-                attachments.extend(self.__get_page_level_attachments(reader))
-            except PdfReadError:
-                self.logger.warning(f"{filename} is broken")
 
         need_content_analysis = get_param_need_content_analysis(parameters)
         attachments_dir = get_param_attachments_dir(parameters, file_path)
         return self._content2attach_file(content=attachments, tmpdir=attachments_dir, need_content_analysis=need_content_analysis, parameters=parameters)
-
-    def __get_notes(self, page: PageObject) -> List[Tuple[str, bytes]]:
-        from dedoc.utils.utils import convert_datetime
-
-        attachments = []
-        if "/Annots" in page.keys():
-            for annot in page["/Annots"]:
-                # Other subtypes, such as /Link, cause errors
-                subtype = annot.get_object().get("/Subtype")
-                if subtype == "/FileAttachment":
-                    name = annot.get_object()["/FS"]["/UF"]
-                    data = annot.get_object()["/FS"]["/EF"]["/F"].get_data()  # The file containing the stream data.
-                    attachments.append([name, data])
-                if subtype == "/Text" and annot.get_object().get("/Name") == "/Comment":  # it is messages (notes) in PDF
-                    note = annot.get_object()
-                    created_time = convert_datetime(note["/CreationDate"]) if "/CreationDate" in note else None
-                    modified_time = convert_datetime(note["/M"]) if "/M" in note else None
-                    user = note.get("/T")
-                    data = note.get("/Contents", "")
-
-                    name, content = self.__create_note(content=data, modified_time=modified_time, created_time=created_time, author=user)
-                    attachments.append((name, bytes(content)))
-        return attachments
-
-    def __get_page_level_attachments(self, reader: PdfReader) -> List[Tuple[str, bytes]]:
-        attachments = []
-        for page in reader.pages:
-            attachments_on_page = self.__get_notes(page)
-            attachments.extend(attachments_on_page)
-
-        return attachments
 
     def __get_root_attachments(self, reader: PdfReader) -> List[Tuple[str, bytes]]:
         """
@@ -104,19 +69,3 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
                         attachments.append((name, data))
 
         return attachments
-
-    def __create_note(self, content: str, modified_time: int, created_time: int, author: str, size: int = None) -> [str, bytes]:
-        import json
-        from dedoc.utils.utils import get_unique_name
-
-        filename = get_unique_name("note.json")
-        note_dict = {
-            "content": content,
-            "modified_time": modified_time,
-            "created_time": created_time,
-            "size": size if size else len(content),
-            "author": author
-        }
-        encode_data = json.dumps(note_dict).encode("utf-8")
-
-        return filename, encode_data
