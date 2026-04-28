@@ -39,10 +39,27 @@ class PDFAttachmentsExtractor(AbstractAttachmentsExtractor):
                 attachments.extend(self.__get_root_attachments(reader))
             except PdfReadError:
                 self.logger.warning(f"{filename} is broken")
+            try:
+                attachments.extend(self.__get_page_level_attachments(reader))
+            except PdfReadError:
+                self.logger.warning(f"{filename} is broken")
 
         need_content_analysis = get_param_need_content_analysis(parameters)
         attachments_dir = get_param_attachments_dir(parameters, file_path)
         return self._content2attach_file(content=attachments, tmpdir=attachments_dir, need_content_analysis=need_content_analysis, parameters=parameters)
+
+    def __get_page_level_attachments(self, reader: PdfReader) -> List[Tuple[str, bytes]]:
+        attachments = []
+        for page in reader.pages:
+            for annot in page.get("/Annots", []):
+                subtype = annot.get_object().get("/Subtype")
+                if subtype == "/FileAttachment":
+                    obj = annot.get_object()
+                    name = obj["/FS"]["/UF"]
+                    data = obj["/FS"]["/EF"]["/F"].get_data()  # The file containing the stream data.
+                    attachments.append([name, data])
+
+        return attachments
 
     def __get_root_attachments(self, reader: PdfReader) -> List[Tuple[str, bytes]]:
         """

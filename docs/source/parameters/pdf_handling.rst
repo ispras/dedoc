@@ -193,6 +193,15 @@ PDF and images handling
         It allows :class:`dedoc.readers.PdfImageReader`, :class:`dedoc.readers.PdfTxtlayerReader` and :class:`dedoc.readers.PdfTabbyReader`
         to properly process the content of the document containing GOST frame, see :ref:`gost_frame_handling` for more details.
 
+    * - extract_notes
+      - True, False
+      - False
+      - * :meth:`dedoc.DedocManager.parse`
+        * :meth:`dedoc.readers.PdfAutoReader.read`, :meth:`dedoc.readers.PdfTabbyReader.read`, :meth:`dedoc.readers.PdfTxtlayerReader.read`, :meth:`dedoc.readers.PdfImageReader.read`
+        * :meth:`dedoc.readers.ReaderComposition.read`
+      - This option is used to enable notes and comments extraction from PDF documents.
+        The notes/comments text is stored in :class:`~dedoc.data_structures.LinkedTextAnnotation`.
+        By default ``extract_notes=false`` because its usage may slow down the processing, especially for big PDF files.
 
 .. toctree::
    :maxdepth: 1

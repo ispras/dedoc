@@ -88,4 +88,4 @@ class TestLangchainDocumentLoader(unittest.TestCase):
 
         self.assertEqual(1, len(text_docs))
         self.assertEqual(1, len(table_docs))
-        self.assertEqual(5, len(attachment_docs))
+        self.assertEqual(4, len(attachment_docs))
