@@ -103,7 +103,6 @@ class PdfBaseReader(BaseReader):
     def _parse_document(self, path: str, parameters: ParametersForParseDoc) \
             -> Tuple[List[LineWithMeta], List[ScanTable], List[PdfImageAttachment], List[str], Optional[dict]]:
         import math
-        from itertools import chain
         from joblib import Parallel, delayed
         from dedoc.data_structures.hierarchy_level import HierarchyLevel
         from dedoc.utils.pdf_utils import get_pdf_page_count
@@ -157,12 +156,17 @@ class PdfBaseReader(BaseReader):
             metadata["rotated_page_angles"] = page_angles
 
         if parameters.extract_notes:
-            table_lines = []
-            for table in mp_tables:
-                table_lines.extend(chain.from_iterable([cell.lines for row in table.cells for cell in row]))
-            self.notes_extractor.extract(path, all_lines_with_links + table_lines)
+            self.notes_extractor.extract(path, all_lines_with_links + self._get_table_lines(mp_tables))
 
         return all_lines_with_paragraphs, mp_tables, attachments, warnings, metadata
+
+    def _get_table_lines(self, tables: List[ScanTable]) -> List[LineWithMeta]:
+        from itertools import chain
+
+        table_lines = []
+        for table in tables:
+            table_lines.extend(chain.from_iterable([cell.lines for row in table.cells for cell in row]))
+        return table_lines
 
     def _process_document_with_gost_frame(self, images: Iterator[ndarray], first_page: int, parameters: ParametersForParseDoc, path: str) -> \
             Tuple[Tuple[List[LineWithLocation], List[ScanTable], List[PdfImageAttachment], List[float]], Dict[int, Tuple[ndarray, BBox, Tuple[int, ...]]]]:

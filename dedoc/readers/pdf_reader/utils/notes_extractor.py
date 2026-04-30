@@ -6,7 +6,7 @@ from typing import List, Optional, Tuple
 
 from dedocutils.data_structures import BBox
 from pypdf import PdfReader
-from rtree import index
+from rtree import Index, index
 
 from dedoc.data_structures.concrete_annotations.bbox_annotation import BBoxAnnotation
 from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
@@ -49,6 +49,7 @@ class LineInfo:
     line: LineWithMeta
     bbox_tuple: Tuple[float, float, float, float]
     words: List[WordInfo]
+    words_idx: Optional[Index] = None
 
 
 class PdfNotesExtractor:
@@ -93,15 +94,16 @@ class PdfNotesExtractor:
         for line in lines:
             page2lines[line.metadata.page_id].append(line)
 
-        for page_num, page_lines in page2lines.items():
-            notes = page2notes.get(page_num, [])
-            if not notes:
+        for page_num, page_notes in page2notes.items():
+            page_lines = page2lines.get(page_num, [])
+            if not page_lines:
+                self.logger.warning(f"No lines on page {page_num} - skip notes extraction")
                 continue
 
             lines_idx = index.Index()
             lines_info = []
-
-            for i, page_line in enumerate(page_lines):
+            lines_cnt = 0
+            for page_line in page_lines:
                 words = [
                     WordInfo(bbox_tuple=_bbox2tuple(json.loads(ann.value)), start=ann.start, end=ann.end)
                     for ann in page_line.annotations if ann.name == BBoxAnnotation.name
@@ -111,15 +113,15 @@ class PdfNotesExtractor:
 
                 line_info = LineInfo(line=page_line, words=words, bbox_tuple=_line_bbox(words=words))
                 lines_info.append(line_info)
-                lines_idx.insert(i, line_info.bbox_tuple)
+                lines_idx.insert(lines_cnt, line_info.bbox_tuple)
+                lines_cnt += 1
 
-            for note in notes:
-                closest_lines = [lines_info[i] for i in lines_idx.nearest(note.bbox_tuple, 1)]
-                if not closest_lines:
+            for note in page_notes:
+                closest_line = next((lines_info[i] for i in lines_idx.nearest(note.bbox_tuple, 1)), None)
+                if not closest_line:
                     self.logger.warning(f"No line was found for the note `{note.text}` on page `{page_num}`")
                     continue
 
-                closest_line = closest_lines[0]
                 start, end = self.__get_annotation_coordinates(line_info=closest_line, note=note)
                 closest_line.line.annotations.append(LinkedTextAnnotation(start=start, end=end, value=note.text))
 
@@ -129,16 +131,20 @@ class PdfNotesExtractor:
             # note on the next line
             return 0, len(line_info.line.line) - 1
 
-        words_idx = index.Index()
-        for i, word in enumerate(line_info.words):
-            words_idx.insert(i, word.bbox_tuple)
+        if line_info.words_idx is None:
+            words_idx = index.Index()
+            for i, word in enumerate(line_info.words):
+                words_idx.insert(i, word.bbox_tuple)
+            line_info.words_idx = words_idx
+        else:
+            words_idx = line_info.words_idx
 
-        closest_words = [line_info.words[i] for i in words_idx.nearest(note.bbox_tuple, 1)]
-        if not closest_words:
+        closest_word = next((line_info.words[i] for i in words_idx.nearest(note.bbox_tuple, 1)), None)
+        if not closest_word:
             self.logger.warning(f"No word was found for the note `{note.text}`, use the whole line")
             return 0, len(line_info.line.line) - 1
 
-        return closest_words[0].start, closest_words[0].end
+        return closest_word.start, closest_word.end
 
 
 def _bbox2tuple(bbox: dict[str, float]) -> Tuple[float, float, float, float]:
@@ -146,8 +152,8 @@ def _bbox2tuple(bbox: dict[str, float]) -> Tuple[float, float, float, float]:
 
 
 def _line_bbox(words: list[WordInfo]) -> Tuple[float, float, float, float]:
-    x_top_left = min([word.bbox_tuple[0] for word in words])
-    y_top_left = min([word.bbox_tuple[1] for word in words])
-    x_bottom_right = max([word.bbox_tuple[2] for word in words])
-    y_bottom_right = max([word.bbox_tuple[3] for word in words])
+    x_top_left = min(word.bbox_tuple[0] for word in words)
+    y_top_left = min(word.bbox_tuple[1] for word in words)
+    x_bottom_right = max(word.bbox_tuple[2] for word in words)
+    y_bottom_right = max(word.bbox_tuple[3] for word in words)
     return x_top_left, y_top_left, x_bottom_right, y_bottom_right

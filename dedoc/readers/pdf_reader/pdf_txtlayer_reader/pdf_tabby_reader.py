@@ -64,7 +64,6 @@ class PdfTabbyReader(PdfBaseReader):
         You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
         import tempfile
-        from itertools import chain
         from dedoc.utils.parameter_utils import get_bool_parameter, get_param_with_attachments
 
         parameters = {} if parameters is None else parameters
@@ -80,10 +79,7 @@ class PdfTabbyReader(PdfBaseReader):
         lines = self.paragraph_extractor.extract(lines)
 
         if get_bool_parameter(parameters, "extract_notes"):
-            table_lines = []
-            for table in tables:
-                table_lines.extend(chain.from_iterable([cell.lines for row in table.cells for cell in row]))
-            self.notes_extractor.extract(file_path, lines + table_lines)
+            self.notes_extractor.extract(file_path, lines + self._get_table_lines(tables))
 
         result = UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=warnings, metadata=document_metadata)
 
