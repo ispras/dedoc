@@ -102,7 +102,6 @@ class PdfNotesExtractor:
 
             lines_idx = index.Index()
             lines_info = []
-            lines_cnt = 0
             for page_line in page_lines:
                 words = [
                     WordInfo(bbox_tuple=_bbox2tuple(json.loads(ann.value)), start=ann.start, end=ann.end)
@@ -112,9 +111,8 @@ class PdfNotesExtractor:
                     continue
 
                 line_info = LineInfo(line=page_line, words=words, bbox_tuple=_line_bbox(words=words))
+                lines_idx.insert(len(lines_info), line_info.bbox_tuple)
                 lines_info.append(line_info)
-                lines_idx.insert(lines_cnt, line_info.bbox_tuple)
-                lines_cnt += 1
 
             for note in page_notes:
                 closest_line = next((lines_info[i] for i in lines_idx.nearest(note.bbox_tuple, 1)), None)
