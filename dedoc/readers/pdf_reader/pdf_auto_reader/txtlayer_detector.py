@@ -2,7 +2,7 @@ import logging
 import math
 from copy import deepcopy
 from itertools import chain
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 
@@ -37,22 +37,24 @@ class TxtLayerDetector:
         if txtlayer_classifier is None:
             raise ValueError(f"Unknown textual layer classifier `{classifier_name}`")
 
+        start, end = get_param_page_slice(parameters)
+        start = 1 if start is None else start + 1
+
         classify_each_page = get_bool_parameter(parameters, "each_page_textual_layer_detection", False)
         detect_function = self.__classify_each_page if classify_each_page else self.__classify_all_pages
         try:
-            return detect_function(path, parameters, txtlayer_classifier)
+            return detect_function(path, parameters, txtlayer_classifier, start, end)
         except Exception as e:
             self.logger.debug(f"Error occurred white detecting PDF textual layer ({e})")
-            return [TxtLayerResult(correct=False, start=1, end=None)]
+            return [TxtLayerResult(correct=False, start=start, end=end)]
 
-    def __classify_all_pages(self, path: str, parameters: dict, txtlayer_classifier: AbstractTxtlayerClassifier) -> List[TxtLayerResult]:
+    def __classify_all_pages(
+            self, path: str, parameters: dict, txtlayer_classifier: AbstractTxtlayerClassifier, start: int, end: Optional[int]
+    ) -> List[TxtLayerResult]:
         """
         Check only first 8 pages of the document, use classification results for the entire document.
         Separately handle the first page (it's common that only first page doesn't have a textual layer).
         """
-        start, end = get_param_page_slice(parameters)
-        start = 1 if start is None else start + 1
-
         parameters_copy = deepcopy(parameters)
         parameters_copy["pages"] = "1:8"  # two batches for pdf_txtlayer_reader
         parameters_copy["need_pdf_table_analysis"] = "false"
@@ -72,13 +74,13 @@ class TxtLayerDetector:
         else:
             return [TxtLayerResult(correct=False, start=start, end=start), TxtLayerResult(correct=True, start=start + 1, end=end)]
 
-    def __classify_each_page(self, path: str, parameters: dict, txtlayer_classifier: AbstractTxtlayerClassifier) -> List[TxtLayerResult]:
+    def __classify_each_page(
+            self, path: str, parameters: dict, txtlayer_classifier: AbstractTxtlayerClassifier, start: int, end: Optional[int]
+    ) -> List[TxtLayerResult]:
         """
         Classify each page of the document correct/not correct textual layer.
         """
         document = self.pdf_reader.read(path, parameters=parameters)
-        start, end = get_param_page_slice(parameters)
-        start = 1 if start is None else start + 1
         if not document.lines:
             return [TxtLayerResult(correct=False, start=start, end=end)]
 

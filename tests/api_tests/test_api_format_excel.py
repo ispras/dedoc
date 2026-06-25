@@ -37,6 +37,22 @@ class TestApiExcelReader(AbstractTestApiDocReader):
         tables = result["content"]["tables"]
         self.__check_content(tables)
 
+    def test_xlsx_comments(self) -> None:
+        file_name = "with_comments.xlsx"
+        tables = self._send_request(file_name)["content"]["tables"]
+
+        self.__check_cell_comment(tables, 0, 1, 2, "Примечание что телефон указан не верно")
+        self.__check_cell_comment(tables, 0, 4, 0, "Заметка об организации")
+        self.__check_cell_comment(tables, 1, 0, 1, "Неточное название столбца")
+        self.__check_cell_comment(tables, 1, 5, 0, "Примечание о персоне Иванов Сергей")
+        self.__check_cell_comment(tables, 1, 9, 2, "Номер телефона под вопросом")
+
+    def __check_cell_comment(self, tables: dict, table_id: int, row_id: int, col_id: int, text: str) -> None:
+        cell_node = tables[table_id]["cells"][row_id][col_id]["lines"][0]
+        annotations = [ann for ann in cell_node["annotations"] if ann["name"] == "linked_text"]
+        self.assertEqual(len(annotations), 1)
+        self.assertIn(text, annotations[0]["value"])
+
     def test_ods_formulas(self) -> None:
         file_name = "example_formulas.ods"
         result = self._send_request(file_name)

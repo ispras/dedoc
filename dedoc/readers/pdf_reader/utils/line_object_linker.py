@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict, deque
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from dedocutils.data_structures import BBox
 
@@ -82,20 +82,30 @@ class LineObjectLinker:
         @param lines_after: self.n_lines after object
         @return: best line to link with object
         """
+        best_line = self._get_closest_line_on_same_page(page_object, lines_before)
+        if not best_line:
+            best_line = self._get_closest_line_on_same_page(page_object, lines_after)
+        if best_line:
+            return best_line
+
         all_lines = lines_before + lines_after
-        line_on_same_page = [line for line in all_lines if line.location.page_number == page_object.location.page_number]
         # no one line on the same page
-        if len(line_on_same_page) == 0:
-            previous_page_id = page_object.location.page_number - 1
-            if previous_page_id in last_page_line:
-                return last_page_line[previous_page_id]
-            lines_prev_page = [line for line in all_lines if line.location < page_object.location]
-            if len(lines_prev_page) > 0:
-                return max(lines_prev_page, key=lambda line: line.location)
-            else:
-                return min(all_lines, key=lambda line: line.location)
-        line_with_distance = [(self._distance_bboxes(line, page_object.location.bbox), line) for line in line_on_same_page]
-        return min(line_with_distance, key=lambda t: t[0])[1]
+        previous_page_id = page_object.location.page_number - 1
+        if previous_page_id in last_page_line:
+            return last_page_line[previous_page_id]
+        lines_prev_page = [line for line in all_lines if line.location < page_object.location]
+        if len(lines_prev_page) > 0:
+            return max(lines_prev_page, key=lambda line: line.location)
+        else:
+            return min(all_lines, key=lambda line: line.location)
+
+    @staticmethod
+    def _get_closest_line_on_same_page(page_obj: Union[ScanTable, PdfImageAttachment], lines: List[LineWithLocation]) -> Optional[LineWithLocation]:
+        lines_on_same_page = [line for line in lines if line.location.page_number == page_obj.location.page_number]
+        if not lines_on_same_page:
+            return None
+        lines_with_distance = [(LineObjectLinker._distance_bboxes(line, page_obj.location.bbox), line) for line in lines_on_same_page]
+        return min(lines_with_distance, key=lambda t: t[0])[1]
 
     @staticmethod
     def _distance_bboxes(line: LineWithLocation, object_bbox: BBox) -> float:

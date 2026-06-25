@@ -8,13 +8,13 @@ from typing import List, Optional, Tuple
 import cv2
 import numpy as np
 from PIL import Image
-from dedocutils.data_structures import BBox
 
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.data_classes.tables.scantable import ScanTable
 from dedoc.readers.pdf_reader.data_classes.tables.table_type import TableTypeAdditionalOptions
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.multipage_table_extractor import MultiPageTableExtractor
 from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_extractors.concrete_extractors.onepage_table_extractor import OnePageTableExtractor
+from dedoc.utils.image_utils import fill_bbox_on_image
 
 """-------------------------------------entry class of Table Recognizer Module---------------------------------------"""
 
@@ -87,30 +87,8 @@ class TableRecognizer:
         image_copy = np.copy(image)
         for table in tables:
             for location in table.locations:
-                image_copy = TableRecognizer.__clean_image(image_copy, location.bbox)
+                image_copy = fill_bbox_on_image(image_copy, location.bbox)
         return image_copy
-
-    @staticmethod
-    def __clean_image(image: np.ndarray, bbox: BBox, color: int = 255) -> np.ndarray:
-        """
-        replace bboxes with given color (for example to remove tables from images)
-        @param image: original image
-        @param bbox: bbox to clear from image
-        @param color: color to replace bboxes
-        @return: image without given bboxes
-        """
-        x_min = bbox.x_top_left
-        x_max = x_min + bbox.width
-
-        y_min = bbox.y_top_left
-        y_max = y_min + bbox.height
-
-        if len(image.shape) == 3:
-            image[y_min: y_max, x_min: x_max, :] = color
-        else:
-            image[y_min: y_max, x_min: x_max] = color
-
-        return image
 
     def __filter_bad_tables(self, tables: List[ScanTable], image: np.ndarray) -> List[ScanTable]:
         filtered = []

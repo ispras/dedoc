@@ -4,7 +4,7 @@ from bs4 import Tag
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
 from dedoc.readers.docx_reader.data_structures.run import Run
-from dedoc.readers.docx_reader.footnote_extractor import FootnoteExtractor
+from dedoc.readers.docx_reader.note_extractor import NoteExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.properties_extractor import change_paragraph_properties, change_run_properties
 from dedoc.readers.docx_reader.styles_extractor import StyleType, StylesExtractor
@@ -16,8 +16,9 @@ class Paragraph(BaseProperties):
                  xml: Tag,
                  styles_extractor: StylesExtractor,
                  numbering_extractor: NumberingExtractor,
-                 footnote_extractor: FootnoteExtractor,
-                 endnote_extractor: FootnoteExtractor,
+                 footnote_extractor: NoteExtractor,
+                 endnote_extractor: NoteExtractor,
+                 comment_extractor: NoteExtractor,
                  uid: str) -> None:
         """
         Contains information about paragraph properties.
@@ -30,9 +31,10 @@ class Paragraph(BaseProperties):
         self.xml = xml
         self.footnote_extractor = footnote_extractor
         self.endnote_extractor = endnote_extractor
+        self.comment_extractor = comment_extractor
         self.numbering_extractor = numbering_extractor
         self.styles_extractor = styles_extractor
-        self.footnotes = []
+        self.notes = []
         self.runs = []
         self.runs_ids = []  # list of (start, end) inside the paragraph text
         self.text = ""
@@ -85,12 +87,8 @@ class Paragraph(BaseProperties):
         if hasattr(self, "caps") and self.caps:
             self.text = self.text.upper()
 
-        for key, extractor in [("w:footnoteReference", self.footnote_extractor), ("w:endnoteReference", self.endnote_extractor)]:
-            notes = self.xml.find_all(key)
-            for footnote in notes:
-                note_id = footnote.get("w:id")
-                if note_id in extractor.id2footnote:
-                    self.footnotes.append(extractor.id2footnote[note_id])
+        for extractor in [self.footnote_extractor, self.endnote_extractor]:
+            self.notes.extend(extractor.get_notes(self.xml))
 
     def __get_numbering_formatting(self) -> Optional[Run]:
         """
@@ -99,7 +97,7 @@ class Paragraph(BaseProperties):
         :returns: numbering run if there is the text in numbering else None
         """
         if self.xml.numPr and self.numbering_extractor:
-            numbering_run = Run(self, self.styles_extractor)
+            numbering_run = Run(self, self.styles_extractor, self.comment_extractor)
             self.numbering_extractor.parse(self.xml.numPr, self, numbering_run)
 
             if numbering_run.text:
@@ -115,7 +113,7 @@ class Paragraph(BaseProperties):
         run_list = self.xml.find_all("w:r")
 
         for run_tree in run_list:
-            new_run = Run(self, self.styles_extractor)
+            new_run = Run(self, self.styles_extractor, self.comment_extractor)
 
             if run_tree.rStyle:
                 self.styles_extractor.parse(run_tree.rStyle["w:val"], new_run, StyleType.CHARACTER)
@@ -126,6 +124,9 @@ class Paragraph(BaseProperties):
                 change_run_properties(new_run, run_tree.rPr)
             new_run.get_text(run_tree)
             if not new_run.text:
+                if new_run.linked_text and self.runs:
+                    prev_linked_text = self.runs[-1].linked_text
+                    self.runs[-1].linked_text = new_run.linked_text if not prev_linked_text else f"{prev_linked_text}; {new_run.linked_text}"
                 continue
 
             if self.runs and self.runs[-1] == new_run:

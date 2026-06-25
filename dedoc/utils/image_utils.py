@@ -107,3 +107,25 @@ def get_concat_v(images: List[Image.Image]) -> Image.Image:
         dst.paste(image, (0, height))
         height += image.height
     return dst
+
+
+def fill_bbox_on_image(image: np.ndarray, bbox: BBox, color: int = 255) -> np.ndarray:
+    """
+    replace bboxes with given color (for example to remove tables from images)
+    @param image: original image
+    @param bbox: bbox to clear from image
+    @param color: color to replace bboxes
+    @return: image without given bboxes
+    """
+    x_min = bbox.x_top_left
+    x_max = x_min + bbox.width
+
+    y_min = bbox.y_top_left
+    y_max = y_min + bbox.height
+
+    if len(image.shape) == 3:
+        image[y_min: y_max, x_min: x_max, :] = color
+    else:
+        image[y_min: y_max, x_min: x_max] = color
+
+    return image

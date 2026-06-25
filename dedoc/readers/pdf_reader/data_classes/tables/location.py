@@ -34,7 +34,7 @@ class Location:
         return res
 
     def __eq__(self, other: "Location") -> bool:
-        return (self.page_number, self.bbox.y_bottom_right) == (other.page_number, other.bbox.y_bottom_right)
+        return (self.page_number, self.bbox.y_top_left, self.bbox.x_top_left) == (other.page_number, other.bbox.y_top_left, other.bbox.x_top_left)
 
     def __lt__(self, other: "Location") -> bool:
-        return (self.page_number, self.bbox.y_bottom_right) < (other.page_number, other.bbox.y_bottom_right)
+        return (self.page_number, self.bbox.y_top_left, self.bbox.x_top_left) < (other.page_number, other.bbox.y_top_left, other.bbox.x_top_left)

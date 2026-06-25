@@ -3,21 +3,25 @@ from typing import Optional
 from bs4 import Tag
 
 from dedoc.readers.docx_reader.data_structures.base_props import BaseProperties
+from dedoc.readers.docx_reader.note_extractor import NoteExtractor
 from dedoc.readers.docx_reader.properties_extractor import change_caps
 
 
 class Run(BaseProperties):
 
-    def __init__(self, properties: Optional[BaseProperties], styles_extractor: "StylesExtractor") -> None:  # noqa
+    def __init__(self, properties: Optional[BaseProperties], styles_extractor: "StylesExtractor", comment_extractor: Optional[NoteExtractor] = None) -> None:  # noqa
         """
         Contains information about run properties.
         :param properties: Paragraph or Run for copying its properties
         :param styles_extractor: StylesExtractor
+        :param comment_extractor: NoteExtractor for comments
         """
 
         self.name2char = dict(tab="\t", br="\n", cr="\r")
         self.text = ""
+        self.linked_text = ""
         self.styles_extractor = styles_extractor
+        self.comment_extractor = comment_extractor
         super().__init__(properties)
 
     def get_text(self, xml: Tag) -> None:
@@ -25,6 +29,10 @@ class Run(BaseProperties):
         Makes the text of run.
         :param xml: BeautifulSoup tree with run properties
         """
+        notes = self.comment_extractor.get_notes(xml) if self.comment_extractor else None
+        if notes:
+            self.linked_text = "; ".join(notes)
+
         for tag in xml:
             tag_name = tag.name
 
@@ -56,4 +64,5 @@ class Run(BaseProperties):
         size_eq = self.size == other.size
         font_eq = self.bold == other.bold and self.italic == other.italic and self.underlined == other.underlined
         script_eq = self.superscript == other.superscript and self.subscript == other.subscript
-        return size_eq and font_eq and script_eq
+        linked_text_eq = self.linked_text == other.linked_text
+        return size_eq and font_eq and script_eq and linked_text_eq

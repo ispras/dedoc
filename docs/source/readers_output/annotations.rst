@@ -29,8 +29,8 @@ Below the readers are enlisted that can return non-empty list of annotations for
      - `+`
      - `-`
      - `-`
-     - `-`
-     - `-`
+     - `+`
+     - `+`
      - `+`
      - `+`
 
@@ -49,7 +49,7 @@ Below the readers are enlisted that can return non-empty list of annotations for
      - `-`
      - `+`
      - `-`
-     - `-`
+     - `+`
      - `+`
      - `+`
      - `-`

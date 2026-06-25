@@ -43,7 +43,8 @@ class TestGOSTFrameRecognizer(unittest.TestCase):
             attachments_dir=param_utils.get_param_attachments_dir(parameters, file_path),
             need_content_analysis=param_utils.get_param_need_content_analysis(parameters),
             need_gost_frame_analysis=param_utils.get_param_need_gost_frame_analysis(parameters),
-            pdf_with_txt_layer=param_utils.get_param_pdf_with_txt_layer(parameters)
+            pdf_with_txt_layer=param_utils.get_param_pdf_with_txt_layer(parameters),
+            extract_notes=False
         )
         return params_for_parse
 

@@ -33,6 +33,7 @@ class TreeConstructor(AbstractStructureConstructor):
         Build the tree structure representation for the given document intermediate representation.
         To get the information about the parameters look at the documentation of :class:`~dedoc.structure_constructors.AbstractStructureConstructor`.
         """
+        from dedoc.data_structures.concrete_annotations import AttachAnnotation, TableAnnotation
         from dedoc.data_structures.document_content import DocumentContent
         from dedoc.data_structures.document_metadata import DocumentMetadata
 
@@ -46,7 +47,8 @@ class TreeConstructor(AbstractStructureConstructor):
             # multiline header
             hl_equal = line.metadata.hierarchy_level == tree.metadata.hierarchy_level
             line_type_equal = line.metadata.hierarchy_level.line_type == tree.metadata.hierarchy_level.line_type
-            if line.metadata.hierarchy_level.can_be_multiline and hl_equal and line_type_equal:
+            has_no_refs = len([ann for ann in tree.annotations if ann.name in (AttachAnnotation.name, TableAnnotation.name)]) == 0
+            if line.metadata.hierarchy_level.can_be_multiline and hl_equal and line_type_equal and has_no_refs:
                 tree.add_text(line)
             # move up and add child
 

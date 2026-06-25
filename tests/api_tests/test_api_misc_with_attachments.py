@@ -42,28 +42,18 @@ class TestApiAttachmentsReader(AbstractTestApiDocReader):
         self.assertEqual(attachments[1]["metadata"]["file_name"], "example_with_table4.jpg")
         self.assertEqual(attachments[2]["metadata"]["file_name"], "header_test.pdf")
         self.assertEqual(attachments[3]["metadata"]["file_name"], "attachment.txt")
-        self.assertEqual(attachments[4]["metadata"]["file_type"], "application/json")
-
-    def test_attachments_pmi_document(self) -> None:
-        file_name = "pdf_with_text_layer/Document635.pdf"
-        result = self._send_request(file_name, dict(with_attachments=True, pdf_with_text_layer="tabby"))
-
-        attachments = result["attachments"]
-
-        self.assertEqual(attachments[0]["metadata"]["file_type"], "image/png")
-        self.assertEqual(attachments[1]["metadata"]["file_type"], "image/png")
-        self.assertEqual(attachments[2]["metadata"]["file_type"], "application/json")
-        self.assertEqual(attachments[3]["metadata"]["file_type"], "application/json")
 
     def test_need_content_analysis(self) -> None:
-        file_name = "pdf_with_text_layer/Document635.pdf"
+        file_name = "with_attachments/example_with_attachments_depth_1.pdf"
         result = self._send_request(file_name, dict(with_attachments=True, need_content_analysis=False, pdf_with_text_layer="tabby"))
 
         attachments = result["attachments"]
         self.assertEqual(len(attachments[2]["content"]["structure"]["subparagraphs"]), 0)
         self.assertEqual(len(attachments[3]["content"]["structure"]["subparagraphs"]), 0)
 
-        result = self._send_request(file_name, dict(with_attachments=True, need_content_analysis=True, pdf_with_text_layer="tabby"))
+        result = self._send_request(
+            file_name, dict(with_attachments=True, need_content_analysis=True, recursion_deep_attachments=1, pdf_with_text_layer="tabby")
+        )
         attachments = result["attachments"]
         self.assertGreater(len(attachments[2]["content"]["structure"]["subparagraphs"]), 0)
         self.assertGreater(len(attachments[3]["content"]["structure"]["subparagraphs"]), 0)

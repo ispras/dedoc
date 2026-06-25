@@ -71,7 +71,7 @@ class TestApiImageRefs(AbstractTestApiDocReader):
         self.assertEqual(attach_annotation["name"], "attachment")
         self.assertIn(attach_annotation["value"], attachment_uids)
 
-        attach_annotation = structure["subparagraphs"][2]["annotations"][-2]
+        attach_annotation = structure["subparagraphs"][1]["annotations"][-1]
         self.assertEqual(attach_annotation["name"], "attachment")
         self.assertIn(attach_annotation["value"], attachment_uids)
 
@@ -98,6 +98,19 @@ class TestApiImageRefs(AbstractTestApiDocReader):
         attach_annotation = structure["subparagraphs"][2]["annotations"][-1]
         self.assertEqual(attach_annotation["name"], "attachment")
         self.assertIn(attach_annotation["value"], attachment_uids)
+
+    def test_images_refs_from_image(self) -> None:
+        file_name = "with_images.png"
+        result = self._send_request(file_name, dict(with_attachments=True, structure_type="linear"))
+
+        attachment_uids = {attachment["metadata"]["uid"] for attachment in result["attachments"]}
+        self.assertEqual(len(attachment_uids), 2)
+        subparagraphs = result["content"]["structure"]["subparagraphs"]
+
+        for i in (1, 43):
+            attach_annotations = [ann for ann in subparagraphs[i]["annotations"] if ann["name"] == AttachAnnotation.name]
+            self.assertEqual(len(attach_annotations), 1, f'Wrong node for attachment link: {subparagraphs[i]["text"]}')
+            self.assertIn(attach_annotations[0]["value"], attachment_uids)
 
     def test_pptx_images_refs(self) -> None:
         file_name = "with_attachments_1.pptx"

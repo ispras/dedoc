@@ -8,9 +8,11 @@ from typing import List
 import cv2
 from dedocutils.preprocessing import SkewCorrector
 
+from dedoc.data_structures.concrete_annotations.linked_text_annotation import LinkedTextAnnotation
 from dedoc.data_structures.line_with_meta import LineWithMeta
 from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
 from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
+from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_txtlayer_reader import PdfTxtlayerReader
 from tests.test_utils import get_test_config
 
@@ -141,3 +143,16 @@ class TestPDFReader(unittest.TestCase):
         path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer/english_doc.pdf")
         result = any_doc_reader.read(path, parameters={"need_pdf_table_analysis": "True"})
         self.assertEqual(len(result.tables), 1)
+
+    def test_notes_extractor(self) -> None:
+        pdf_reader = PdfTabbyReader(config={})
+        path = os.path.join(os.path.dirname(__file__), "../data/pdf_with_text_layer/Document635.pdf")
+        result = pdf_reader.read(path, parameters=dict(extract_notes=True))
+        lines = result.lines
+
+        self.assertEqual(len([ann for ann in lines[1].annotations if ann.name == LinkedTextAnnotation.name]), 1)
+        self.assertEqual(len([ann for ann in lines[27].annotations if ann.name == LinkedTextAnnotation.name]), 1)
+        self.assertEqual(len([ann for ann in lines[81].annotations if ann.name == LinkedTextAnnotation.name]), 1)
+
+        table_line = result.tables[0].cells[1][0].lines[0]
+        self.assertEqual(len([ann for ann in table_line.annotations if ann.name == LinkedTextAnnotation.name]), 1)

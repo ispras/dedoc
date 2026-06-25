@@ -72,7 +72,8 @@ class TestLangchainDocumentLoader(unittest.TestCase):
                 self.assertGreater(len(docs), 1)
 
         loader = DedocFileLoader(
-            file_path, split="document", with_tables=True, with_attachments=True, need_content_analysis=True, need_pdf_table_analysis=False
+            file_path, split="document", with_tables=True, with_attachments=True, need_content_analysis=True, need_pdf_table_analysis=False,
+            recursion_deep_attachments=1
         )
         text_docs, table_docs, attachment_docs = [], [], []
         for doc in loader.load():
@@ -87,4 +88,4 @@ class TestLangchainDocumentLoader(unittest.TestCase):
 
         self.assertEqual(1, len(text_docs))
         self.assertEqual(1, len(table_docs))
-        self.assertEqual(5, len(attachment_docs))
+        self.assertEqual(4, len(attachment_docs))

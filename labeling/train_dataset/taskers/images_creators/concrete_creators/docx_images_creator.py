@@ -11,6 +11,7 @@ from copy import deepcopy
 from typing import Dict, Iterable, Iterator, Optional, Tuple
 from typing import List
 
+import cv2
 import numpy as np
 from PIL import Image
 from PIL import ImageColor
@@ -214,7 +215,8 @@ class DocxImagesCreator(AbstractImagesCreator):
         uid2path = defaultdict(list)
         n = 0
         for two_color, many_color in zip(two_color_images, many_color_images):
-
+            two_color = cv2.cvtColor(two_color, cv2.COLOR_RGB2BGR)
+            many_color = cv2.cvtColor(many_color, cv2.COLOR_RGB2BGR)
             diff = many_color - two_color
             all_masks = np.abs(diff) > 0
             many_color[all_masks] = 255

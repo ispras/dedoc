@@ -64,7 +64,7 @@ class PdfTabbyReader(PdfBaseReader):
         You can also see :ref:`pdf_handling_parameters` to get more information about `parameters` dictionary possible arguments.
         """
         import tempfile
-        from dedoc.utils.parameter_utils import get_param_with_attachments
+        from dedoc.utils.parameter_utils import get_bool_parameter, get_param_with_attachments
 
         parameters = {} if parameters is None else parameters
         warnings = []
@@ -77,6 +77,10 @@ class PdfTabbyReader(PdfBaseReader):
 
         lines = [line for line_group in lines for line in line_group.split("\n")]
         lines = self.paragraph_extractor.extract(lines)
+
+        if get_bool_parameter(parameters, "extract_notes"):
+            self.notes_extractor.extract(file_path, lines + self._get_table_lines(tables))
+
         result = UnstructuredDocument(lines=lines, tables=tables, attachments=attachments, warnings=warnings, metadata=document_metadata)
 
         return self._postprocess(result)
@@ -117,6 +121,7 @@ class PdfTabbyReader(PdfBaseReader):
         # in java tabby reader page numeration starts with 1, end_page is included
         first_tabby_page = first_page + 1 if first_page is not None else 1
         last_tabby_page = page_count if (last_page is None) or (last_page is not None and last_page > page_count) else last_page
+        last_tabby_page = None if last_tabby_page == math.inf else last_tabby_page
         self.logger.info(f"Reading PDF pages from {first_tabby_page} to {last_tabby_page}")
         document = self.__process_pdf(path=path,
                                       start_page=first_tabby_page,

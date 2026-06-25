@@ -6,7 +6,7 @@ from typing import List
 from bs4 import Tag
 
 from dedoc.readers.docx_reader.data_structures.paragraph import Paragraph
-from dedoc.readers.docx_reader.footnote_extractor import FootnoteExtractor
+from dedoc.readers.docx_reader.note_extractor import NoteExtractor
 from dedoc.readers.docx_reader.numbering_extractor import NumberingExtractor
 from dedoc.readers.docx_reader.styles_extractor import StylesExtractor
 
@@ -35,14 +35,16 @@ class ParagraphMaker:
                  counter: Counter,
                  styles_extractor: StylesExtractor,
                  numbering_extractor: NumberingExtractor,
-                 footnote_extractor: FootnoteExtractor,
-                 endnote_extractor: FootnoteExtractor) -> None:
+                 footnote_extractor: NoteExtractor,
+                 endnote_extractor: NoteExtractor,
+                 comment_extractor: NoteExtractor) -> None:
         self.counter = counter
         self.path_hash = path_hash
         self.styles_extractor = styles_extractor
         self.numbering_extractor = numbering_extractor
         self.footnote_extractor = footnote_extractor
         self.endnote_extractor = endnote_extractor
+        self.comment_extractor = comment_extractor
         self.uids_set = set()
 
     def make_paragraph(self, paragraph_xml: Tag, paragraph_list: List[Paragraph]) -> Paragraph:
@@ -52,6 +54,7 @@ class ParagraphMaker:
                               numbering_extractor=self.numbering_extractor,
                               footnote_extractor=self.footnote_extractor,
                               endnote_extractor=self.endnote_extractor,
+                              comment_extractor=self.comment_extractor,
                               uid=uid)
         prev_paragraph = None if len(paragraph_list) == 0 else paragraph_list[-1]
         paragraph.spacing = paragraph.spacing_before if prev_paragraph is None else max(prev_paragraph.spacing_after, paragraph.spacing_before)

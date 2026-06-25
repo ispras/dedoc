@@ -138,7 +138,7 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
         self._check_tree_sanity(tree)
 
         # checks indentations
-        par = self._get_by_tree_path(tree, "0.4.0.0")
+        par = self._get_by_tree_path(tree, "0.5.0.0")
         self.assertIn({"end": 170, "value": "600", "name": "indentation", "start": 0}, par["annotations"])
         self.assertIn("Методика расчета ВВП по доходам характеризуется суммой национального\n", par["text"])
 

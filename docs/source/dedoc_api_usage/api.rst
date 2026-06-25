@@ -223,6 +223,7 @@ Api parameters description
       - false
       - This option is used to enable GOST (Russian government standard) frame recognition for PDF documents or images.
         The GOST frame recognizer is used recognize and ignore GOST frame on images and PDF documents.
+        See :ref:`gost_frame_handling` for more details.
 
     * - language
       - rus, eng, rus+eng, fra, spa
@@ -296,6 +297,13 @@ Api parameters description
       - This option is used to clean background (binarize) for pages of PDF documents without a textual layer.
         If the document's background is heterogeneous, this option may help to improve the result of document text recognition.
         By default ``need_binarization=false`` because its usage may decrease the quality of the document page (and the recognised text on it).
+
+    * - extract_notes
+      - true, false
+      - false
+      - This option is used to enable notes and comments extraction from PDF documents.
+        The notes/comments text is stored in :class:`~dedoc.data_structures.LinkedTextAnnotation`.
+        By default ``extract_notes=false`` because its usage may slow down the processing, especially for big PDF files.
 
     * - :cspan:`3` **Other formats handling**
 
