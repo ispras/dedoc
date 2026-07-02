@@ -2,7 +2,7 @@ import logging
 import os
 import warnings
 from os import path
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -116,3 +116,21 @@ class ColumnsOrientationClassifier(object):
         columns_predict = self.classes[columns]
         angle_predict = self.classes[2 + orientation]
         return columns_predict, angle_predict
+
+    def predict_batch(self, images: List[np.ndarray]) -> List[Tuple[int, int]]:
+        """
+        Predict (columns, orientation) for a batch of images in a single forward pass.
+        Equivalent to calling :meth:`predict` per image, but amortizes the model on the GPU.
+        """
+        if not images:
+            return []
+
+        net = self.net
+        net.eval()
+        with torch.no_grad():
+            batch = torch.cat([self.get_features(image) for image in images], dim=0)  # (N, 3, 1200, 1200)
+            outputs = net(batch)
+            columns_predicted = torch.max(outputs[:, :2], 1)[1]
+            orientation_predicted = torch.max(outputs[:, 2:], 1)[1]
+
+        return [(self.classes[int(columns_predicted[i])], self.classes[2 + int(orientation_predicted[i])]) for i in range(len(images))]

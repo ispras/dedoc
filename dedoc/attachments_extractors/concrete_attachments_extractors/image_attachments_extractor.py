@@ -34,7 +34,8 @@ class ImageAttachmentsExtractor(AbstractAttachmentsExtractor):
             self.logger.info("Layout analysis model will be loaded from huggingface")
         self._threshold = self.config.get("image_detection_threshold", 0.7)
 
-    def _predict(self, image: ndarray) -> Iterable[Dict[str, Tensor]]:
+    def _predict_batch(self, images: List[ndarray]) -> Iterable[Dict[str, Tensor]]:
+        """Run RT-DETR layout detection on a batch of images in a single forward pass."""
         import torch
         from transformers import RTDetrImageProcessor, RTDetrV2ForObjectDetection
 
@@ -42,14 +43,16 @@ class ImageAttachmentsExtractor(AbstractAttachmentsExtractor):
             self._image_processor = RTDetrImageProcessor.from_pretrained(self._model_name)
 
         if self._model is None:
-            self._model = RTDetrV2ForObjectDetection.from_pretrained(self._model_name)
+            self._device = "cuda:0" if self.config.get("on_gpu", False) and torch.cuda.is_available() else "cpu"
+            self._model = RTDetrV2ForObjectDetection.from_pretrained(self._model_name).to(self._device).eval()
+            self.logger.info(f"Layout analysis model is set to device {self._device}")
 
-        inputs = self._image_processor(images=[image], return_tensors="pt")
+        inputs = self._image_processor(images=list(images), return_tensors="pt").to(self._device)
         with torch.no_grad():
             outputs = self._model(**inputs)
 
-        results = self._image_processor.post_process_object_detection(outputs, target_sizes=torch.tensor([image.shape[:-1]]), threshold=self._threshold)
-        return results
+        target_sizes = torch.tensor([image.shape[:-1] for image in images], device=self._device)
+        return self._image_processor.post_process_object_detection(outputs, target_sizes=target_sizes, threshold=self._threshold)
 
     def extract(self, file_path: str, parameters: Optional[dict] = None) -> List[AttachedFile]:
         """
@@ -59,41 +62,52 @@ class ImageAttachmentsExtractor(AbstractAttachmentsExtractor):
         """
         import cv2
         import os
-        from dedoc.utils.parameter_utils import get_param_need_content_analysis, get_param_attachments_dir
-        from dedoc.utils.utils import get_unique_name
-        from dedoc.readers.pdf_reader.data_classes.tables.location import Location
-        from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
+        from dedoc.utils.parameter_utils import get_param_attachments_dir
 
         parameters = {} if parameters is None else parameters
         tmpdir, filename = os.path.split(file_path)
         attachments_dir = get_param_attachments_dir(parameters, tmpdir)
-        attachments = []
-
         image = cv2.imread(file_path)
-        predictions = self._predict(image)
+        prediction = list(self._predict_batch([image]))[0]
+        return self._attachments_from_prediction(image, prediction, attachments_dir, filename, parameters)
 
-        for prediction in predictions:
-            for label_id, box in zip(prediction["labels"], prediction["boxes"]):
-                if label_id.item() not in self._classes:
-                    continue
+    def extract_batch(self, images: List[ndarray], attachments_dir: str, parameters: Optional[dict] = None) -> List[List[AttachedFile]]:
+        """Detect attachments on a batch of page images with a single RT-DETR forward pass (one list per image)."""
+        parameters = {} if parameters is None else parameters
+        predictions = self._predict_batch(images)
+        return [self._attachments_from_prediction(image, prediction, attachments_dir, "attachment.png", parameters)
+                for image, prediction in zip(images, predictions)]
 
-                box = [round(i) for i in box.tolist()]
-                x_top_left, x_bottom_right = max(0, box[0]), min(box[2], image.shape[1])
-                y_top_left, y_bottom_right = max(0, box[1]), min(box[3], image.shape[0])
-                part = image[y_top_left:y_bottom_right, x_top_left:x_bottom_right]
-                image_location = Location(page_number=0, bbox=BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right)))
+    def _attachments_from_prediction(self, image: ndarray, prediction: Dict[str, Tensor], attachments_dir: str,
+                                     filename: str, parameters: dict) -> List[AttachedFile]:
+        import cv2
+        import os
+        from dedoc.utils.parameter_utils import get_param_need_content_analysis
+        from dedoc.utils.utils import get_unique_name
+        from dedoc.readers.pdf_reader.data_classes.tables.location import Location
+        from dedoc.readers.pdf_reader.data_classes.pdf_image_attachment import PdfImageAttachment
 
-                tmp_file_name = get_unique_name(filename)
-                tmp_file_path = os.path.join(attachments_dir, tmp_file_name)
-                cv2.imwrite(tmp_file_path, part)
+        attachments = []
+        for label_id, box in zip(prediction["labels"], prediction["boxes"]):
+            if label_id.item() not in self._classes:
+                continue
 
-                image_attachment = PdfImageAttachment(
-                    original_name=tmp_file_name,
-                    tmp_file_path=tmp_file_path,
-                    need_content_analysis=get_param_need_content_analysis(parameters),
-                    uid=f"attach_{uuid.uuid4()}",
-                    location=image_location
-                )
-                attachments.append(image_attachment)
+            box = [round(i) for i in box.tolist()]
+            x_top_left, x_bottom_right = max(0, box[0]), min(box[2], image.shape[1])
+            y_top_left, y_bottom_right = max(0, box[1]), min(box[3], image.shape[0])
+            part = image[y_top_left:y_bottom_right, x_top_left:x_bottom_right]
+            image_location = Location(page_number=0, bbox=BBox.from_two_points((x_top_left, y_top_left), (x_bottom_right, y_bottom_right)))
+
+            tmp_file_name = get_unique_name(filename)
+            tmp_file_path = os.path.join(attachments_dir, tmp_file_name)
+            cv2.imwrite(tmp_file_path, part)
+
+            attachments.append(PdfImageAttachment(
+                original_name=tmp_file_name,
+                tmp_file_path=tmp_file_path,
+                need_content_analysis=get_param_need_content_analysis(parameters),
+                uid=f"attach_{uuid.uuid4()}",
+                location=image_location
+            ))
 
         return attachments

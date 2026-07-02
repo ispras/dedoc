@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from collections import namedtuple
-from typing import Dict, Iterator, List, Optional, Set, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 
 from dedocutils.data_structures.bbox import BBox
 from numpy import ndarray
@@ -114,8 +114,13 @@ class PdfBaseReader(BaseReader):
         last_page = math.inf if parameters.last_page is None else parameters.last_page
         images = self._get_images(path, first_page, last_page)
 
+        orchestrator_warnings = []
         if parameters.need_gost_frame_analysis and isinstance(self, (PdfImageReader, PdfTxtlayerReader)):
             result, gost_analyzed_images = self._process_document_with_gost_frame(images=images, first_page=first_page, parameters=parameters, path=path)
+        elif self.config.get("use_stage_pipeline", False) and isinstance(self, PdfImageReader):
+            result, orchestrator_warnings = self._process_pages_via_stages(parameters=parameters, path=path, first_page=first_page, last_page=last_page)
+        elif self.config.get("use_orchestrator", False):
+            result, orchestrator_warnings = self._process_pages_orchestrated(images=images, parameters=parameters, path=path, first_page=first_page)
         else:
             result = Parallel(n_jobs=self.config["n_jobs"])(
                 delayed(self._process_one_page)(image, parameters, page_number, path) for page_number, image in enumerate(images, start=first_page)
@@ -131,6 +136,7 @@ class PdfBaseReader(BaseReader):
         else:
             warnings = []
             metadata = {}
+        warnings.extend(orchestrator_warnings)
 
         if len(result) == 0:
             all_lines, unref_tables, attachments, page_angles = [], [], [], []
@@ -220,6 +226,114 @@ class PdfBaseReader(BaseReader):
                        shift_y=gost_analyzed_images[page_number][1].y_top_left,
                        image_width=image_width,
                        image_height=image_height)
+
+    def _process_pages_orchestrated(self, images: Iterator[ndarray], parameters: ParametersForParseDoc, path: str, first_page: int) \
+            -> Tuple[List[Tuple], List[str]]:
+        """
+        Run per-page processing through the staged Orchestrator (thread pool, one shared model copy)
+        instead of joblib. Enabled via ``config["use_orchestrator"]``; the number of CPU workers is taken
+        from ``config["cpu_workers"]`` (falls back to ``n_jobs``). A page that fails becomes an empty
+        result plus a warning, so the rest of the document is still parsed.
+        """
+        from dedoc.pipeline import Orchestrator, Resource, Stage
+
+        # warm up the lazily-loaded orientation model once, before threads start, to avoid an init race
+        needs_classifier = parameters.is_one_column_document is None or parameters.document_orientation is None
+        if needs_classifier and hasattr(self, "column_orientation_classifier"):
+            _ = self.column_orientation_classifier.net
+
+        def process_page(payload: Tuple[int, ndarray], ctx: object) -> Tuple:
+            page_number, image = payload
+            return self._process_one_page(image, parameters, page_number, path)
+
+        cpu_workers = int(self.config.get("cpu_workers", self.config.get("n_jobs", 1)))
+        orchestrator = Orchestrator(cpu_workers=cpu_workers, logger=self.logger)
+        pages = ((page_number, image) for page_number, image in enumerate(images, start=first_page))
+        state = orchestrator.run(pages=pages, page_stages=[Stage("process_page", process_page, resource=Resource.CPU)])
+        result = [page if page is not None else ([], [], [], []) for page in state.pages]
+        return result, state.warnings
+
+    def _get_stage_executor(self, pool_sizes: Dict[str, int]) -> Any:
+        """
+        Build the staged executor once and reuse it across documents, so persistent process workers keep
+        their loaded models warm (only rebuilt if the process/worker configuration changes).
+        """
+        import dedoc.pipeline.pdf_stages as pdf_stages
+        from dedoc.pipeline.executor import LocalExecutor, ProcessExecutor
+
+        use_processes = self.config.get("stage_pipeline_processes", False)
+        key = (use_processes, tuple(sorted(pool_sizes.items())))
+        if getattr(self, "_stage_executor_key", None) == key:
+            return self._stage_executor
+
+        old_executor = getattr(self, "_stage_executor", None)
+        if old_executor is not None:
+            old_executor.shutdown()
+
+        if use_processes:
+            on_gpu = bool(self.config.get("on_gpu", False))
+            # only the single GPU worker gets a CUDA reader; CPU workers stay on CPU (no per-worker CUDA context)
+            executor = ProcessExecutor(pool_sizes=pool_sizes, setup_fn=pdf_stages.setup, setup_arg={"on_gpu": False},
+                                       gpu_setup_fn=pdf_stages.setup, gpu_setup_arg={"on_gpu": on_gpu})
+        else:
+            pdf_stages._READER = self  # reuse this reader in-process
+            executor = LocalExecutor(pool_sizes)
+        self._stage_executor = executor
+        self._stage_executor_key = key
+        return executor
+
+    def _process_pages_via_stages(self, parameters: ParametersForParseDoc, path: str, first_page: int, last_page: float) \
+            -> Tuple[List[Tuple], List[str]]:
+        """
+        Phase 2c: run the per-page work as a decomposed task graph (see ARCHITECTURE.md §9) via the staged
+        Scheduler. A page *document* dict flows through render/binarize/orient_predict/deskew/layout/ocr/table,
+        each stage augmenting it; per-page results are reassembled into the ``_process_one_page`` tuple shape
+        so the document-level barriers below run unchanged. Enabled via ``config["use_stage_pipeline"]``;
+        ``config["stage_pipeline_processes"]`` switches to real process workers.
+
+        Rendering is lazy: the ``render`` stage rasterizes each page on demand, and the scheduler keeps at most
+        ``config["max_inflight_pages"]`` pages in flight, so peak memory is bounded by the worker count rather
+        than the document size.
+        """
+        import math
+        import dedoc.pipeline.pdf_stages as pdf_stages
+        from dedoc.pipeline.scheduler import Scheduler
+        from dedoc.utils.pdf_utils import get_pdf_page_count
+
+        page_count = get_pdf_page_count(path) or 1
+        end = page_count if last_page == math.inf else min(int(last_page), page_count)
+        pages = list(range(first_page, end))
+        specs = pdf_stages.build_specs(parameters)
+        workers = int(self.config.get("cpu_workers", 4))
+        pool_sizes = {"cpu_process": workers, "thread": workers, "gpu": 1}
+        max_inflight = int(self.config.get("max_inflight_pages", max(4, 2 * workers)))
+
+        def seed(page: int) -> dict:
+            return {"page_number": page, "params": parameters, "path": path}  # the render stage produces the image
+
+        if not self.config.get("stage_pipeline_processes", False) and any(spec.name == "orient_predict" for spec in specs):
+            _ = self.column_orientation_classifier.net  # warm the lazily-loaded model before threads start
+
+        executor = self._get_stage_executor(pool_sizes)  # persistent across documents (workers keep models warm)
+
+        def drop_image(output: dict) -> dict:
+            # free the page image IN PLACE so shared references (the next task's input) release it too
+            output.pop("image", None)
+            return output
+
+        # free each page image once its stages have consumed it, so images do not accumulate over a large document
+        doc_result = Scheduler(executor=executor, gpu_batch_timeout=0.05, max_inflight_pages=max_inflight,
+                               logger=self.logger).run(specs, pages, seed, reduce_output=drop_image)
+
+        def field(name: str, page: int, key: str, default: Any) -> Any:
+            task = doc_result.by_id.get(f"{name}@p{page}")
+            return default if task is None or task.output is None else task.output.get(key, default)
+
+        result = []
+        for page in pages:
+            attachments = list(field("layout", page, "attachments", [])) + list(field("ocr", page, "page_attachments", []))
+            result.append((field("ocr", page, "lines", []), field("table", page, "tables", []), attachments, [field("deskew", page, "rotated_angle", 0.0)]))
+        return result, doc_result.warnings
 
     @abstractmethod
     def _process_one_page(self, image: ndarray, parameters: ParametersForParseDoc, page_number: int, path: str) \
