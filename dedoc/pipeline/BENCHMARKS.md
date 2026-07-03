@@ -39,7 +39,17 @@ All PDF runs use `pdf_with_text_layer=false` (PdfImageReader / OCR path).
 |---|---|---|---|---|
 | original master njobs=1 (natural OMP) | 1377.6s (~23 min) | 0a0cdc945af5 | — | reference; 5626 nodes, 6 tables |
 | new proc=8 GPU (image-free bug) | 381.6s (~6.4 min) | 32ea2c4ded55 | 18.7 GB | first reduce_output built a new dict → images not freed |
-| new proc=8 GPU (in-place fix) | **336.7s (~5.6 min)** | 32ea2c4ded55 | **8.1 GB** | **×4.1 vs original**; CPU 94%, GPU 9%; 5626 nodes, 6 tables, text_len 790801 |
+| new proc=8 GPU (in-place fix) | 336.7s (~5.6 min) | 32ea2c4ded55 | 8.1 GB | ×4.1 vs original; CPU 94%, GPU 9%; 5626 nodes, 6 tables, text_len 790801 |
+| new proc=8 GPU + **deskew downscale** | 234.9s (~3.9 min) | 09ec1769ed32 | 7.4 GB | ×5.9 vs original; CPU 84%, GPU 23%; 5611 nodes (−15), text_len 790885 — see note |
+| new proc=8 GPU + deskew + **shared-mem image return** | **213.8s (~3.6 min)** | 09ec1769ed32 | 7.2 GB | **×6.4 vs original**; CPU 83%, GPU 17%; output IDENTICAL to the deskew run (transport-only) |
+
+**deskew downscale (×1.43 more → ×5.9 total).** `SkewCorrector` was running 91 full-page rotations per page to find
+the skew angle, but the pages are straight (angle 0); doing the angle detection on a **downscaled** image (long side
+floored at 1000 px so low-res pages are not upscaled) is 5–18x cheaper, with the final rotation still at full res.
+Deskew was the biggest stage (42%), so the whole doc dropped 336.7→234.9s and GPU util rose (9→23%, better balanced).
+Trade-off: **output is no longer byte-identical** (5611 vs 5626 nodes, +84 chars) — downscaled detection picks a
+different ±1° angle on a few pages, reordering that page's text (same length). A hybrid (coarse-on-downscaled +
+±2° refine at full res) would keep the speedup and the exact angle if byte-identical output is required.
 
 **×4.1 faster on the full big document** (23 min → 5.6 min), CPU ~94% utilized, peak RSS **8.1 GB** (down from 18.7 GB
 before freeing the page image *in place* — the first `reduce_output` built a new dict, leaving the old one, still
