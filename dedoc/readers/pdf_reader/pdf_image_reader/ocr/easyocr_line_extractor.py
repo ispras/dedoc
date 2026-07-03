@@ -9,6 +9,8 @@ returns, so everything downstream (``LineMetadataExtractor``, structure extracti
 EasyOCR is torch-based (fits the existing CUDA torch), Apache-2.0, and has strong Cyrillic support. Unlike
 Tesseract it does detection + recognition in one shot and returns a flat list of text regions; we regroup those
 regions into rows (dedoc "lines") and words to match Tesseract's line/word contract.
+
+See ``EASYOCR_SETUP.md`` (same directory) for install and for building the DBNet detector's CUDA op.
 """
 import logging
 from typing import List, Optional, Tuple
