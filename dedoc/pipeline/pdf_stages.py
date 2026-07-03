@@ -69,25 +69,36 @@ def _deskew(config: dict, doc: dict) -> dict:
     return {**doc, "image": rotated_image, "rotated_angle": result_angle["rotated_angle"], "is_one_column": is_one_column}
 
 
+_TABLE_CLASS = 8  # docling-layout-heron label id for 'table' (used to gate the OpenCV table detector)
+
+
 def _layout_batch(configs: List[dict], docs: List[dict]) -> List[dict]:
     import os
     from dedoc.utils.image_utils import fill_bbox_on_image
 
     params = docs[0]["params"]
-    if not params.with_attachments:
+    # the layout model serves two purposes here: extract attachments (Formula/Picture), and, from the SAME forward,
+    # report whether a page has a table (class 8) so the expensive per-page OpenCV table detector can be skipped
+    if not (params.with_attachments or params.need_pdf_table_analysis):
         return [{**doc, "attachments": []} for doc in docs]
 
-    attachments_dir = os.path.split(docs[0]["path"])[0]
+    extractor = _READER.attachments_extractor
     images = [doc["image"] for doc in docs]
-    # one RT-DETR forward for the whole batch of pages
-    per_page = _READER.attachments_extractor.extract_batch(images, attachments_dir, dict(zip(params._fields, params)))
+    predictions = list(extractor._predict_batch(images))  # one RT-DETR forward for the whole batch of pages
+    attachments_dir = os.path.split(docs[0]["path"])[0]
+    param_dict = dict(zip(params._fields, params))
 
     result = []
-    for doc, image, attachments in zip(docs, images, per_page):
-        for attach in attachments:
-            attach.location.page_number = doc["page_number"]
-            image = fill_bbox_on_image(image, attach.location.bbox)
-        result.append({**doc, "image": image, "attachments": attachments})
+    for doc, image, prediction in zip(docs, images, predictions):
+        # table-presence gate for the OpenCV table stage; None when table analysis is off (so table is not gated)
+        has_table = any(int(lid) == _TABLE_CLASS for lid in prediction["labels"]) if params.need_pdf_table_analysis else None
+        attachments = []
+        if params.with_attachments:
+            attachments = extractor._attachments_from_prediction(image, prediction, attachments_dir, "attachment.png", param_dict)
+            for attach in attachments:
+                attach.location.page_number = doc["page_number"]
+                image = fill_bbox_on_image(image, attach.location.bbox)
+        result.append({**doc, "image": image, "attachments": attachments, "layout_has_table": has_table})
     return result
 
 
@@ -106,8 +117,12 @@ def _ocr(config: dict, doc: dict) -> dict:
 
 
 def _table(config: dict, doc: dict) -> dict:
+    import os
     params = doc["params"]
     if not params.need_pdf_table_analysis:
+        return {**doc, "tables": []}
+    # layout (GPU) saw no table here -> skip the costly OpenCV contour detection (set DEDOC_TABLE_GATE=0 to disable)
+    if doc.get("layout_has_table") is False and os.environ.get("DEDOC_TABLE_GATE", "1") != "0":
         return {**doc, "tables": []}
     clean_image, tables = _READER.table_recognizer.recognize_tables_from_image(
         image=doc["image"], page_number=doc["page_number"], language=params.language, table_type=params.table_type)
@@ -153,6 +168,8 @@ def build_specs(params: Any) -> List[TaskSpec]:
         present.append("binarize")
     if params.is_one_column_document is None or params.document_orientation is None:
         present.append("orient_predict")
+    # layout runs for attachments; when it runs, its table detections also gate the OpenCV table stage for free.
+    # We do NOT add layout *solely* for the gate - that is a whole extra NN pass (a wash + VRAM cost, see BENCHMARKS).
     if params.with_attachments:
         present.append("layout")
     if params.need_pdf_table_analysis:

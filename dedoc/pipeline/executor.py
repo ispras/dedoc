@@ -13,6 +13,7 @@ persistent worker processes. Both expose ``submit(poolname, tasks) -> Future[Lis
 """
 from concurrent.futures import Future, ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass
+from multiprocessing import shared_memory
 from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
@@ -94,21 +95,75 @@ def _wrap_value(value: Any):
     return value, []
 
 
-def _remote_run(name: str, is_batch: bool, configs: List[dict], inputs: List[Any]) -> List[Any]:
-    """Runs inside a worker process: resolve the handler by name, read shared-memory inputs, execute."""
+def _write_output_image(doc: Any, buf_name: Any, buf_size: int) -> Any:
+    """In the worker: write the doc's output image into the parent-provided shared buffer and replace it with a
+    handle, so the ~12 MB array is not pickled back through the pool pipe. Falls back to the array if it is too big."""
+    if buf_name is None or not isinstance(doc, dict):
+        return doc
+    image = doc.get("image")
+    if not isinstance(image, np.ndarray) or image.nbytes > buf_size:
+        return doc
+    image = np.ascontiguousarray(image)
+    shm = shared_memory.SharedMemory(name=buf_name)
+    try:
+        view = np.ndarray(image.shape, dtype=image.dtype, buffer=shm.buf)
+        view[:] = image[:]
+    finally:
+        shm.close()  # the parent owns the buffer and keeps it alive
+    return {**doc, "image": ShmRef(name=buf_name, shape=tuple(image.shape), dtype=str(image.dtype))}
+
+
+def _remote_run(name: str, is_batch: bool, configs: List[dict], inputs: List[Any],
+                out_names: List[Any], buf_size: int) -> List[Any]:
+    """Runs inside a worker process: read shared-memory inputs, run the handler, write output images into the
+    parent-owned shared buffers (so images never go back through the pipe)."""
     handler = _TOOLKIT[name]
+    real_inputs = [_unwrap(i) for i in inputs]
+    if is_batch and handler.batch_process is not None:
+        outputs = list(handler.batch_process(configs, real_inputs))
+    else:
+        outputs = [handler.process(c, i) for c, i in zip(configs, real_inputs)]
+    return [_write_output_image(out, buf_name, buf_size) for out, buf_name in zip(outputs, out_names)]
+
+
+def _toolkit_run(toolkit: Dict[str, Handler], name: str, is_batch: bool, configs: List[dict], inputs: List[Any]) -> List[Any]:
+    """In-parent (thread pool) variant for self-forking tasks. Inputs may reference parent-owned shared buffers."""
+    handler = toolkit[name]
     real_inputs = [_unwrap(i) for i in inputs]
     if is_batch and handler.batch_process is not None:
         return list(handler.batch_process(configs, real_inputs))
     return [handler.process(c, i) for c, i in zip(configs, real_inputs)]
 
 
-def _toolkit_run(toolkit: Dict[str, Handler], name: str, is_batch: bool, configs: List[dict], inputs: List[Any]) -> List[Any]:
-    """In-parent (thread pool) variant for self-forking tasks: no shared memory, direct numpy."""
-    handler = toolkit[name]
-    if is_batch and handler.batch_process is not None:
-        return list(handler.batch_process(configs, inputs))
-    return [handler.process(c, i) for c, i in zip(configs, inputs)]
+class _BufferPool:
+    """Parent-owned pool of reusable shared-memory buffers for worker output images. The parent creates the
+    segments (so they survive on Windows regardless of the worker), lends one per task, and takes it back when
+    the scheduler frees the image."""
+    def __init__(self, buf_size: int) -> None:
+        self._buf_size = buf_size
+        self._free: List[str] = []
+        self._all: Dict[str, Any] = {}
+
+    def acquire(self) -> str:
+        if self._free:
+            return self._free.pop()
+        shm = shared_memory.SharedMemory(create=True, size=self._buf_size)
+        self._all[shm.name] = shm
+        return shm.name
+
+    def release(self, name: str) -> None:
+        if name in self._all and name not in self._free:
+            self._free.append(name)
+
+    def close(self) -> None:
+        for shm in self._all.values():
+            try:
+                shm.close()
+                shm.unlink()
+            except Exception:  # noqa - best-effort cleanup
+                pass
+        self._free.clear()
+        self._all.clear()
 
 
 class ProcessExecutor:
@@ -123,6 +178,8 @@ class ProcessExecutor:
         atexit.register(self.shutdown)  # shut pools down while multiprocessing is still alive (avoids teardown noise)
         # handlers for self-forking (thread) tasks run in the parent, so build a parent-side toolkit too
         self._parent_toolkit = setup_fn(setup_arg)
+        self._buf_size = 48 * 1024 * 1024  # size of each output-image shared buffer (page images are ~12 MB)
+        self._pool = _BufferPool(self._buf_size)
 
         if "cpu_process" in pool_sizes:
             self._pools["cpu_process"] = ProcessPoolExecutor(
@@ -146,7 +203,8 @@ class ProcessExecutor:
             return pool.submit(_toolkit_run, self._parent_toolkit, spec.name, is_batch, configs, inputs)
 
         wrapped, shms = self._wrap_inputs(inputs)
-        future = pool.submit(_remote_run, spec.name, is_batch, configs, wrapped)
+        out_names = [self._pool.acquire() for _ in tasks]  # parent-owned output buffers (no image pickled back)
+        future = pool.submit(_remote_run, spec.name, is_batch, configs, wrapped, out_names, self._buf_size)
         if shms:
             self._shm_keep[future] = shms
             future.add_done_callback(self._free_shms)
@@ -165,9 +223,14 @@ class ProcessExecutor:
         for shm in self._shm_keep.pop(future, []):
             close(shm)
 
+    def release_output(self, name: str) -> None:
+        """Return an output buffer to the pool once the scheduler has freed its image."""
+        self._pool.release(name)
+
     def shutdown(self) -> None:
         if self._is_shutdown:
             return
         self._is_shutdown = True
         for pool in self._pools.values():
             pool.shutdown(wait=True)
+        self._pool.close()

@@ -316,9 +316,13 @@ class PdfBaseReader(BaseReader):
 
         executor = self._get_stage_executor(pool_sizes)  # persistent across documents (workers keep models warm)
 
+        from dedoc.pipeline.shared_image import ShmRef
+
         def drop_image(output: dict) -> dict:
-            # free the page image IN PLACE so shared references (the next task's input) release it too
-            output.pop("image", None)
+            # free the page image in place; if it lives in a shared buffer, hand that buffer back to the executor pool
+            image = output.pop("image", None)
+            if isinstance(image, ShmRef) and hasattr(executor, "release_output"):
+                executor.release_output(image.name)
             return output
 
         # free each page image once its stages have consumed it, so images do not accumulate over a large document
