@@ -13,21 +13,19 @@
 
 ## Документы
 
-| Тип                       | Количество документов     | Количество страниц     | Описание                                |
-|---------------------------|---------------------------|------------------------|-----------------------------------------|
-| binarize                  | 30 каждого вида           | 1, 5, 10, 25, 50, 100  | сложный/цветной фон                     |
-| orient                    | 30 каждого вида           | 1, 5, 10, 25, 50, 100  | повороты кратно 90°                     |
-| skew                      | 30 каждого вида           | 1, 5, 10, 25, 50, 100  | повороты < 45°                          |
-| ocr mini                  |                           |                        | небольшое количество текста (text only) |
-| ocr                       |                           |                        | только текст                            |
-| table mini                |                           |                        | одна таблица на странице (table only)   |
-| table                     |                           |                        | 2-3 таблицы на страницу (table only)    |
-| layout                    |                           |                        | только картинки на странице             |
-| ocr + table + layout      |                           |                        | текст + таблицы + картинки              |
+| Тип                       | Количество документов | Количество страниц     | Описание                                |
+|---------------------------|-----------------------|------------------------|-----------------------------------------|
+| binarize                  | 30 каждого вида       | 1, 5, 10, 25, 50, 100  | сложный/цветной фон                     |
+| orient                    | 30 каждого вида       | 1, 5, 10, 25, 50, 100  | повороты кратно 90°                     |
+| skew                      | 30 каждого вида       | 1, 5, 10, 25, 50, 100  | повороты < 45°                          |
+| ocr                       | 30 каждого вида       | 1, 5, 10, 25, 50, 100  | только текст                            |
+| table                     | 30 каждого вида       | 1, 5, 10, 25, 50, 100  | только таблицы на странице              |
+| layout                    | 30 каждого вида       | 1, 5, 10, 25, 50, 100  | только картинки на странице             |
+| ocr + table + layout      |                       |                        | текст + таблицы + картинки              |
 
 ### Binarize
 
-Rosatom docs (2026):
+Rosatom docs (2026) (`rosatom_docs`):
 
 1. DAE (India) Annual Report 2020-21.pdf
 2. DAE (India) Annual Report 2021-22.pdf
@@ -41,7 +39,7 @@ Rosatom docs (2026):
 10. World Nuclear Industry Status Report 2024.pdf
 11. World Nuclear Industry Status Report 2025.pdf
 
-Fintoc 2022 (spanish):
+Fintoc 2022 (spanish) (`fintoc/sp`):
 
 12. 7-AENA_Informe_Anual_2015.pdf
 13. 12-Endesa_Informe_de_Actividades_2016.pdf
@@ -65,7 +63,7 @@ Fintoc 2022 (spanish):
 
 ### Orient / skew
 
-Rosatom docs (2025):
+Rosatom docs (2025) (`pdf_china`):
 
 1. CIAE_Annual Report_2014en.pdf
 2. CIAE_Annual Report_2016en.pdf
@@ -78,7 +76,7 @@ Rosatom docs (2025):
 9. CIAE_Annual Report_2019en.pdf
 10. CIAE_Annual Report_2018en.pdf
 
-Fintoc 2022 (english):
+Fintoc 2022 (english) (`fintoc/en`):
 
 11. LU0705072691-LU0705072345-LU0705072188_English_2015_RAM-LUX-Long-Sh-EmergingMarktesEq-.pdf
 12. HSBC_Global_Investment_Funds_2017_X_P_X_A.pdf
@@ -101,3 +99,35 @@ Fintoc 2022 (english):
 29. LU1252823262-LU0482498846-LU0482498762-LU0955861710-LU0955867758-LU0955867915-LU0432616810-LU0607521506-LU0955867832-LU0482498176-LU0955861983-LU0955861801-LU0432616901_English_2013_InvescoBalanced-RiskAlloc-.pdf
 30. Lombard_Odier_Funds_2014_X_P_X_X.pdf
 
+
+### Table
+
+#### gen_tables
+
+Датасет из PDF, в которых на каждой странице только таблицы.
+Данные разбиты на 3 группы: 1, 2 или 3 таблицы на странице.
+
+PDF сгенерированы скриптом `gen_tables.py`.
+Текстовое наполнение генерируется случайно (слова из фиксированного множества + числа/даты).
+
+
+### OCR
+
+#### gen_texts
+
+Датасет из PDF, в которых на каждой странице только текст.
+Данные разбиты на 2 группы: страницы с небольшим/большим количеством текста.
+
+PDF сгенерированы скриптом `gen_text.py`.
+Используются тексты из [датасета](https://www.kaggle.com/datasets/shivamkushwaha/bbc-full-text-document-classification).
+
+
+### Layout
+
+#### gen_images
+
+Датасет из PDF, в которых на каждой странице только картинки.
+Данные разбиты на 3 группы: 1, 2 или 3 картинки на странице.
+
+PDF сгенерированы скриптом `gen_images.py`.
+Используются изображения из [датасета](https://www.kaggle.com/datasets/bhavikjikadara/dog-and-cat-classification-dataset?resource=download)

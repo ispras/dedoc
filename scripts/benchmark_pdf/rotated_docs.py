@@ -13,7 +13,7 @@ class RotateType(str, Enum):
     ORIENT = "orient"
 
 
-PAGES_NUMBERS = [5, 10, 25, 50, 100]
+PAGES_NUMBERS = [1, 5, 10, 25, 50, 100]
 ROTATE_TYPES = [RotateType.SKEW]
 
 docs = {
