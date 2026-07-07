@@ -49,15 +49,28 @@ def _binarize(config: dict, doc: dict) -> dict:
     return {**doc, "image": image}
 
 
+def _orient_pre(config: dict, doc: dict) -> dict:
+    # CPU-side orientation preprocessing (resize/pad/BGR->RGB), split off the GPU worker like det_pre so the GPU stage
+    # runs only the EfficientNet forward. Produces a uint8 RGB canvas transported via the shared-memory buffer pool.
+    canvas = _READER.column_orientation_classifier.preprocess_cpu(doc["image"])
+    return {**doc, "orient_prepro": canvas}
+
+
 def _orient_predict(config: dict, doc: dict) -> dict:
-    columns, angle = _READER.column_orientation_classifier.predict(doc["image"])
-    return {**doc, "columns": columns, "angle": angle}
+    clf = _READER.column_orientation_classifier
+    canvas = doc.get("orient_prepro")
+    canvas = canvas if canvas is not None else clf.preprocess_cpu(doc["image"])
+    columns, angle = clf.predict_prepared([canvas])[0]
+    return {**{k: v for k, v in doc.items() if k != "orient_prepro"}, "columns": columns, "angle": angle}
 
 
 def _orient_predict_batch(configs: List[dict], docs: List[dict]) -> List[dict]:
-    # single forward pass over the whole batch of page images (task #4)
-    results = _READER.column_orientation_classifier.predict_batch([d["image"] for d in docs])
-    return [{**doc, "columns": columns, "angle": angle} for doc, (columns, angle) in zip(docs, results)]
+    # single forward pass over the whole batch; the resize/pad already ran on the CPU workers (orient_pre stage)
+    clf = _READER.column_orientation_classifier
+    canvases = [d["orient_prepro"] if "orient_prepro" in d else clf.preprocess_cpu(d["image"]) for d in docs]
+    results = clf.predict_prepared(canvases)
+    return [{**{k: v for k, v in doc.items() if k != "orient_prepro"}, "columns": columns, "angle": angle}
+            for doc, (columns, angle) in zip(docs, results)]
 
 
 _SKEW_MIN_SIDE = 1000  # detect the fine skew on an image downscaled to this long side; never upscale a low-res page
@@ -204,6 +217,7 @@ def setup(config_overrides: Any = None) -> Dict[str, Handler]:
     return {
         "render": Handler(_render),
         "binarize": Handler(_binarize),
+        "orient_pre": Handler(_orient_pre),
         "orient_predict": Handler(_orient_predict, batch_process=_orient_predict_batch),
         "deskew": Handler(_deskew),
         "layout": Handler(_layout, batch_process=_layout_batch),
@@ -218,6 +232,7 @@ def setup(config_overrides: Any = None) -> Dict[str, Handler]:
 _SPEC_DEFS = {
     "render": dict(process=_render, resource=Resource.CPU, exec_mode=ExecMode.PROCESS),  # Poppler self-forks pdftoppm
     "binarize": dict(process=_binarize, resource=Resource.CPU, exec_mode=ExecMode.THREAD),
+    "orient_pre": dict(process=_orient_pre, resource=Resource.CPU, exec_mode=ExecMode.THREAD),  # orient resize/pad on CPU workers
     "orient_predict": dict(process=_orient_predict, resource=Resource.GPU, batch_process=_orient_predict_batch, batch_size=8),
     "deskew": dict(process=_deskew, resource=Resource.CPU, exec_mode=ExecMode.THREAD),
     "layout": dict(process=_layout, resource=Resource.GPU, batch_process=_layout_batch, batch_size=4),
@@ -238,15 +253,16 @@ def build_specs(params: Any, ocr_engine: str = "tesseract") -> List[TaskSpec]:
     if params.need_binarization:
         present.append("binarize")
     if params.is_one_column_document is None or params.document_orientation is None:
-        present.append("orient_predict")
+        present.extend(["orient_pre", "orient_predict"])  # orient_pre (CPU resize/pad) -> orient_predict (GPU forward)
     # layout runs for attachments; when it runs, its table detections also gate the OpenCV table stage for free.
-    # We do NOT add layout *solely* for the gate - that is a whole extra NN pass (a wash + VRAM cost, see BENCHMARKS).
+    # We do NOT add layout *solely* for the gate - that is a whole extra NN pass, and for the hybrid engine it lands
+    # on the single GPU worker (the throughput bottleneck): measured +40 s on the 297-page doc. See the experiment log.
     if params.with_attachments:
         present.append("layout")
     if params.need_pdf_table_analysis:
         present.append("table")
 
-    chain = [name for name in ["render", "binarize", "orient_predict", "deskew", "layout"] if name in present]
+    chain = [name for name in ["render", "binarize", "orient_pre", "orient_predict", "deskew", "layout"] if name in present]
     blockers = {name: ([chain[i - 1]] if i > 0 else []) for i, name in enumerate(chain)}
     last = chain[-1] if chain else None
     # table hangs off the preprocessing chain and masks its cells; ocr then reads the table-cleaned image

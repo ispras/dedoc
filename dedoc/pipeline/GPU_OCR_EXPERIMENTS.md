@@ -379,3 +379,45 @@ pages, not the model call on cached inputs.
 `table_hough_scale` (default 0.5). Removed scaffolding: `DEDOC_STUB_OCR`, `DEDOC_STAGE_TIMING`, `DEDOC_GPU_TRACE`,
 executor `_TRACE`/`_record_stage`/`_dump_stage_stats`, `DEDOC_TABLE_GATE_LAYOUT`, dead `_ocr_gpu_batch`,
 `recognize_boxes_batch`/`infer_batch`/`_ensure_rec` (EasyOCR recognizer), and the XY-cut block-ordering code.
+
+## Layout table-gate re-evaluated (2026-07) — still a net loss, reframes the bottleneck
+
+After OCR was sped up (eslav + crop fix), the pipeline looked "CPU-bound" (CPU 61 %, GPU 26 %), so the layout gate
+(run docling RT-DETR on all pages, skip the OpenCV table detector where class 8 is absent) looked cheap again. Wired
+it (`build_specs(table_gate_layout=...)`, `table` blocks on `layout`, `_table` skips on `layout_has_table is False`)
+and measured the full 297-page doc: **235 s vs 195 s baseline — +40 s, tables=6 preserved.** Reverted to default OFF.
+
+Why it lost, and the correction it forces: **the single GPU worker is the throughput bottleneck, not the CPU.** GPU
+*device* utilization (26 %) is low because the worker stalls on CPU hand-offs between its stages — but its serial
+*queue* (orient ~120 ms + ocr_gpu ~330 ms per page) is what gates the chain. Adding layout (~159 ms/page) to that
+queue = +47 s of GPU-worker work, which is the real critical path; the CPU table savings don't help because the CPU
+already has headroom (61 %). "GPU idle → layout is free" was wrong: idle *device* ≠ idle *worker*.
+
+**Consequence for future work:** wall time is bounded by the GPU worker's serial per-page cost (orient + ocr_gpu),
+not by CPU stages. Table/deskew/render gating (CPU) can't move the wall while the GPU worker is the bottleneck. The
+productive levers are the ones that *reduce GPU-worker work*: gate/skip orientation on likely-upright pages, cut
+recognition cost, or overlap orient/ocr_gpu better — not CPU-side gating. The `table_gate_layout` flag is kept
+(default off) since a CPU-only engine, where the GPU worker only runs orient, could still benefit.
+
+## Orient preprocessing disaggregated to CPU (2026-07) — WIN, −45 s
+
+After the layout-gate loss reframed the bottleneck as the single GPU worker's serial queue, profiled the orient stage
+itself: the EfficientNet-B0 *forward* is cheap (~19 ms/page batched at 1200x1200; 3.6 ms at 512), but the PIL
+preprocessing (`my_resize` resize+white-pad + ToTensor + Normalize of the full ~2300 px page) costs **91 ms/page** and
+ran ON the GPU worker. So orient's ~120 ms was ~85 % CPU-side resize, not model compute — and it sat on the bottleneck.
+
+Fix (mirrors det_pre): new CPU stage `orient_pre` does the resize/pad in **cv2** (`preprocess_cpu`, 91→35 ms, uint8
+canvas, INTER_AREA) on the parallel CPU workers; the GPU stage (`predict_prepared`) does only normalize (to [-1,1] on
+GPU) + the forward. cv2-vs-PIL predictions agree **20/20** on raw pages (prediction-preserving).
+
+- **194.6 s → 149.0 / 149.4 s (two clean runs) = −45 s / −23 %.** CPU 61→70 % (absorbs the resize), GPU worker
+  unburdened, RSS unchanged (~11 GB). tables=6.
+- **First run was contaminated** (266 s, GPU 45 %, RSS 13.4 GB = a foreign GPU job) — re-ran clean twice to confirm.
+  The contamination nearly caused a wrong "revert" conclusion; always re-run a surprising result on a verified-idle GPU.
+- **Pipeline output is non-deterministic run-to-run** (text_len 818521 vs 818554 across two runs of identical code;
+  nodes ±7; ~0.004 %). Pre-existing (not from this change — one run matched the PIL baseline's 818555); likely
+  parallel OCR/table tie-break ordering or float non-associativity in GPU batches. Small, but noted.
+- Contrast with the layout gate: adding a GPU-worker stage lost 40 s; removing GPU-worker work (this) won 45 s.
+  Consistent single rule: **wall time tracks the GPU worker's serial per-page cost — cut it, don't add to it.**
+- Open orient levers (not done): 512 input + retrain (forward already cheap, modest); non-square input skip-the-pad
+  (~30 % fewer forward pixels, needs retrain/validation); reuse an upstream downscaled copy (couples stages).
