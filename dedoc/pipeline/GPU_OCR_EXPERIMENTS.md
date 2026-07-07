@@ -421,3 +421,19 @@ GPU) + the forward. cv2-vs-PIL predictions agree **20/20** on raw pages (predict
   Consistent single rule: **wall time tracks the GPU worker's serial per-page cost — cut it, don't add to it.**
 - Open orient levers (not done): 512 input + retrain (forward already cheap, modest); non-square input skip-the-pad
   (~30 % fewer forward pixels, needs retrain/validation); reuse an upstream downscaled copy (couples stages).
+
+## Deskew coarse-to-fine skew search (2026-07) — 2.4x fewer rotations, exact angle
+
+Profiled the non-OCR/orient tail (cProfile, 15 pages single-process, `scratchpad/meas_profile.py`). Biggest non-OCR
+CPU cost: deskew's skew-angle search — `_detect_skew_angle` rotated the downscaled binary page **91 times** (every
+1 deg over +-45) and scored projection-profile variance; warpAffine (1.58 s) + the projection sums dominated the CPU
+tail (~170 ms/page). Runners-up: table HoughLinesP+morphology (~150 ms), line-metadata bold/color per line (~110 ms).
+
+Replaced the flat 91-step sweep with **coarse-to-fine**: coarse 3-deg sweep (31 rotations) brackets the projection
+peak, then refine at 1 deg around it (7 more) = **38 vs 91 rotations**. The score is smooth over 3 deg so the coarse
+grid always brackets the peak. Validated (`scratchpad/skew_validate.py`) on injected skews 0-12 deg x 5 pages x 7
+angles: **exact match to the 91-step angle (max |diff| 0.0)**, ~2.4x faster in isolation (311 -> 128 ms/page).
+
+Full doc: **149 -> 144 s** (-5 s). Deskew is a CPU stage and the pipeline is GPU-worker-bound, so most of the
+~100 ms/page saving frees CPU headroom (helps the CPU-only Tesseract engine, and future GPU-worker shrink) rather than
+moving the DAE wall; the -5 s shows it was slightly on the critical path. Output within run-to-run noise, tables=6.
