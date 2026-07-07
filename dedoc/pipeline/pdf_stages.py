@@ -151,14 +151,36 @@ def _layout(config: dict, doc: dict) -> dict:
     return _layout_batch([config], [doc])[0]
 
 
+def _det_pre(config: dict, doc: dict) -> dict:
+    # hybrid only: CPU-heavy PP-OCR detection preprocessing, split off the GPU worker to run on the CPU workers
+    prepro, ori = _READER.ocr.preprocess(doc["image"])
+    return {**doc, "det_prepro": prepro, "det_ori": ori}
+
+
+def _ocr_gpu(config: dict, doc: dict) -> dict:
+    # hybrid GPU stage: DBNet forward + box post-processing + CRNN recognition -> RAW detections (box, text, conf).
+    # The CPU line-grouping and metadata are deferred to the meta stage, so the GPU worker does only the NN work.
+    preds = _READER.ocr.infer(doc["det_prepro"])
+    boxes = _READER.ocr.postprocess(preds, doc["det_ori"])
+    detections = _READER.ocr.recognize_detections(doc["image"], boxes, doc["params"].language)
+    out = {k: v for k, v in doc.items() if k != "det_prepro"}
+    out["ocr_detections"] = detections
+    return out
+
+
 def _ocr(config: dict, doc: dict) -> dict:
-    params = doc["params"]
-    page = _READER.ocr.split_image2lines(image=doc["image"], language=params.language,
-                                         is_one_column_document=doc.get("is_one_column", True), page_num=doc["page_number"])
+    if "ocr_detections" in doc:  # hybrid: GPU stage returned raw detections; group into lines + metadata here (CPU workers)
+        page = _READER.ocr.page_from_detections(doc["ocr_detections"], doc["image"], doc["page_number"])
+    else:  # tesseract / easyocr: detect + recognize here
+        params = doc["params"]
+        page = _READER.ocr.split_image2lines(image=doc["image"], language=params.language,
+                                             is_one_column_document=doc.get("is_one_column", True), page_num=doc["page_number"])
     if page is None:
         return {**doc, "lines": [], "page_attachments": []}
     lines = _READER.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page)
-    return {**doc, "lines": lines, "page_attachments": page.attachments}
+    out = {k: v for k, v in doc.items() if k not in ("det_prepro", "ocr_detections")}
+    out.update(lines=lines, page_attachments=page.attachments)
+    return out
 
 
 def _table(config: dict, doc: dict) -> dict:
@@ -185,6 +207,8 @@ def setup(config_overrides: Any = None) -> Dict[str, Handler]:
         "orient_predict": Handler(_orient_predict, batch_process=_orient_predict_batch),
         "deskew": Handler(_deskew),
         "layout": Handler(_layout, batch_process=_layout_batch),
+        "det_pre": Handler(_det_pre),
+        "ocr_gpu": Handler(_ocr_gpu),  # per-page: cross-page rec batching adds padding+latency without a compute win
         "ocr": Handler(_ocr),
         "table": Handler(_table),
     }
@@ -197,12 +221,14 @@ _SPEC_DEFS = {
     "orient_predict": dict(process=_orient_predict, resource=Resource.GPU, batch_process=_orient_predict_batch, batch_size=8),
     "deskew": dict(process=_deskew, resource=Resource.CPU, exec_mode=ExecMode.THREAD),
     "layout": dict(process=_layout, resource=Resource.GPU, batch_process=_layout_batch, batch_size=4),
+    "det_pre": dict(process=_det_pre, resource=Resource.CPU, exec_mode=ExecMode.THREAD),  # hybrid det preprocessing on CPU workers
+    "ocr_gpu": dict(process=_ocr_gpu, resource=Resource.GPU),  # hybrid detector+recognizer NN forwards on the GPU worker
     "ocr": dict(process=_ocr, resource=Resource.CPU, exec_mode=ExecMode.PROCESS),
     "table": dict(process=_table, resource=Resource.CPU, exec_mode=ExecMode.THREAD),
 }
 
 
-def build_specs(params: Any) -> List[TaskSpec]:
+def build_specs(params: Any, ocr_engine: str = "tesseract") -> List[TaskSpec]:
     """
     Build the per-page task graph from the request config (ARCHITECTURE.md §9): a stage is present only if
     its parameter enables it, and blockers are the default preprocessing chain restricted to present stages
@@ -232,4 +258,19 @@ def build_specs(params: Any) -> List[TaskSpec]:
     if "ocr" in present:
         blockers["ocr"] = [ocr_blocker] if ocr_blocker else []
 
-    return [TaskSpec(name=name, blockers=blockers.get(name, []), **dict(_SPEC_DEFS[name])) for name in present]
+    # hybrid: split OCR into det_pre (CPU: detection preprocessing) -> ocr_gpu (GPU: DBNet forward + box post + CRNN
+    # recognition) -> ocr (CPU: line-metadata extraction). The GPU worker does only NN forwards; the CPU-heavy
+    # preprocessing and metadata run in parallel on the CPU workers, so the GPU device is not starved by CPU work.
+    if ocr_engine == "hybrid" and "ocr" in present:
+        present.extend(["det_pre", "ocr_gpu"])
+        blockers["det_pre"] = blockers["ocr"]
+        blockers["ocr_gpu"] = ["det_pre"]
+        blockers["ocr"] = ["ocr_gpu"]
+
+    specs = []
+    for name in present:
+        spec_def = dict(_SPEC_DEFS[name])
+        if name == "ocr" and ocr_engine == "hybrid":  # ocr is now the CPU metadata stage -> run it on the CPU workers
+            spec_def["exec_mode"] = ExecMode.THREAD
+        specs.append(TaskSpec(name=name, blockers=blockers.get(name, []), **spec_def))
+    return specs

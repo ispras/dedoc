@@ -1,0 +1,31 @@
+{
+  "model_name": "eslav_PP-OCRv5_mobile_rec",
+  "model_type": "recognition",
+  "framework": "PaddleOCR",
+  "version": "PP-OCRv5",
+  "language_group": "eslav",
+  "supported_languages": [
+    "Russian",
+    "Bulgarian",
+    "Ukrainian",
+    "Belarusian",
+    "English"
+  ],
+  "description": "PP-OCRv5 East Slavic text recognition model",
+  "accuracy": 81.6,
+  "dataset": "7,031 East Slavic text images",
+  "original_format": "PaddlePaddle",
+  "converted_format": "ONNX",
+  "opset_version": 11,
+  "dictionary_file": "ppocrv5_eslav_dict.txt",
+  "input_shape": "dynamic (batch_size, 3, 32, dynamic_width)",
+  "output_shape": "dynamic (batch_size, sequence_length, num_classes)",
+  "source": "https://github.com/PaddlePaddle/PaddleOCR",
+  "documentation": "https://www.paddleocr.ai/main/en/version3.x/algorithm/PP-OCRv5/PP-OCRv5_multi_languages.html",
+  "usage": {
+    "library": "onnxruntime",
+    "preprocessing": "Grayscale or RGB image, resized to height=32, normalized",
+    "postprocessing": "CTC decoding with character dictionary",
+    "dictionary_format": "One character per line, UTF-8 encoding"
+  }
+}

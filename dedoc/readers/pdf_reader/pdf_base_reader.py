@@ -304,7 +304,7 @@ class PdfBaseReader(BaseReader):
         page_count = get_pdf_page_count(path) or 1
         end = page_count if last_page == math.inf else min(int(last_page), page_count)
         pages = list(range(first_page, end))
-        specs = pdf_stages.build_specs(parameters)
+        specs = pdf_stages.build_specs(parameters, ocr_engine=self.config.get("ocr_engine", "tesseract"))
         workers = int(self.config.get("cpu_workers", 4))
         pool_sizes = {"cpu_process": workers, "thread": workers, "gpu": 1}
         max_inflight = int(self.config.get("max_inflight_pages", max(4, 2 * workers)))
@@ -319,11 +319,14 @@ class PdfBaseReader(BaseReader):
 
         from dedoc.pipeline.shared_image import ShmRef
 
+        release = getattr(executor, "release_output", None)
+
         def drop_image(output: dict) -> dict:
-            # free the page image in place; if it lives in a shared buffer, hand that buffer back to the executor pool
-            image = output.pop("image", None)
-            if isinstance(image, ShmRef) and hasattr(executor, "release_output"):
-                executor.release_output(image.name)
+            # free large arrays in place; if they live in shared buffers, hand those buffers back to the executor pool
+            for key in [k for k, v in output.items() if isinstance(v, ShmRef)]:
+                if release is not None:
+                    release(output[key].name)
+                output.pop(key)
             return output
 
         # free each page image once its stages have consumed it, so images do not accumulate over a large document

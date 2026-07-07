@@ -95,35 +95,44 @@ def _wrap_value(value: Any):
     return value, []
 
 
-def _write_output_image(doc: Any, buf_name: Any, buf_size: int) -> Any:
-    """In the worker: write the doc's output image into the parent-provided shared buffer and replace it with a
-    handle, so the ~12 MB array is not pickled back through the pool pipe. Falls back to the array if it is too big."""
-    if buf_name is None or not isinstance(doc, dict):
+_MIN_SHM_BYTES = 1_000_000  # only LARGE arrays (page image, det preprocess) go to shared buffers; small ones pickle
+_BUFS_PER_TASK = 2          # max large arrays per output (page image + detection preprocess)
+
+
+def _write_output_arrays(doc: Any, buf_names: List[str], buf_size: int) -> Any:
+    """In the worker: write the doc's large numpy fields (page image, detection preprocess, ...) into parent-owned
+    shared buffers and replace each with a handle, so they are not pickled back through the pool pipe. One buffer
+    per large field, up to the lent count; anything over the buffer size or beyond the count falls back to pickling."""
+    if not isinstance(doc, dict) or not buf_names:
         return doc
-    image = doc.get("image")
-    if not isinstance(image, np.ndarray) or image.nbytes > buf_size:
-        return doc
-    image = np.ascontiguousarray(image)
-    shm = shared_memory.SharedMemory(name=buf_name)
-    try:
-        view = np.ndarray(image.shape, dtype=image.dtype, buffer=shm.buf)
-        view[:] = image[:]
-    finally:
-        shm.close()  # the parent owns the buffer and keeps it alive
-    return {**doc, "image": ShmRef(name=buf_name, shape=tuple(image.shape), dtype=str(image.dtype))}
+    out, i = dict(doc), 0
+    for key, val in doc.items():
+        if i >= len(buf_names):
+            break
+        if isinstance(val, np.ndarray) and _MIN_SHM_BYTES < val.nbytes <= buf_size:
+            arr = np.ascontiguousarray(val)
+            shm = shared_memory.SharedMemory(name=buf_names[i])
+            try:
+                np.ndarray(arr.shape, dtype=arr.dtype, buffer=shm.buf)[:] = arr[:]
+            finally:
+                shm.close()  # the parent owns the buffer and keeps it alive
+            out[key] = ShmRef(name=buf_names[i], shape=tuple(arr.shape), dtype=str(arr.dtype))
+            i += 1
+    return out
 
 
 def _remote_run(name: str, is_batch: bool, configs: List[dict], inputs: List[Any],
                 out_names: List[Any], buf_size: int) -> List[Any]:
-    """Runs inside a worker process: read shared-memory inputs, run the handler, write output images into the
-    parent-owned shared buffers (so images never go back through the pipe)."""
+    """Runs inside a worker process: read shared-memory inputs, run the handler, write output arrays into the
+    parent-owned shared buffers (so large arrays never go back through the pipe). ``out_names[i]`` is the buffer
+    list lent to task i."""
     handler = _TOOLKIT[name]
     real_inputs = [_unwrap(i) for i in inputs]
     if is_batch and handler.batch_process is not None:
         outputs = list(handler.batch_process(configs, real_inputs))
     else:
         outputs = [handler.process(c, i) for c, i in zip(configs, real_inputs)]
-    return [_write_output_image(out, buf_name, buf_size) for out, buf_name in zip(outputs, out_names)]
+    return [_write_output_arrays(out, bufs, buf_size) for out, bufs in zip(outputs, out_names)]
 
 
 def _toolkit_run(toolkit: Dict[str, Handler], name: str, is_batch: bool, configs: List[dict], inputs: List[Any]) -> List[Any]:
@@ -178,8 +187,9 @@ class ProcessExecutor:
         atexit.register(self.shutdown)  # shut pools down while multiprocessing is still alive (avoids teardown noise)
         # handlers for self-forking (thread) tasks run in the parent, so build a parent-side toolkit too
         self._parent_toolkit = setup_fn(setup_arg)
-        self._buf_size = 48 * 1024 * 1024  # size of each output-image shared buffer (page images are ~12 MB)
+        self._buf_size = 64 * 1024 * 1024  # per shared buffer (page image ~12 MB, det preprocess ~47 MB at full res)
         self._pool = _BufferPool(self._buf_size)
+        self._out_bufs: Dict[Future, list] = {}
 
         if "cpu_process" in pool_sizes:
             self._pools["cpu_process"] = ProcessPoolExecutor(
@@ -203,8 +213,11 @@ class ProcessExecutor:
             return pool.submit(_toolkit_run, self._parent_toolkit, spec.name, is_batch, configs, inputs)
 
         wrapped, shms = self._wrap_inputs(inputs)
-        out_names = [self._pool.acquire() for _ in tasks]  # parent-owned output buffers (no image pickled back)
+        out_bufs = [self._pool.acquire() for _ in range(_BUFS_PER_TASK * len(tasks))]  # parent-owned output buffers
+        out_names = [out_bufs[_BUFS_PER_TASK * i: _BUFS_PER_TASK * (i + 1)] for i in range(len(tasks))]
         future = pool.submit(_remote_run, spec.name, is_batch, configs, wrapped, out_names, self._buf_size)
+        self._out_bufs[future] = out_bufs
+        future.add_done_callback(self._release_unused_bufs)  # return the buffers the worker did not write to
         if shms:
             self._shm_keep[future] = shms
             future.add_done_callback(self._free_shms)
@@ -223,8 +236,21 @@ class ProcessExecutor:
         for shm in self._shm_keep.pop(future, []):
             close(shm)
 
+    def _release_unused_bufs(self, future: Future) -> None:
+        acquired = self._out_bufs.pop(future, [])
+        used = set()
+        try:
+            for doc in future.result():
+                if isinstance(doc, dict):
+                    used.update(v.name for v in doc.values() if isinstance(v, ShmRef))
+        except Exception:  # noqa - task failed; none of its lent buffers were written
+            pass
+        for name in acquired:
+            if name not in used:
+                self._pool.release(name)
+
     def release_output(self, name: str) -> None:
-        """Return an output buffer to the pool once the scheduler has freed its image."""
+        """Return an output buffer to the pool once the scheduler has freed a large array that lived in it."""
         self._pool.release(name)
 
     def shutdown(self) -> None:

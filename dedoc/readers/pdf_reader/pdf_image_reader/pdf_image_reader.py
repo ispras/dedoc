@@ -55,10 +55,14 @@ class PdfImageReader(PdfBaseReader):
                                                                                                        "scan_orientation_efficient_net_b0.pth"),
                                                                           config=self.config)
         self.binarizer = AdaptiveBinarizer()
-        # OCR engine is pluggable: Tesseract (default) or EasyOCR, selected by config["ocr_engine"]
-        if self.config.get("ocr_engine", "tesseract") == "easyocr":
+        # OCR engine is pluggable: Tesseract (default), EasyOCR, or the PP-OCR-det + EasyOCR-rec hybrid
+        engine = self.config.get("ocr_engine", "tesseract")
+        if engine == "easyocr":
             from dedoc.readers.pdf_reader.pdf_image_reader.ocr.easyocr_line_extractor import EasyOCRLineExtractor
             self.ocr = EasyOCRLineExtractor(config=self.config)
+        elif engine == "hybrid":
+            from dedoc.readers.pdf_reader.pdf_image_reader.ocr.hybrid_line_extractor import HybridOCRLineExtractor
+            self.ocr = HybridOCRLineExtractor(config=self.config)
         else:
             self.ocr = OCRLineExtractor(config=self.config)
         self.attachments_extractor = ImageAttachmentsExtractor(config=self.config)
