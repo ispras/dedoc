@@ -150,3 +150,6 @@ fabric.properties
 
 # Mac OS extentions
 *.DS_Store
+
+# Local scanned-PDF test inputs (large, not for VCS)
+test_docs/

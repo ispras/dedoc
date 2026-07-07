@@ -1,4 +1,4 @@
-co# Pipeline benchmarks
+# Pipeline benchmarks
 
 Raw comparison data collected while building the staged pipeline (see ARCHITECTURE.md). Times are seconds.
 
