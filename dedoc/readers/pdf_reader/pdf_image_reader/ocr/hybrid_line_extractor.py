@@ -14,6 +14,7 @@ extractors. The detector is exposed as separable parts so the staged pipeline ca
 DLLs are added to the search path lazily.
 """
 import logging
+import threading
 from typing import List, Tuple
 
 import numpy as np
@@ -110,7 +111,8 @@ class HybridOCRLineExtractor:
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
         self._det = None        # RapidOCR TextDetector (preprocess/infer/postprocess)
-        self._ppocr_rec = None  # PP-OCRv5 East-Slavic recognizer (ONNX)
+        self._ppocr_rec = None       # PP-OCRv5 East-Slavic recognizer (ONNX)
+        self._tess_local = threading.local()  # per-thread Tesseract layout API (PyTessBaseAPI is not thread-safe)
 
     def _ensure_det(self):
         if self._det is None:
@@ -148,6 +150,55 @@ class HybridOCRLineExtractor:
             self.logger.info(f"Hybrid OCR recognizer ready (PP-OCRv5 East-Slavic {model}, cuda={gpu})")
         return self._ppocr_rec
 
+    def _ensure_tess(self):
+        api = getattr(self._tess_local, "api", None)  # per-thread: the ocr stage runs in a parent thread pool
+        if api is None:
+            import os
+            import shutil
+            exe = shutil.which("tesseract")  # add the tesseract lib dir for DLL resolution (Windows: py>=3.8 ignores PATH)
+            if exe and hasattr(os, "add_dll_directory"):
+                try:
+                    os.add_dll_directory(os.path.dirname(exe))
+                except Exception:
+                    pass
+            from tesserocr import PyTessBaseAPI
+            path = os.environ.get("TESSDATA_PREFIX")
+            api = PyTessBaseAPI(path=path, lang="eng") if path else PyTessBaseAPI(lang="eng")
+            self._tess_local.api = api
+        return api
+
+    def _order_by_tess_blocks(self, detections, image: np.ndarray) -> list:
+        """Use Tesseract's page-layout analysis (AnalyseLayout — segmentation only, NO recognition, Apache-2.0, ~0.3-0.7
+        s/page CPU) to fix the hybrid's reading order on multi-block pages: partition the (eslav-recognized) detections
+        into Tesseract's blocks IN READING ORDER, so line-grouping runs per block and multi-column/multi-block text is
+        emitted in the right order. Returns the detections grouped by block (reading order); unassigned appended last."""
+        import cv2
+        from PIL import Image
+        from tesserocr import RIL, iterate_level
+
+        api = self._ensure_tess()
+        api.SetImage(Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)))
+        api.AnalyseLayout()
+        blocks = []
+        it = api.GetIterator()
+        if it is not None:
+            for _ in iterate_level(it, RIL.BLOCK):
+                try:
+                    blocks.append(it.BoundingBox(RIL.BLOCK))  # (left, top, right, bottom), Tesseract reading order
+                except Exception:
+                    pass
+        groups = [[] for _ in range(len(blocks) + 1)]  # +1 bucket for detections outside every block (appended last)
+        for det in detections:
+            box = np.array(det[0])
+            cx, cy = box[:, 0].mean(), box[:, 1].mean()
+            idx = len(blocks)
+            for i, (left, top, right, bottom) in enumerate(blocks):
+                if left <= cx <= right and top <= cy <= bottom:
+                    idx = i
+                    break
+            groups[idx].append(det)
+        return [g for g in groups if g]
+
     # ---- separable detector parts ----
     def preprocess(self, image: np.ndarray) -> Tuple[np.ndarray, Tuple[int, int]]:
         # standalone numpy preprocessing: no RapidOCR/onnxruntime needed on the CPU workers running this stage
@@ -165,7 +216,19 @@ class HybridOCRLineExtractor:
         ocr_conf_threshold = self.config.get("ocr_conf_threshold", -1)
         extract_line_bbox = self.config.get("labeling_mode", False)
         height, width = image.shape[:2]
-        ocr_lines = EasyOCRLineExtractor._detections_to_lines(detections, ocr_conf_threshold)
+        ocr_lines = None
+        if self.config.get("hybrid_reading_order") == "tesseract" and detections:
+            # borrow Tesseract's block reading order (multi-block/column pages), then line-group within each block.
+            # Falls back to naive on any failure (e.g. Windows tesserocr/torch DLL-load order) so OCR never breaks.
+            try:
+                ocr_lines = []
+                for block_dets in self._order_by_tess_blocks(detections, image):
+                    ocr_lines.extend(EasyOCRLineExtractor._detections_to_lines(block_dets, ocr_conf_threshold))
+            except Exception as e:
+                self.logger.warning(f"Tesseract reading-order failed ({e}); using naive order")
+                ocr_lines = None
+        if ocr_lines is None:  # naive: line-group across the whole page, top-to-bottom
+            ocr_lines = EasyOCRLineExtractor._detections_to_lines(detections, ocr_conf_threshold)
         lines_with_bbox = []
         for line_num, line in enumerate(ocr_lines):
             words = [WordWithBBox(text=word.text, bbox=word.bbox) for word in line.words]

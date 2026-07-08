@@ -273,9 +273,12 @@ class PdfBaseReader(BaseReader):
         if use_processes:
             on_gpu = bool(self.config.get("on_gpu", False))
             ocr_engine = self.config.get("ocr_engine", "tesseract")  # pass the selected OCR engine into worker readers
+            # forward the worker-relevant OCR knobs so a config override reaches the worker readers (their defaults
+            # live in the code, so only explicitly-set overrides need to be passed through the process boundary)
+            fwd = {k: self.config[k] for k in ("hybrid_reading_order", "hybrid_det_max_side", "hybrid_homoglyph_fix", "table_hough_scale") if k in self.config}
             # only the single GPU worker gets a CUDA reader; CPU workers stay on CPU (no per-worker CUDA context)
-            executor = ProcessExecutor(pool_sizes=pool_sizes, setup_fn=pdf_stages.setup, setup_arg={"on_gpu": False, "ocr_engine": ocr_engine},
-                                       gpu_setup_fn=pdf_stages.setup, gpu_setup_arg={"on_gpu": on_gpu, "ocr_engine": ocr_engine})
+            executor = ProcessExecutor(pool_sizes=pool_sizes, setup_fn=pdf_stages.setup, setup_arg={"on_gpu": False, "ocr_engine": ocr_engine, **fwd},
+                                       gpu_setup_fn=pdf_stages.setup, gpu_setup_arg={"on_gpu": on_gpu, "ocr_engine": ocr_engine, **fwd})
         else:
             pdf_stages._READER = self  # reuse this reader in-process
             executor = LocalExecutor(pool_sizes)
