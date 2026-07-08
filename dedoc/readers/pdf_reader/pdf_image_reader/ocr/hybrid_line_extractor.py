@@ -85,6 +85,47 @@ def _setup_onnxruntime_cuda_dlls() -> None:
             os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
 
 
+class _TRTRec:
+    """Standalone TensorRT runtime for the CRNN recognizer — 2-2.5x faster than the onnxruntime CUDA fp16 session.
+    Bypasses the onnxruntime TensorRT EP (which fails to build this PaddlePaddle-exported model); the raw
+    trt.Builder/OnnxParser build it fine. Loads a prebuilt serialized engine (``rec_fp16.trt`` / ``rec_int8.trt``);
+    the input width is clamped to the engine's [48, 1600] optimization profile (very long lines are squished)."""
+
+    def __init__(self, engine_path: str) -> None:
+        import os
+        import torch
+        libs = os.path.join(os.path.dirname(os.path.dirname(torch.__file__)), "tensorrt_libs")
+        if os.path.isdir(libs) and hasattr(os, "add_dll_directory"):
+            os.add_dll_directory(libs)
+        import tensorrt_bindings as trt
+        self._torch, self._trt = torch, trt
+        logger = trt.Logger(trt.Logger.ERROR)
+        self.engine = trt.Runtime(logger).deserialize_cuda_engine(open(engine_path, "rb").read())
+        self.ctx = self.engine.create_execution_context()
+        self.in_name = self.out_name = None
+        for i in range(self.engine.num_io_tensors):
+            n = self.engine.get_tensor_name(i)
+            setattr(self, "in_name" if self.engine.get_tensor_mode(n) == trt.TensorIOMode.INPUT else "out_name", n)
+        self.odtype = {trt.DataType.FLOAT: torch.float32, trt.DataType.HALF: torch.float16,
+                       trt.DataType.INT8: torch.int8, trt.DataType.INT32: torch.int32}[self.engine.get_tensor_dtype(self.out_name)]
+        prof = self.engine.get_tensor_profile_shape(self.in_name, 0)  # (min, opt, max) — clamp to the engine's width range
+        self.min_w, self.max_w = prof[0][3], prof[2][3]
+
+    def __call__(self, x):  # x: (N,3,48,W) float32; returns [logits] to match OrtInferSession.__call__
+        torch = self._torch
+        xt = torch.from_numpy(np.ascontiguousarray(x, dtype=np.float32)).cuda()
+        w = xt.shape[3]
+        if w < self.min_w or w > self.max_w:  # keep within the engine's optimization-profile width range
+            xt = torch.nn.functional.interpolate(xt, size=(48, min(max(w, self.min_w), self.max_w)), mode="bilinear", align_corners=False).contiguous()
+        self.ctx.set_input_shape(self.in_name, tuple(xt.shape))
+        self.ctx.set_tensor_address(self.in_name, xt.data_ptr())
+        ot = torch.empty(tuple(self.ctx.get_tensor_shape(self.out_name)), dtype=self.odtype, device="cuda")
+        self.ctx.set_tensor_address(self.out_name, ot.data_ptr())
+        self.ctx.execute_async_v3(torch.cuda.current_stream().cuda_stream)
+        torch.cuda.synchronize()
+        return [ot.float().cpu().numpy()]
+
+
 _LAT2CYR = {"A": "А", "B": "В", "C": "С", "E": "Е", "H": "Н", "K": "К", "M": "М", "O": "О", "P": "Р",
             "T": "Т", "X": "Х", "Y": "У", "a": "а", "c": "с", "e": "е", "o": "о", "p": "р", "x": "х",
             "y": "у", "k": "к", "m": "м"}
@@ -136,7 +177,14 @@ class HybridOCRLineExtractor:
             self._ppocr_rec = TextRecognizer({
                 "model_path": model_path, "use_cuda": gpu, "use_dml": False,
                 "rec_keys_path": os.path.join(model_dir, "dict.txt"), "rec_batch_num": 8, "rec_img_shape": [3, 48, 320]})
-            if gpu:
+            rec_engine = self.config.get("hybrid_rec_engine", "onnx")
+            trt_file = {"trt_fp16": "rec_fp16.trt", "trt_int8": "rec_int8.trt"}.get(rec_engine)
+            if gpu and trt_file and os.path.exists(os.path.join(model_dir, trt_file)):
+                # standalone TensorRT engine (2-2.5x faster than the onnxruntime CUDA fp16 session); swaps the whole
+                # callable session (TextRecognizer calls self.session(batch)[0]).
+                self._ppocr_rec.session = _TRTRec(os.path.join(model_dir, trt_file))
+                self.logger.info(f"Hybrid OCR recognizer ready (PP-OCRv5 East-Slavic + TensorRT {trt_file})")
+            elif gpu:
                 # RapidOCR hardcodes cudnn_conv_algo_search=EXHAUSTIVE, which re-benchmarks conv algorithms for EVERY
                 # unique crop width -> ~9 s/page on variable-width document lines. Rebuild the CUDA session with
                 # HEURISTIC (pick an algorithm without the per-shape benchmark) -> ~40x faster recognition.
@@ -147,7 +195,9 @@ class HybridOCRLineExtractor:
                 cuda_opts = {"device_id": 0, "cudnn_conv_algo_search": "HEURISTIC"}
                 self._ppocr_rec.session.session = ort.InferenceSession(
                     model_path, sess_options=so, providers=[("CUDAExecutionProvider", cuda_opts), "CPUExecutionProvider"])
-            self.logger.info(f"Hybrid OCR recognizer ready (PP-OCRv5 East-Slavic {model}, cuda={gpu})")
+                self.logger.info(f"Hybrid OCR recognizer ready (PP-OCRv5 East-Slavic {model}, cuda={gpu})")
+            else:
+                self.logger.info(f"Hybrid OCR recognizer ready (PP-OCRv5 East-Slavic {model}, cuda={gpu})")
         return self._ppocr_rec
 
     def _ensure_tess(self):

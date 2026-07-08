@@ -153,3 +153,7 @@ fabric.properties
 
 # Local scanned-PDF test inputs (large, not for VCS)
 test_docs/
+
+# TensorRT engines (GPU/TRT-version-specific, built per-machine — see dedoc/pipeline/TENSORRT_INT8.md)
+*.trt
+dedoc/readers/pdf_reader/pdf_image_reader/ocr/ppocr_eslav/calib*.cache
