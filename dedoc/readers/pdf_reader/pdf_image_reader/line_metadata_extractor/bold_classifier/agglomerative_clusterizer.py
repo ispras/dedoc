@@ -1,6 +1,9 @@
 import numpy as np
-from scipy.stats import norm
-from sklearn.cluster import AgglomerativeClustering
+
+# scipy (norm.ppf) and sklearn (AgglomerativeClustering) are imported lazily inside the methods that use them: together
+# they cost ~90 MB, and only workers that run the ocr metadata stage (CPU workers) ever call the bold classifier. The
+# GPU workers and the main process build the reader but never invoke bold detection, so deferring the import keeps them
+# ~90 MB leaner. sklearn is kept (not swapped for scipy) so bold detection stays bit-for-bit identical.
 
 
 class BoldAgglomerativeClusterizer:
@@ -23,6 +26,7 @@ class BoldAgglomerativeClusterizer:
         return np.stack((x, nearby_x), 1)
 
     def __get_clusters(self, x_vectors: np.ndarray) -> np.ndarray:
+        from sklearn.cluster import AgglomerativeClustering
         agg = AgglomerativeClustering()
         agg.fit(x_vectors)
         x_clusters = agg.labels_
@@ -61,6 +65,7 @@ class BoldAgglomerativeClusterizer:
         return f1
 
     def __get_f_criterion_homogeneous(self, n: int, p: int = 2) -> float:
+        from scipy.stats import norm
         za1 = norm.ppf(1 - self.significance_level, loc=0, scale=1)
         f_cr = 1 - 2 / (np.pi * p) - za1 * np.sqrt(2 * (1 - 8 / (np.pi ** 2 * p)) / (n * p))
         return f_cr

@@ -147,6 +147,16 @@ loaded heavy deps a worker never uses:
   recognizer run only in the main-process post-read assembly, never in a worker. The paragraph classifier alone imports
   a pandas + sklearn feature chain. Made lazy `@property` — the worker's reader is ~44 MB leaner and loads no pandas;
   the main process builds them on first access. CPU workers sit at ~0.2 GB RSS.
+- **Bold classifier** (`bold_classifier/agglomerative_clusterizer.py`): the line-metadata stage's bold detection uses
+  `sklearn.cluster.AgglomerativeClustering` + `scipy.stats.norm` (~55 MB). It runs only in the CPU ocr-metadata stage;
+  the GPU workers (orient/layout/ocr_gpu only) and the main process build the reader but never call it. Deferred both
+  imports into the methods that use them, so those processes never load sklearn/scipy: **GPU worker 785 → 729 MB RSS**.
+  sklearn is kept (not swapped for a lighter clusterer) — a scipy-Ward replacement changed 98.6% of pages after the
+  F-criterion, so bold detection stays bit-for-bit identical.
+
+GPU-worker host RAM (static, one worker) breaks down as torch ~534 MB (import + CUDA context + the orientation model —
+load-bearing: the TRT rec's CUDA I/O buffers are torch tensors), models ~125 MB (DBNet onnx + TRT rec engine), reader
+~40 MB. torch dominates and is effectively irreducible without dropping GPU recognition.
 
 ## Reproducing the numbers
 
