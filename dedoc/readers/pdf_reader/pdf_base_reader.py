@@ -42,23 +42,57 @@ class PdfBaseReader(BaseReader):
         super().__init__(config=config, recognized_extensions=recognized_extensions, recognized_mimes=recognized_mimes)
 
         from dedoc.readers.pdf_reader.pdf_image_reader.line_metadata_extractor.metadata_extractor import LineMetadataExtractor
-        from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
-        from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.gost_frame_recognizer import GOSTFrameRecognizer
         from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_recognizer import TableRecognizer
-        from dedoc.readers.pdf_reader.utils.header_footers_analysis import HeaderFooterDetector
-        from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
-        from dedoc.readers.pdf_reader.utils.notes_extractor import PdfNotesExtractor
         from dedoc.attachments_extractors.concrete_attachments_extractors.pdf_attachments_extractor import PDFAttachmentsExtractor
 
         self.config["n_jobs"] = self.config.get("n_jobs", 1)
         self.table_recognizer = TableRecognizer(config=self.config)
         self.metadata_extractor = LineMetadataExtractor(config=self.config)
         self.attachment_extractor = PDFAttachmentsExtractor(config=self.config)
-        self.linker = LineObjectLinker(config=self.config)
-        self.paragraph_extractor = ScanParagraphClassifierExtractor(config=self.config)
-        self.gost_frame_recognizer = GOSTFrameRecognizer(config=self.config)
-        self.header_footer_detector = HeaderFooterDetector()
-        self.notes_extractor = PdfNotesExtractor(logger=self.logger)
+        # The linker / paragraph classifier / header-footer / notes / GOST components run only in the main-process
+        # post-read assembly; the per-page staged-pipeline workers never touch them. Build them lazily so a worker's
+        # reader does not import the paragraph classifier's pandas + sklearn feature chain (~130 MB per worker) it never
+        # uses. Each is exposed as a property that builds (and imports) on first access. See TENSORRT_INT8.md.
+        self._linker = None
+        self._paragraph_extractor = None
+        self._gost_frame_recognizer = None
+        self._header_footer_detector = None
+        self._notes_extractor = None
+
+    @property
+    def linker(self):  # noqa
+        if self._linker is None:
+            from dedoc.readers.pdf_reader.utils.line_object_linker import LineObjectLinker
+            self._linker = LineObjectLinker(config=self.config)
+        return self._linker
+
+    @property
+    def paragraph_extractor(self):  # noqa
+        if self._paragraph_extractor is None:
+            from dedoc.readers.pdf_reader.pdf_image_reader.paragraph_extractor.scan_paragraph_classifier_extractor import ScanParagraphClassifierExtractor
+            self._paragraph_extractor = ScanParagraphClassifierExtractor(config=self.config)
+        return self._paragraph_extractor
+
+    @property
+    def gost_frame_recognizer(self):  # noqa
+        if self._gost_frame_recognizer is None:
+            from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.gost_frame_recognizer import GOSTFrameRecognizer
+            self._gost_frame_recognizer = GOSTFrameRecognizer(config=self.config)
+        return self._gost_frame_recognizer
+
+    @property
+    def header_footer_detector(self):  # noqa
+        if self._header_footer_detector is None:
+            from dedoc.readers.pdf_reader.utils.header_footers_analysis import HeaderFooterDetector
+            self._header_footer_detector = HeaderFooterDetector()
+        return self._header_footer_detector
+
+    @property
+    def notes_extractor(self):  # noqa
+        if self._notes_extractor is None:
+            from dedoc.readers.pdf_reader.utils.notes_extractor import PdfNotesExtractor
+            self._notes_extractor = PdfNotesExtractor(logger=self.logger)
+        return self._notes_extractor
 
     def read(self, file_path: str, parameters: Optional[dict] = None) -> UnstructuredDocument:
         """

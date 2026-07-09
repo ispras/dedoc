@@ -135,6 +135,19 @@ extra CPU↔GPU hop** (the +29 s lesson above):
 DAE 270–290 (6 table pages): **−7 % wall** (scales with table-page count), table-text F1 **0.58 vs 0.50** vs the Tesseract
 cell path. Opt out with `DEDOC_TABLE_CELL_OCR=tesseract`. Tesseract-engine / non-pipeline paths keep the in-stage cell OCR.
 
+## Follow-on: leaner pipeline workers (lazy imports)
+
+Every worker builds a `PdfImageReader`, but the per-page stages use only 7 of its components (`ocr`, `table_recognizer`,
+`metadata_extractor`, `binarizer`, `column_orientation_classifier`, `attachments_extractor`, `config`). Two eager imports
+loaded heavy deps a worker never uses:
+- **Tesseract** (`ocr_utils.py`): `import pytesseract` pulls pandas + PIL (~58 MB) at module load, but the hybrid engine
+  recognizes page and table text with its own recognizer and never calls Tesseract (only the optional reading-order
+  layout borrow uses `tesserocr`, already lazy). Deferred to the call sites.
+- **Post-read components** (`pdf_base_reader.py`): the linker / paragraph classifier / header-footer / notes / GOST
+  recognizer run only in the main-process post-read assembly, never in a worker. The paragraph classifier alone imports
+  a pandas + sklearn feature chain. Made lazy `@property` — the worker's reader is ~44 MB leaner and loads no pandas;
+  the main process builds them on first access. CPU workers sit at ~0.2 GB RSS.
+
 ## Reproducing the numbers
 
 ```
