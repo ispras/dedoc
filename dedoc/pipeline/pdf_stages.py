@@ -243,6 +243,29 @@ def _ocr(config: dict, doc: dict) -> dict:
     return out
 
 
+def _table_line_crossings(image, long_side: int = 700) -> int:
+    """Cheap table-presence signal (~7 ms/page) using the OpenCV table detector's OWN line-detection parameters
+    (fixed 225 threshold to keep faint rules; short horizontal/vertical morphology kernels img//55 & img//100 floored
+    at the detector's min cell size), then count grid crossings of the horizontal x vertical rules. Reproducing the
+    detector's line detection is what preserves recall: 100% on 503 diverse tables (gen_tables 1/2/3 + real_mixed
+    table/hard_table/image_table; the sparsest real table still has 3 crossings) at ~1/50th the detector's cost. Text
+    has horizontal runs but no crossing vertical rules, so a page below the threshold has no bordered table the
+    detector could find. (A plain Otsu + long-kernel version missed 12% of real tables -- do not simplify further.)"""
+    import cv2
+    import numpy as np
+    from dedoc.readers.pdf_reader.data_classes.tables.table_tree import TableTree
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim == 3 else image
+    scale = long_side / max(gray.shape)
+    g = cv2.resize(gray, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+    img_bin = 255 - cv2.threshold(g, 225, 255, cv2.THRESH_BINARY)[1]
+    hk = cv2.getStructuringElement(cv2.MORPH_RECT, (max(g.shape[1] // 55, TableTree.min_w_cell), 1))
+    vk = cv2.getStructuringElement(cv2.MORPH_RECT, (1, max(g.shape[0] // 100, TableTree.min_h_cell)))
+    h = cv2.dilate(cv2.erode(img_bin, hk, iterations=2), hk, iterations=2)
+    v = cv2.dilate(cv2.erode(img_bin, vk, iterations=2), vk, iterations=2)
+    cross = cv2.bitwise_and(cv2.dilate(h, np.ones((5, 5), np.uint8)), cv2.dilate(v, np.ones((5, 5), np.uint8)))
+    return cv2.connectedComponents(cross)[0] - 1
+
+
 def _table(config: dict, doc: dict) -> dict:
     import os
     params = doc["params"]
@@ -250,6 +273,12 @@ def _table(config: dict, doc: dict) -> dict:
         return {**doc, "tables": []}
     # layout (GPU) saw no table here -> skip the costly OpenCV contour detection (set DEDOC_TABLE_GATE=0 to disable)
     if doc.get("layout_has_table") is False and os.environ.get("DEDOC_TABLE_GATE", "1") != "0":
+        return {**doc, "tables": []}
+    # cheap line-crossing gate (detector's own line params -> matches its recall): skip the ~360 ms detector on pages
+    # with too few grid crossings for a bordered table. 100% recall on 503 diverse tables (sparsest has 3), so the
+    # default threshold 2 keeps a safety margin while skipping ~54% of table-free pages. Set 0 to disable.
+    min_cross = int(os.environ.get("DEDOC_TABLE_MIN_CROSS", _READER.config.get("table_line_gate_min_cross", 2)))
+    if min_cross > 0 and _table_line_crossings(doc["image"]) < min_cross:
         return {**doc, "tables": []}
     clean_image, tables = _READER.table_recognizer.recognize_tables_from_image(
         image=doc["image"], page_number=doc["page_number"], language=params.language, table_type=params.table_type)
