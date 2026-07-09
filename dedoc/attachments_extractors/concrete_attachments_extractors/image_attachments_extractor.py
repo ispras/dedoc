@@ -1,10 +1,11 @@
+from __future__ import annotations  # keep `torch` out of module import: Tensor below is only a type hint
+
 import os
 import uuid
 from typing import Dict, Iterable, List, Optional
 
 from dedocutils.data_structures.bbox import BBox
 from numpy import ndarray
-from torch import Tensor
 
 from dedoc.attachments_extractors.abstract_attachment_extractor import AbstractAttachmentsExtractor
 from dedoc.data_structures.attached_file import AttachedFile
