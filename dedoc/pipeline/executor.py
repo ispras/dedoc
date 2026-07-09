@@ -229,6 +229,14 @@ class ProcessExecutor:
                  gpu_setup_fn: Optional[Callable[[Any], Dict[str, Handler]]] = None, gpu_setup_arg: Any = None) -> None:
         import atexit
 
+        # Cap per-worker math-library threads BEFORE the worker pools are spawned (children inherit these env vars on
+        # spawn, and read them when they first import/call numpy/torch). Each worker would otherwise start a BLAS/OMP
+        # thread pool sized to ALL cores: OpenBLAS alone reserves ~500 MB VMS per worker (measured 552 -> 47 MB at 1
+        # thread), and ~10 workers x 16 threads oversubscribe the 16 cores 10x. The pipeline parallelizes across
+        # pages/workers, so per-worker math libs must be single-threaded. setdefault so an explicit override wins.
+        for _var in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
+            os.environ.setdefault(_var, "1")
+
         self.pool_sizes = pool_sizes
         self._pools: Dict[str, Any] = {}
         self._shm_keep: Dict[Future, list] = {}

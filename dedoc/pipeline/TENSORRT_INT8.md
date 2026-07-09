@@ -158,6 +158,18 @@ GPU-worker host RAM (static, one worker) breaks down as torch ~534 MB (import + 
 load-bearing: the TRT rec's CUDA I/O buffers are torch tensors), models ~125 MB (DBNet onnx + TRT rec engine), reader
 ~40 MB. torch dominates and is effectively irreducible without dropping GPU recognition.
 
+## Follow-on: VMS (commit charge) — cap per-worker BLAS/OMP threads
+
+Most of the process-tree **VMS is reserved address space, not resident RAM** (RSS). The largest tunable reserve was
+per-worker math-library threads: each spawned worker started a BLAS/OMP pool sized to all 16 cores, and **OpenBLAS alone
+reserves ~500 MB VMS per worker** (measured 552 → 47 MB at 1 thread) — × ~10 workers, plus 160-thread oversubscription of
+16 cores. The pipeline parallelizes across pages/workers, so per-worker math libs must be single-threaded. Setting
+`OPENBLAS/OMP/MKL/NUMEXPR_NUM_THREADS=1` in the executor before the pools spawn (children inherit on spawn; `setdefault`
+so an explicit override wins) drops full-doc **peak VMS 28.9 → 22.6 GB (−6.3 GB, −22 %)**, wall neutral (71 vs 72 s),
+output unchanged. It also self-caps Tesseract to one thread — the scaling the image path previously needed a manual
+`OMP_THREAD_LIMIT=1` for. (The shared-memory buffer pool was likewise sized from the measured page distribution:
+64 → 32 MB per buffer, ~3.75 → 1.9 GB, speed-neutral.)
+
 ## Reproducing the numbers
 
 ```
