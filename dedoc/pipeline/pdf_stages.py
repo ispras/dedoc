@@ -225,6 +225,11 @@ def _ocr_gpu(config: dict, doc: dict) -> dict:
     detections = _READER.ocr.recognize_detections(doc["image"], boxes, doc["params"].language)
     out = {k: v for k, v in doc.items() if k != "det_prepro"}
     out["ocr_detections"] = detections
+    # piggyback the table cell OCR on the GPU worker: recognize each stacked-cell image (assembled in the meta stage)
+    prepared = doc.get("table_prepared")
+    if prepared is not None and prepared["stacks"]:
+        language = doc["params"].language
+        out["table_ocr_results"] = [_hybrid_stack_ocr(stacked, language) for stacked, _ in prepared["stacks"]]
     return out
 
 
@@ -235,12 +240,68 @@ def _ocr(config: dict, doc: dict) -> dict:
         params = doc["params"]
         page = _READER.ocr.split_image2lines(image=doc["image"], language=params.language,
                                              is_one_column_document=doc.get("is_one_column", True), page_num=doc["page_number"])
+    out = {k: v for k, v in doc.items() if k not in ("det_prepro", "ocr_detections", "table_prepared", "table_ocr_results")}
+    # assemble tables deferred from the table stage: assign the GPU cell-OCR results onto the tree, rebuild ScanTables
+    prepared = doc.get("table_prepared")
+    if prepared is not None:
+        out["tables"] = _READER.table_recognizer.assemble_tables_from_ocr(doc["image"], prepared, doc.get("table_ocr_results", []))
     if page is None:
-        return {**doc, "lines": [], "page_attachments": []}
+        out.update(lines=[], page_attachments=[])
+        return out
     lines = _READER.metadata_extractor.extract_metadata_and_set_annotations(page_with_lines=page)
-    out = {k: v for k, v in doc.items() if k not in ("det_prepro", "ocr_detections")}
     out.update(lines=lines, page_attachments=page.attachments)
     return out
+
+
+class _RecWord:
+    __slots__ = ("bbox", "text", "confidence")
+
+    def __init__(self, bbox, text, confidence):
+        self.bbox, self.text, self.confidence = bbox, text, confidence
+
+
+class _RecLine:
+    __slots__ = ("bbox", "words")
+
+    def __init__(self, bbox, words):
+        self.bbox, self.words = bbox, words
+
+
+class _RecPage:
+    """Minimal duck-typed OcrPage (``.lines`` -> ``.bbox`` + ``.words`` -> ``.bbox/.text/.confidence``) so the hybrid
+    recognizer can feed OCRCellExtractor.assign_from_ocr in place of the Tesseract OcrPage. One detection == one line."""
+    __slots__ = ("lines",)
+
+    def __init__(self, lines):
+        self.lines = lines
+
+
+def _hybrid_stack_ocr(stacked_gray, language: str) -> _RecPage:
+    """GPU: run the hybrid detector+recognizer on one stacked-cell image and adapt the raw ``(box, text, conf)``
+    detections into a duck-typed OcrPage. 2.2x faster and higher word-F1 than Tesseract on table cells (see
+    TENSORRT_INT8.md). Runs on the GPU worker, piggybacked on the ocr_gpu stage -- no extra CPU<->GPU round-trip."""
+    import cv2
+    import numpy as np
+    from dedocutils.data_structures import BBox
+    if stacked_gray is None or stacked_gray.shape[0] < 2 or stacked_gray.shape[1] < 2:
+        return _RecPage([])
+    bgr = cv2.cvtColor(stacked_gray, cv2.COLOR_GRAY2BGR) if stacked_gray.ndim == 2 else stacked_gray
+    try:
+        boxes = _READER.ocr.postprocess(_READER.ocr.infer(_READER.ocr.preprocess(bgr)[0]), (bgr.shape[0], bgr.shape[1]))
+        dets = _READER.ocr.recognize_detections(bgr, boxes, language)
+    except Exception:  # a degenerate stack must never kill the page's tables -> those cells just get no text
+        return _RecPage([])
+    lines = []
+    for box, text, conf in dets:
+        if not text:
+            continue
+        xs, ys = box[:, 0], box[:, 1]
+        left, top = int(xs.min()), int(ys.min())
+        w, h = max(int(xs.max() - xs.min()), 1), max(int(ys.max() - ys.min()), 1)
+        # separate bbox objects: assign_from_ocr mutates the word bbox in place
+        lines.append(_RecLine(bbox=BBox(x_top_left=left, y_top_left=top, width=w, height=h),
+                              words=[_RecWord(bbox=BBox(x_top_left=left, y_top_left=top, width=w, height=h), text=text, confidence=float(conf) * 100.0)]))
+    return _RecPage(lines)
 
 
 def _table_line_crossings(image, long_side: int = 700) -> int:
@@ -280,6 +341,14 @@ def _table(config: dict, doc: dict) -> dict:
     min_cross = int(os.environ.get("DEDOC_TABLE_MIN_CROSS", _READER.config.get("table_line_gate_min_cross", 2)))
     if min_cross > 0 and _table_line_crossings(doc["image"]) < min_cross:
         return {**doc, "tables": []}
+    if _READER.config.get("ocr_engine") == "hybrid" and os.environ.get("DEDOC_TABLE_CELL_OCR", "hybrid") == "hybrid":
+        # hybrid: detect + filter + mask cells here (CPU); the cell OCR is deferred to the GPU worker (ocr_gpu stage)
+        # and the tables are assembled in the ocr metadata stage -- see _ocr_gpu/_ocr. No extra CPU<->GPU round-trip.
+        cleaned_image, prepared = _READER.table_recognizer.detect_tables_prepared(
+            image=doc["image"], page_number=doc["page_number"], language=params.language, table_type=params.table_type)
+        if prepared is None:
+            return {**doc, "image": cleaned_image, "tables": []}
+        return {**doc, "image": cleaned_image, "table_prepared": prepared}
     clean_image, tables = _READER.table_recognizer.recognize_tables_from_image(
         image=doc["image"], page_number=doc["page_number"], language=params.language, table_type=params.table_type)
     # forward the table-masked image so a downstream OCR does not re-read table cells as body text

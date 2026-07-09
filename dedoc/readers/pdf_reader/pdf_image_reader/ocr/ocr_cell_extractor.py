@@ -25,22 +25,41 @@ class OCRCellExtractor:
         self.logger = config.get("logger", logging.getLogger())
 
     def get_cells_text(self, page_image: np.ndarray, tree_nodes: List["TableTree"], language: str) -> List[List[LineWithMeta]]:  # noqa
+        # Single-process path (tesseract): stack the cells (CPU), OCR each stack, then map results back to nodes.
+        # The three steps are split into ``prepare_batches`` / OCR / ``assign_from_ocr`` so the staged GPU pipeline can
+        # run the OCR step on the GPU worker (hybrid recognizer) between the two CPU steps -- see pdf_stages ``table_*``.
+        batches, stacks = self.prepare_batches(page_image, tree_nodes)
+        ocr_results = [get_text_with_bbox_from_cells(stacked, language, ocr_conf_threshold=0.0) for stacked, _ in stacks]
+        return self.assign_from_ocr(page_image, tree_nodes, batches, stacks, ocr_results)
+
+    def prepare_batches(self, page_image: np.ndarray, tree_nodes: List["TableTree"]) -> Tuple[List[List["TableTree"]], List[Tuple[np.ndarray, List[BBox]]]]:  # noqa
+        """CPU: assign each node its crop box, group into batches, and stack every batch's cells into one image.
+        Returns ``(batches, stacks)`` where ``stacks[i] == (stacked_image, chunk_boxes)`` aligns with ``batches[i]``."""
         for node in tree_nodes:
             node.set_crop_text_box(page_image)
 
         tree_nodes.sort(key=lambda t: -t.crop_text_box.width)
-        originalbox_to_fastocrbox = {}
         batches = list(self.__nodes2batch(tree_nodes))
+        stacks = []
         for num_batch, nodes_batch in enumerate(batches):
-
             if self.config.get("debug_mode", False):
                 tmp_dir = os.path.join(get_path_param(self.config, "path_debug"), "debug_tables/batches/")
                 os.makedirs(tmp_dir, exist_ok=True)
                 for i, table_tree_node in enumerate(nodes_batch):
                     cv2.imwrite(os.path.join(tmp_dir, f"image_{num_batch}_{i}.png"), BBox.crop_image_by_box(page_image, table_tree_node.cell_box))
+            concatenated, chunk_boxes = self.__concat_images(src_image=page_image, tree_table_nodes=nodes_batch)
+            if self.config.get("debug_mode", False):
+                debug_dir = os.path.join(get_path_param(self.config, "path_debug"), "debug_tables", "batches")
+                os.makedirs(debug_dir, exist_ok=True)
+                cv2.imwrite(os.path.join(debug_dir, f"stacked_batch_image_{num_batch}.png"), concatenated)
+            stacks.append((concatenated, chunk_boxes))
+        return batches, stacks
 
-            ocr_result, chunk_boxes = self.__handle_one_batch(src_image=page_image, tree_table_nodes=nodes_batch, num_batch=num_batch, language=language)
-
+    def assign_from_ocr(self, page_image: np.ndarray, tree_nodes: List["TableTree"], batches: List[List["TableTree"]],  # noqa
+                        stacks: List[Tuple[np.ndarray, List[BBox]]], ocr_results: List[OcrPage]) -> List[List[LineWithMeta]]:
+        """CPU: map each stack's OCR result (``ocr_results[i]`` for ``batches[i]``) back onto the cell nodes by y-center."""
+        originalbox_to_fastocrbox = {}
+        for nodes_batch, (_, chunk_boxes), ocr_result in zip(batches, stacks, ocr_results):
             for chunk_index, _ in enumerate(chunk_boxes):
                 originalbox_to_fastocrbox[nodes_batch[chunk_index].cell_box] = []
 
@@ -64,18 +83,6 @@ class OCRCellExtractor:
                 originalbox_to_fastocrbox[nodes_batch[chunk_index].cell_box].append(line.words)
 
         return self.__create_lines_with_meta(tree_nodes, originalbox_to_fastocrbox, page_image)
-
-    def __handle_one_batch(self, src_image: np.ndarray, tree_table_nodes: List["TableTree"], num_batch: int, language: str = "rus") \
-            -> Tuple[OcrPage, List[BBox]]:  # noqa
-        concatenated, chunk_boxes = self.__concat_images(src_image=src_image, tree_table_nodes=tree_table_nodes)
-        if self.config.get("debug_mode", False):
-            debug_dir = os.path.join(get_path_param(self.config, "path_debug"), "debug_tables", "batches")
-            os.makedirs(debug_dir, exist_ok=True)
-            image_path = os.path.join(debug_dir, f"stacked_batch_image_{num_batch}.png")
-            cv2.imwrite(image_path, concatenated)
-        ocr_result = get_text_with_bbox_from_cells(concatenated, language, ocr_conf_threshold=0.0)
-
-        return ocr_result, chunk_boxes
 
     def __concat_images(self, src_image: np.ndarray, tree_table_nodes: List["TableTree"]) -> Tuple[np.ndarray, List[BBox]]:  # noqa
         space = 10

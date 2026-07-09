@@ -62,6 +62,54 @@ class TableRecognizer:
 
             return image, []
 
+    def detect_tables_prepared(self, image: np.ndarray, page_number: int, language: str, table_type: str = "") -> Tuple[np.ndarray, Optional[dict]]:
+        """Staged pipeline, CPU part 1/2 (see pdf_stages ``_table``): detect + filter tables and stack their cells
+        WITHOUT running cell OCR, so the recognizer can be OCR'd on the GPU worker. Returns ``(cleaned_image,
+        prepared)`` where ``cleaned_image`` has the (kept) table cells masked out for the downstream body OCR and
+        ``prepared`` carries the pruned tree + stacked cell images for :meth:`assemble_tables_from_ocr`
+        (``None`` when no table survives -> caller emits ``tables=[]``)."""
+        from dedoc.readers.pdf_reader.data_classes.tables.table_tree import TableTree
+        from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
+        from dedoc.readers.pdf_reader.pdf_image_reader.table_recognizer.table_utils.img_processing import detect_table_tree
+        try:
+            gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if len(image.shape) == 3 else image
+            tree, rot_image, _contours, angle = detect_table_tree(gray_image, table_type=table_type, config=self.config)
+            pairs = self.onepage_tables_extractor.build_tables_from_tree(gray_image, page_number, tree, angle, table_type)
+            if self.table_type.detect_one_cell_table in table_type:
+                kept = pairs
+            else:
+                kept = [(sub, table) for sub, table in pairs if not self.__is_not_table(table, gray_image)]
+
+            cleaned_image = self.__clean_image_from_table(image=image, tables=[table for _, table in kept])
+            if not kept:
+                return cleaned_image, None
+
+            tree.children = [sub for sub, _ in kept]  # prune to the tables that survived filtering
+            nodes = TableTree.collect_cell_nodes(tree)
+            batches, stacks = OCRCellExtractor(config=self.config).prepare_batches(rot_image, nodes) if nodes else ([], [])
+            prepared = {"tree": tree, "nodes": nodes, "batches": batches, "stacks": stacks, "angle": angle,
+                        "page_number": page_number, "table_type": table_type}
+            return cleaned_image, prepared
+        except Exception as ex:
+            logging.warning("".join(traceback.format_exception(type(ex), value=ex, tb=ex.__traceback__)))
+            return image, None
+
+    def assemble_tables_from_ocr(self, image: np.ndarray, prepared: dict, ocr_results: list) -> List[ScanTable]:
+        """Staged pipeline, CPU part 2/2: assign the GPU cell-OCR results onto the prepared tree, then rebuild the
+        (already-filtered) ScanTables with their cell text. ``image`` supplies page dimensions (and pixels for the
+        optional split-last-column heuristic)."""
+        from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
+        try:
+            tree, nodes, table_type = prepared["tree"], prepared["nodes"], prepared["table_type"]
+            if nodes:
+                lines_with_meta = OCRCellExtractor(config=self.config).assign_from_ocr(image, nodes, prepared["batches"], prepared["stacks"], ocr_results)
+                for node, lines in zip(nodes, lines_with_meta):
+                    node.lines = lines
+            return [table for _, table in self.onepage_tables_extractor.build_tables_from_tree(image, prepared["page_number"], tree, prepared["angle"], table_type)]
+        except Exception as ex:
+            logging.warning("".join(traceback.format_exception(type(ex), value=ex, tb=ex.__traceback__)))
+            return []
+
     def __rec_tables_from_img(self, src_image: np.ndarray, page_num: int, language: str, table_type: str) -> Tuple[np.ndarray, List[ScanTable]]:
         gray_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY) if len(src_image.shape) == 3 else src_image
 

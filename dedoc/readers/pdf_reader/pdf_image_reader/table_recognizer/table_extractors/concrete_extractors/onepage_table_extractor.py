@@ -43,14 +43,29 @@ class OnePageTableExtractor(BaseTableExtractor):
 
         # Read the image
         tables_tree, contours, angle_rotate = detect_tables_by_contours(image, language=language, config=self.config, table_type=table_type)
-        tables = self.__build_structure_table_from_tree(tables_tree=tables_tree, table_type=table_type)
+        return [table for _, table in self.build_tables_from_tree(image, page_number, tables_tree, angle_rotate, table_type)]
 
-        for table in tables:
+    def build_tables_from_tree(self, image: np.ndarray, page_number: int, tables_tree: TableTree, angle_rotate: float, table_type: str) -> List[tuple]:
+        """Build ScanTables from an already-detected tree (cells may carry text or not yet), returning
+        ``(source_subtree, ScanTable)`` pairs with locations rotated back to the input orientation. Source tracking
+        lets the staged pipeline prune the tree to the tables that survive filtering, then rebuild them with cell text
+        after the GPU cell OCR. ``image`` is used for its shape only (page dims + rotation)."""
+        self.image = image
+        self.page_number = page_number
+        pairs = []
+        for table_tree in tables_tree.children:
+            try:
+                table = self.__get_matrix_table_from_tree(table_tree)
+                table.cells = self.handle_cells(table.cells, table_type)
+            except Exception as ex:
+                if self.config.get("debug_mode", False):
+                    self.logger.warning(f"Warning: unrecognized table into page {self.page_number}. {ex}")
+                continue
             for location in table.locations:
                 location.bbox.rotate_coordinates(angle_rotate=-angle_rotate, image_shape=image.shape)
                 location.rotated_angle = angle_rotate
-
-        return tables
+            pairs.append((table_tree, table))
+        return pairs
 
     def __get_matrix_table_from_tree(self, table_tree: TableTree) -> ScanTable:
         """
@@ -77,21 +92,6 @@ class OnePageTableExtractor(BaseTableExtractor):
         matrix_table = ScanTable(cells=matrix, bbox=table_tree.cell_box, page_number=self.page_number, page_width=page_width, page_height=page_height)
 
         return matrix_table
-
-    def __build_structure_table_from_tree(self, tables_tree: TableTree, table_type: str) -> List[ScanTable]:
-        """
-        Parsing all tables that exist in the tables_tree
-        """
-        tables = []
-        for table_tree in tables_tree.children:
-            try:
-                table = self.__get_matrix_table_from_tree(table_tree)
-                table.cells = self.handle_cells(table.cells, table_type)
-                tables.append(table)
-            except Exception as ex:
-                if self.config.get("debug_mode", False):
-                    self.logger.warning(f"Warning: unrecognized table into page {self.page_number}. {ex}")
-        return tables
 
     def handle_cells(self, cells: List[List[Cell]], table_type: str = "") -> List[List[Cell]]:
         # Heuristic 1: The table must have 1 or more rows.

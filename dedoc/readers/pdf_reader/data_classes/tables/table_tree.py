@@ -35,25 +35,36 @@ class TableTree(object):
         self.config = config
         self.logger = config.get("logger", logging.getLogger())
 
-    def set_text_into_tree(self, tree: "TableTree", src_image: ndarray, language: str = "rus", *, config: dict) -> None:
-        import logging
-        from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
+    def __getstate__(self) -> dict:
+        # config carries a logger (and other unpicklable handles); drop it so the tree can be shipped to the GPU
+        # worker and back in the staged pipeline. Downstream (assemble) only reads cell_box/crop_text_box/lines/children.
+        return {k: v for k, v in self.__dict__.items() if k not in ("config", "logger")}
 
-        # get List of TableTree
-        cur_depth = 0
-        begin_depth = 2
-        end_depth = 2
-        stack = [(tree, cur_depth, begin_depth, end_depth)]
+    def __setstate__(self, state: dict) -> None:
+        import logging
+        self.__dict__.update(state)
+        self.config = {}
+        self.logger = logging.getLogger()
+
+    @staticmethod
+    def collect_cell_nodes(tree: "TableTree") -> List["TableTree"]:
+        """Cell nodes are the tree nodes at depth 2 (table -> row/cell). Shared by the single-process cell OCR
+        (``set_text_into_tree``) and the staged GPU pipeline (detect stacks cells here, assemble assigns their text)."""
+        begin_depth, end_depth = 2, 2
+        stack = [(tree, 0)]
         trees = []
         while len(stack) > 0:
-            node_tree, cur_depth, begin_depth, end_depth = stack.pop()
+            node_tree, cur_depth = stack.pop()
             if begin_depth <= cur_depth <= end_depth:
-                # img_cell = [pair.image for i, pair in enumerate(cell_images) if pair.id_con == tree.id_contours][0]
                 trees.append(node_tree)
-                if tree.config.get("debug_mode", False):
-                    config.get("logger", logging.getLogger()).debug(f"{tree.id_contours} : text : {tree.get_text()}")
             for ch in node_tree.children:
-                stack.append((ch, cur_depth + 1, begin_depth, end_depth))
+                stack.append((ch, cur_depth + 1))
+        return trees
+
+    def set_text_into_tree(self, tree: "TableTree", src_image: ndarray, language: str = "rus", *, config: dict) -> None:
+        from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_cell_extractor import OCRCellExtractor
+
+        trees = TableTree.collect_cell_nodes(tree)
 
         cell_extractor = OCRCellExtractor(config=config)
         lines_with_meta = cell_extractor.get_cells_text(page_image=src_image, tree_nodes=trees, language=language)

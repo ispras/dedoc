@@ -41,8 +41,9 @@ def _det_preprocess(image: np.ndarray, det_max_side: int = 960, limit_side_len: 
         ratio = (det_max_side / max(h, w)) if max(h, w) > det_max_side else 1.0
     else:  # original limit_type='min': upscale so the short side >= limit_side_len (full res for large scans)
         ratio = (limit_side_len / min(h, w)) if min(h, w) < limit_side_len else 1.0
-    resize_h = int(round(int(h * ratio) / 32) * 32)
-    resize_w = int(round(int(w * ratio) / 32) * 32)
+    # floor to 32: a very elongated image (e.g. a tall narrow stack of table cells) can round the short side to 0
+    resize_h = max(32, int(round(int(h * ratio) / 32) * 32))
+    resize_w = max(32, int(round(int(w * ratio) / 32) * 32))
     img = cv2.resize(image, (resize_w, resize_h))
     img = (img.astype("float32") * (1 / 255.0) - np.array(mean)) / np.array(std)
     return np.expand_dims(img.transpose((2, 0, 1)), axis=0).astype(np.float32)

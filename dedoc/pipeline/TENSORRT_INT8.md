@@ -116,10 +116,31 @@ the 8 cores — the pipeline is CPU-core-bound, so reordering doesn't add capaci
   single GPU worker (−11 %) but is a net loss at `gpu_workers>=2` (round-trip + crop-list transport outweigh it, and
   extra GPU workers already parallelize the in-worker CPU work for free).
 
+## Follow-on: table cell OCR on the GPU (hybrid engine)
+
+The OpenCV table detector OCRs its cells with Tesseract (`--psm 6` on a vertically-stacked cell image), ~530 ms/table-page
+and the dominant table cost. On the same real stacked cells the hybrid recognizer (DBNet + eslav TRT rec) is **2.2× faster
+(245 ms) and more accurate — word-bag F1 0.83 vs 0.74** (Tesseract mis-segments dense grids; the recognizer reads clean
+printed cells, incl. Latin/digits, well). Measured with `scratchpad/cell_scenario_test.py` (both on the *same* stacked cells).
+
+Wiring (hybrid only) piggybacks the existing det_pre→ocr_gpu→ocr flow — **no new pipeline stage, so table-free pages take no
+extra CPU↔GPU hop** (the +29 s lesson above):
+- **`table` stage (CPU)** — `TableRecognizer.detect_tables_prepared`: detect + filter + mask cells + stack them, *without*
+  OCR. Returns the cleaned image (body OCR reads it) + a `prepared` dict (pruned tree + stacked cell images), ~360 KB/page
+  pickled, table pages only. `TableTree.__getstate__` drops its unpicklable `config`/`logger` for transport.
+- **`ocr_gpu` stage (GPU)** — recognizes each stacked-cell image alongside the page detections (`_hybrid_stack_ocr`).
+- **`ocr` stage (CPU)** — `assemble_tables_from_ocr`: assign cell text onto the tree, rebuild the (already-filtered)
+  ScanTables. Tables now surface from the ocr-stage output (`pdf_base_reader` reads `field("ocr", …, "tables")`).
+
+DAE 270–290 (6 table pages): **−7 % wall** (scales with table-page count), table-text F1 **0.58 vs 0.50** vs the Tesseract
+cell path. Opt out with `DEDOC_TABLE_CELL_OCR=tesseract`. Tesseract-engine / non-pipeline paths keep the in-stage cell OCR.
+
 ## Reproducing the numbers
 
 ```
 DEDOC_OCR_ENGINE=hybrid DEDOC_REC_ENGINE=trt_fp16  python scratchpad/bench_full.py <doc> --gpu --workers 8
 DEDOC_OCR_ENGINE=hybrid DEDOC_REC_ENGINE=trt_int8  python scratchpad/bench_full.py <doc> --gpu --workers 8
+# table cell OCR A/B (hybrid recognizer vs Tesseract on cells):
+DEDOC_OCR_ENGINE=hybrid DEDOC_REC_ENGINE=trt_fp16 DEDOC_TABLE_CELL_OCR=hybrid|tesseract  python scratchpad/bench_full.py <doc> --gpu
 ```
 Quality: `scratchpad/wer_trt.py` (CUDA fp16 vs TRT fp16 vs TRT int8, word-bag F1 on gen_texts clean GT).

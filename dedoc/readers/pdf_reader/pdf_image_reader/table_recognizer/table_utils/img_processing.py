@@ -261,6 +261,21 @@ def __paint_bounds(image: np.ndarray) -> np.ndarray:
     return image
 
 
+def detect_table_tree(img: np.ndarray, table_type: str = "", *, config: dict) -> [TableTree, np.ndarray, List[np.ndarray], float]:
+    """Contour analysis only: build the cell TableTree WITHOUT running cell OCR. Returns the tree, the rotated image
+    the tree's cell boxes live in (needed to crop cell pixels), the contours and the rotation angle. Split out of
+    ``detect_tables_by_contours`` so the staged GPU pipeline can run the cell OCR on the GPU worker (see pdf_stages)."""
+    contours, hierarchy, image, angle_rotate = get_contours_cells(img, table_type, config=config)
+    tree_table = TableTree.parse_contours_to_tree(contours=contours, hierarchy=hierarchy, config=config)
+
+    if config.get("debug_mode", False):
+        config.get("logger", logging.getLogger()).debug(f"Hierarchy [Next, Previous, First_Child, Parent]:\n {hierarchy}")
+        tree_table.print_tree(depth=0)
+        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "img_draw_counters.jpg"), img)
+
+    return tree_table, image, contours, angle_rotate
+
+
 def detect_tables_by_contours(img: np.ndarray, language: str = "rus", table_type: str = "", *, config: dict) -> [TableTree, List[np.ndarray], float]:
     """
     detecting contours and TreeTable with help contour analysis. TreeTable is
@@ -269,14 +284,7 @@ def detect_tables_by_contours(img: np.ndarray, language: str = "rus", table_type
     :param config: dict from config.py
     :return: TreeTable, contour, rotate angle
     """
-    contours, hierarchy, image, angle_rotate = get_contours_cells(img, table_type, config=config)
-    tree_table = TableTree.parse_contours_to_tree(contours=contours, hierarchy=hierarchy, config=config)
-
-    if config.get("debug_mode", False):
-        config.get("logger", logging.getLogger()).debug(f"Hierarchy [Next, Previous, First_Child, Parent]:\n {hierarchy}")
-        tree_table.print_tree(depth=0)
-
-        cv2.imwrite(os.path.join(get_path_param(config, "path_detect"), "img_draw_counters.jpg"), img)
+    tree_table, image, contours, angle_rotate = detect_table_tree(img, table_type=table_type, config=config)
 
     tree_table.set_text_into_tree(tree=tree_table, src_image=image, language=language, config=config)
 

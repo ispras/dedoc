@@ -343,7 +343,11 @@ class PdfBaseReader(BaseReader):
         result = []
         for page in pages:
             attachments = list(field("layout", page, "attachments", [])) + list(field("ocr", page, "page_attachments", []))
-            result.append((field("ocr", page, "lines", []), field("table", page, "tables", []), attachments, [field("deskew", page, "rotated_angle", 0.0)]))
+            # tables flow through to the ocr stage output (and the hybrid split assembles them there, deferred off the
+            # table stage); fall back to the table stage for robustness if the ocr stage produced no output.
+            ocr_tables = field("ocr", page, "tables", None)
+            tables = ocr_tables if ocr_tables is not None else field("table", page, "tables", [])
+            result.append((field("ocr", page, "lines", []), tables, attachments, [field("deskew", page, "rotated_angle", 0.0)]))
         return result, doc_result.warnings
 
     @abstractmethod
