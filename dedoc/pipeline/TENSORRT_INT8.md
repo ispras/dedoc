@@ -96,6 +96,19 @@ Output is identical (tables=6, same text). Diminishing past 2 (GPU util plateaus
 CPU stages `render`/`deskew`). Each worker replicates the models on the GPU (~+2 GB RSS), so `gpu_workers` is left at
 default 1 for portability — set it to 2 on a GPU with headroom.
 
+**Win — faster page rendering (`_render` via pypdfium2 + erode).** `render` was the biggest CPU stage. `pdf2image`
+shells out to `pdftoppm`, which spawns a subprocess **and re-parses the whole PDF per page** (~300 ms/page of pure
+overhead on top of the ~165 ms rasterization). Switching to **pypdfium2** (Apache-2.0, PDFium) rendering in-process
+with a per-worker cached `PdfDocument` removes that overhead — **−18 % full-pipeline wall (127 → 104 s, within-session,
+measured cleanly since cross-session numbers drift ±10 %)**. PDFium is not thread-safe, so `render` runs in the
+isolated worker processes (`exec_mode=THREAD`), and the document is loaded from bytes (a path makes PDFium hold a
+Windows file lock that fights the temp-file cleanup). PDFium's glyph anti-aliasing renders text ~1 px thinner than
+Poppler, which alone costs ~3.8 % word-bag F1 on short-text pages; a **2×2 `cv2.erode`** thickens the glyphs back to
+Poppler weight and recovers it exactly (verified on gen_texts: short 0.898 → 0.936 = pdftoppm; long unaffected) at
+~1 ms/page. Falls back to `pdf2image` if pypdfium2 is missing or rejects a PDF; `DEDOC_RENDER=pdftoppm` forces the old
+path. *(Aside: a bigger in-flight window and a dedicated render pool were both measured and gave nothing / oversubscribed
+the 8 cores — the pipeline is CPU-core-bound, so reordering doesn't add capacity.)*
+
 **Not worth it (measured, reverted):**
 - *Table-presence layout gate* — skips the 650 ms/page OpenCV table detector on tableless pages (cuts it 42%→2% of CPU
   time), but the layout NN is a GPU stage and its extra CPU→GPU→CPU→GPU round-trip cost +29 s even with the GPU idle.

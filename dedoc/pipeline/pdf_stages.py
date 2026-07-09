@@ -26,9 +26,48 @@ def init_reader(config_overrides: Optional[dict] = None) -> Any:
 
 # ---------------------------------------------------------------- stage handlers
 
+_PDF_CACHE: dict = {}  # per worker process: {path: PdfDocument}. Opened once (the 59 MB DAE re-read per page would
+
+
+def _render_pdfium(path: str, page_number: int):
+    """Render one page with pypdfium2 (Apache-2.0, PDFium) at 200 DPI -> BGR array. The PdfDocument is cached per
+    worker process (opening the file per page would re-read the whole PDF). MUST run single-threaded per process:
+    PDFium is not thread-safe, so this stage runs in the isolated worker processes (exec_mode THREAD), never the
+    parent thread pool. The document is loaded from bytes (a path makes PDFium hold a Windows lock that collides with
+    the pipeline temp-file cleanup)."""
+    import numpy as np
+    import pypdfium2 as pdfium
+
+    pdf = _PDF_CACHE.get(path)
+    if pdf is None:
+        for old in list(_PDF_CACHE.values()):  # bound memory: only the current document stays cached
+            try:
+                old.close()
+            except Exception:
+                pass
+        _PDF_CACHE.clear()
+        with open(path, "rb") as f:
+            pdf = pdfium.PdfDocument(f.read())
+        _PDF_CACHE[path] = pdf
+    page = pdf[page_number]
+    bmp = page.render(scale=200 / 72)  # 200 DPI, matches pdf2image's default resolution
+    arr = bmp.to_numpy()  # RGB(A); shares the bitmap buffer -> materialize the copy before closing
+    arr = arr[:, :, :3] if (arr.ndim == 3 and arr.shape[2] == 4) else arr
+    image = np.ascontiguousarray(arr[:, :, ::-1])  # RGB -> BGR
+    bmp.close()  # pypdfium2 v5 enforces child-before-parent close; the cached document stays open
+    page.close()
+    # PDFium's glyph anti-aliasing renders text ~1px thinner than Poppler, which costs ~3.8% word-bag F1 on short-text
+    # pages. A 2x2 erode thickens the dark glyphs back to Poppler weight and recovers that exactly (verified on
+    # gen_texts short/long) at ~1 ms/page. See TENSORRT_INT8.md.
+    import cv2
+    return cv2.erode(image, np.ones((2, 2), np.uint8), iterations=1)
+
+
 def _render(config: dict, doc: dict) -> dict:
     """Render this page's image on demand (lazy render): a PDF page -> bitmap, or load an image file.
-    Mirrors PdfBaseReader._get_images / _split_pdf2image for a single page (default DPI, BGR->RGB)."""
+    Uses pypdfium2 (~3x faster than pdf2image/pdftoppm at the same 200-DPI resolution/quality); falls back to
+    pdf2image if pypdfium2 is missing or rejects the PDF. Output is BGR, matching PdfBaseReader._split_pdf2image."""
+    import os
     import cv2
     import numpy as np
     from dedoc.extensions import recognized_mimes
@@ -36,9 +75,15 @@ def _render(config: dict, doc: dict) -> dict:
 
     path, page_number = doc["path"], doc["page_number"]
     if get_file_mime_type(path) in recognized_mimes.pdf_like_format or path.lower().endswith(".pdf"):
-        from pdf2image import convert_from_path
-        rendered = convert_from_path(path, first_page=page_number + 1, last_page=page_number + 1)
-        image = cv2.cvtColor(np.array(rendered[0]), cv2.COLOR_BGR2RGB)
+        image = None
+        if os.environ.get("DEDOC_RENDER", "pdfium") != "pdftoppm":
+            try:
+                image = _render_pdfium(path, page_number)
+            except Exception:  # pypdfium2 missing, or PDFium (stricter than poppler) rejecting a PDF -> fall through
+                image = None
+        if image is None:
+            from pdf2image import convert_from_path
+            image = cv2.cvtColor(np.array(convert_from_path(path, first_page=page_number + 1, last_page=page_number + 1)[0]), cv2.COLOR_BGR2RGB)
     else:
         image = cv2.imread(path)
     return {**doc, "image": image}
@@ -232,7 +277,7 @@ def setup(config_overrides: Any = None) -> Dict[str, Handler]:
 
 # spec templates (blockers are filled by build_specs from the config)
 _SPEC_DEFS = {
-    "render": dict(process=_render, resource=Resource.CPU, exec_mode=ExecMode.PROCESS),  # Poppler self-forks pdftoppm
+    "render": dict(process=_render, resource=Resource.CPU, exec_mode=ExecMode.THREAD),  # pypdfium2 render in the cpu_process pool (PDFium is not thread-safe -> isolated worker processes, not the parent thread pool)
     "binarize": dict(process=_binarize, resource=Resource.CPU, exec_mode=ExecMode.THREAD),
     "orient_pre": dict(process=_orient_pre, resource=Resource.CPU, exec_mode=ExecMode.THREAD),  # orient resize/pad on CPU workers
     "orient_predict": dict(process=_orient_predict, resource=Resource.GPU, batch_process=_orient_predict_batch, batch_size=8),
