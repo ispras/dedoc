@@ -203,6 +203,10 @@ class _BufferPool:
             return self._free.pop()
         shm = shared_memory.SharedMemory(create=True, size=self._buf_size)
         self._all[shm.name] = shm
+        import os as _os
+        if _os.environ.get("DEDOC_BUF_PROF"):
+            import sys as _sys
+            print(f"BUFPOOL created buffer #{len(self._all)} ({self._buf_size//(1<<20)}MB each, total {len(self._all)*self._buf_size//(1<<20)}MB)", file=_sys.stderr, flush=True)
         return shm.name
 
     def release(self, name: str) -> None:
@@ -232,7 +236,12 @@ class ProcessExecutor:
         atexit.register(self.shutdown)  # shut pools down while multiprocessing is still alive (avoids teardown noise)
         # handlers for self-forking (thread) tasks run in the parent, so build a parent-side toolkit too
         self._parent_toolkit = setup_fn(setup_arg)
-        self._buf_size = 64 * 1024 * 1024  # per shared buffer (page image ~12 MB, det preprocess ~47 MB at full res)
+        # Per shared buffer. Sized from the measured page-image distribution (H*W*3 @200 DPI over 2481 pages/91 docs):
+        # median/p90 11.6 MB, p99 55.7 MB; the det preprocess is capped at ~8.5 MB by the 960 px downscale. 32 MB keeps
+        # ~97.5% of pages (and every det preprocess) in shared memory; the ~2.5% larger pages fall back to pickling
+        # (graceful, they are rare and already slow). The pool grows to ~60 buffers on a busy run, so 64 MB -> 32 MB
+        # roughly halves its commit (~3.75 GB -> ~1.9 GB) with no measurable wall change. (DEDOC_BUF_MB overrides for A/B.)
+        self._buf_size = int(os.environ.get("DEDOC_BUF_MB", 32)) * 1024 * 1024
         self._pool = _BufferPool(self._buf_size)
         self._out_bufs: Dict[Future, list] = {}
 
