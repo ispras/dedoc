@@ -157,10 +157,24 @@ class HybridOCRLineExtractor:
 
     def _ensure_det(self):
         if self._det is None:
+            import onnxruntime as ort
             _setup_onnxruntime_cuda_dlls()
             from rapidocr_onnxruntime import RapidOCR
             gpu = bool(self.config.get("on_gpu", False))
             self._det = RapidOCR(det_use_cuda=gpu).text_det
+            if gpu:
+                # RapidOCR's CUDA detector session defaults to cudnn EXHAUSTIVE search + max cuDNN workspace +
+                # kNextPowerOfTwo arena, which reserve GBs of committed GPU memory per worker. Rebuild it leaner
+                # (HEURISTIC + exact-size arena + no max workspace) -> much lower memory and identical output; the
+                # algorithm choice is a speed/memory knob only. Mirrors the recognizer session fix.
+                so = ort.SessionOptions()
+                so.log_severity_level = 4
+                so.enable_cpu_mem_arena = False
+                cuda_opts = {"device_id": 0, "arena_extend_strategy": "kSameAsRequested",
+                             "cudnn_conv_algo_search": "HEURISTIC", "cudnn_conv_use_max_workspace": "0"}
+                self._det.infer.session = ort.InferenceSession(
+                    self._det.infer.session._model_path, sess_options=so,
+                    providers=[("CUDAExecutionProvider", cuda_opts), "CPUExecutionProvider"])
             self.logger.info(f"Hybrid OCR detector ready (PP-OCR, cuda={gpu})")
         return self._det
 
