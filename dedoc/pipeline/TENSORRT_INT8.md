@@ -75,6 +75,34 @@ no aspect distortion in practice. `_ensure_ppocr_rec` selects it when
 It coexists with onnxruntime-CUDA (detector) and torch (orient) in the same GPU-worker process — verified in the full
 pipeline (tables=6, no crash).
 
+## Follow-on: the pipeline is now CPU-bound → GPU-worker parallelism
+
+With the recognizer on TensorRT, the GPU dropped to ~20% utilization and the wall became CPU-bound (adding CPU workers
+past the 8 physical cores hurts). Per-stage profiling (env-gated `DEDOC_STAGE_PROF=<dir>` in `executor.py`, aggregated
+across worker PIDs) on the 297-page doc showed the real costs: `render` ~720 ms/page, `deskew` ~360 ms, and the single
+**GPU worker is itself CPU-bound** — its "GPU" stage (`ocr_gpu`) is ~56% CPU (box post-processing + warpPerspective crop
+extraction + rec resize/CTC-decode) and only ~44% GPU forwards, which is why GPU utilization stayed at ~20%.
+
+**Win — run more than one GPU worker** (`config["gpu_workers"]`, default 1). A 2nd/3rd GPU worker process parallelizes
+that in-worker CPU work across cores and overlaps GPU compute (one worker computes while another does pre/post):
+
+| gpu_workers | wall (DAE 297p) | CPU | GPU | peak RSS |
+|---|---|---|---|---|
+| 1 | 124–127 s | 71 % | 20 % | 11 GB |
+| **2** | **104 s (−16 %)** | 84 % | 27 % | 13 GB |
+| 3 | 100 s (−19 %) | 82 % | 27 % | 15 GB |
+
+Output is identical (tables=6, same text). Diminishing past 2 (GPU util plateaus ~27%; the wall is then bound by the
+CPU stages `render`/`deskew`). Each worker replicates the models on the GPU (~+2 GB RSS), so `gpu_workers` is left at
+default 1 for portability — set it to 2 on a GPU with headroom.
+
+**Not worth it (measured, reverted):**
+- *Table-presence layout gate* — skips the 650 ms/page OpenCV table detector on tableless pages (cuts it 42%→2% of CPU
+  time), but the layout NN is a GPU stage and its extra CPU→GPU→CPU→GPU round-trip cost +29 s even with the GPU idle.
+- *Splitting `ocr_gpu` into det_gpu→crop(CPU)→rec_gpu* — moves the crop/post CPU work off the GPU worker; helps with a
+  single GPU worker (−11 %) but is a net loss at `gpu_workers>=2` (round-trip + crop-list transport outweigh it, and
+  extra GPU workers already parallelize the in-worker CPU work for free).
+
 ## Reproducing the numbers
 
 ```

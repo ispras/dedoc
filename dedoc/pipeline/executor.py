@@ -11,12 +11,55 @@ persistent worker processes. Both expose ``submit(poolname, tasks) -> Future[Lis
   page images through **shared memory**. ``exec_mode=PROCESS`` tasks (e.g. Tesseract, which self-forks) run
   on a thread pool in the parent; GPU tasks run on a single persistent GPU worker process, batched by type.
 """
+import os
 from concurrent.futures import Future, ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass
 from multiprocessing import shared_memory
 from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
+
+_WHERE_SEEN = set()
+
+
+def _seen_where(name: str, kind: str) -> None:
+    if os.environ.get("DEDOC_WHERE") and (name, kind) not in _WHERE_SEEN:
+        _WHERE_SEEN.add((name, kind))
+        print(f"[WHERE] stage={name:14} -> {kind:16} pid={os.getpid()}", flush=True)
+
+
+# per-stage wall-time profiling (env-gated); each process dumps its accumulator to a file, the caller aggregates
+import atexit  # noqa: E402
+import json  # noqa: E402
+import time  # noqa: E402
+from collections import defaultdict  # noqa: E402
+
+_STAGE_PROF = os.environ.get("DEDOC_STAGE_PROF")
+_STAGE_TIME: Dict[str, list] = defaultdict(lambda: [0.0, 0])
+
+
+def _timed(name: str, fn):
+    if not _STAGE_PROF:
+        return fn()
+    t = time.perf_counter()
+    r = fn()
+    e = _STAGE_TIME[name]
+    e[0] += time.perf_counter() - t
+    e[1] += 1
+    return r
+
+
+def _dump_stage_prof() -> None:
+    if _STAGE_PROF and _STAGE_TIME:
+        try:
+            with open(os.path.join(_STAGE_PROF, f"stageprof_{os.getpid()}.json"), "w") as f:
+                json.dump({k: v for k, v in _STAGE_TIME.items()}, f)
+        except Exception:
+            pass
+
+
+if _STAGE_PROF:
+    atexit.register(_dump_stage_prof)
 
 from dedoc.pipeline.shared_image import ShmRef, close, get_array, put_array
 from dedoc.pipeline.stage import Resource
@@ -127,21 +170,23 @@ def _remote_run(name: str, is_batch: bool, configs: List[dict], inputs: List[Any
     parent-owned shared buffers (so large arrays never go back through the pipe). ``out_names[i]`` is the buffer
     list lent to task i."""
     handler = _TOOLKIT[name]
+    _seen_where(name, "worker-process")
     real_inputs = [_unwrap(i) for i in inputs]
     if is_batch and handler.batch_process is not None:
-        outputs = list(handler.batch_process(configs, real_inputs))
+        outputs = _timed(name, lambda: list(handler.batch_process(configs, real_inputs)))
     else:
-        outputs = [handler.process(c, i) for c, i in zip(configs, real_inputs)]
+        outputs = [_timed(name, lambda c=c, i=i: handler.process(c, i)) for c, i in zip(configs, real_inputs)]
     return [_write_output_arrays(out, bufs, buf_size) for out, bufs in zip(outputs, out_names)]
 
 
 def _toolkit_run(toolkit: Dict[str, Handler], name: str, is_batch: bool, configs: List[dict], inputs: List[Any]) -> List[Any]:
     """In-parent (thread pool) variant for self-forking tasks. Inputs may reference parent-owned shared buffers."""
     handler = toolkit[name]
+    _seen_where(name, "parent-thread")
     real_inputs = [_unwrap(i) for i in inputs]
     if is_batch and handler.batch_process is not None:
-        return list(handler.batch_process(configs, real_inputs))
-    return [handler.process(c, i) for c, i in zip(configs, real_inputs)]
+        return _timed(name, lambda: list(handler.batch_process(configs, real_inputs)))
+    return [_timed(name, lambda c=c, i=i: handler.process(c, i)) for c, i in zip(configs, real_inputs)]
 
 
 class _BufferPool:

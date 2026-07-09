@@ -309,7 +309,7 @@ class PdfBaseReader(BaseReader):
         pages = list(range(first_page, end))
         specs = pdf_stages.build_specs(parameters, ocr_engine=self.config.get("ocr_engine", "tesseract"))
         workers = int(self.config.get("cpu_workers", 4))
-        pool_sizes = {"cpu_process": workers, "thread": workers, "gpu": 1}
+        pool_sizes = {"cpu_process": workers, "thread": workers, "gpu": int(self.config.get("gpu_workers", 1))}
         max_inflight = int(self.config.get("max_inflight_pages", max(4, 2 * workers)))
 
         def seed(page: int) -> dict:

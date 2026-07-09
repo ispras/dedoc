@@ -291,10 +291,18 @@ class HybridOCRLineExtractor:
         """Recognize the detection boxes with the PP-OCRv5 East-Slavic recognizer (ONNX) and return RAW detections
         ``(box, text, conf)``. Line-grouping (``page_from_detections``) is deferred to the metadata stage. The
         Latin→Cyrillic look-alike post-fix runs for Russian unless ``config["hybrid_homoglyph_fix"]`` is False."""
+        return self.recognize_crops(self.crops_from_boxes(image, boxes), language)
+
+    def crops_from_boxes(self, image: np.ndarray, boxes) -> list:
+        """CPU-only: rotate-crop each detection box out of the page image. Split from recognition so it can run on a
+        CPU worker (it is ~65 ms/page of warpPerspective) instead of blocking the GPU worker (see TENSORRT_INT8.md)."""
         if boxes is None or len(boxes) == 0:
             return []
         pairs = [(box, _rotate_crop(image, box)) for box in boxes]
-        pairs = [(b, c) for b, c in pairs if c.shape[0] > 0 and c.shape[1] > 0]
+        return [(b, c) for b, c in pairs if c.shape[0] > 0 and c.shape[1] > 0]
+
+    def recognize_crops(self, pairs: list, language: str) -> list:
+        """GPU: run the recognizer on pre-extracted crops -> RAW detections (box, text, conf)."""
         if not pairs:
             return []
         res, _ = self._ensure_ppocr_rec()([c for _, c in pairs])

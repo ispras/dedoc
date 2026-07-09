@@ -257,8 +257,10 @@ def build_specs(params: Any, ocr_engine: str = "tesseract") -> List[TaskSpec]:
     if params.is_one_column_document is None or params.document_orientation is None:
         present.extend(["orient_pre", "orient_predict"])  # orient_pre (CPU resize/pad) -> orient_predict (GPU forward)
     # layout runs for attachments; when it runs, its table detections also gate the OpenCV table stage for free.
-    # We do NOT add layout *solely* for the gate - that is a whole extra NN pass, and for the hybrid engine it lands
-    # on the single GPU worker (the throughput bottleneck): measured +40 s on the 297-page doc. See the experiment log.
+    # We do NOT add layout *solely* for the gate: although it cuts the OpenCV table detector from 42% to ~2% of CPU
+    # stage-time, the layout NN is a GPU stage and inserts an extra CPU->GPU->CPU->GPU round-trip in the per-page
+    # critical path (deskew->layout->table->...->ocr_gpu), whose serialization latency lost +29 s on the 297-page doc
+    # even with the GPU ~80% idle. A cheap CPU-side table-presence heuristic would gate without the GPU hop.
     if params.with_attachments:
         present.append("layout")
     if params.need_pdf_table_analysis:
@@ -280,6 +282,10 @@ def build_specs(params: Any, ocr_engine: str = "tesseract") -> List[TaskSpec]:
     # recognition) -> ocr (CPU: line-metadata extraction). The GPU worker does only NN forwards; the CPU-heavy
     # preprocessing and metadata run in parallel on the CPU workers, so the GPU device is not starved by CPU work.
     if ocr_engine == "hybrid" and "ocr" in present:
+        # DBNet + box post + crop + recognizer all on the GPU worker. Splitting the CPU parts (box post + crop) into a
+        # separate CPU stage (det_gpu -> crop -> rec_gpu) was measured: it helps with a single GPU worker (-11%) but is
+        # a net loss once gpu_workers>=2 (the extra CPU->GPU->CPU->GPU round-trip + crop-list transport outweigh it, and
+        # multiple GPU workers already parallelize the in-worker CPU work for free). See TENSORRT_INT8.md.
         present.extend(["det_pre", "ocr_gpu"])
         blockers["det_pre"] = blockers["ocr"]
         blockers["ocr_gpu"] = ["det_pre"]
