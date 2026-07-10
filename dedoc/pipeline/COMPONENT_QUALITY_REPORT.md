@@ -45,12 +45,23 @@ WER/CER via `jiwer`; **word-bag F1** (order-independent) added to separate *reco
    are all there. **The recognizer swap (EasyOCR→eslav) is NOT a recognition regression on English**, and on Russian
    it was a large win (WER 0.168→0.100, see the experiment log). eslav is a solid recognizer for both scripts.
 
-2. **The hybrid's weakness is READING ORDER, not the recognizer.** WER 0.55 vs tesseract's 0.06 (with equal F1) means
-   the hybrid emits the right words in the wrong order — its naive top-to-bottom line grouping mis-orders multi-block
-   pages, while Tesseract's `psm 3` runs layout analysis. This is **engine-independent** (any recognizer in the hybrid
-   inherits it). It is the single biggest quality gap and the top follow-up (see §7). NB: earlier XY-cut/layout
-   reading-order experiments were dismissed on *single-column Russian prose* (a wash there) — this shows they should be
-   re-evaluated on **multi-block** docs, where the gap is real.
+2. **READING ORDER was the hybrid's biggest weakness — now FIXED (new default).** The naive top-to-bottom line grouping
+   mis-orders multi-column pages: the right words in the wrong order → high WER despite equal F1 (Tesseract's `psm 3`
+   runs layout analysis, the hybrid didn't). Two reorderings are now wired via `hybrid_reading_order`; both leave the
+   recognizer output (word-bag F1) untouched and only change line order (re-measured 2026-07, 60+60 gen_texts, 94 RU):
+
+   | `hybrid_reading_order` | gen_texts long WER | gen_texts short WER | RU (single-col) WER | wall |
+   |---|---|---|---|---|
+   | naive (old default) | 0.690 | 0.411 | 0.097 | baseline |
+   | **geometric — column XY-cut (NEW DEFAULT)** | **0.406** | **0.188** | **0.097** | ~+4% |
+   | tesseract — borrow Tesseract layout | **0.056** | 0.295 | 0.102 | +45% |
+
+   **`geometric`** is the default: a vertical/column-only XY-cut over the detection boxes (`hybrid_xycut_mult`=0.5 gap
+   threshold). It is ~free, **strictly ≥ naive on multi-column and a no-op on single-column** (RU unchanged). It fixes
+   *clean* multi-column but not complex interleaved layouts (headers woven through columns have no clean rectangular gap
+   to cut) — there it falls back to naive order. **`tesseract`** additionally handles those and reaches Tesseract WER
+   parity on long text (0.056), but pays a per-page Tesseract *layout* call (+45% wall) — opt in for layout-heavy
+   corpora. Both fall back to naive on any failure so OCR never breaks.
 
 3. **det=960 (detection downscale) has a real recognition cost.** eslav det=full beats det=960 on F1 by **1.6 pts
    (long) and 5.3 pts (short)** — the downscaled detector finds fewer/coarser boxes on dense text → lower recall. This
@@ -120,7 +131,7 @@ post-fix is a small RU win. (Details in the experiment log.)
 | **deskew coarse-to-fine** | 2.3× | ✅ 55/56 vs 91-step, exact on realistic skew |
 | **table hough 0.5** (→0.33/0.25) | ×2.5+ | ✅ lossless to 0.25 (tables + cells flat) — safe to lower default |
 | **det=960** | −77 s | ⚠️ costs recognition recall on dense text (F1 −1.6…−5.3 pts EN); neutral on scanned RU/DAE |
-| **hybrid reading order** (pre-existing) | — | ❌ biggest gap: mis-orders multi-block pages (WER 0.55 vs 0.06 despite F1 parity) |
+| **reading order → geometric column XY-cut** (NEW DEFAULT) | ~+4 % | ✅ was the #1 gap; multi-column WER long 0.69→0.41, short 0.41→0.19, single-column unchanged; F1 unchanged. `="tesseract"` reaches long 0.056 at +45 % wall for layout-heavy corpora |
 
 **Recommendations, by impact:**
 1. **Reading order is the #1 quality lever.** The hybrid loses to Tesseract on multi-block pages purely on ordering,
