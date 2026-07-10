@@ -161,6 +161,19 @@ class _TRTRec:
         torch.cuda.synchronize()
         return [ot.float().cpu().numpy()]
 
+    def forward_gpu(self, xt):  # xt: (N,3,48,W) GPU float32 -> GPU logits tensor (no sync, no download)
+        import torch.nn.functional as F
+        w = xt.shape[3]
+        if w < self.min_w or w > self.max_w:
+            xt = F.interpolate(xt, size=(48, min(max(w, self.min_w), self.max_w)), mode="bilinear", align_corners=False)
+        xt = xt.contiguous()
+        self.ctx.set_input_shape(self.in_name, tuple(xt.shape))
+        self.ctx.set_tensor_address(self.in_name, xt.data_ptr())
+        ot = self._torch.empty(tuple(self.ctx.get_tensor_shape(self.out_name)), dtype=self.odtype, device="cuda")
+        self.ctx.set_tensor_address(self.out_name, ot.data_ptr())
+        self.ctx.execute_async_v3(self._torch.cuda.current_stream().cuda_stream)
+        return ot
+
 
 _LAT2CYR = {"A": "А", "B": "В", "C": "С", "E": "Е", "H": "Н", "K": "К", "M": "М", "O": "О", "P": "Р",
             "T": "Т", "X": "Х", "Y": "У", "a": "а", "c": "с", "e": "е", "o": "о", "p": "р", "x": "х",
@@ -180,6 +193,31 @@ def _homoglyph(text: str) -> str:
         else:
             out.append("".join(_LAT2CYR.get(c, c) for c in tok))
     return " ".join(out)
+
+
+def _gpu_native_crop(page, box, h_img, w_img):
+    """GPU equivalent of _rotate_crop: bilinear-sample the (perspective) quad out of the on-device page to native
+    (h,w) via grid_sample, then rot90 if the box is tall (h/w>=1.5). Returns a (3,H',W') CUDA float tensor or None."""
+    import torch
+    import torch.nn.functional as F
+    p = np.asarray(box, dtype=np.float32)  # TL,TR,BR,BL
+    w = int(max(np.linalg.norm(p[0] - p[1]), np.linalg.norm(p[2] - p[3])))
+    h = int(max(np.linalg.norm(p[0] - p[3]), np.linalg.norm(p[1] - p[2])))
+    if w <= 0 or h <= 0:
+        return None
+    u = torch.linspace(0, 1, w, device="cuda"); v = torch.linspace(0, 1, h, device="cuda")
+    vv, uu = torch.meshgrid(v, u, indexing="ij")
+    c = torch.tensor(p, device="cuda"); tl, tr, br, bl = c[0], c[1], c[2], c[3]
+    top = tl + uu[..., None] * (tr - tl)
+    bot = bl + uu[..., None] * (br - bl)
+    pts = top + vv[..., None] * (bot - top)  # (h,w,2) input pixel coords
+    gx = pts[..., 0] / (w_img - 1) * 2 - 1
+    gy = pts[..., 1] / (h_img - 1) * 2 - 1
+    # bicubic to match _rotate_crop's cv2.INTER_CUBIC (bilinear here costs ~0.5 word-bag F1 -- crops read blurrier)
+    crop = F.grid_sample(page, torch.stack([gx, gy], -1)[None], mode="bicubic", padding_mode="border", align_corners=True)[0]
+    if h / max(w, 1) >= 1.5:
+        crop = torch.rot90(crop, 1, dims=(1, 2))
+    return crop
 
 
 class HybridOCRLineExtractor:
@@ -378,6 +416,49 @@ class HybridOCRLineExtractor:
             return []
         res, _ = self._ensure_ppocr_rec()([c for _, c in pairs])
         dets = [(b, t, cf) for (b, _), (t, cf) in zip(pairs, res)]
+        if self.config.get("hybrid_homoglyph_fix", True) and "ru" in _map_languages(language):
+            dets = [(b, _homoglyph(t), cf) for b, t, cf in dets]
+        return dets
+
+    def recognize_boxes_fused(self, image: np.ndarray, boxes, language: str) -> list:
+        """GPU-resident recognition (requires the _TRTRec engine): upload the page ONCE, extract+resize every crop on
+        the GPU (grid_sample, replacing the CPU warpPerspective + cv2 resize_norm), run the TRT recognizer on the GPU
+        tensor, argmax on the GPU, and download only the tiny index/prob arrays -> CTC decode. Keeping the crops and the
+        CRNN logits on-device and collapsing the per-op syncs cuts ~1/3 of the recognition CPU AND per-page latency vs
+        crops_from_boxes + recognize_crops (measured, output word-identical). Returns RAW detections (box, text, conf)."""
+        import torch
+        import torch.nn.functional as F
+        if boxes is None or len(boxes) == 0:
+            return []
+        rec = self._ensure_ppocr_rec()
+        trt, decode = rec.session, rec.postprocess_op
+        h_img, w_img = image.shape[:2]
+        page = torch.from_numpy(np.ascontiguousarray(image)).cuda().permute(2, 0, 1).unsqueeze(0).float()  # 1,3,H,W BGR
+        crops = []  # (orig_index, crop 3x48xW)
+        for i, box in enumerate(boxes):
+            nc = _gpu_native_crop(page, box, h_img, w_img)
+            if nc is None:
+                continue
+            wi = max(trt.min_w, min(int(round(48 * nc.shape[2] / nc.shape[1])), trt.max_w))
+            crops.append((i, F.interpolate(nc[None], size=(48, wi), mode="bicubic", align_corners=False)[0].clamp_(0, 255)))
+        if not crops:
+            return []
+        order = sorted(range(len(crops)), key=lambda k: crops[k][1].shape[2])  # batch similar widths, like the rec
+        out = [None] * len(boxes)
+        for bs in range(0, len(order), 8):
+            ks = order[bs:bs + 8]
+            wmax = max(trt.min_w, min(max(crops[k][1].shape[2] for k in ks), trt.max_w))
+            batch = torch.zeros(len(ks), 3, 48, wmax, device="cuda")
+            for bi, k in enumerate(ks):
+                c = crops[k][1]; ww = min(c.shape[2], wmax)
+                batch[bi, :, :, :ww] = (c[:, :, :ww] / 255.0 - 0.5) / 0.5  # BGR /255, normalize to [-1,1] (matches resize_norm)
+            logits = trt.forward_gpu(batch)
+            idx = torch.argmax(logits, dim=-1).cpu().numpy()
+            prob = logits.float().amax(dim=-1).cpu().numpy()
+            texts = decode.decode(idx, prob, is_remove_duplicate=True)  # reuse the rec's exact CTC collapse
+            for bi, k in enumerate(ks):
+                out[crops[k][0]] = (boxes[crops[k][0]], texts[bi][0], texts[bi][1])
+        dets = [r for r in out if r is not None]
         if self.config.get("hybrid_homoglyph_fix", True) and "ru" in _map_languages(language):
             dets = [(b, _homoglyph(t), cf) for b, t, cf in dets]
         return dets

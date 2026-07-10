@@ -170,6 +170,24 @@ output unchanged. It also self-caps Tesseract to one thread — the scaling the 
 `OMP_THREAD_LIMIT=1` for. (The shared-memory buffer pool was likewise sized from the measured page distribution:
 64 → 32 MB per buffer, ~3.75 → 1.9 GB, speed-neutral.)
 
+## Follow-on: fused GPU-resident recognizer (`recognize_boxes_fused`)
+
+Profiling showed the "GPU worker" is really **CPU-bound**: ~86% CPU-busy at ~31% GPU utilization. The recognition CPU
+splits into warpPerspective crops (~61 ms/page), the recognizer's `resize_norm` (~35 ms), the CTC argmax on the
+downloaded logits, and a large **sync-spin** (the CPU busy-waits the GPU; ~68 ms/page — freeing it via blocking sync is
+a *net loss*, +9 % wall, because per-op wake latency then bounds throughput). Moving individual pieces to the GPU or to
+CPU workers doesn't help — each hits the page/crop upload + per-op sync ceiling (the pipeline-split `det_gpu→ocr_crop→
+rec_gpu` was a net loss; GPU crops alone were −9 %).
+
+The win is **fusing** them: `recognize_boxes_fused` uploads the page **once**, extracts + resizes every crop on the GPU
+(`grid_sample`, bicubic to match `_rotate_crop`'s `INTER_CUBIC`), runs the TRT recognizer on the on-device tensor
+(`_TRTRec.forward_gpu`), argmaxes **on the GPU**, and downloads only the tiny index/prob arrays for the (reused) CTC
+decode. This keeps crops and the CRNN logits on-device and collapses the per-op syncs, cutting the recognition step
+**164 → 111 ms/page (−33 % CPU + latency)** and the 297-page wall **~65 → ~63 s (−4 %)**, deterministic and
+quality-neutral (word-bag F1 0.951 vs 0.952 on gen_texts). Auto-enabled when the TRT engine is present; `DEDOC_FUSED_REC=0`
+falls back to the CPU-crop path. (Two other levers were measured net-losses and left off by default: `DEDOC_SPLIT_OCR`
+and `DEDOC_BLOCKING_SYNC`.)
+
 ## Reproducing the numbers
 
 ```

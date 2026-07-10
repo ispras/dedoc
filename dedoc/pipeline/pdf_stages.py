@@ -15,11 +15,33 @@ from dedoc.pipeline.task import ExecMode, TaskSpec
 _READER = None  # a PdfImageReader whose helpers the handlers reuse (built once per process)
 
 
+def _set_cuda_blocking_sync() -> None:
+    # cudaDeviceScheduleBlockingSync (0x04): the CPU thread YIELDS while waiting for a GPU op instead of busy-spinning.
+    # onnxruntime/TensorRT/torch default to spin, which burns a full core per GPU worker (measured: it was ~half the
+    # GPU worker's CPU -- rec CPU 117 -> 56 ms/page). Must be set before the process's CUDA context is created.
+    import ctypes
+    import glob
+    import os
+    try:
+        import torch
+        dll = glob.glob(os.path.join(os.path.dirname(torch.__file__), "lib", "cudart64*.dll"))
+        if dll:
+            ctypes.CDLL(dll[0]).cudaSetDeviceFlags(0x04)
+    except Exception:
+        pass
+
+
 def init_reader(config_overrides: Optional[dict] = None) -> Any:
     global _READER
     if _READER is None:
+        import os
         from dedoc.config import get_config
         from dedoc.readers.pdf_reader.pdf_image_reader.pdf_image_reader import PdfImageReader
+        # DEDOC_BLOCKING_SYNC (default off): frees the GPU worker's spin-wait CPU but ADDS per-op wake latency -- measured
+        # a net loss in the pipeline (wall +9%), because the GPU worker's per-page latency, not its CPU-busy, is the
+        # constraint. Kept as an off-by-default flag for re-measurement.
+        if (config_overrides or {}).get("on_gpu") and os.environ.get("DEDOC_BLOCKING_SYNC") == "1":
+            _set_cuda_blocking_sync()
         _READER = PdfImageReader(config={**get_config(), **(config_overrides or {})})
     return _READER
 
@@ -225,12 +247,47 @@ def _det_pre(config: dict, doc: dict) -> dict:
 def _ocr_gpu(config: dict, doc: dict) -> dict:
     # hybrid GPU stage: DBNet forward + box post-processing + CRNN recognition -> RAW detections (box, text, conf).
     # The CPU line-grouping and metadata are deferred to the meta stage, so the GPU worker does only the NN work.
+    import os
     preds = _READER.ocr.infer(doc["det_prepro"])
     boxes = _READER.ocr.postprocess(preds, doc["det_ori"])
-    detections = _READER.ocr.recognize_detections(doc["image"], boxes, doc["params"].language)
+    # GPU-resident recognition when the TensorRT engine is present (has forward_gpu): keeps crops + CRNN logits on-device
+    # and downloads only the argmax indices -> ~1/3 less recognition CPU + latency on the GPU worker. Falls back to the
+    # CPU-crop path otherwise. Set DEDOC_FUSED_REC=0 to disable.
+    if os.environ.get("DEDOC_FUSED_REC", "1") == "1" and hasattr(_READER.ocr._ensure_ppocr_rec().session, "forward_gpu"):
+        detections = _READER.ocr.recognize_boxes_fused(doc["image"], boxes, doc["params"].language)
+    else:
+        detections = _READER.ocr.recognize_detections(doc["image"], boxes, doc["params"].language)
     out = {k: v for k, v in doc.items() if k != "det_prepro"}
     out["ocr_detections"] = detections
     # piggyback the table cell OCR on the GPU worker: recognize each stacked-cell image (assembled in the meta stage)
+    prepared = doc.get("table_prepared")
+    if prepared is not None and prepared["stacks"]:
+        language = doc["params"].language
+        out["table_ocr_results"] = [_hybrid_stack_ocr(stacked, language) for stacked, _ in prepared["stacks"]]
+    return out
+
+
+# --- optional finer split of ocr_gpu (DEDOC_SPLIT_OCR): det_gpu(GPU forward) -> ocr_crop(CPU warpPerspective) ->
+# rec_gpu(GPU forward). Moves the ~59 ms/page of box-post + crop CPU work off the GPU worker onto the CPU workers,
+# at the cost of shipping the ~5 MB crop list to the rec stage. Whether it wins depends on the CPU/GPU balance.
+def _det_gpu(config: dict, doc: dict) -> dict:
+    preds = _READER.ocr.infer(doc["det_prepro"])
+    boxes = _READER.ocr.postprocess(preds, doc["det_ori"])
+    out = {k: v for k, v in doc.items() if k not in ("det_prepro", "det_ori")}
+    out["ocr_boxes"] = boxes
+    return out
+
+
+def _ocr_crop(config: dict, doc: dict) -> dict:
+    pairs = _READER.ocr.crops_from_boxes(doc["image"], doc["ocr_boxes"])
+    out = {k: v for k, v in doc.items() if k != "ocr_boxes"}
+    out["ocr_crops"] = pairs
+    return out
+
+
+def _rec_gpu(config: dict, doc: dict) -> dict:
+    out = {k: v for k, v in doc.items() if k != "ocr_crops"}
+    out["ocr_detections"] = _READER.ocr.recognize_crops(doc["ocr_crops"], doc["params"].language)
     prepared = doc.get("table_prepared")
     if prepared is not None and prepared["stacks"]:
         language = doc["params"].language
@@ -373,6 +430,9 @@ def setup(config_overrides: Any = None) -> Dict[str, Handler]:
         "layout": Handler(_layout, batch_process=_layout_batch),
         "det_pre": Handler(_det_pre),
         "ocr_gpu": Handler(_ocr_gpu),  # per-page: cross-page rec batching adds padding+latency without a compute win
+        "det_gpu": Handler(_det_gpu),
+        "ocr_crop": Handler(_ocr_crop),
+        "rec_gpu": Handler(_rec_gpu),
         "ocr": Handler(_ocr),
         "table": Handler(_table),
     }
@@ -388,6 +448,9 @@ _SPEC_DEFS = {
     "layout": dict(process=_layout, resource=Resource.GPU, batch_process=_layout_batch, batch_size=4),
     "det_pre": dict(process=_det_pre, resource=Resource.CPU, exec_mode=ExecMode.THREAD),  # hybrid det preprocessing on CPU workers
     "ocr_gpu": dict(process=_ocr_gpu, resource=Resource.GPU),  # hybrid detector+recognizer NN forwards on the GPU worker
+    "det_gpu": dict(process=_det_gpu, resource=Resource.GPU),  # DEDOC_SPLIT_OCR: DBNet forward + box post on the GPU worker
+    "ocr_crop": dict(process=_ocr_crop, resource=Resource.CPU, exec_mode=ExecMode.THREAD),  # warpPerspective crops on CPU workers
+    "rec_gpu": dict(process=_rec_gpu, resource=Resource.GPU),  # CRNN/TRT recognizer forward on the GPU worker
     "ocr": dict(process=_ocr, resource=Resource.CPU, exec_mode=ExecMode.PROCESS),
     "table": dict(process=_table, resource=Resource.CPU, exec_mode=ExecMode.THREAD),
 }
@@ -399,6 +462,7 @@ def build_specs(params: Any, ocr_engine: str = "tesseract") -> List[TaskSpec]:
     its parameter enables it, and blockers are the default preprocessing chain restricted to present stages
     (so a missing stage is transparently skipped). This is data, not a hardcoded structure.
     """
+    import os
     present = ["render", "deskew", "ocr"]  # render (page image), deskew (rotation/deskew) and ocr always run
     if params.need_binarization:
         present.append("binarize")
@@ -431,13 +495,21 @@ def build_specs(params: Any, ocr_engine: str = "tesseract") -> List[TaskSpec]:
     # preprocessing and metadata run in parallel on the CPU workers, so the GPU device is not starved by CPU work.
     if ocr_engine == "hybrid" and "ocr" in present:
         # DBNet + box post + crop + recognizer all on the GPU worker. Splitting the CPU parts (box post + crop) into a
-        # separate CPU stage (det_gpu -> crop -> rec_gpu) was measured: it helps with a single GPU worker (-11%) but is
-        # a net loss once gpu_workers>=2 (the extra CPU->GPU->CPU->GPU round-trip + crop-list transport outweigh it, and
-        # multiple GPU workers already parallelize the in-worker CPU work for free). See TENSORRT_INT8.md.
-        present.extend(["det_pre", "ocr_gpu"])
-        blockers["det_pre"] = blockers["ocr"]
-        blockers["ocr_gpu"] = ["det_pre"]
-        blockers["ocr"] = ["ocr_gpu"]
+        # separate CPU stage (det_gpu -> ocr_crop -> rec_gpu) was measured a net loss at gpu_workers>=2 (the extra
+        # CPU<->GPU round-trip + ~5 MB crop-list transport outweigh it, and multiple GPU workers already overlap the
+        # in-worker CPU work). Kept behind DEDOC_SPLIT_OCR for re-measurement as the CPU/GPU balance shifts.
+        if os.environ.get("DEDOC_SPLIT_OCR") == "1":
+            present.extend(["det_pre", "det_gpu", "ocr_crop", "rec_gpu"])
+            blockers["det_pre"] = blockers["ocr"]
+            blockers["det_gpu"] = ["det_pre"]
+            blockers["ocr_crop"] = ["det_gpu"]
+            blockers["rec_gpu"] = ["ocr_crop"]
+            blockers["ocr"] = ["rec_gpu"]
+        else:
+            present.extend(["det_pre", "ocr_gpu"])
+            blockers["det_pre"] = blockers["ocr"]
+            blockers["ocr_gpu"] = ["det_pre"]
+            blockers["ocr"] = ["ocr_gpu"]
 
     specs = []
     for name in present:
