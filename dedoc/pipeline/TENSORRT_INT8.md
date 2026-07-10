@@ -179,14 +179,21 @@ a *net loss*, +9 % wall, because per-op wake latency then bounds throughput). Mo
 CPU workers doesn't help — each hits the page/crop upload + per-op sync ceiling (the pipeline-split `det_gpu→ocr_crop→
 rec_gpu` was a net loss; GPU crops alone were −9 %).
 
-The win is **fusing** them: `recognize_boxes_fused` uploads the page **once**, extracts + resizes every crop on the GPU
-(`grid_sample`, bicubic to match `_rotate_crop`'s `INTER_CUBIC`), runs the TRT recognizer on the on-device tensor
-(`_TRTRec.forward_gpu`), argmaxes **on the GPU**, and downloads only the tiny index/prob arrays for the (reused) CTC
-decode. This keeps crops and the CRNN logits on-device and collapses the per-op syncs, cutting the recognition step
-**164 → 111 ms/page (−33 % CPU + latency)** and the 297-page wall **~65 → ~63 s (−4 %)**, deterministic and
-quality-neutral (word-bag F1 0.951 vs 0.952 on gen_texts). Auto-enabled when the TRT engine is present; `DEDOC_FUSED_REC=0`
-falls back to the CPU-crop path. (Two other levers were measured net-losses and left off by default: `DEDOC_SPLIT_OCR`
-and `DEDOC_BLOCKING_SYNC`.)
+The win is **fusing** them: `recognize_boxes_fused` uploads the page **once**, extracts + resizes every crop on the GPU,
+runs the TRT recognizer on the on-device tensor (`_TRTRec.forward_gpu`), argmaxes **on the GPU**, and downloads only the
+tiny index/prob arrays for the (reused) CTC decode. This keeps crops and the CRNN logits on-device and collapses the
+per-op syncs.
+
+Crop extraction is the CPU pipeline's **two-step** resample (warpPerspective to the box's *native* size, then resize to
+48×W) expressed as **two batched `grid_sample`s** instead of a python per-box loop: pass 1 samples each box's quad at its
+native `(h,w)` into the top-left of a shared `(Hmax,Wmax)` canvas; pass 2 resizes each box's own native sub-region to
+`(48,wt)`. The subtlety that matters for quality: a **single** direct `grid_sample` to `48×wt` (or a shared *oversampled*
+grid) lands ~2/255 off the CPU-reference crops and costs ~0.4 word-bag F1 — the recognizer is tuned to the CPU path's
+*double*-cubic filter response, and only the **native intermediate** reproduces it. The batched native two-grid matches
+it exactly: word-bag F1 **0.952 == the CPU path** (vs 0.951 for the earlier per-box loop, 0.947 for one-step). It cuts
+the recognition step **~87 → ~67 ms/page (−23 %)** and the full-pipeline wall **~89 → ~73 s (−17 %)** vs the CPU-crop
+path, deterministic. Auto-enabled when the TRT engine is present; `DEDOC_FUSED_REC=0` falls back to the CPU-crop path.
+(Two other levers were measured net-losses and left off by default: `DEDOC_SPLIT_OCR` and `DEDOC_BLOCKING_SYNC`.)
 
 ## Reproducing the numbers
 

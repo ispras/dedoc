@@ -422,42 +422,79 @@ class HybridOCRLineExtractor:
 
     def recognize_boxes_fused(self, image: np.ndarray, boxes, language: str) -> list:
         """GPU-resident recognition (requires the _TRTRec engine): upload the page ONCE, extract+resize every crop on
-        the GPU (grid_sample, replacing the CPU warpPerspective + cv2 resize_norm), run the TRT recognizer on the GPU
-        tensor, argmax on the GPU, and download only the tiny index/prob arrays -> CTC decode. Keeping the crops and the
-        CRNN logits on-device and collapsing the per-op syncs cuts ~1/3 of the recognition CPU AND per-page latency vs
-        crops_from_boxes + recognize_crops (measured, output word-identical). Returns RAW detections (box, text, conf)."""
+        the GPU, run the TRT recognizer on the GPU tensor, argmax on the GPU, and download only the tiny index/prob
+        arrays -> CTC decode. Keeping the crops and the CRNN logits on-device and collapsing the per-op syncs cuts ~1/3
+        of the recognition CPU AND per-page latency vs crops_from_boxes + recognize_crops.
+
+        Crops are the CPU pipeline's two-step resample (warpPerspective to the box's NATIVE size, then resize to 48xW)
+        done as TWO BATCHED grid_samples instead of a python per-box loop: pass 1 samples each box's quad at its native
+        (h,w) into the top-left of a shared (Hmax,Wmax) canvas; pass 2 resizes each box's own native sub-region to
+        (48, wt). Matching the native intermediate (not a shared oversampled grid) is what keeps the output on the CPU
+        reference's distribution -- word-bag F1 vs the text layer is 0.952, == the CPU path. Returns RAW (box,text,conf)."""
         import torch
         import torch.nn.functional as F
         if boxes is None or len(boxes) == 0:
             return []
         rec = self._ensure_ppocr_rec()
         trt, decode = rec.session, rec.postprocess_op
-        h_img, w_img = image.shape[:2]
+        H, W = image.shape[:2]
         page = torch.from_numpy(np.ascontiguousarray(image)).cuda().permute(2, 0, 1).unsqueeze(0).float()  # 1,3,H,W BGR
-        crops = []  # (orig_index, crop 3x48xW)
-        for i, box in enumerate(boxes):
-            nc = _gpu_native_crop(page, box, h_img, w_img)
+        q = np.stack([np.asarray(b, dtype=np.float32) for b in boxes])  # (M,4,2) TL,TR,BR,BL
+        w = np.maximum(np.linalg.norm(q[:, 0] - q[:, 1], axis=1), np.linalg.norm(q[:, 2] - q[:, 3], axis=1))
+        h = np.maximum(np.linalg.norm(q[:, 0] - q[:, 3], axis=1), np.linalg.norm(q[:, 1] - q[:, 2], axis=1))
+        valid = (w > 0) & (h > 0)
+        tall = valid & (h / np.maximum(w, 1) >= 1.5)   # tall boxes need rot90 -> the per-box path
+        wide = valid & ~tall
+        wt = np.clip(np.round(48 * w / np.maximum(h, 1)).astype(int), trt.min_w, trt.max_w)  # 48xW target widths
+        hin = np.clip(np.ceil(h).astype(int), 2, 160)                # native intermediate height (capped for canvas size)
+        win = np.clip(np.ceil(w).astype(int), 2, trt.max_w)          # native intermediate width
+        out = [None] * len(boxes)
+        cn = torch.from_numpy(np.stack([q[..., 0] / (W - 1) * 2 - 1, q[..., 1] / (H - 1) * 2 - 1], -1)).cuda()  # corners [-1,1]
+
+        def _run(crops, ks):
+            logits = trt.forward_gpu(crops.contiguous())
+            pi = torch.argmax(logits, -1).cpu().numpy(); pp = logits.float().amax(-1).cpu().numpy()
+            texts = decode.decode(pi, pp, is_remove_duplicate=True)  # reuse the rec's exact CTC collapse
+            for bi, k in enumerate(ks):
+                out[int(k)] = (boxes[int(k)], texts[bi][0], texts[bi][1])
+
+        order = np.where(wide)[0]
+        order = order[np.argsort(wt[order])]  # batch similar widths, like the rec
+        for bs in range(0, len(order), 8):
+            ks = order[bs:bs + 8]; N = len(ks)
+            Hmax = int(hin[ks].max()); Wmax = int(win[ks].max()); Wb = int(max(trt.min_w, min(int(wt[ks].max()), trt.max_w)))
+            hik = torch.from_numpy(hin[ks]).cuda().float(); wik = torch.from_numpy(win[ks]).cuda().float()
+            wtk = torch.from_numpy(wt[ks]).cuda().float()
+            c = cn[ks]; tl, tr, br, bl = c[:, 0], c[:, 1], c[:, 2], c[:, 3]
+            # pass 1: quad -> native (hik,wik) in the top-left of a shared (Hmax,Wmax) canvas
+            uu = torch.arange(Wmax, device="cuda").float()[None, :] / (wik[:, None] - 1).clamp(min=1)  # (N,Wmax)
+            vv = torch.arange(Hmax, device="cuda").float()[None, :] / (hik[:, None] - 1).clamp(min=1)  # (N,Hmax)
+            uu4 = uu[:, None, :, None]; vv4 = vv[:, :, None, None]
+            top = tl[:, None, None, :] + uu4 * (tr - tl)[:, None, None, :]
+            bot = bl[:, None, None, :] + uu4 * (br - bl)[:, None, None, :]
+            pts1 = top + vv4 * (bot - top)                                      # (N,Hmax,Wmax,2)
+            oob = (uu4[..., 0] > 1.0) | (vv4[..., 0] > 1.0)                      # outside each box's native region
+            pts1 = torch.where(oob[..., None], torch.full_like(pts1, -2.0), pts1)
+            canvas = F.grid_sample(page.expand(N, 3, H, W), pts1, mode="bicubic", padding_mode="border", align_corners=True)
+            # pass 2: resize each box's own native (hik,wik) sub-region -> (48, Wb)
+            src_r = torch.arange(48, device="cuda").float()[None, :] / 47.0 * (hik[:, None] - 1)      # (N,48)
+            u2 = torch.arange(Wb, device="cuda").float()[None, :] / (wtk[:, None] - 1).clamp(min=1)   # (N,Wb)
+            src_c = u2 * (wik[:, None] - 1)
+            gy = (src_r / (Hmax - 1) * 2 - 1)[:, :, None].expand(N, 48, Wb)
+            gx = (src_c / (Wmax - 1) * 2 - 1)[:, None, :].expand(N, 48, Wb)
+            crops = F.grid_sample(canvas, torch.stack([gx, gy], -1), mode="bicubic", padding_mode="border", align_corners=True)
+            crops = (crops.clamp(0, 255) / 255.0 - 0.5) / 0.5           # BGR /255, normalize to [-1,1] (matches resize_norm)
+            crops = torch.where((u2 > 1.0)[:, None, None, :].expand(N, 3, 48, Wb), torch.zeros_like(crops), crops)  # zero pad cols
+            _run(crops, ks)
+
+        for k in np.where(tall)[0]:
+            nc = _gpu_native_crop(page, boxes[int(k)], H, W)
             if nc is None:
                 continue
             wi = max(trt.min_w, min(int(round(48 * nc.shape[2] / nc.shape[1])), trt.max_w))
-            crops.append((i, F.interpolate(nc[None], size=(48, wi), mode="bicubic", align_corners=False)[0].clamp_(0, 255)))
-        if not crops:
-            return []
-        order = sorted(range(len(crops)), key=lambda k: crops[k][1].shape[2])  # batch similar widths, like the rec
-        out = [None] * len(boxes)
-        for bs in range(0, len(order), 8):
-            ks = order[bs:bs + 8]
-            wmax = max(trt.min_w, min(max(crops[k][1].shape[2] for k in ks), trt.max_w))
-            batch = torch.zeros(len(ks), 3, 48, wmax, device="cuda")
-            for bi, k in enumerate(ks):
-                c = crops[k][1]; ww = min(c.shape[2], wmax)
-                batch[bi, :, :, :ww] = (c[:, :, :ww] / 255.0 - 0.5) / 0.5  # BGR /255, normalize to [-1,1] (matches resize_norm)
-            logits = trt.forward_gpu(batch)
-            idx = torch.argmax(logits, dim=-1).cpu().numpy()
-            prob = logits.float().amax(dim=-1).cpu().numpy()
-            texts = decode.decode(idx, prob, is_remove_duplicate=True)  # reuse the rec's exact CTC collapse
-            for bi, k in enumerate(ks):
-                out[crops[k][0]] = (boxes[crops[k][0]], texts[bi][0], texts[bi][1])
+            cc = F.interpolate(nc[None], size=(48, wi), mode="bicubic", align_corners=False)[0].clamp(0, 255)
+            _run((((cc / 255.0 - 0.5) / 0.5)[None]), [k])
+
         dets = [r for r in out if r is not None]
         if self.config.get("hybrid_homoglyph_fix", True) and "ru" in _map_languages(language):
             dets = [(b, _homoglyph(t), cf) for b, t, cf in dets]
