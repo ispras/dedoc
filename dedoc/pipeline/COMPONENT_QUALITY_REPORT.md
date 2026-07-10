@@ -110,6 +110,13 @@ not scale-related.)
   to align best with the 91-step grid. On realistic skew (≤12°) coarse-3° is **exact** (35/35 on injected 0–12°).
 - **Verdict: the fix is validated** — no meaningful quality loss for real documents; the lone 38° divergence is on a
   >40° page where even the 91-step's answer is ambiguous. Keep coarse-3°; 2.3× faster.
+- **Follow-up (2026-07): coarse GUESS on a 512px thumbnail + full-res refine.** The coarse sweep's cost is dominated by
+  the per-angle rotation, which scales with image size; running it on a 512px thumbnail (~7× cheaper rotations) then
+  refining ±4° at full 1000px res recovers the exact angle. On the skew set it matches the 91-step *as well as* the
+  full-res coarse (thumbnail 57/60 vs full-res 55/60 overall; 44/47 vs 45/47 on the >3° subset — the differences are on
+  >28° pages where the peak is inherently ambiguous) and is exact on realistic skew ≤12°. Plus the full-res rotation is
+  skipped when best_angle==0. In-pipeline this halves the deskew stage (367→155 ms/page) and dropped the 297-page wall
+  ~73→65 s. `_SKEW_COARSE_SIDE` is the thumbnail size.
 
 ## 6. Cross-reference — Russian recognition (colleague's labelled set, from the experiment log)
 
