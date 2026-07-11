@@ -248,16 +248,23 @@ def _ocr_gpu(config: dict, doc: dict) -> dict:
     # hybrid GPU stage: DBNet forward + box post-processing + CRNN recognition -> RAW detections (box, text, conf).
     # The CPU line-grouping and metadata are deferred to the meta stage, so the GPU worker does only the NN work.
     import os
-    preds = _READER.ocr.infer(doc["det_prepro"])
-    boxes = _READER.ocr.postprocess(preds, doc["det_ori"])
+    page_gpu = None  # DEDOC_FUSED_DET hands the on-device page from detection to recognition (skips the duplicate H2D)
+    if "ocr_boxes" in doc:  # DEDOC_SPLIT_DETPP: DBNet forward + box post already ran (det_forward -> det_postproc)
+        boxes = doc["ocr_boxes"]
+    elif os.environ.get("DEDOC_FUSED_DET") == "1":  # GPU-side det preprocessing from the page (no det_pre stage)
+        preds, ori, page_gpu = _READER.ocr.infer_gpu_from_image(doc["image"])
+        boxes = _READER.ocr.postprocess(preds, ori)
+    else:
+        preds = _READER.ocr.infer(doc["det_prepro"])
+        boxes = _READER.ocr.postprocess(preds, doc["det_ori"])
     # GPU-resident recognition when the TensorRT engine is present (has forward_gpu): keeps crops + CRNN logits on-device
     # and downloads only the argmax indices -> ~1/3 less recognition CPU + latency on the GPU worker. Falls back to the
     # CPU-crop path otherwise. Set DEDOC_FUSED_REC=0 to disable.
     if os.environ.get("DEDOC_FUSED_REC", "1") == "1" and hasattr(_READER.ocr._ensure_ppocr_rec().session, "forward_gpu"):
-        detections = _READER.ocr.recognize_boxes_fused(doc["image"], boxes, doc["params"].language)
+        detections = _READER.ocr.recognize_boxes_fused(doc["image"], boxes, doc["params"].language, page=page_gpu)
     else:
         detections = _READER.ocr.recognize_detections(doc["image"], boxes, doc["params"].language)
-    out = {k: v for k, v in doc.items() if k != "det_prepro"}
+    out = {k: v for k, v in doc.items() if k not in ("det_prepro", "ocr_boxes", "det_ori")}
     out["ocr_detections"] = detections
     # piggyback the table cell OCR on the GPU worker: recognize each stacked-cell image (assembled in the meta stage)
     prepared = doc.get("table_prepared")
@@ -292,6 +299,24 @@ def _rec_gpu(config: dict, doc: dict) -> dict:
     if prepared is not None and prepared["stacks"]:
         language = doc["params"].language
         out["table_ocr_results"] = [_hybrid_stack_ocr(stacked, language) for stacked, _ in prepared["stacks"]]
+    return out
+
+
+# --- DEDOC_SPLIT_DETPP: offload the DBNet box POST-processing (pure CPU: findContours/unclip, ~28 ms/page) from the
+# GPU worker to the CPU pool, while recognition stays fused on the GPU worker. det_forward(GPU: DBNet fwd) ->
+# det_postproc(CPU: DBPostProcess) -> ocr_gpu(GPU: fused recognizer). The DBNet heatmap (~2.7 MB) hops GPU->CPU by
+# shared-memory reference; the box post is standalone (no detector model load on the CPU workers).
+def _det_forward(config: dict, doc: dict) -> dict:
+    preds = _READER.ocr.infer(doc["det_prepro"])
+    out = {k: v for k, v in doc.items() if k != "det_prepro"}
+    out["ocr_preds"] = preds
+    return out
+
+
+def _det_postproc(config: dict, doc: dict) -> dict:
+    boxes = _READER.ocr.postprocess_cpu(doc["ocr_preds"], doc["det_ori"])
+    out = {k: v for k, v in doc.items() if k not in ("ocr_preds", "det_ori")}
+    out["ocr_boxes"] = boxes
     return out
 
 
@@ -433,6 +458,8 @@ def setup(config_overrides: Any = None) -> Dict[str, Handler]:
         "det_gpu": Handler(_det_gpu),
         "ocr_crop": Handler(_ocr_crop),
         "rec_gpu": Handler(_rec_gpu),
+        "det_forward": Handler(_det_forward),
+        "det_postproc": Handler(_det_postproc),
         "ocr": Handler(_ocr),
         "table": Handler(_table),
     }
@@ -451,6 +478,8 @@ _SPEC_DEFS = {
     "det_gpu": dict(process=_det_gpu, resource=Resource.GPU),  # DEDOC_SPLIT_OCR: DBNet forward + box post on the GPU worker
     "ocr_crop": dict(process=_ocr_crop, resource=Resource.CPU, exec_mode=ExecMode.THREAD),  # warpPerspective crops on CPU workers
     "rec_gpu": dict(process=_rec_gpu, resource=Resource.GPU),  # CRNN/TRT recognizer forward on the GPU worker
+    "det_forward": dict(process=_det_forward, resource=Resource.GPU),  # DEDOC_SPLIT_DETPP: DBNet forward only on the GPU worker
+    "det_postproc": dict(process=_det_postproc, resource=Resource.CPU, exec_mode=ExecMode.THREAD),  # DBNet box post on CPU workers
     "ocr": dict(process=_ocr, resource=Resource.CPU, exec_mode=ExecMode.PROCESS),
     "table": dict(process=_table, resource=Resource.CPU, exec_mode=ExecMode.THREAD),
 }
@@ -505,6 +534,20 @@ def build_specs(params: Any, ocr_engine: str = "tesseract") -> List[TaskSpec]:
             blockers["ocr_crop"] = ["det_gpu"]
             blockers["rec_gpu"] = ["ocr_crop"]
             blockers["ocr"] = ["rec_gpu"]
+        elif os.environ.get("DEDOC_SPLIT_DETPP") == "1":
+            # DBNet box post-processing (pure CPU) moved off the GPU worker to the CPU pool; recognition stays fused.
+            present.extend(["det_pre", "det_forward", "det_postproc", "ocr_gpu"])
+            blockers["det_pre"] = blockers["ocr"]
+            blockers["det_forward"] = ["det_pre"]
+            blockers["det_postproc"] = ["det_forward"]
+            blockers["ocr_gpu"] = ["det_postproc"]
+            blockers["ocr"] = ["ocr_gpu"]
+        elif os.environ.get("DEDOC_FUSED_DET") == "1":
+            # detection preprocessing runs on the GPU worker from the page (IOBinding) -> no det_pre CPU stage, no
+            # det_prepro transport. Frees the CPU pool (the constraint at gpu_workers=2) of the cv2 resize/normalize.
+            present.append("ocr_gpu")
+            blockers["ocr_gpu"] = blockers["ocr"]
+            blockers["ocr"] = ["ocr_gpu"]
         else:
             present.extend(["det_pre", "ocr_gpu"])
             blockers["det_pre"] = blockers["ocr"]

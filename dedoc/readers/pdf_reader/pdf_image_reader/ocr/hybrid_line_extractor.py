@@ -49,6 +49,55 @@ def _det_preprocess(image: np.ndarray, det_max_side: int = 960, limit_side_len: 
     return np.expand_dims(img.transpose((2, 0, 1)), axis=0).astype(np.float32)
 
 
+def _order_points_clockwise(pts: np.ndarray) -> np.ndarray:
+    """TL,TR,BR,BL ordering (RapidOCR TextDetector.order_points_clockwise) for the standalone box post-processing."""
+    x = pts[np.argsort(pts[:, 0]), :]
+    left = x[:2][np.argsort(x[:2, 1])]
+    right = x[2:][np.argsort(x[2:, 1])]
+    (tl, bl), (tr, br) = left, right
+    return np.array([tl, tr, br, bl], dtype="float32")
+
+
+def _min_area_box(contour):
+    """DBPostProcess.get_mini_boxes: min-area rotated rectangle of a contour, points ordered TL,TR,BR,BL."""
+    import cv2
+    bb = cv2.minAreaRect(contour)
+    pts = sorted(list(cv2.boxPoints(bb)), key=lambda p: p[0])
+    i1, i4 = (0, 1) if pts[1][1] > pts[0][1] else (1, 0)
+    i2, i3 = (2, 3) if pts[3][1] > pts[2][1] else (3, 2)
+    return np.array([pts[i1], pts[i2], pts[i3], pts[i4]], dtype=np.float32), min(bb[1])
+
+
+def _box_score_fast(bitmap: np.ndarray, _box: np.ndarray) -> float:
+    """DBPostProcess.box_score_fast: mean heatmap value inside the box (fill a local mask, cv2.mean)."""
+    import cv2
+    h, w = bitmap.shape[:2]
+    box = _box.copy()
+    xmin = int(np.clip(np.floor(box[:, 0].min()), 0, w - 1)); xmax = int(np.clip(np.ceil(box[:, 0].max()), 0, w - 1))
+    ymin = int(np.clip(np.floor(box[:, 1].min()), 0, h - 1)); ymax = int(np.clip(np.ceil(box[:, 1].max()), 0, h - 1))
+    mask = np.zeros((ymax - ymin + 1, xmax - xmin + 1), dtype=np.uint8)
+    box[:, 0] -= xmin; box[:, 1] -= ymin
+    cv2.fillPoly(mask, box.reshape(1, -1, 2).astype(np.int32), 1)
+    return cv2.mean(bitmap[ymin:ymax + 1, xmin:xmax + 1], mask)[0]
+
+
+def _unclip_boxes(boxes: np.ndarray, ratio: float = 1.6):
+    """VECTORIZED closed-form replacement for DBPostProcess.unclip + get_mini_boxes. Every input box is a min-area
+    RECTANGLE, so 'offset outward by D=Area*ratio/Perimeter (round joins) then re-fit min-area rect' reduces to
+    'grow the rectangle by D on each side' -- pure arithmetic on all boxes at once (no per-box shapely+pyclipper).
+    Matches the pyclipper path to <2 px (which washes out at the final int scaling). Returns (expanded, min_side)."""
+    c = boxes.mean(1)                                                   # (N,2) centers
+    e01, e03 = boxes[:, 1] - boxes[:, 0], boxes[:, 3] - boxes[:, 0]     # width / height edges
+    w = np.linalg.norm(e01, axis=1); h = np.linalg.norm(e03, axis=1)
+    area = 0.5 * np.abs((boxes[:, :, 0] * np.roll(boxes[:, :, 1], -1, 1) - boxes[:, :, 1] * np.roll(boxes[:, :, 0], -1, 1)).sum(1))
+    perim = np.linalg.norm(boxes - np.roll(boxes, -1, 1), axis=2).sum(1)
+    d = area * ratio / np.maximum(perim, 1e-6)
+    u = e01 / np.maximum(w, 1e-6)[:, None]; v = e03 / np.maximum(h, 1e-6)[:, None]
+    hw = (w / 2 + d)[:, None]; hh = (h / 2 + d)[:, None]
+    corners = np.stack([c - hw * u - hh * v, c + hw * u - hh * v, c + hw * u + hh * v, c - hw * u + hh * v], 1)
+    return corners.astype(np.float32), np.minimum(w + 2 * d, h + 2 * d)
+
+
 def _rotate_crop(img: np.ndarray, box) -> np.ndarray:
     """Perspective-crop a 4-point detection box to an upright line image (PaddleOCR get_rotate_crop_image).
 
@@ -173,6 +222,47 @@ class _TRTRec:
         self.ctx.set_tensor_address(self.out_name, ot.data_ptr())
         self.ctx.execute_async_v3(self._torch.cuda.current_stream().cuda_stream)
         return ot
+
+
+class _TRTDet:
+    """Standalone TensorRT runtime for the DBNet detector (dynamic 1x3xHxW input, [32,960] per side) -- mirrors
+    _TRTRec. ``forward_gpu(xt)`` takes an on-device tensor and returns the on-device probability heatmap (pairs with
+    ``infer_gpu_from_image`` for a fully GPU-resident detector); ``__call__`` accepts a numpy tensor (the CPU-preprocess
+    path). Post-processing uses the standalone ``postprocess_cpu`` (no onnxruntime detector loaded at all)."""
+
+    def __init__(self, engine_path: str) -> None:
+        import os
+        import torch
+        libs = os.path.join(os.path.dirname(os.path.dirname(torch.__file__)), "tensorrt_libs")
+        if os.path.isdir(libs) and hasattr(os, "add_dll_directory"):
+            os.add_dll_directory(libs)
+        import tensorrt_bindings as trt
+        self._torch, self._trt = torch, trt
+        logger = trt.Logger(trt.Logger.ERROR)
+        self.engine = trt.Runtime(logger).deserialize_cuda_engine(open(engine_path, "rb").read())
+        self.ctx = self.engine.create_execution_context()
+        self.in_name = self.out_name = None
+        for i in range(self.engine.num_io_tensors):
+            n = self.engine.get_tensor_name(i)
+            setattr(self, "in_name" if self.engine.get_tensor_mode(n) == trt.TensorIOMode.INPUT else "out_name", n)
+        self.odtype = {trt.DataType.FLOAT: torch.float32, trt.DataType.HALF: torch.float16}[self.engine.get_tensor_dtype(self.out_name)]
+        prof = self.engine.get_tensor_profile_shape(self.in_name, 0)  # (min, opt, max)
+        self.max_h, self.max_w = prof[2][2], prof[2][3]
+
+    def forward_gpu(self, xt):  # xt: (1,3,H,W) GPU float32 -> GPU heatmap (1,1,H,W)
+        xt = xt.contiguous()
+        self.ctx.set_input_shape(self.in_name, tuple(xt.shape))
+        self.ctx.set_tensor_address(self.in_name, xt.data_ptr())
+        ot = self._torch.empty(tuple(self.ctx.get_tensor_shape(self.out_name)), dtype=self.odtype, device="cuda")
+        self.ctx.set_tensor_address(self.out_name, ot.data_ptr())
+        self.ctx.execute_async_v3(self._torch.cuda.current_stream().cuda_stream)
+        return ot
+
+    def __call__(self, x):  # x: numpy (1,3,H,W) float32 -> [heatmap numpy], matching OrtInferSession.__call__
+        torch = self._torch
+        ot = self.forward_gpu(torch.from_numpy(np.ascontiguousarray(x, dtype=np.float32)).cuda())
+        torch.cuda.synchronize()
+        return [ot.float().cpu().numpy()]
 
 
 _LAT2CYR = {"A": "А", "B": "В", "C": "С", "E": "Е", "H": "Н", "K": "К", "M": "М", "O": "О", "P": "Р",
@@ -356,13 +446,122 @@ class HybridOCRLineExtractor:
         # standalone numpy preprocessing: no RapidOCR/onnxruntime needed on the CPU workers running this stage
         return _det_preprocess(image, self.config.get("hybrid_det_max_side", 960)), (image.shape[0], image.shape[1])
 
+    def _ensure_det_trt(self):
+        """Standalone TensorRT DBNet engine (``det_fp16.trt``) when ``config['hybrid_det_engine']=='trt_fp16'`` and on
+        GPU -- 2-2.5x faster than the onnxruntime CUDA forward, and no onnxruntime detector is loaded at all (box post
+        uses ``postprocess_cpu``). Cached; ``None`` when unavailable (-> onnxruntime path). The engine's optimization
+        profile caps each input side at 960, so it is only used when ``hybrid_det_max_side<=960``."""
+        if getattr(self, "_det_trt", "unset") == "unset":
+            import os
+            engine = {"trt_fp16": "det_fp16.trt"}.get(self.config.get("hybrid_det_engine", "onnx"))
+            path = os.path.join(os.path.dirname(__file__), "ppocr_eslav", engine) if engine else None
+            ok = bool(self.config.get("on_gpu") and path and os.path.exists(path)
+                      and int(self.config.get("hybrid_det_max_side", 960)) <= 960)
+            self._det_trt = _TRTDet(path) if ok else None
+            if self._det_trt is not None:
+                self.logger.info("Hybrid OCR detector ready (DBNet + standalone TensorRT det_fp16.trt)")
+        return self._det_trt
+
     def infer(self, prepro: np.ndarray) -> np.ndarray:
-        return self._ensure_det().infer(prepro)[0]
+        trt_det = self._ensure_det_trt()
+        return trt_det(prepro)[0] if trt_det is not None else self._ensure_det().infer(prepro)[0]
 
     def postprocess(self, preds: np.ndarray, ori_shape: Tuple[int, int]) -> List[np.ndarray]:
+        if self._ensure_det_trt() is not None:
+            return self.postprocess_cpu(preds, ori_shape)  # standalone DBPostProcess (no onnxruntime detector loaded)
         det = self._ensure_det()
         boxes, _ = det.postprocess_op(preds, ori_shape)
         return det.filter_tag_det_res(boxes, ori_shape)
+
+    def _ensure_det_post(self):
+        """DBPostProcess (per-box shapely+pyclipper unclip), lazily built without loading the detector model. Used
+        only as the ``DEDOC_VEC_UNCLIP=0`` fallback for A/B-ing the vectorized closed-form unclip."""
+        if getattr(self, "_det_post", None) is None:
+            from rapidocr_onnxruntime.ch_ppocr_det.utils import DBPostProcess
+            self._det_post = DBPostProcess(thresh=0.3, box_thresh=0.5, max_candidates=1000,
+                                           unclip_ratio=1.6, use_dilation=True, score_mode="fast")
+        return self._det_post
+
+    @staticmethod
+    def _order_clip_filter(boxes, src_w: int, src_h: int) -> np.ndarray:
+        """filter_tag_det_res: clockwise order + clip to the page + drop boxes with a side <= 3 px."""
+        out = []
+        for box in boxes:
+            box = _order_points_clockwise(box)
+            for pno in range(box.shape[0]):
+                box[pno, 0] = int(min(max(box[pno, 0], 0), src_w - 1))
+                box[pno, 1] = int(min(max(box[pno, 1], 0), src_h - 1))
+            if int(np.linalg.norm(box[0] - box[1])) > 3 and int(np.linalg.norm(box[0] - box[3])) > 3:
+                out.append(box)
+        return np.array(out)
+
+    def postprocess_cpu(self, preds: np.ndarray, ori_shape: Tuple[int, int]) -> List[np.ndarray]:
+        """Standalone DBNet box post-processing WITHOUT loading the detector ONNX model (so it can run on the CPU
+        workers), reimplementing DBPostProcess + filter_tag_det_res but with a **vectorized closed-form unclip** in
+        place of the per-box shapely+pyclipper (~71x faster on that step, boxes match to <2 px). Params are RapidOCR's
+        config.yaml defaults (thresh 0.3, box_thresh 0.5, unclip_ratio 1.6, use_dilation). DEDOC_VEC_UNCLIP=0 falls
+        back to the shapely+pyclipper DBPostProcess (for A/B)."""
+        import os
+        import cv2
+        src_h, src_w = ori_shape
+        if os.environ.get("DEDOC_VEC_UNCLIP", "1") == "0":           # A/B fallback: per-box shapely+pyclipper unclip
+            boxes, _ = self._ensure_det_post()(preds, ori_shape)
+            return self._order_clip_filter(boxes, src_w, src_h)
+        pred = preds[0, 0] if preds.ndim == 4 else preds[0]          # (H,W) probability heatmap
+        height, width = pred.shape
+        mask = cv2.dilate((pred > 0.3).astype(np.uint8), np.array([[1, 1], [1, 1]], dtype=np.uint8))
+        contours = cv2.findContours(mask * 255, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
+        minis = []
+        for contour in contours[:1000]:                             # max_candidates
+            box, sside = _min_area_box(contour)
+            if sside < 3:                                           # min_size
+                continue
+            if _box_score_fast(pred, box.copy()) < 0.5:             # box_thresh
+                continue
+            minis.append(box)
+        if not minis:
+            return np.array([])
+        expanded, sside = _unclip_boxes(np.stack(minis), 1.6)       # vectorized closed-form unclip
+        expanded = expanded[sside >= 5]                             # min_size + 2
+        if len(expanded) == 0:
+            return np.array([])
+        expanded[..., 0] = np.clip(np.round(expanded[..., 0] / width * src_w), 0, src_w)   # scale to the source page
+        expanded[..., 1] = np.clip(np.round(expanded[..., 1] / height * src_h), 0, src_h)
+        return self._order_clip_filter(expanded, src_w, src_h)
+
+    def infer_gpu_from_image(self, image: np.ndarray):
+        """Detection forward with GPU-side preprocessing: upload the page, resize + normalize on the GPU, and run DBNet
+        on the on-device tensor -- no CPU det-preprocess (``_det_preprocess``), no 8 MB ``det_prepro`` transport, and no
+        separate H2D upload of the float tensor. With the TensorRT DBNet engine the forward is fully GPU-resident
+        (``_TRTDet.forward_gpu``); otherwise the onnxruntime CUDA session is fed via IOBinding. Returns
+        ``(heatmap, ori_shape, page)`` -- the on-device full-res page tensor is handed to ``recognize_boxes_fused`` so
+        recognition reuses it instead of re-uploading the page (saves the duplicate 26 MB H2D on the GPU worker)."""
+        import torch
+        import torch.nn.functional as F
+        h_img, w_img = image.shape[:2]
+        page = torch.from_numpy(np.ascontiguousarray(image)).cuda().permute(2, 0, 1).unsqueeze(0).float()  # 1,3,H,W BGR
+        side = int(self.config.get("hybrid_det_max_side", 960))
+        ratio = side / max(h_img, w_img) if (side > 0 and max(h_img, w_img) > side) else 1.0  # limit_type='max' downscale
+        rh = max(32, int(round(int(h_img * ratio) / 32) * 32))
+        rw = max(32, int(round(int(w_img * ratio) / 32) * 32))
+        x = F.interpolate(page, size=(rh, rw), mode="bilinear", align_corners=False)
+        x = (((x / 255.0) - 0.5) / 0.5).contiguous()  # normalize (mean/std 0.5), matches _det_preprocess
+        trt_det = self._ensure_det_trt()
+        if trt_det is not None:  # fully GPU-resident: TRT DBNet directly on the device tensor
+            heatmap = trt_det.forward_gpu(x)
+            torch.cuda.synchronize()
+            return heatmap.float().cpu().numpy(), (h_img, w_img), page
+        sess = self._ensure_det().infer.session  # onnxruntime CUDA session via IOBinding (no re-upload of x)
+        if not hasattr(self, "_det_io_names"):
+            self._det_io_names = (sess.get_inputs()[0].name, sess.get_outputs()[0].name)
+        in_name, out_name = self._det_io_names
+        io = sess.io_binding()
+        io.bind_input(name=in_name, device_type="cuda", device_id=0, element_type=np.float32,
+                      shape=tuple(x.shape), buffer_ptr=x.data_ptr())
+        io.bind_output(out_name)
+        torch.cuda.synchronize()  # the resize/normalize kernels must finish before ORT reads x (separate CUDA streams)
+        sess.run_with_iobinding(io)
+        return io.copy_outputs_to_cpu()[0], (h_img, w_img), page
 
     def page_from_detections(self, detections, image: np.ndarray, page_num: int) -> PageWithBBox:
         ocr_conf_threshold = self.config.get("ocr_conf_threshold", -1)
@@ -420,7 +619,7 @@ class HybridOCRLineExtractor:
             dets = [(b, _homoglyph(t), cf) for b, t, cf in dets]
         return dets
 
-    def recognize_boxes_fused(self, image: np.ndarray, boxes, language: str) -> list:
+    def recognize_boxes_fused(self, image: np.ndarray, boxes, language: str, page=None) -> list:
         """GPU-resident recognition (requires the _TRTRec engine): upload the page ONCE, extract+resize every crop on
         the GPU, run the TRT recognizer on the GPU tensor, argmax on the GPU, and download only the tiny index/prob
         arrays -> CTC decode. Keeping the crops and the CRNN logits on-device and collapsing the per-op syncs cuts ~1/3
@@ -437,8 +636,10 @@ class HybridOCRLineExtractor:
             return []
         rec = self._ensure_ppocr_rec()
         trt, decode = rec.session, rec.postprocess_op
+        chars = decode.character  # class index -> char (0 = CTC blank); the ONLY CTC step left on the CPU is the join
         H, W = image.shape[:2]
-        page = torch.from_numpy(np.ascontiguousarray(image)).cuda().permute(2, 0, 1).unsqueeze(0).float()  # 1,3,H,W BGR
+        if page is None:  # detection (infer_gpu_from_image) may hand us the already-uploaded page -> reuse it (no re-H2D)
+            page = torch.from_numpy(np.ascontiguousarray(image)).cuda().permute(2, 0, 1).unsqueeze(0).float()  # 1,3,H,W BGR
         q = np.stack([np.asarray(b, dtype=np.float32) for b in boxes])  # (M,4,2) TL,TR,BR,BL
         w = np.maximum(np.linalg.norm(q[:, 0] - q[:, 1], axis=1), np.linalg.norm(q[:, 2] - q[:, 3], axis=1))
         h = np.maximum(np.linalg.norm(q[:, 0] - q[:, 3], axis=1), np.linalg.norm(q[:, 1] - q[:, 2], axis=1))
@@ -451,12 +652,16 @@ class HybridOCRLineExtractor:
         out = [None] * len(boxes)
         cn = torch.from_numpy(np.stack([q[..., 0] / (W - 1) * 2 - 1, q[..., 1] / (H - 1) * 2 - 1], -1)).cuda()  # corners [-1,1]
 
-        def _run(crops, ks):
+        def _run(crops, ks):  # crops: (N,3,48,W) fp32 for the TRT engine
             logits = trt.forward_gpu(crops.contiguous())
-            pi = torch.argmax(logits, -1).cpu().numpy(); pp = logits.float().amax(-1).cpu().numpy()
-            texts = decode.decode(pi, pp, is_remove_duplicate=True)  # reuse the rec's exact CTC collapse
-            for bi, k in enumerate(ks):
-                out[int(k)] = (boxes[int(k)], texts[bi][0], texts[bi][1])
+            idx = torch.argmax(logits, -1)                            # (N,T) best class per timestep -- GPU
+            prob = logits.float().amax(-1)                            # (N,T) its probability (rec output is softmaxed)
+            keep = idx != 0                                           # drop the CTC blank (class 0) -- GPU
+            keep[:, 1:] &= idx[:, 1:] != idx[:, :-1]                  # collapse consecutive duplicates -- GPU
+            conf = (prob * keep).sum(-1) / keep.sum(-1).clamp(min=1)  # mean prob of the survivors -- GPU
+            idx_c = idx.cpu().numpy(); keep_c = keep.cpu().numpy(); conf_c = conf.cpu().numpy()
+            for bi, k in enumerate(ks):  # CPU: only the index->char lookup + join is left of the CTC decode
+                out[int(k)] = (boxes[int(k)], "".join([chars[t] for t in idx_c[bi][keep_c[bi]]]), float(conf_c[bi]))
 
         order = np.where(wide)[0]
         order = order[np.argsort(wt[order])]  # batch similar widths, like the rec
@@ -477,8 +682,8 @@ class HybridOCRLineExtractor:
             pts1 = torch.where(oob[..., None], torch.full_like(pts1, -2.0), pts1)
             canvas = F.grid_sample(page.expand(N, 3, H, W), pts1, mode="bicubic", padding_mode="border", align_corners=True)
             # pass 2: resize each box's own native (hik,wik) sub-region -> (48, Wb)
-            src_r = torch.arange(48, device="cuda").float()[None, :] / 47.0 * (hik[:, None] - 1)      # (N,48)
-            u2 = torch.arange(Wb, device="cuda").float()[None, :] / (wtk[:, None] - 1).clamp(min=1)   # (N,Wb)
+            src_r = torch.arange(48, device="cuda").float()[None, :] / 47.0 * (hik[:, None] - 1)       # (N,48)
+            u2 = torch.arange(Wb, device="cuda").float()[None, :] / (wtk[:, None] - 1).clamp(min=1)    # (N,Wb)
             src_c = u2 * (wik[:, None] - 1)
             gy = (src_r / (Hmax - 1) * 2 - 1)[:, :, None].expand(N, 48, Wb)
             gx = (src_c / (Wmax - 1) * 2 - 1)[:, None, :].expand(N, 48, Wb)
