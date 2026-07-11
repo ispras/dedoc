@@ -343,7 +343,11 @@ class PdfBaseReader(BaseReader):
         pages = list(range(first_page, end))
         specs = pdf_stages.build_specs(parameters, ocr_engine=self.config.get("ocr_engine", "tesseract"))
         workers = int(self.config.get("cpu_workers", 4))
-        pool_sizes = {"cpu_process": workers, "thread": workers, "gpu": int(self.config.get("gpu_workers", 1))}
+        # 2 GPU workers by default when on GPU: the single GPU worker serializes orient_predict + ocr_gpu and is the
+        # wall bottleneck (GPU ~30% utilized); a 2nd worker overlaps them for ~-16% wall (costs a 2nd copy of the GPU
+        # models, ~+1.7 GB). CPU-only runs keep 1 (a 2nd process would just duplicate the models with no device to share).
+        default_gpu_workers = 2 if self.config.get("on_gpu") else 1
+        pool_sizes = {"cpu_process": workers, "thread": workers, "gpu": int(self.config.get("gpu_workers", default_gpu_workers))}
         max_inflight = int(self.config.get("max_inflight_pages", max(4, 2 * workers)))
 
         def seed(page: int) -> dict:
