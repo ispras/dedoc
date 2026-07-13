@@ -375,6 +375,11 @@ def _hybrid_stack_ocr(stacked_gray, language: str) -> _RecPage:
     bgr = cv2.cvtColor(stacked_gray, cv2.COLOR_GRAY2BGR) if stacked_gray.ndim == 2 else stacked_gray
     try:
         boxes = _READER.ocr.postprocess(_READER.ocr.infer(_READER.ocr.preprocess(bgr)[0]), (bgr.shape[0], bgr.shape[1]))
+        # NB: keep the CPU-warpPerspective recognizer here, NOT recognize_boxes_fused. Table stacks are narrow vertical
+        # cell concatenations -> almost every box is TINY and TALL (single chars, w~26). Even after matching the GPU
+        # tall crop to warpPerspective (see _gpu_native_crop's j/w convention), the fused vs CPU-warp text overlaps only
+        # ~40% on real stacks -- recognition of these tiny fragments is unstable, and there is no table-cell ground
+        # truth to prove the fused path is neutral. The table-cell OCR was validated against this CPU path.
         dets = _READER.ocr.recognize_detections(bgr, boxes, language)
     except Exception:  # a degenerate stack must never kill the page's tables -> those cells just get no text
         return _RecPage([])

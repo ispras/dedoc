@@ -295,7 +295,10 @@ def _gpu_native_crop(page, box, h_img, w_img):
     h = int(max(np.linalg.norm(p[0] - p[3]), np.linalg.norm(p[1] - p[2])))
     if w <= 0 or h <= 0:
         return None
-    u = torch.linspace(0, 1, w, device="cuda"); v = torch.linspace(0, 1, h, device="cuda")
+    # sample at u=j/w, v=i/h (NOT j/(w-1)) to match cv2.warpPerspective's dst-rect [0,w]x[0,h] convention -- the last
+    # column lands at (w-1)/w, not 1.0. Cuts the native-crop MAE vs warpPerspective from ~16.7 to ~2.1 (median ~0);
+    # negligible for wide boxes but decisive for the tiny tall boxes that dominate table stacks.
+    u = torch.arange(w, device="cuda").float() / w; v = torch.arange(h, device="cuda").float() / h
     vv, uu = torch.meshgrid(v, u, indexing="ij")
     c = torch.tensor(p, device="cuda"); tl, tr, br, bl = c[0], c[1], c[2], c[3]
     top = tl + uu[..., None] * (tr - tl)
