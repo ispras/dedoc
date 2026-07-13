@@ -10,10 +10,8 @@ class ValleyEmphasisBinarizer:
         if image.shape[-1] == 3:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         threshold = self.__get_threshold(image)
-
-        image[image <= threshold] = 0
-        image[image > threshold] = 1
-        return image
+        # single SIMD pass (dst = 1 where src>threshold else 0) instead of two full-page boolean masks + assigns
+        return cv2.threshold(image, float(threshold), 1, cv2.THRESH_BINARY)[1]
 
     def __get_threshold(self, gray_img: np.ndarray) -> int:
         # Vectorized valley-emphasis Otsu, bit-identical to the original per-bin loop (verified: same counts, same
