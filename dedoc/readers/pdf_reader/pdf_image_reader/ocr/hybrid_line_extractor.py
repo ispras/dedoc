@@ -453,7 +453,7 @@ class HybridOCRLineExtractor:
         profile caps each input side at 960, so it is only used when ``hybrid_det_max_side<=960``."""
         if getattr(self, "_det_trt", "unset") == "unset":
             import os
-            engine = {"trt_fp16": "det_fp16.trt"}.get(self.config.get("hybrid_det_engine", "onnx"))
+            engine = {"trt_fp16": "det_fp16.trt"}.get(self.config.get("hybrid_det_engine", "trt_fp16"))
             path = os.path.join(os.path.dirname(__file__), "ppocr_eslav", engine) if engine else None
             ok = bool(self.config.get("on_gpu") and path and os.path.exists(path)
                       and int(self.config.get("hybrid_det_max_side", 960)) <= 960)

@@ -251,7 +251,7 @@ def _ocr_gpu(config: dict, doc: dict) -> dict:
     page_gpu = None  # DEDOC_FUSED_DET hands the on-device page from detection to recognition (skips the duplicate H2D)
     if "ocr_boxes" in doc:  # DEDOC_SPLIT_DETPP: DBNet forward + box post already ran (det_forward -> det_postproc)
         boxes = doc["ocr_boxes"]
-    elif os.environ.get("DEDOC_FUSED_DET") == "1":  # GPU-side det preprocessing from the page (no det_pre stage)
+    elif _READER.config.get("on_gpu") and os.environ.get("DEDOC_FUSED_DET", "1") != "0":  # DEFAULT: GPU-side det preprocess
         preds, ori, page_gpu = _READER.ocr.infer_gpu_from_image(doc["image"])
         boxes = _READER.ocr.postprocess(preds, ori)
     else:
@@ -485,7 +485,7 @@ _SPEC_DEFS = {
 }
 
 
-def build_specs(params: Any, ocr_engine: str = "tesseract") -> List[TaskSpec]:
+def build_specs(params: Any, ocr_engine: str = "tesseract", on_gpu: bool = False) -> List[TaskSpec]:
     """
     Build the per-page task graph from the request config (ARCHITECTURE.md §9): a stage is present only if
     its parameter enables it, and blockers are the default preprocessing chain restricted to present stages
@@ -542,9 +542,10 @@ def build_specs(params: Any, ocr_engine: str = "tesseract") -> List[TaskSpec]:
             blockers["det_postproc"] = ["det_forward"]
             blockers["ocr_gpu"] = ["det_postproc"]
             blockers["ocr"] = ["ocr_gpu"]
-        elif os.environ.get("DEDOC_FUSED_DET") == "1":
-            # detection preprocessing runs on the GPU worker from the page (IOBinding) -> no det_pre CPU stage, no
-            # det_prepro transport. Frees the CPU pool (the constraint at gpu_workers=2) of the cv2 resize/normalize.
+        elif on_gpu and os.environ.get("DEDOC_FUSED_DET", "1") != "0":
+            # DEFAULT on GPU: detection preprocessing runs on the GPU worker from the page (GPU resize + TRT/onnx forward
+            # via infer_gpu_from_image) -> no det_pre CPU stage, no det_prepro transport, page reused by recognition.
+            # DEDOC_FUSED_DET=0 falls back to the CPU det_pre stage (also the path off-GPU).
             present.append("ocr_gpu")
             blockers["ocr_gpu"] = blockers["ocr"]
             blockers["ocr"] = ["ocr_gpu"]

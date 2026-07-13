@@ -341,7 +341,8 @@ class PdfBaseReader(BaseReader):
         page_count = get_pdf_page_count(path) or 1
         end = page_count if last_page == math.inf else min(int(last_page), page_count)
         pages = list(range(first_page, end))
-        specs = pdf_stages.build_specs(parameters, ocr_engine=self.config.get("ocr_engine", "tesseract"))
+        specs = pdf_stages.build_specs(parameters, ocr_engine=self.config.get("ocr_engine", "tesseract"),
+                                       on_gpu=bool(self.config.get("on_gpu", False)))
         workers = int(self.config.get("cpu_workers", 4))
         # 2 GPU workers by default when on GPU: the single GPU worker serializes orient_predict + ocr_gpu and is the
         # wall bottleneck (GPU ~30% utilized); a 2nd worker overlaps them for ~-16% wall (costs a 2nd copy of the GPU
