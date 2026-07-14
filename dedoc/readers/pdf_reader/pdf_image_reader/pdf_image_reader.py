@@ -35,7 +35,8 @@ class PdfImageReader(PdfBaseReader):
     """
 
     def __init__(self, *, config: Optional[dict] = None) -> None:
-        from dedocutils.preprocessing import AdaptiveBinarizer, SkewCorrector
+        from dedocutils.preprocessing import AdaptiveBinarizer
+        from dedoc.readers.pdf_reader.pdf_image_reader.fast_skew_corrector import FastSkewCorrector
         from dedoc.attachments_extractors.concrete_attachments_extractors.image_attachments_extractor import ImageAttachmentsExtractor
         from dedoc.readers.pdf_reader.pdf_image_reader.columns_orientation_classifier.columns_orientation_classifier import ColumnsOrientationClassifier
         from dedoc.readers.pdf_reader.pdf_image_reader.ocr.ocr_line_extractor import OCRLineExtractor
@@ -49,7 +50,7 @@ class PdfImageReader(PdfBaseReader):
             recognized_extensions=recognized_extensions.pdf_like_format.union(recognized_extensions.image_like_format).union(supported_image_extensions),
             recognized_mimes=recognized_mimes.pdf_like_format.union(recognized_mimes.image_like_format)
         )
-        self.skew_corrector = SkewCorrector()
+        self.skew_corrector = FastSkewCorrector()
         self.column_orientation_classifier = ColumnsOrientationClassifier(on_gpu=self.config.get("on_gpu", False),
                                                                           checkpoint_path=os.path.join(get_config()["resources_path"],
                                                                                                        "scan_orientation_efficient_net_b0.pth"),
