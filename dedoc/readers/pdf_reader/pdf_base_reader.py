@@ -256,6 +256,49 @@ class PdfBaseReader(BaseReader):
         if page_from >= page_to:
             return
 
+        import os
+        # In-process pypdfium2 (PDFium) rendering is ~7% faster end-to-end than pdf2image/pdftoppm (which spawns a
+        # poppler subprocess and re-parses the PDF per batch), but is OPT-IN (DEDOC_RENDER=pdfium): on master's
+        # Tesseract path it is NOT quality-neutral -- PDFium's thinner glyph anti-aliasing shifts Tesseract's output
+        # even with the 2x2 erode (that erode was tuned for the hybrid recognizer), costing ~0.4% word-bag F1 on
+        # gen_texts and ~1% body-text similarity vs poppler. The default stays pdftoppm (byte-identical to before).
+        if os.environ.get("DEDOC_RENDER", "pdftoppm") == "pdfium":
+            try:
+                yield from self._split_pdfium(path, page_from, page_to)
+                return
+            except Exception as error:
+                self.logger.warning(f"pypdfium2 render failed ({error}); falling back to pdf2image")
+        yield from self._split_pdftoppm(path, page_from, page_to)
+
+    def _split_pdfium(self, path: str, page_from: int, page_to: int) -> Iterator[ndarray]:
+        """Render pages with pypdfium2 at 200 DPI -> BGR (same resolution/convention as pdf2image, so downstream stages
+        are unchanged). PDFium's anti-aliasing renders glyphs ~1 px thinner than Poppler (costs ~3.8% word-bag F1 on
+        short text); a 2x2 erode thickens them back to Poppler weight and recovers it (~1 ms/page)."""
+        import os
+        import math
+        import cv2
+        import numpy as np
+        import pypdfium2 as pdfium
+        from dedoc.utils.pdf_utils import get_pdf_page_count
+
+        page_count = get_pdf_page_count(path)
+        page_count = math.inf if page_count is None else page_count
+        last = int(min(page_to, page_count))
+        kernel = np.ones((2, 2), np.uint8)
+        with open(path, "rb") as content:  # load from bytes: a path makes PDFium hold a Windows lock on the file
+            pdf = pdfium.PdfDocument(content.read())
+        try:
+            for page_index in range(page_from, last):
+                bitmap = pdf[page_index].render(scale=200 / 72)  # 200 DPI, matching pdf2image's default
+                arr = bitmap.to_numpy()
+                arr = arr[:, :, :3] if (arr.ndim == 3 and arr.shape[2] == 4) else arr
+                image = np.ascontiguousarray(arr[:, :, ::-1])  # RGB -> BGR
+                self.logger.info(f"Rendered page {page_index + 1} of {page_count} file {os.path.basename(path)} (pypdfium2)")
+                yield cv2.erode(image, kernel, iterations=1)
+        finally:
+            pdf.close()
+
+    def _split_pdftoppm(self, path: str, page_from: int, page_to: int) -> Iterator[ndarray]:
         import cv2
         import math
         import os
