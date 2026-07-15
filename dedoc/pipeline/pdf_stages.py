@@ -563,6 +563,17 @@ def build_specs(params: Any, ocr_engine: str = "tesseract", on_gpu: bool = False
     specs = []
     for name in present:
         spec_def = dict(_SPEC_DEFS[name])
+        if not on_gpu and spec_def.get("resource") == Resource.GPU:
+            # Without a GPU there is no device to share, so a "GPU" stage is just ordinary CPU work. Leaving it routed
+            # to the gpu pool pins every forward to that single worker, which runs them serially and starves the CPU
+            # pool: measured on Catalana 24p, CPU-only, orient_predict alone -> 8 workers were *slower* than 1
+            # (54.1s vs 48.9s) with only ~25% of the cores busy. Route these to the CPU workers so they parallelize
+            # per page like every other CPU stage; batching only pays off on a device (one forward per batch), so it
+            # is dropped here in favour of per-page spread.
+            spec_def["resource"] = Resource.CPU
+            spec_def["exec_mode"] = ExecMode.THREAD
+            spec_def.pop("batch_process", None)
+            spec_def["batch_size"] = 1
         if name == "ocr" and ocr_engine == "hybrid":  # ocr is now the CPU metadata stage -> run it on the CPU workers
             spec_def["exec_mode"] = ExecMode.THREAD
         specs.append(TaskSpec(name=name, blockers=blockers.get(name, []), **spec_def))

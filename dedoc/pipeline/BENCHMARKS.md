@@ -71,9 +71,34 @@ count over the graph); the reader passes a reducer that drops `"image"`. Memory 
 ## Grouped summaries
 
 ### Scaling proc=1 → proc=8 (Catalana 24p, warm)
-- CPU, NN on:  70.6 → 66.1  (~flat — orientation serialized in the single GPU worker running on CPU)
+- CPU, NN on:  70.6 → 66.1  (~flat — orientation serialized in the single GPU worker running on CPU) — **fixed, see below**
 - CPU, NN off: 45.3 → 30.6  (**1.48x**)
 - GPU, NN on:  82.3 → 42.6  (**1.93x**)
+
+### CPU-only: routing the NN stages off the gpu pool (fixed)
+`build_specs` marked `orient_predict` / `layout` as `Resource.GPU` unconditionally, so `scheduler.route` pinned them
+to the gpu pool — which is **one** worker on a CPU-only run (`default_gpu_workers = 1`). Every NN forward therefore ran
+serially in that worker while the CPU pool idled. When `on_gpu=False` those specs are now plain CPU specs (per page,
+unbatched — batching only pays off on a device), so they spread over the CPU workers like every other stage.
+
+Measured here (Catalana, CPU-only, `OMP_THREAD_LIMIT=1`; this machine is faster than the runs above, so compare
+before/after within this block, not against the table):
+
+| config | before | after | CPU util before → after |
+|---|---|---|---|
+| 24p, 8 workers | 54.1s | **17.1s** (**3.2x**) | 25% (4.1/16) → **74%** (11.9/16) |
+| 24p + attachments (layout) | 119.8s (row 20) | **31.0s** (**3.9x**) | 26% (2.4/16) → **71%** (11.4/16) |
+| 12p + attachments (A/B, same process) | 58.9s | **18.8s** (**3.1x**) | — |
+| scaling 1 → 8 workers | 48.9 → 54.1 (**0.9x**, negative) | 48.0 → 17.1 (**2.8x**) | — |
+
+**Full document, DAE 297p, CPU-only, 8 workers, single parse: 254.9s** (CPU **97%**, 15.5/16 cores) — **×5.4 vs the
+1377.6s master reference**. Note this is the Tesseract path: the GPU Phase-2 number (~82s) buys its speed with
+TensorRT/DBNet, which do not exist off-device, so CPU-only cannot approach it — the honest CPU-only baseline is master.
+
+Parity: output identical before/after, including with attachments — `text_sha`, `tbl_sha`, attachment
+(page + bbox) hash, and line/table/attachment counts all match, i.e. dropping the layout batching (batch=4 → per page)
+is transport-only. (Attachment `original_name`/`uid` are regenerated every run — `get_unique_name` / `uuid4` — so they
+must not be used as a parity metric.)
 
 ### New vs original (Catalana 24p, proc=8, warm)
 - CPU:  new 66.1  vs  master 95.7   (~1.45x)
@@ -94,6 +119,8 @@ count over the graph); the reader passes a reducer that drops `"image"`. Memory 
   GPU used in bursts: avg util 25%→10%, busy 100%→17% of time — fewer, larger forwards, less total GPU time).
 - Layout (RT-DETR) routes to the single gpu-pool worker; on CPU that worker runs all forwards serially,
   starving the pipeline (CPU 26%, 2.4/16 cores). On GPU it offloads them (CPU back to ~76%).
+  **Fixed for CPU-only runs** (`on_gpu=False` now routes the NN stages to the CPU workers): 119.8s → 31.0s,
+  CPU 26% → 71% — see the CPU-only section above. On GPU the routing is unchanged.
 - Made device-aware + batched in `ImageAttachmentsExtractor` (`_predict_batch` + `extract_batch`, moves model +
   inputs to `cuda` when `on_gpu`); previously it always ran on CPU per image regardless of `on_gpu`.
 
