@@ -353,12 +353,11 @@ class PdfTabbyReader(PdfBaseReader):
               start_page: int = None,
               end_page: int = None,
               remove_frame: bool = False,
-              gost_json_path: str = "",
-              jvm_args: Optional[List[str]] = None
+              gost_json_path: str = ""
               ) -> bytes:
         import subprocess
 
-        args = ["java"] + (jvm_args or []) + ["-jar", self.__jar_path(), "-i", path, "-tmp", f"{tmp_dir}/"]
+        args = ["java"] + ["-jar", self.__jar_path(), "-i", path, "-tmp", f"{tmp_dir}/"]
         if remove_frame:
             args += ["-rf", gost_json_path]
         if start_page is not None and end_page is not None:
@@ -381,11 +380,11 @@ class PdfTabbyReader(PdfBaseReader):
         (``__tabby_raw_pages_in``), those pages are reused and only the remaining ones are extracted -- the detection
         read produces a complete extraction of them anyway, so re-extracting was pure duplicate work.
 
-        Page numbers are absolute and the ranges are contiguous & disjoint, so concatenating the ``pages`` lists
-        reproduces a single-call extraction exactly (the same invariant :meth:`__process_pdf_parallel` relies on).
-        The concatenation happens *before* the per-page processing in :meth:`__extract`, which is what keeps cross-page
-        merging (paragraphs/lines spanning the boundary) intact -- handing whole parsed documents over per page range
-        instead would break it.
+        Tabby's per-page output is page-local and page numbers are absolute, and the ranges here are contiguous and
+        disjoint, so concatenating the ``pages`` lists reproduces a single-call extraction exactly. The concatenation
+        happens *before* the per-page processing in :meth:`__extract`, which is what keeps cross-page merging
+        (paragraphs/lines spanning the boundary) intact -- handing whole parsed documents over per page range instead
+        would break it.
         """
         cached = parameters.get("__tabby_raw_pages_in")
         cached_pages = cached.get("pages") if cached else None
@@ -416,64 +415,9 @@ class PdfTabbyReader(PdfBaseReader):
         import json
         import os
 
-        n_chunks = self.__parallel_chunk_count(start_page, end_page, remove_frame)
-        if n_chunks > 1:
-            return self.__process_pdf_parallel(path, tmp_dir, start_page, end_page, gost_json_path, remove_frame, n_chunks)
-
         self.__run(path=path, start_page=start_page, end_page=end_page, tmp_dir=tmp_dir, remove_frame=remove_frame, gost_json_path=gost_json_path)
         with open(os.path.join(tmp_dir, "data.json"), "r", encoding="utf-8") as response:  # encoding= : data.json is UTF-8, avoids cp1251 breakage on RU-locale Windows
             return json.load(response)
-
-    def __parallel_chunk_count(self, start_page: Optional[int], end_page: Optional[int], remove_frame: bool) -> int:
-        """How many parallel tabby subprocesses to split this page range into. The tabby JAR uses only ~2 of the
-        machine's cores, so a large document is faster split into contiguous page ranges run concurrently (validated
-        bit-identical: tabby's per-page output is page-local and page numbers are absolute, so merging = concatenating
-        the ``pages`` lists). Small documents keep a single call (N JVM startups would cost more than the saving);
-        the GOST-frame path and open-ended ranges also stay single. Tunables: tabby_parallel_chunks /
-        DEDOC_TABBY_CHUNKS (cap, default 4; set 1 to disable), tabby_parallel_min_pages_per_chunk (default 20)."""
-        import os
-        if remove_frame or start_page is None or end_page is None:
-            return 1
-        max_chunks = int(os.environ.get("DEDOC_TABBY_CHUNKS", self.config.get("tabby_parallel_chunks", 4)))
-        min_per_chunk = int(os.environ.get("DEDOC_TABBY_MIN_PAGES_PER_CHUNK", self.config.get("tabby_parallel_min_pages_per_chunk", 20)))
-        pages = end_page - start_page + 1
-        return max(1, min(max_chunks, pages // max(min_per_chunk, 1)))
-
-    def __process_pdf_parallel(self, path: str, tmp_dir: str, start_page: int, end_page: int, gost_json_path: str,
-                               remove_frame: bool, n_chunks: int) -> dict:
-        import json
-        import math
-        import os
-        from concurrent.futures import ThreadPoolExecutor
-
-        per_chunk = math.ceil((end_page - start_page + 1) / n_chunks)
-        ranges, page = [], start_page
-        while page <= end_page:
-            ranges.append((page, min(page + per_chunk - 1, end_page)))
-            page = ranges[-1][1] + 1
-        self.logger.info(f"Reading PDF in {len(ranges)} parallel tabby chunks: {ranges}")
-        # bound each JVM's GC (SerialGC + small heap) so N concurrent tabby processes do not saturate memory bandwidth
-        # with parallel GC threads -- measured to cut inter-JVM contention. Override via DEDOC_TABBY_JVM_ARGS.
-        jvm_args = os.environ.get("DEDOC_TABBY_JVM_ARGS", "-XX:+UseSerialGC -Xmx1024m").split()
-
-        def run_chunk(indexed_range: tuple) -> dict:
-            index, (chunk_start, chunk_end) = indexed_range
-            chunk_tmp = os.path.join(tmp_dir, f"chunk_{index}")
-            os.makedirs(chunk_tmp, exist_ok=True)
-            self.__run(path=path, start_page=chunk_start, end_page=chunk_end, tmp_dir=chunk_tmp,
-                       remove_frame=remove_frame, gost_json_path=gost_json_path, jvm_args=jvm_args)
-            with open(os.path.join(chunk_tmp, "data.json"), "r", encoding="utf-8") as response:
-                return json.load(response)
-
-        with ThreadPoolExecutor(max_workers=len(ranges)) as executor:
-            documents = list(executor.map(run_chunk, enumerate(ranges)))
-
-        # merge: page numbers are absolute and the ranges are contiguous & disjoint, so concatenating the per-chunk
-        # ``pages`` lists in range order reproduces the single-call output exactly (multi-page tables spanning a chunk
-        # boundary are still assembled downstream by TableRecognizer.convert_to_multipages_tables from page fragments)
-        merged = documents[0]
-        merged["pages"] = [page for document in documents for page in document.get("pages", [])]
-        return merged
 
     def _process_one_page(self,
                           image: ndarray,
