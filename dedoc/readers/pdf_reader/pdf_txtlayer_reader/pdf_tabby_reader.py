@@ -122,15 +122,13 @@ class PdfTabbyReader(PdfBaseReader):
         first_tabby_page = first_page + 1 if first_page is not None else 1
         last_tabby_page = page_count if (last_page is None) or (last_page is not None and last_page > page_count) else last_page
         last_tabby_page = None if last_tabby_page == math.inf else last_tabby_page
-        self.logger.info(f"Reading PDF pages from {first_tabby_page} to {last_tabby_page}")
-        document = self.__process_pdf(path=path,
-                                      start_page=first_tabby_page,
-                                      end_page=last_tabby_page,
-                                      tmp_dir=tmp_dir,
-                                      gost_json_path=gost_json_path,
-                                      remove_frame=remove_gost_frame)
+        pages = self.__get_raw_pages(path=path, parameters=parameters, tmp_dir=tmp_dir, first_tabby_page=first_tabby_page,
+                                     last_tabby_page=last_tabby_page, gost_json_path=gost_json_path, remove_frame=remove_gost_frame)
 
-        pages = document.get("pages", [])
+        pages_out = parameters.get("__tabby_raw_pages_out")
+        if pages_out is not None:  # let the caller (textual layer detection) keep this extraction for a later read
+            pages_out.extend(pages)
+
         lines = []
         for page in pages:
             page_lines = self.__get_lines_with_location(page, file_hash)
@@ -374,6 +372,39 @@ class PdfTabbyReader(PdfBaseReader):
             raise JavaNotFoundError(self.java_not_found_error)
         except subprocess.CalledProcessError as e:
             raise TabbyPdfError(e.stderr.decode(encoding))
+
+    def __get_raw_pages(self, path: str, parameters: dict, tmp_dir: str, first_tabby_page: int, last_tabby_page: Optional[int],
+                        gost_json_path: str, remove_frame: bool) -> List[dict]:
+        """Tabby's raw per-page output for the requested page range.
+
+        When the textual layer detection already extracted the leading pages and handed them over
+        (``__tabby_raw_pages_in``), those pages are reused and only the remaining ones are extracted -- the detection
+        read produces a complete extraction of them anyway, so re-extracting was pure duplicate work.
+
+        Page numbers are absolute and the ranges are contiguous & disjoint, so concatenating the ``pages`` lists
+        reproduces a single-call extraction exactly (the same invariant :meth:`__process_pdf_parallel` relies on).
+        The concatenation happens *before* the per-page processing in :meth:`__extract`, which is what keeps cross-page
+        merging (paragraphs/lines spanning the boundary) intact -- handing whole parsed documents over per page range
+        instead would break it.
+        """
+        cached = parameters.get("__tabby_raw_pages_in")
+        cached_pages = cached.get("pages") if cached else None
+
+        if cached_pages and first_tabby_page == 1 and not remove_frame:
+            cached_last = cached["last_page"]
+            if last_tabby_page is not None and last_tabby_page <= cached_last:
+                return cached_pages[:last_tabby_page]
+
+            self.logger.info(f"Reading PDF pages from {cached_last + 1} to {last_tabby_page} "
+                             f"(pages 1-{cached_last} reused from the textual layer detection)")
+            document = self.__process_pdf(path=path, start_page=cached_last + 1, end_page=last_tabby_page, tmp_dir=tmp_dir,
+                                          gost_json_path=gost_json_path, remove_frame=remove_frame)
+            return cached_pages + document.get("pages", [])
+
+        self.logger.info(f"Reading PDF pages from {first_tabby_page} to {last_tabby_page}")
+        document = self.__process_pdf(path=path, start_page=first_tabby_page, end_page=last_tabby_page, tmp_dir=tmp_dir,
+                                      gost_json_path=gost_json_path, remove_frame=remove_frame)
+        return document.get("pages", [])
 
     def __process_pdf(self,
                       path: str,

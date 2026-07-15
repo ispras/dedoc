@@ -11,7 +11,7 @@ from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier import get_cla
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_classifier.abstract_txtlayer_classifier import AbstractTxtlayerClassifier
 from dedoc.readers.pdf_reader.pdf_auto_reader.txtlayer_result import TxtLayerResult
 from dedoc.readers.pdf_reader.pdf_txtlayer_reader.pdf_tabby_reader import PdfTabbyReader
-from dedoc.utils.parameter_utils import get_bool_parameter, get_param_page_slice
+from dedoc.utils.parameter_utils import get_bool_parameter, get_param_page_slice, get_param_pdf_with_txt_layer, get_param_with_attachments
 from dedoc.utils.pdf_utils import get_pdf_page_count
 
 
@@ -63,14 +63,31 @@ class TxtLayerDetector:
         # documents keep the cheap first-8-pages-only, no-tables detection.
         page_count = get_pdf_page_count(path)
         reusable = page_count is not None and page_count <= 8 and start == 1 and end is None
+        # For longer documents the detection window cannot replace the whole read, but its extraction is still not
+        # wasted: tabby's raw per-page output is handed to PdfTabbyReader, which then extracts only the pages the
+        # detection did not cover. This is free -- the tabby reader ignores need_pdf_table_analysis, so this read
+        # already produces a complete extraction of those pages, which used to be thrown away. Restricted to:
+        #  * auto_tabby -- under "auto" the document is read by pdf_txtlayer_reader, which cannot consume tabby's pages;
+        #  * runs without attachments -- extracted image files live in this read's temporary directory, which is gone
+        #    by the time the second read would reference them.
+        pages_reusable = (
+            not reusable
+            and start == 1
+            and get_param_pdf_with_txt_layer(parameters) == "auto_tabby"
+            and not get_param_with_attachments(parameters)
+        )
+        detected_pages = [] if pages_reusable else None
         if reusable:
             parameters_copy["pages"] = "1:"  # exactly __parse_document's slice for a whole-document request; tables kept on
         else:
             parameters_copy["pages"] = "1:8"  # two batches for pdf_txtlayer_reader
             parameters_copy["need_pdf_table_analysis"] = "false"
+            if pages_reusable:
+                parameters_copy["__tabby_raw_pages_out"] = detected_pages
 
         document = self.pdf_reader.read(path, parameters=parameters_copy)
         reuse_document = document if reusable else None
+        detected_last_page = len(detected_pages) if detected_pages else 0
         is_correct = txtlayer_classifier.predict([document.lines])[0]
         if not is_correct:
             return [TxtLayerResult(correct=False, start=start, end=end)]
@@ -81,8 +98,10 @@ class TxtLayerDetector:
         first_page_lines = [line for line in document.lines if line.metadata.page_id == 0]
         first_page_correct = txtlayer_classifier.predict([first_page_lines])[0]
         if first_page_correct:
-            return [TxtLayerResult(correct=True, start=start, end=end, document=reuse_document)]
+            return [TxtLayerResult(correct=True, start=start, end=end, document=reuse_document,
+                                   detected_pages=detected_pages, detected_last_page=detected_last_page)]
         else:
+            # the leading pages are not read as one chunk here, so the detection extraction cannot be reused as-is
             return [TxtLayerResult(correct=False, start=start, end=start), TxtLayerResult(correct=True, start=start + 1, end=end)]
 
     def __classify_each_page(
