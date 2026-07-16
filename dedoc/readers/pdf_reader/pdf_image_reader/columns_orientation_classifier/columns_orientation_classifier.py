@@ -31,6 +31,8 @@ class ColumnsOrientationClassifier(object):
         self._device = None       # torch is imported lazily on first real use (net/device/predict), not at construction
         self._transform = None
         self.location = None
+        self._onnx_session = None
+        self._onnx_tried = False
 
     @property
     def device(self):
@@ -55,6 +57,68 @@ class ColumnsOrientationClassifier(object):
             self._net = net
         self._net.to(self.device)
         return self._net
+
+    @property
+    def onnx_session(self):
+        """onnxruntime session used for the **CPU** forward (None if unavailable -> caller falls back to torch).
+
+        This EfficientNet's torch CPU forward is ~2.4x slower than onnxruntime's on the same input (1844 -> 770 ms for
+        one 1200x1200 page, single intra-op thread), and on a CPU-only staged pipeline the orientation forward is ~35%
+        of all per-page stage time -- so off-GPU the forward goes through ONNX. The GPU path stays on torch/CUDA, which
+        is already fast (~187 ms/page) and where the batched forward pays off.
+
+        The graph is exported once next to the checkpoint and reused; the export is atomic, so concurrent workers never
+        observe a half-written file. Once it exists, a CPU worker no longer needs torch for the forward at all.
+        Threads are left at 1 by default: the pipeline gets its parallelism from the worker processes, and an intra-op
+        team per worker would oversubscribe the machine (override with DEDOC_ORT_THREADS).
+        """
+        if self._onnx_tried:
+            return self._onnx_session
+        self._onnx_tried = True
+        try:
+            import onnxruntime
+            onnx_path = os.path.splitext(self.checkpoint_path)[0] + ".onnx"
+            if not path.isfile(onnx_path):
+                self._export_onnx(onnx_path)
+            options = onnxruntime.SessionOptions()
+            options.intra_op_num_threads = int(os.environ.get("DEDOC_ORT_THREADS", "1"))
+            self._onnx_session = onnxruntime.InferenceSession(onnx_path, options, providers=["CPUExecutionProvider"])
+        except Exception as e:
+            self.logger.warning(f"ONNX orientation forward unavailable ({e}); using torch on CPU")
+            self._onnx_session = None
+        return self._onnx_session
+
+    def _export_onnx(self, onnx_path: str) -> None:
+        import torch
+        net = self.net
+        net.eval()
+        tmp_path = f"{onnx_path}.{os.getpid()}.tmp"
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            torch.onnx.export(net, torch.randn(1, 3, 1200, 1200), tmp_path, input_names=["input"], output_names=["logits"],
+                              dynamic_axes={"input": {0: "n"}, "logits": {0: "n"}}, opset_version=17)
+        os.replace(tmp_path, onnx_path)  # atomic: other workers see either no file or the complete one
+        self.logger.info(f"Orientation model exported to {onnx_path}")
+
+    def _decode(self, outputs: np.ndarray) -> List[Tuple[int, int]]:
+        """(N, 6) logits -> [(columns, angle)]: the first 2 classes are the column count, the last 4 the orientation."""
+        columns = outputs[:, :2].argmax(1)
+        orientation = outputs[:, 2:].argmax(1)
+        return [(self.classes[int(columns[i])], self.classes[2 + int(orientation[i])]) for i in range(len(columns))]
+
+    def _forward(self, batch) -> np.ndarray:
+        """Forward a prepared (N, 3, 1200, 1200) NCHW batch normalized to [-1, 1] (numpy or torch) -> (N, 6) logits."""
+        session = None if self._on_gpu else self.onnx_session
+        if session is not None:
+            array = batch.cpu().numpy() if hasattr(batch, "cpu") else batch
+            return session.run(["logits"], {"input": np.ascontiguousarray(array, dtype=np.float32)})[0]
+
+        import torch
+        net = self.net
+        net.eval()
+        with torch.no_grad():
+            tensor = batch if hasattr(batch, "to") else torch.from_numpy(batch)
+            return net(tensor.to(self.device)).cpu().numpy()
 
     @staticmethod
     def my_resize(image: Image) -> Image:
@@ -138,22 +202,7 @@ class ColumnsOrientationClassifier(object):
         """
         Predict class orientation of input image
         """
-        import torch
-        self.net.eval()
-        with torch.no_grad():
-            tensor_image = self.get_features(image)
-            outputs = self.net(tensor_image)
-            # first 2 classes mean columns number
-            # last 4 classes mean orientation
-            columns_out, orientation_out = outputs[:, :2], outputs[:, 2:]
-
-            _, columns_predicted = torch.max(columns_out, 1)
-            _, orientation_predicted = torch.max(orientation_out, 1)
-
-        columns, orientation = int(columns_predicted[0]), int(orientation_predicted[0])
-        columns_predict = self.classes[columns]
-        angle_predict = self.classes[2 + orientation]
-        return columns_predict, angle_predict
+        return self._decode(self._forward(self.get_features(image)))[0]
 
     def predict_batch(self, images: List[np.ndarray]) -> List[Tuple[int, int]]:
         """
@@ -164,29 +213,27 @@ class ColumnsOrientationClassifier(object):
             return []
 
         import torch
-        net = self.net
-        net.eval()
         with torch.no_grad():
             batch = torch.cat([self.get_features(image) for image in images], dim=0)  # (N, 3, 1200, 1200)
-            outputs = net(batch)
-            columns_predicted = torch.max(outputs[:, :2], 1)[1]
-            orientation_predicted = torch.max(outputs[:, 2:], 1)[1]
-
-        return [(self.classes[int(columns_predicted[i])], self.classes[2 + int(orientation_predicted[i])]) for i in range(len(images))]
+        return self._decode(self._forward(batch))
 
     def predict_prepared(self, canvases: List[np.ndarray]) -> List[Tuple[int, int]]:
-        """Forward + decode for pre-processed uint8 RGB canvases (from :meth:`preprocess_cpu`). Does the normalize
-        (ToTensor + Normalize -> [-1, 1]) on the GPU, so the CPU workers only hand over cheap uint8 arrays. Equivalent
-        to :meth:`predict_batch` but with the (heavy) resize/pad already done off the GPU worker."""
+        """Forward + decode for pre-processed uint8 RGB canvases (from :meth:`preprocess_cpu`). Equivalent to
+        :meth:`predict_batch` but with the (heavy) resize/pad already done off this worker.
+
+        On GPU the normalize (ToTensor + Normalize -> [-1, 1]) runs on the device, so the CPU workers only hand over
+        cheap uint8 arrays. On CPU the forward goes through onnxruntime (see :attr:`onnx_session`) and the normalize is
+        done in numpy, which keeps torch out of the CPU workers entirely.
+        """
         if not canvases:
             return []
+
+        if not self._on_gpu and self.onnx_session is not None:
+            batch = np.stack(canvases).transpose(0, 3, 1, 2).astype(np.float32) / 127.5 - 1.0  # == (x/255 - .5)/.5
+            return self._decode(self._forward(batch))
+
         import torch
-        net = self.net
-        net.eval()
         with torch.no_grad():
             batch = torch.from_numpy(np.stack(canvases)).to(self.device)          # (N, H, W, 3) uint8
             batch = batch.permute(0, 3, 1, 2).float().div_(255).sub_(0.5).div_(0.5)  # NCHW, [0,255] -> [-1, 1]
-            outputs = net(batch)
-            columns_predicted = torch.max(outputs[:, :2], 1)[1]
-            orientation_predicted = torch.max(outputs[:, 2:], 1)[1]
-        return [(self.classes[int(columns_predicted[i])], self.classes[2 + int(orientation_predicted[i])]) for i in range(len(canvases))]
+            return self._decode(self._forward(batch))
