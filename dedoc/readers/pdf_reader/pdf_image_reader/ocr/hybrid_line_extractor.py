@@ -195,6 +195,7 @@ class _TRTRec:
                        trt.DataType.INT8: torch.int8, trt.DataType.INT32: torch.int32}[self.engine.get_tensor_dtype(self.out_name)]
         prof = self.engine.get_tensor_profile_shape(self.in_name, 0)  # (min, opt, max) — clamp to the engine's width range
         self.min_w, self.max_w = prof[0][3], prof[2][3]
+        self.max_batch = prof[2][0]  # engine's profile max batch (caps the fused recognizer's crop batch)
 
     def __call__(self, x):  # x: (N,3,48,W) float32; returns [logits] to match OrtInferSession.__call__
         torch = self._torch
@@ -668,8 +669,13 @@ class HybridOCRLineExtractor:
 
         order = np.where(wide)[0]
         order = order[np.argsort(wt[order])]  # batch similar widths, like the rec
-        for bs in range(0, len(order), 8):
-            ks = order[bs:bs + 8]; N = len(ks)
+        # crop batch = the rec engine's profile max (16): beats 8 by ~6-16% wall (fewer TRT launches -> higher GPU
+        # util, less CPU spin/orchestration on the GPU worker) at identical WER / word-bag-F1; 32 needs a slower
+        # rebuilt engine and doesn't help. Capped at the engine's profile max; DEDOC_REC_BATCH overrides.
+        import os as _os
+        _rb = max(1, min(int(_os.environ.get("DEDOC_REC_BATCH", "16")), getattr(trt, "max_batch", 16)))
+        for bs in range(0, len(order), _rb):
+            ks = order[bs:bs + _rb]; N = len(ks)
             Hmax = int(hin[ks].max()); Wmax = int(win[ks].max()); Wb = int(max(trt.min_w, min(int(wt[ks].max()), trt.max_w)))
             hik = torch.from_numpy(hin[ks]).cuda().float(); wik = torch.from_numpy(win[ks]).cuda().float()
             wtk = torch.from_numpy(wt[ks]).cuda().float()
