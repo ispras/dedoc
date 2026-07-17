@@ -31,8 +31,8 @@ class ColumnsOrientationClassifier(object):
         self._device = None       # torch is imported lazily on first real use (net/device/predict), not at construction
         self._transform = None
         self.location = None
-        self._onnx_session = None
-        self._onnx_tried = False
+        self._cpu_fwd = None
+        self._cpu_fwd_tried = False
 
     @property
     def device(self):
@@ -59,34 +59,42 @@ class ColumnsOrientationClassifier(object):
         return self._net
 
     @property
-    def onnx_session(self):
-        """onnxruntime session used for the **CPU** forward (None if unavailable -> caller falls back to torch).
+    def cpu_forward(self):
+        """Fastest available **CPU** forward: ``ndarray(N,3,1200,1200) float32 [-1,1] -> ndarray(N,6) logits``.
 
-        This EfficientNet's torch CPU forward is ~2.4x slower than onnxruntime's on the same input (1844 -> 770 ms for
-        one 1200x1200 page, single intra-op thread), and on a CPU-only staged pipeline the orientation forward is ~35%
-        of all per-page stage time -- so off-GPU the forward goes through ONNX. The GPU path stays on torch/CUDA, which
-        is already fast (~187 ms/page) and where the batched forward pays off.
+        This EfficientNet's torch CPU forward is slow; the same graph runs ~2.4x faster on onnxruntime and ~4.4x
+        faster on OpenVINO (1844 -> 633 -> 419 ms for one 1200x1200 page, single thread), and on a CPU-only staged
+        pipeline the orientation forward is a large share of per-page time -- so off-GPU it goes through OpenVINO,
+        falling back to onnxruntime, then to torch (``None`` here) if neither is available. The GPU path stays on
+        torch/CUDA (already fast, and where the batched forward pays off).
 
-        The graph is exported once next to the checkpoint and reused; the export is atomic, so concurrent workers never
-        observe a half-written file. Once it exists, a CPU worker no longer needs torch for the forward at all.
-        Threads are left at 1 by default: the pipeline gets its parallelism from the worker processes, and an intra-op
-        team per worker would oversubscribe the machine (override with DEDOC_ORT_THREADS).
+        The graph is exported to ONNX once next to the checkpoint (atomic, so concurrent workers never see a partial
+        file) and reused by whichever backend is available. Once it exists, a CPU worker needs torch only as a last
+        resort. Single-thread: the pipeline parallelizes over worker processes, so an intra-op team per worker would
+        oversubscribe (override via DEDOC_OV_THREADS / DEDOC_ORT_THREADS).
         """
-        if self._onnx_tried:
-            return self._onnx_session
-        self._onnx_tried = True
+        if self._cpu_fwd_tried:
+            return self._cpu_fwd
+        self._cpu_fwd_tried = True
+        self._cpu_fwd = None
         try:
+            from dedoc.utils.openvino_backend import compile_cpu_model, export_once
+            onnx_path = export_once(os.path.splitext(self.checkpoint_path)[0] + ".onnx", self._export_onnx)
+
+            ov_run = compile_cpu_model(onnx_path)
+            if ov_run is not None:
+                self._cpu_fwd = lambda arr: ov_run({"input": arr})[0]
+                return self._cpu_fwd
+
             import onnxruntime
-            onnx_path = os.path.splitext(self.checkpoint_path)[0] + ".onnx"
-            if not path.isfile(onnx_path):
-                self._export_onnx(onnx_path)
             options = onnxruntime.SessionOptions()
             options.intra_op_num_threads = int(os.environ.get("DEDOC_ORT_THREADS", "1"))
-            self._onnx_session = onnxruntime.InferenceSession(onnx_path, options, providers=["CPUExecutionProvider"])
+            session = onnxruntime.InferenceSession(onnx_path, options, providers=["CPUExecutionProvider"])
+            self._cpu_fwd = lambda arr: session.run(["logits"], {"input": arr})[0]
         except Exception as e:
-            self.logger.warning(f"ONNX orientation forward unavailable ({e}); using torch on CPU")
-            self._onnx_session = None
-        return self._onnx_session
+            self.logger.warning(f"CPU orientation accelerator unavailable ({e}); using torch on CPU")
+            self._cpu_fwd = None
+        return self._cpu_fwd
 
     def _export_onnx(self, onnx_path: str) -> None:
         import torch
@@ -108,10 +116,10 @@ class ColumnsOrientationClassifier(object):
 
     def _forward(self, batch) -> np.ndarray:
         """Forward a prepared (N, 3, 1200, 1200) NCHW batch normalized to [-1, 1] (numpy or torch) -> (N, 6) logits."""
-        session = None if self._on_gpu else self.onnx_session
-        if session is not None:
+        cpu_forward = None if self._on_gpu else self.cpu_forward
+        if cpu_forward is not None:
             array = batch.cpu().numpy() if hasattr(batch, "cpu") else batch
-            return session.run(["logits"], {"input": np.ascontiguousarray(array, dtype=np.float32)})[0]
+            return cpu_forward(np.ascontiguousarray(array, dtype=np.float32))
 
         import torch
         net = self.net
@@ -222,13 +230,13 @@ class ColumnsOrientationClassifier(object):
         :meth:`predict_batch` but with the (heavy) resize/pad already done off this worker.
 
         On GPU the normalize (ToTensor + Normalize -> [-1, 1]) runs on the device, so the CPU workers only hand over
-        cheap uint8 arrays. On CPU the forward goes through onnxruntime (see :attr:`onnx_session`) and the normalize is
-        done in numpy, which keeps torch out of the CPU workers entirely.
+        cheap uint8 arrays. On CPU the forward goes through the OpenVINO/onnxruntime accelerator (see
+        :attr:`cpu_forward`) and the normalize is done in numpy, which keeps torch out of the CPU workers entirely.
         """
         if not canvases:
             return []
 
-        if not self._on_gpu and self.onnx_session is not None:
+        if not self._on_gpu and self.cpu_forward is not None:
             batch = np.stack(canvases).transpose(0, 3, 1, 2).astype(np.float32) / 127.5 - 1.0  # == (x/255 - .5)/.5
             return self._decode(self._forward(batch))
 

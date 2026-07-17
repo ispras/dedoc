@@ -560,16 +560,17 @@ def build_specs(params: Any, ocr_engine: str = "tesseract", on_gpu: bool = False
             blockers["ocr_gpu"] = ["det_pre"]
             blockers["ocr"] = ["ocr_gpu"]
 
+    from dedoc.utils.openvino_backend import openvino_available
+    # With OpenVINO the NN stages run in ONE dedicated pool worker (Resource.GPU routes there): a single OpenVINO
+    # runtime parallelizes the batched forward across cores (~5.5x), keeping the win without 8 per-worker runtimes
+    # (which cost ~1 GB each and crashed natively). Without OpenVINO there is no device to share and one worker would
+    # serialize the torch forward while starving the CPU pool (measured 8 workers *slower* than 1, ~25% cores busy),
+    # so the stages are spread over the CPU workers per page instead.
+    ov_pool = (not on_gpu) and openvino_available()
     specs = []
     for name in present:
         spec_def = dict(_SPEC_DEFS[name])
-        if not on_gpu and spec_def.get("resource") == Resource.GPU:
-            # Without a GPU there is no device to share, so a "GPU" stage is just ordinary CPU work. Leaving it routed
-            # to the gpu pool pins every forward to that single worker, which runs them serially and starves the CPU
-            # pool: measured on Catalana 24p, CPU-only, orient_predict alone -> 8 workers were *slower* than 1
-            # (54.1s vs 48.9s) with only ~25% of the cores busy. Route these to the CPU workers so they parallelize
-            # per page like every other CPU stage; batching only pays off on a device (one forward per batch), so it
-            # is dropped here in favour of per-page spread.
+        if not on_gpu and not ov_pool and spec_def.get("resource") == Resource.GPU:
             spec_def["resource"] = Resource.CPU
             spec_def["exec_mode"] = ExecMode.THREAD
             spec_def.pop("batch_process", None)
