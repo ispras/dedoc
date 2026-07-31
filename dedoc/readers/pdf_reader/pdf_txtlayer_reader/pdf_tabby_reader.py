@@ -416,7 +416,7 @@ class PdfTabbyReader(PdfBaseReader):
         import os
 
         self.__run(path=path, start_page=start_page, end_page=end_page, tmp_dir=tmp_dir, remove_frame=remove_frame, gost_json_path=gost_json_path)
-        with open(os.path.join(tmp_dir, "data.json"), "r", encoding="utf-8") as response:  # encoding= : data.json is UTF-8, avoids cp1251 breakage on RU-locale Windows
+        with open(os.path.join(tmp_dir, "data.json"), "r", encoding="utf-8") as response:
             return json.load(response)
 
     def _process_one_page(self,

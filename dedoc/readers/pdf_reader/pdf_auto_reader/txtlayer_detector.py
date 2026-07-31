@@ -72,9 +72,9 @@ class TxtLayerDetector:
         #    by the time the second read would reference them.
         pages_reusable = (
             not reusable
-            and start == 1
-            and get_param_pdf_with_txt_layer(parameters) == "auto_tabby"
-            and not get_param_with_attachments(parameters)
+            and start == 1  # noqa W503
+            and get_param_pdf_with_txt_layer(parameters) == "auto_tabby"  # noqa W503
+            and not get_param_with_attachments(parameters)  # noqa W503
         )
         detected_pages = [] if pages_reusable else None
         if reusable:
@@ -98,8 +98,16 @@ class TxtLayerDetector:
         first_page_lines = [line for line in document.lines if line.metadata.page_id == 0]
         first_page_correct = txtlayer_classifier.predict([first_page_lines])[0]
         if first_page_correct:
-            return [TxtLayerResult(correct=True, start=start, end=end, document=reuse_document,
-                                   detected_pages=detected_pages, detected_last_page=detected_last_page)]
+            return [
+                TxtLayerResult(
+                    correct=True,
+                    start=start,
+                    end=end,
+                    document=reuse_document,
+                    detected_pages=detected_pages,
+                    detected_last_page=detected_last_page
+                )
+            ]
         else:
             # the leading pages are not read as one chunk here, so the detection extraction cannot be reused as-is
             return [TxtLayerResult(correct=False, start=start, end=start), TxtLayerResult(correct=True, start=start + 1, end=end)]
