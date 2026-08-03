@@ -46,8 +46,9 @@ converted_mimes = Extensions(
     archive_like_format={},
     image_like_format={
         "image/bmp", "image/x-ms-bmp", "image/dib", "image/x-eps", "application/postscript", "image/gif", "image/jpeg", "image/jp2", "image/x-jp2", "image/jpg",
-        "image/x-portable-pixmap", "image/x-portable-anymap", "image/x-portable-graymap", "image/x-portable-bitmap", "image/x-pcx", "image/x-pict",
-        "image/ras", "image/x-sun-raster", "image/sgi", "image/x-sgi", "image/tiff", "image/webp", "image/x-cmu-raster", "image/x-jp2-codestream"
+        "image/x-portable-pixmap", "image/x-portable-anymap", "image/x-portable-graymap", "image/x-portable-bitmap", "image/x-pcx", "image/vnd.zbrush.pcx",
+        "image/x-pict", "image/ras", "image/x-sun-raster", "image/sgi", "image/x-sgi", "image/tiff", "image/webp", "image/x-cmu-raster",
+        "image/x-jp2-codestream"
     },
     pdf_like_format={"image/vnd.djvu"},
     csv_like_format={},
@@ -79,7 +80,7 @@ recognized_mimes = Extensions(
     mhtml_like_format={"message/rfc822"},
     archive_like_format={
         "application/zip", "application/x-gzip", "application/gzip", "application/x-tar", "application/x-rar-compressed", "application/rar",
-        "application/x-rar", "application/x-7z-compressed"
+        "application/vnd.rar", "application/x-rar", "application/x-7z-compressed"
     },
     image_like_format={"image/png"},
     pdf_like_format={"application/pdf"},
@@ -105,13 +106,13 @@ mime2extension = {
     "message/rfc822": ".eml",
     # archive
     "application/x-gzip": ".gz", "application/gzip": ".gz", "application/x-rar-compressed": ".rar", "application/rar": ".rar", "application/x-tar": ".tar",
-    "application/x-rar": ".rar", "application/x-7z-compressed": ".7z", "application/zip": ".zip",
+    "application/vnd.rar": ".rar", "application/x-rar": ".rar", "application/x-7z-compressed": ".7z", "application/zip": ".zip",
     # image
     "image/x-ms-bmp": ".bmp", "image/sgi": ".sgi", "image/jpeg": ".jpg", "image/x-jp2": ".jp2", "image/x-portable-graymap": ".pgm", "image/x-pict": ".pic",
     "image/gif": ".gif", "image/x-sgi": ".sgi", "image/x-sun-raster": ".ras", "image/x-eps": ".eps", "image/bmp": ".bmp", "image/x-portable-bitmap": ".pbm",
     "image/webp": ".webp", "application/postscript": ".eps", "image/jpg": ".jpg", "image/x-jp2-codestream": "jp2", "image/x-portable-pixmap": ".ppm",
-    "image/jp2": ".jp2", "image/dib": ".dib", "image/x-pcx": ".pcx", "image/tiff": ".tiff", "image/x-cmu-raster": ".ras", "image/ras": ".ras",
-    "image/x-portable-anymap": ".pnm", "image/png": ".png",
+    "image/jp2": ".jp2", "image/dib": ".dib", "image/x-pcx": ".pcx", "image/vnd.zbrush.pcx": ".pcx", "image/tiff": ".tiff", "image/x-cmu-raster": ".ras",
+    "image/ras": ".ras", "image/x-portable-anymap": ".pnm", "image/png": ".png",
     # pdf
     "image/vnd.djvu": ".djvu", "application/pdf": ".pdf",
     # csv
