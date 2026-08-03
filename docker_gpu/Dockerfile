@@ -1,25 +1,23 @@
-ARG REPOSITORY="docker.io"
-FROM dedocproject/dedoc_jammy_p3.10_base:version_2025_09_11
+FROM dedocproject/dedoc_p3.10_base:version_2026_07_29
+ARG LANGUAGES="rus"
+RUN for lang in $LANGUAGES; do apt install -y tesseract-ocr-$(echo $lang | tr "_" "-"); done
 
 ENV PYTHONPATH "${PYTHONPATH}:/dedoc_root"
 ENV RESOURCES_PATH "/dedoc_root/resources"
 
-ADD requirements.txt .
+COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 RUN pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip3 install --no-cache-dir transformers~=4.49.0
 
 RUN mkdir /dedoc_root
 RUN mkdir /dedoc_root/dedoc
-ADD dedoc/config.py /dedoc_root/dedoc/config.py
-ADD dedoc/download_models.py /dedoc_root/dedoc/download_models.py
+COPY dedoc/config.py /dedoc_root/dedoc/config.py
+COPY dedoc/download_models.py /dedoc_root/dedoc/download_models.py
 RUN python3 /dedoc_root/dedoc/download_models.py
 
-ADD dedoc /dedoc_root/dedoc
-ADD VERSION /dedoc_root
+COPY dedoc /dedoc_root/dedoc
+COPY VERSION /dedoc_root
 RUN echo "__version__ = \"$(cat /dedoc_root/VERSION)\"" > /dedoc_root/dedoc/version.py
-
-ADD tests /dedoc_root/tests
-ADD resources /dedoc_root/resources
 
 CMD ["python3", "/dedoc_root/dedoc/main.py"]
