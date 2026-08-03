@@ -42,7 +42,7 @@ def apply_houph_line(img: np.ndarray, threshold_gap: int = 10, *, config: dict) 
         img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
     cdst_p = np.copy(img)
     dst = abs(img - 255)
-    lines_p = cv2.HoughLinesP(dst, 1, np.pi / 180, 50, 100, int(300 * scale), max(int(threshold_gap * scale), 1))
+    lines_p = cv2.HoughLinesP(dst, 1, np.pi / 180, 50, 100, 300, threshold_gap)
 
     k_hor = []
 
@@ -70,7 +70,7 @@ def apply_houph_line(img: np.ndarray, threshold_gap: int = 10, *, config: dict) 
         logger.debug(f"angle_horiz_avg = {angle}")
 
     if scale != 1.0:  # upscale the gap-filled line mask back so contours are found at full resolution
-        cdst_p = cv2.resize(cdst_p, full_hw, interpolation=cv2.INTER_NEAREST)
+        cdst_p = cv2.resize(cdst_p, full_hw, interpolation=cv2.INTER_CUBIC)
 
     return cdst_p, angle
 
