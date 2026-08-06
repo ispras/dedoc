@@ -1,6 +1,8 @@
 from typing import Callable, Sequence, Type
 
-from dedocutils.preprocessing import AdaptiveBinarizer
+import numpy as np
+from PIL import Image
+from dedocutils.preprocessing.orientation_classification import OrientationClassifier
 from pydantic import BaseModel
 from tdm import TalismanDocument
 from typing_extensions import Self
@@ -11,21 +13,20 @@ from dedoc_future.configs.pdf_base import PdfBaseConfig
 from dedoc_future.datamodel.nodes.page import PageNode, PageNodeWrapper
 
 
-class BinarizerConfig(BaseModel):
-    block_size: int = 40
-    delta: int = 40
+class OrientationClassifierConfig(BaseModel):
+    model_path: str
 
 
-class Binarizer(AbstractProcessor[PageNode, PdfBaseConfig, BinarizerConfig]):
+class OrientationClassification(AbstractProcessor[PageNode, PdfBaseConfig, OrientationClassifierConfig]):
     """
-    Turns colored pages images into black-and-white.
+    Classify document page orientation in degrees [0, 90, 180, 270].
     """
-    def __init__(self, config: BinarizerConfig) -> None:
-        self.binarizer = AdaptiveBinarizer(block_size=config.block_size, delta=config.delta)
+    def __init__(self, config: OrientationClassifierConfig) -> None:
+        self.classifier = OrientationClassifier(checkpoint_path=config.model_path)
 
     @property
     def label(self) -> str:
-        return "binarization"
+        return "orientation_classification"
 
     @property
     def scope(self) -> Scope:
@@ -33,7 +34,7 @@ class Binarizer(AbstractProcessor[PageNode, PdfBaseConfig, BinarizerConfig]):
 
     @property
     def resource(self) -> Resource:
-        return Resource.CPU
+        return Resource.GPU
 
     @property
     def exec_mode(self) -> ExecMode:
@@ -48,11 +49,11 @@ class Binarizer(AbstractProcessor[PageNode, PdfBaseConfig, BinarizerConfig]):
         return PdfBaseConfig
 
     @property
-    def deploy_config_type(self) -> Type[BinarizerConfig]:
-        return BinarizerConfig
+    def deploy_config_type(self) -> Type[OrientationClassifierConfig]:
+        return OrientationClassifierConfig
 
     @classmethod
-    def from_config(cls, config: BinarizerConfig) -> Self:
+    def from_config(cls, config: OrientationClassifierConfig) -> Self:
         return cls(config=config)
 
     @property
@@ -63,10 +64,8 @@ class Binarizer(AbstractProcessor[PageNode, PdfBaseConfig, BinarizerConfig]):
         return check_node
 
     def process(self, document: TalismanDocument, nodes: Sequence[PageNode], config: PdfBaseConfig) -> ProcessorResult[PageNode]:
-        result_nodes = []
-        for node in nodes:
-            node = PageNodeWrapper.wrap(node)
-            binarized_image, _ = self.binarizer.preprocess(image=node.image)
-            result_nodes.append(node.set_image(binarized_image))
-
+        nodes = [PageNodeWrapper.wrap(node) for node in nodes]  # TODO make decorator for wrapping
+        images = [Image.fromarray(np.uint8(node.image)).convert("RGB") for node in nodes]
+        angles = self.classifier.predict(images)
+        result_nodes = [node.set_angle(angle) for node, angle in zip(nodes, angles)]
         return ProcessorResult(nodes=result_nodes, structure={})
