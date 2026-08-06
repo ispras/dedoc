@@ -1,6 +1,6 @@
 from typing import Callable, Sequence, Type
 
-from dedocutils.preprocessing import AdaptiveBinarizer
+from dedocutils.preprocessing import SkewCorrector
 from pydantic import BaseModel
 from tdm import TalismanDocument
 from typing_extensions import Self
@@ -11,21 +11,16 @@ from dedoc_future.configs.pdf_base import PdfBaseConfig
 from dedoc_future.datamodel.nodes.page import PageNode, PageNodeWrapper
 
 
-class BinarizerConfig(BaseModel):
-    block_size: int = 40
-    delta: int = 40
-
-
-class Binarizer(AbstractProcessor[PageNode, PdfBaseConfig, BinarizerConfig]):
+class SkewCorrection(AbstractProcessor[PageNode, PdfBaseConfig, BaseModel]):
     """
-    Turns colored pages images into black-and-white.
+    Skew correction of the page image (for small angles < 45 degrees).
     """
-    def __init__(self, config: BinarizerConfig) -> None:
-        self.binarizer = AdaptiveBinarizer(block_size=config.block_size, delta=config.delta)
+    def __init__(self) -> None:
+        self.skew_corrector = SkewCorrector()
 
     @property
     def label(self) -> str:
-        return "binarization"
+        return "skew_correction"
 
     @property
     def scope(self) -> Scope:
@@ -48,12 +43,12 @@ class Binarizer(AbstractProcessor[PageNode, PdfBaseConfig, BinarizerConfig]):
         return PdfBaseConfig
 
     @property
-    def deploy_config_type(self) -> Type[BinarizerConfig]:
-        return BinarizerConfig
+    def deploy_config_type(self) -> Type[BaseModel]:
+        return BaseModel
 
     @classmethod
-    def from_config(cls, config: BinarizerConfig) -> Self:
-        return cls(config=config)
+    def from_config(cls, config: BaseModel) -> Self:
+        return cls()
 
     @property
     def predicate(self) -> Callable[[TalismanDocument, PageNode, PdfBaseConfig], bool]:
@@ -66,7 +61,8 @@ class Binarizer(AbstractProcessor[PageNode, PdfBaseConfig, BinarizerConfig]):
         result_nodes = []
         for node in nodes:
             node = PageNodeWrapper.wrap(node)
-            binarized_image, _ = self.binarizer.preprocess(image=node.image)
-            result_nodes.append(node.set_image(binarized_image))
+            parameters_dict = {} if node.angle is None else {"orientation_angle": node.angle}
+            rotated_image, angle_dict = self.skew_corrector.preprocess(image=node.image, parameters=parameters_dict)
+            result_nodes.append(node.set_image(rotated_image).set_angle(angle_dict["rotated_angle"]))
 
         return ProcessorResult(nodes=result_nodes, structure={})
