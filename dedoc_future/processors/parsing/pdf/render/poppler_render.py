@@ -4,17 +4,17 @@ from typing import Callable, Sequence, Type
 import cv2
 import numpy as np
 from pdf2image.pdf2image import convert_from_path
-from pydantic import BaseModel
 from tdm import TalismanDocument
 from typing_extensions import Self
 
 from dedoc_future.abstract import AbstractProcessor, ExecMode, Resource, Scope
+from dedoc_future.abstract.config import ImmutableBaseModel
 from dedoc_future.abstract.processor import ProcessorResult
 from dedoc_future.configs.pdf_base import PdfBaseConfig
 from dedoc_future.datamodel.nodes.page import PageNode, PageNodeWrapper
 
 
-class PopplerRender(AbstractProcessor[PageNode, PdfBaseConfig, BaseModel]):
+class PopplerRender(AbstractProcessor[PageNode, PdfBaseConfig, ImmutableBaseModel]):
     """
     Render images for pdf pages using poppler.
     """
@@ -44,11 +44,11 @@ class PopplerRender(AbstractProcessor[PageNode, PdfBaseConfig, BaseModel]):
         return PdfBaseConfig
 
     @property
-    def deploy_config_type(self) -> Type[BaseModel]:
-        return BaseModel
+    def deploy_config_type(self) -> Type[ImmutableBaseModel]:
+        return ImmutableBaseModel
 
     @classmethod
-    def from_config(cls, config: BaseModel) -> Self:
+    def from_config(cls, config: ImmutableBaseModel) -> Self:
         return cls()
 
     @property
@@ -67,8 +67,7 @@ class PopplerRender(AbstractProcessor[PageNode, PdfBaseConfig, BaseModel]):
         for file_node, page_nodes in file2pages.items():
             page_nodes = sorted(page_nodes, key=lambda x: x.metadata.number)
             start_page = page_nodes[0].metadata.number
-            images = convert_from_path(file_node.content, first_page=start_page + 1, last_page=page_nodes[-1].metadata.number)
-
+            images = convert_from_path(file_node.content, first_page=start_page + 1, last_page=page_nodes[-1].metadata.number + 1)
             for page_node in page_nodes:
                 page_image = cv2.cvtColor(np.array(images[page_node.metadata.number - start_page]), cv2.COLOR_BGR2RGB)
                 page_node = PageNodeWrapper.wrap(page_node).set_orig_image(page_image)

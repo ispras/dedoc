@@ -2,16 +2,16 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import Callable, Generic, Iterable, Sequence, Type, TypeVar
 
-from pydantic import BaseModel
 from tdm import TalismanDocument
 from tdm.abstract.datamodel import AbstractNode
 from typing_extensions import Self
 
+from dedoc_future.abstract.config import ImmutableBaseModel
 from dedoc_future.abstract.enums import ExecMode, Resource, Scope
 
 _Node = TypeVar("_Node", bound=AbstractNode)
-_Config = TypeVar("_Config", bound=BaseModel)
-_DeployConfig = TypeVar("_DeployConfig", bound=BaseModel)
+_Config = TypeVar("_Config", bound=ImmutableBaseModel)
+_DeployConfig = TypeVar("_DeployConfig", bound=ImmutableBaseModel)
 
 
 @dataclass
@@ -26,7 +26,7 @@ class ProcessorResult(Generic[_Node]):
     structure:
         new nodes (along with their structure) that need to be added to the document
     """
-    nodes: Iterable[_Node]
+    nodes: Sequence[_Node]
     structure: dict[AbstractNode, Iterable[AbstractNode]]
 
 

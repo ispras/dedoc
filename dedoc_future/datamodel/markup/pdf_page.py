@@ -53,7 +53,7 @@ class PdfPageMarkup(AbstractMarkup, AbstractPdfPageMarkup):
     def __init__(
             self, image: np.ndarray | None = None, orig_image: np.ndarray | None = None, angle: float | None = None, text_layer: bool | None = None
     ) -> None:
-        self._image = image if image else orig_image
+        self._image = image if image is not None else orig_image
         self._orig_image = orig_image
         self._angle = angle
         self._text_layer = text_layer

@@ -1,17 +1,17 @@
 from typing import Callable, Sequence, Type
 
 from dedocutils.preprocessing import AdaptiveBinarizer
-from pydantic import BaseModel
 from tdm import TalismanDocument
 from typing_extensions import Self
 
 from dedoc_future.abstract import AbstractProcessor, ExecMode, Resource, Scope
+from dedoc_future.abstract.config import ImmutableBaseModel
 from dedoc_future.abstract.processor import ProcessorResult
 from dedoc_future.configs.pdf_base import PdfBaseConfig
 from dedoc_future.datamodel.nodes.page import PageNode, PageNodeWrapper
 
 
-class BinarizerConfig(BaseModel):
+class BinarizerConfig(ImmutableBaseModel):
     block_size: int = 40
     delta: int = 40
 
