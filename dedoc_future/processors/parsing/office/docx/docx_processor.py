@@ -1,18 +1,18 @@
 from typing import Callable, Sequence, Type
 
-from pydantic import BaseModel
 from tdm import TalismanDocument
 from typing_extensions import Self
 
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc_future.abstract import AbstractProcessor, ExecMode, Resource, Scope
+from dedoc_future.abstract.config import ImmutableBaseModel
 from dedoc_future.abstract.processor import ProcessorResult
 from dedoc_future.configs.base import BaseProcessorConfig
 from dedoc_future.datamodel.nodes.file import FileNode
 from dedoc_future.helpers.formats import format_suits
 
 
-class DocxProcessor(AbstractProcessor[FileNode, BaseProcessorConfig, BaseModel]):
+class DocxProcessor(AbstractProcessor[FileNode, BaseProcessorConfig, ImmutableBaseModel]):
     @property
     def label(self) -> str:
         return "docx"
@@ -38,11 +38,11 @@ class DocxProcessor(AbstractProcessor[FileNode, BaseProcessorConfig, BaseModel])
         return BaseProcessorConfig
 
     @property
-    def deploy_config_type(self) -> Type[BaseModel]:
-        return BaseModel
+    def deploy_config_type(self) -> Type[ImmutableBaseModel]:
+        return ImmutableBaseModel
 
     @classmethod
-    def from_config(cls, config: BaseModel) -> Self:
+    def from_config(cls, config: ImmutableBaseModel) -> Self:
         return cls()
 
     @property

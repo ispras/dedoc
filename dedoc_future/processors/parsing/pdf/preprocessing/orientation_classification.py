@@ -3,18 +3,20 @@ from typing import Callable, Sequence, Type
 import numpy as np
 from PIL import Image
 from dedocutils.preprocessing.orientation_classification import OrientationClassifier
-from pydantic import BaseModel
+from pydantic import Field
 from tdm import TalismanDocument
 from typing_extensions import Self
 
 from dedoc_future.abstract import AbstractProcessor, ExecMode, Resource, Scope
+from dedoc_future.abstract.config import ImmutableBaseModel
 from dedoc_future.abstract.processor import ProcessorResult
 from dedoc_future.configs.pdf_base import PdfBaseConfig
 from dedoc_future.datamodel.nodes.page import PageNode, PageNodeWrapper
+from dedoc_future.helpers.artifacts.configuration import ARTIFACTS
 
 
-class OrientationClassifierConfig(BaseModel):
-    model_path: str
+class OrientationClassifierConfig(ImmutableBaseModel):
+    model_path: str = Field(title="Path to model", default_factory=lambda: ARTIFACTS["orientation_classifier"].download())
 
 
 class OrientationClassification(AbstractProcessor[PageNode, PdfBaseConfig, OrientationClassifierConfig]):

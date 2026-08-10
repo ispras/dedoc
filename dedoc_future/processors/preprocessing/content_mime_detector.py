@@ -3,17 +3,18 @@ from typing import Sequence, Type
 
 import magic
 import puremagic
-from pydantic import BaseModel
 from tdm import TalismanDocument
 from typing_extensions import Self
 
 from dedoc.extensions import mime2extension
+from dedoc.utils.utils import splitext_
 from dedoc_future.abstract import AbstractProcessor, ExecMode, Resource, Scope
+from dedoc_future.abstract.config import ImmutableBaseModel
 from dedoc_future.abstract.processor import ProcessorResult
 from dedoc_future.datamodel.nodes.file import FileNode
 
 
-class ContentMimeDetector(AbstractProcessor[FileNode, BaseModel, BaseModel]):
+class ContentMimeDetector(AbstractProcessor[FileNode, ImmutableBaseModel, ImmutableBaseModel]):
     @property
     def label(self) -> str:
         return "content_mime_detector"
@@ -35,18 +36,18 @@ class ContentMimeDetector(AbstractProcessor[FileNode, BaseModel, BaseModel]):
         return FileNode
 
     @property
-    def config_type(self) -> Type[BaseModel]:
-        return BaseModel
+    def config_type(self) -> Type[ImmutableBaseModel]:
+        return ImmutableBaseModel
 
     @property
-    def deploy_config_type(self) -> Type[BaseModel]:
-        return BaseModel
+    def deploy_config_type(self) -> Type[ImmutableBaseModel]:
+        return ImmutableBaseModel
 
     @classmethod
-    def from_config(cls, config: BaseModel) -> Self:
+    def from_config(cls, config: ImmutableBaseModel) -> Self:
         return cls()
 
-    def process(self, document: TalismanDocument, nodes: Sequence[FileNode], config: BaseModel) -> ProcessorResult[FileNode]:
+    def process(self, document: TalismanDocument, nodes: Sequence[FileNode], config: ImmutableBaseModel) -> ProcessorResult[FileNode]:
         result_nodes = []
         for node in nodes:
             mime = magic.from_file(node.content, mime=True)
@@ -57,7 +58,7 @@ class ContentMimeDetector(AbstractProcessor[FileNode, BaseModel, BaseModel]):
                 except puremagic.main.PureError:
                     pass
 
-            extension = mime2extension.get(mime, "")
+            extension = mime2extension.get(mime, splitext_(node.content)[1])
             metadata = replace(node.metadata, mime=mime, extension=extension)
             result_nodes.append(replace(node, metadata=metadata))
 
