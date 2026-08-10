@@ -3,12 +3,12 @@ from typing import Callable, Sequence, Type
 
 import cv2
 from pdf2image.pdf2image import _page_count
-from pydantic import BaseModel
 from tdm import TalismanDocument
 from typing_extensions import Self
 
 from dedoc.extensions import recognized_extensions, recognized_mimes
 from dedoc_future.abstract import AbstractProcessor, ExecMode, Resource, Scope
+from dedoc_future.abstract.config import ImmutableBaseModel
 from dedoc_future.abstract.processor import ProcessorResult
 from dedoc_future.configs.pdf_base import PdfBaseConfig
 from dedoc_future.datamodel.metadata.page import PageMetadata
@@ -17,7 +17,7 @@ from dedoc_future.datamodel.nodes.page import PageNode, PageNodeWrapper
 from dedoc_future.helpers.formats import format_suits
 
 
-class PagesCreator(AbstractProcessor[FileNode, PdfBaseConfig, BaseModel]):
+class PagesCreator(AbstractProcessor[FileNode, PdfBaseConfig, ImmutableBaseModel]):
     """
     Create PDF/image page nodes for further enriching.
     """
@@ -47,16 +47,16 @@ class PagesCreator(AbstractProcessor[FileNode, PdfBaseConfig, BaseModel]):
         return PdfBaseConfig
 
     @property
-    def deploy_config_type(self) -> Type[BaseModel]:
-        return BaseModel
+    def deploy_config_type(self) -> Type[ImmutableBaseModel]:
+        return ImmutableBaseModel
 
     @classmethod
-    def from_config(cls, config: BaseModel) -> Self:
+    def from_config(cls, config: ImmutableBaseModel) -> Self:
         return cls()
 
     @property
     def predicate(self) -> Callable[[TalismanDocument, FileNode, PdfBaseConfig], bool]:
-        return lambda document, node, confing: bool(node.metadata and node.metadata.need_parse)  # TODO maybe check format
+        return lambda document, node, config: node.metadata.need_parse  # TODO maybe check format
 
     def process(self, document: TalismanDocument, nodes: Sequence[FileNode], config: PdfBaseConfig) -> ProcessorResult[FileNode]:
         page_nodes = defaultdict(list)

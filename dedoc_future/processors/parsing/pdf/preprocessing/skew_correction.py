@@ -1,17 +1,17 @@
 from typing import Callable, Sequence, Type
 
 from dedocutils.preprocessing import SkewCorrector
-from pydantic import BaseModel
 from tdm import TalismanDocument
 from typing_extensions import Self
 
 from dedoc_future.abstract import AbstractProcessor, ExecMode, Resource, Scope
+from dedoc_future.abstract.config import ImmutableBaseModel
 from dedoc_future.abstract.processor import ProcessorResult
 from dedoc_future.configs.pdf_base import PdfBaseConfig
 from dedoc_future.datamodel.nodes.page import PageNode, PageNodeWrapper
 
 
-class SkewCorrection(AbstractProcessor[PageNode, PdfBaseConfig, BaseModel]):
+class SkewCorrection(AbstractProcessor[PageNode, PdfBaseConfig, ImmutableBaseModel]):
     """
     Skew correction of the page image (for small angles < 45 degrees).
     """
@@ -43,11 +43,11 @@ class SkewCorrection(AbstractProcessor[PageNode, PdfBaseConfig, BaseModel]):
         return PdfBaseConfig
 
     @property
-    def deploy_config_type(self) -> Type[BaseModel]:
-        return BaseModel
+    def deploy_config_type(self) -> Type[ImmutableBaseModel]:
+        return ImmutableBaseModel
 
     @classmethod
-    def from_config(cls, config: BaseModel) -> Self:
+    def from_config(cls, config: ImmutableBaseModel) -> Self:
         return cls()
 
     @property

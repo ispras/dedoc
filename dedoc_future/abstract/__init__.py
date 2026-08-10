@@ -1,4 +1,4 @@
-from processor import AbstractProcessor
+from .processor import AbstractProcessor
 from .enums import ExecMode, Resource, Scope
 
 __all__ = [
