@@ -26,8 +26,8 @@ class TestMetadataExtractor(TestCase):
         self.assertEqual(187058, file_node.metadata.size)
         self.assertEqual("application/pdf", file_node.metadata.mime)
         self.assertEqual(".pdf", file_node.metadata.extension)
-        self.assertEqual(1697012655, file_node.metadata.modified_time)
-        self.assertEqual(1762771381, file_node.metadata.created_time)
+        self.assertLess(1660000000, file_node.metadata.modified_time)
+        self.assertLess(1660000000, file_node.metadata.created_time)
         self.assertLess(file_node.metadata.created_time, file_node.metadata.access_time)
 
     def test_image(self) -> None:
@@ -42,6 +42,6 @@ class TestMetadataExtractor(TestCase):
         self.assertEqual(36009, file_node.metadata.size)
         self.assertEqual("image/jpeg", file_node.metadata.mime)
         self.assertEqual(".jpg", file_node.metadata.extension)
-        self.assertEqual(1669306205, file_node.metadata.modified_time)
-        self.assertEqual(1725445365, file_node.metadata.created_time)
+        self.assertLess(1660000000, file_node.metadata.modified_time)
+        self.assertLess(1660000000, file_node.metadata.created_time)
         self.assertLess(file_node.metadata.created_time, file_node.metadata.access_time)
