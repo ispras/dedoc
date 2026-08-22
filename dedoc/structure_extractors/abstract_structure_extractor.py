@@ -103,11 +103,13 @@ class AbstractStructureExtractor(ABC):
         for annotation in annotations:
             if annotation.name in [TableAnnotation.name, AttachAnnotation.name]:
                 if start == 0:
-                    new_annotation = Annotation(start=start, end=end, value=annotation.value, name=annotation.name)
-                    res.append(new_annotation)
+                    if annotation.name == TableAnnotation.name:
+                        res.append(TableAnnotation(value=annotation.value, start=start, end=end))
+                    else:
+                        res.append(AttachAnnotation(attach_uid=annotation.value, start=start, end=end))
             elif annotation.end > start and annotation.start <= end:
                 new_start = max(annotation.start, start) - start
                 new_end = min(annotation.end, end) - start
-                new_annotation = Annotation(start=new_start, end=new_end, value=annotation.value, name=annotation.name)
+                new_annotation = Annotation(start=new_start, end=new_end, value=annotation.value, name=annotation.name, is_mergeable=annotation.is_mergeable)
                 res.append(new_annotation)
         return res
