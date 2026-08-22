@@ -154,6 +154,8 @@ class TestApiPPTXReader(AbstractTestApiDocReader):
         self.assertEqual("Text text\n", node["text"])
         annotations = [annotation["value"] for annotation in node["annotations"] if annotation["name"] == "attachment"]
         self.assertIn(annotations[0], attachment_uids)
+        self._test_table_refs(result["content"], require_one_to_one=True)
+        self._test_attach_refs(result, require_all_linked=True)
 
     def __check_content(self, content: dict) -> None:
         subparagraphs = content["structure"]["subparagraphs"]
@@ -169,3 +171,4 @@ class TestApiPPTXReader(AbstractTestApiDocReader):
         table_annotations = [ann for ann in subparagraphs[2]["annotations"] if ann["name"] == TableAnnotation.name]
         self.assertEqual(1, len(table_annotations))
         self.assertEqual(table_annotations[0]["value"], table["metadata"]["uid"])
+        self._test_table_refs(content, require_one_to_one=True)

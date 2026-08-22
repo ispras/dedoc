@@ -5,7 +5,7 @@ import requests
 
 from dedoc.utils.utils import similarity as utils_similarity
 from tests.api_tests.content_checker import ContentChecker
-from tests.test_utils import tree2linear
+from tests.test_utils import check_object_refs, collect_annotation_values
 
 
 class AbstractTestApiDocReader(ContentChecker):
@@ -74,14 +74,16 @@ class AbstractTestApiDocReader(ContentChecker):
         result = json.loads(r.content.decode())
         return result
 
-    def _test_table_refs(self, content: dict) -> None:
-        tree = content["structure"]
-        tables = content["tables"]
-        lines = tree2linear(tree)
-        annotations = []
-        for line in lines:
-            for annotation in line["annotations"]:
-                if annotation["name"] == "table":
-                    annotations.append(annotation["value"])
-        tables_uids = {table["metadata"]["uid"] for table in tables}
-        self.assertSetEqual(set(tables_uids), set(annotations))
+    def _test_table_refs(self, content: dict, require_one_to_one: bool = False) -> None:
+        annotation_uids = collect_annotation_values(content["structure"], "table")
+        table_uids = [table["metadata"]["uid"] for table in content["tables"]]
+        errors = check_object_refs(table_uids, annotation_uids, require_all_linked=True, require_one_to_one=require_one_to_one, kind="table")
+        self.assertEqual([], errors, "\n".join(errors))
+
+    def _test_attach_refs(self, result: dict, require_all_linked: bool = False, require_one_to_one: bool = False) -> None:
+        annotation_uids = collect_annotation_values(result["content"]["structure"], "attachment")
+        attach_uids = [attachment["metadata"]["uid"] for attachment in result.get("attachments", [])]
+        errors = check_object_refs(
+            attach_uids, annotation_uids, require_all_linked=require_all_linked, require_one_to_one=require_one_to_one, kind="attachment"
+        )
+        self.assertEqual([], errors, "\n".join(errors))

@@ -174,3 +174,4 @@ class TestApiDocReader(AbstractTestApiDocReader):
         self.assertTrue(metadata["created_time"] is not None)
         self.assertTrue(metadata["access_time"] is not None)
         self.assertIn("modified_date", metadata)
+        self._test_table_refs(result["content"], require_one_to_one=True)
