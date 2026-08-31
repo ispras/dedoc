@@ -118,7 +118,7 @@ class TableHeaderExtractor:
             # один (1) - с обязательными поляями, один (2) - с необязательными
             # поэтому len(matrix_table) > first_required_column + 2
             if len(horizontal_union_rows) > 0 and \
-                    self.__is_indexable_column(cells, first_required_column, max_raw_of_search=horizontal_union_rows[-1]) \
+                    self.__is_indexable_column(cells, first_required_column, max_row_of_search=horizontal_union_rows[-1]) \
                     and len(cells) > first_required_column + 2:
                 cells[0][first_required_column + 1].is_attribute_required = True
 
