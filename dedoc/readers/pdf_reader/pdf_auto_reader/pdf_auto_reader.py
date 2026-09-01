@@ -88,10 +88,6 @@ class PdfAutoReader(BaseReader):
 
         copy_parameters = copy.deepcopy(parameters)
         copy_parameters["pages"] = f"{txtlayer_result.start}:{end}"
-        if txtlayer_result.detected_pages:
-            # Hand tabby's already-extracted leading pages back to the reader so it only extracts the rest. Set after
-            # the deepcopy on purpose: this is a large structure and must not be copied.
-            copy_parameters["__tabby_raw_pages_in"] = dict(pages=txtlayer_result.detected_pages, last_page=txtlayer_result.detected_last_page)
         result = reader.read(file_path=path, parameters=copy_parameters)
         return result
 
