@@ -14,6 +14,7 @@ orjson>=3.8.11,<4.0
 pandas>=1.4.1,<3
 pdf.tocgen>=1.3.0,<=1.3.4
 pdf2image==1.10.0 #1.14.0 - there are converting artifacts '№' != '№\n\x0c'
+pypdfium2>=4.0,<6.0
 pdfminer.six>=20211012,<=20231228
 piexif==1.1.3
 puremagic>=1.0,<2.0 # needs libmagic to be installed in the system

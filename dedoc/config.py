@@ -39,6 +39,10 @@ class Configuration(object):
                 # number of parallel jobs in some tasks as OCR
                 n_jobs=1,
 
+                # ------------------------------------------PDF RENDERING SETTINGS--------------------------------------------------
+                # how PDF pages are rasterized for the image-based readers: "pdftoppm" (poppler) or "pdfium" (in-process pypdfium2)
+                pdf_renderer="pdftoppm",
+
                 # --------------------------------------------GPU SETTINGS----------------------------------------------------------
                 # set gpu in XGBoost and torch models
                 on_gpu=False,

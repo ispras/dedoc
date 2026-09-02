@@ -256,13 +256,11 @@ class PdfBaseReader(BaseReader):
         if page_from >= page_to:
             return
 
-        import os
-        # In-process pypdfium2 (PDFium) rendering is ~7% faster end-to-end than pdf2image/pdftoppm (which spawns a
-        # poppler subprocess and re-parses the PDF per batch), but is OPT-IN (DEDOC_RENDER=pdfium): on master's
-        # Tesseract path it is NOT quality-neutral -- PDFium's thinner glyph anti-aliasing shifts Tesseract's output
-        # even with the 2x2 erode (that erode was tuned for the hybrid recognizer), costing ~0.4% word-bag F1 on
-        # gen_texts and ~1% body-text similarity vs poppler. The default stays pdftoppm (byte-identical to before).
-        if os.environ.get("DEDOC_RENDER", "pdftoppm") == "pdfium":
+        # In-process pypdfium2 rendering is ~7% faster end to end than pdf2image, which spawns a poppler subprocess and
+        # re-parses the PDF for every batch. It is opt-in (config["pdf_renderer"] = "pdfium") because it is not quality
+        # neutral: PDFium's thinner anti-aliasing shifts what Tesseract reads even with the 2x2 erode below, costing
+        # ~0.4% word-bag F1 on gen_texts and ~1% body text similarity. The default keeps poppler and the old output.
+        if self.config.get("pdf_renderer", "pdftoppm") == "pdfium":
             try:
                 yield from self._split_pdfium(path, page_from, page_to)
                 return
