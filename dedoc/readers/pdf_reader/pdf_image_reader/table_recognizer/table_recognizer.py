@@ -20,7 +20,7 @@ from dedoc.utils.image_utils import fill_bbox_on_image
 """-------------------------------------entry class of Table Recognizer Module---------------------------------------"""
 
 
-def _table_line_crossings(image: np.ndarray, long_side: int = 700) -> int:
+def _table_line_crossings(gray: np.ndarray, long_side: int = 700) -> int:
     """Cheap table-presence signal (~7 ms/page) reproducing the OpenCV table detector's OWN line detection: binarize
     with a fixed 225 threshold (keeps faint rules), close short horizontal and vertical morphology kernels
     (``img//55`` & ``img//100`` floored at the detector's minimum cell size), and count grid crossings of the
@@ -29,7 +29,6 @@ def _table_line_crossings(image: np.ndarray, long_side: int = 700) -> int:
     crossings) at ~1/50th the detector's cost. Text has horizontal runs but no crossing vertical rules, so a page
     below the threshold has no bordered table the detector could find. (A plain Otsu + long-kernel version missed 12%
     of real tables -- do not simplify further.)"""
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim == 3 else image
     scale = long_side / max(gray.shape)
     g = cv2.resize(gray, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
     img_bin = 255 - cv2.threshold(g, 225, 255, cv2.THRESH_BINARY)[1]
@@ -75,15 +74,16 @@ class TableRecognizer:
         the detected table cells are converted to a matrix form (merged cells are detected and separated).
         """
         self.logger.debug(f"Page {page_number}")
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if len(image.shape) == 3 else image
         # cheap line-crossing gate: skip the ~360 ms contour/Hough detector on pages with too few grid crossings for a
         # bordered table. Uses the detector's own line-detection parameters so recall is preserved (100% on 503 diverse
-        # tables; sparsest has 3 crossings, so the default threshold 2 keeps a margin). Set table_line_gate_min_cross /
-        # DEDOC_TABLE_MIN_CROSS to 0 to disable.
-        min_cross = int(os.environ.get("DEDOC_TABLE_MIN_CROSS", self.config.get("table_line_gate_min_cross", 2)))
-        if min_cross > 0 and _table_line_crossings(image) < min_cross:
+        # tables; sparsest has 3 crossings, so the default threshold 2 keeps a margin). Set
+        # config["table_line_gate_min_cross"] to 0 to disable.
+        min_cross = self.config.get("table_line_gate_min_cross", 2)
+        if min_cross > 0 and _table_line_crossings(gray_image) < min_cross:
             return image, []
         try:
-            cleaned_image, scan_tables = self.__rec_tables_from_img(image, page_num=page_number, language=language, table_type=table_type)
+            cleaned_image, scan_tables = self.__rec_tables_from_img(image, gray_image, page_num=page_number, language=language, table_type=table_type)
             return cleaned_image, scan_tables
         except Exception as ex:
             traceback_message = "".join(traceback.format_exception(type(ex), value=ex, tb=ex.__traceback__))
@@ -91,9 +91,8 @@ class TableRecognizer:
 
             return image, []
 
-    def __rec_tables_from_img(self, src_image: np.ndarray, page_num: int, language: str, table_type: str) -> Tuple[np.ndarray, List[ScanTable]]:
-        gray_image = cv2.cvtColor(src_image, cv2.COLOR_BGR2GRAY) if len(src_image.shape) == 3 else src_image
-
+    def __rec_tables_from_img(self, src_image: np.ndarray, gray_image: np.ndarray, page_num: int, language: str,
+                              table_type: str) -> Tuple[np.ndarray, List[ScanTable]]:
         single_page_tables = self.onepage_tables_extractor.extract_onepage_tables_from_image(
             image=gray_image,
             page_number=page_num,

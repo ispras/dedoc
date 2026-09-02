@@ -43,6 +43,10 @@ class Configuration(object):
                 # how PDF pages are rasterized for the image-based readers: "pdftoppm" (poppler) or "pdfium" (in-process pypdfium2)
                 pdf_renderer="pdftoppm",
 
+                # ------------------------------------------TABLE RECOGNIZER SETTINGS-----------------------------------------------
+                # minimal number of grid crossings on a page for the table detector to run at all, 0 disables the check
+                table_line_gate_min_cross=2,
+
                 # --------------------------------------------GPU SETTINGS----------------------------------------------------------
                 # set gpu in XGBoost and torch models
                 on_gpu=False,
