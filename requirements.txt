@@ -1,7 +1,7 @@
 beautifulsoup4>=4.10.0,<=4.12.3
 charset-normalizer>=2.0.12,<=3.2.0
 Cython>=0.29.28,<=3.0.2
-dedoc-utils==0.3.10
+dedoc-utils==0.3.11
 fastapi>=0.77.0,<1.0
 fontTools>=4.0,<5.0
 huggingface-hub>=0.14.1,<1.0
