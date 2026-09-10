@@ -33,33 +33,40 @@ def rotate_with_threshold(img: np.ndarray, angle: float, threshold: float = None
 # Algorithm for finding lines by Houph. Allows you to eliminate gaps between lines and find the angle of the table
 def apply_houph_line(img: np.ndarray, threshold_gap: int = 10, *, config: dict) -> Tuple[np.ndarray, int]:
     # config["table_hough_scale"]: HoughLinesP dominates table detection (~540 ms/page at full res, ~79% of it). It
-    # only needs the line ANGLE (scale-invariant) and to draw gap-filling lines, so run it on a downscaled copy
-    # (length/gap params scaled to match) and upscale the resulting line mask back. Default 0.5 = ~2.5x faster table
-    # detection, validated lossless (tables preserved); set to 1.0 for full-resolution Hough.
+    # only needs the line ANGLE (scale-invariant) and the line ENDPOINTS, so detect on a downscaled copy with the
+    # length/gap params scaled to match, then draw the gap-filling lines at full resolution with the endpoints scaled
+    # back. The downscaled copy is used for detection ONLY - the canvas stays the original image, because the cell
+    # contours are found on what this returns and resampling the whole page moves the cell boundaries (which changes
+    # how the cells get cropped, and so what Tesseract reads out of them). Default 0.5; set to 1.0 to detect at full
+    # resolution.
     scale = float(config.get("table_hough_scale", 0.5))
-    full_hw = (img.shape[1], img.shape[0])
-    if scale != 1.0:
-        img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
     cdst_p = np.copy(img)
-    dst = abs(img - 255)
-    lines_p = cv2.HoughLinesP(dst, 1, np.pi / 180, 50, 100, 300, threshold_gap)
+    detect_img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST) if scale != 1.0 else img
+    dst = abs(detect_img - 255)
+    lines_p = cv2.HoughLinesP(dst, 1, np.pi / 180, 50, 100, max(1, round(300 * scale)), max(1, round(threshold_gap * scale)))
 
     k_hor = []
+
+    inv_scale = 1.0 / scale
 
     if lines_p is not None:
         for i in range(0, len(lines_p)):
             line = lines_p[i][0]
-            # k - angle of line in degree
+            # k - angle of line in degree (scale-invariant, so it is taken from the detection coordinates)
             if abs(line[0] - line[2]) == 0:
                 k = math.atan(0) * 180.0 / math.pi
             else:
                 k = math.atan((line[1] - line[3]) / (line[0] - line[2])) * 180.0 / math.pi
 
+            # back to full-resolution coordinates before drawing on the untouched canvas
+            p1 = (round(line[0] * inv_scale), round(line[1] * inv_scale))
+            p2 = (round(line[2] * inv_scale), round(line[3] * inv_scale))
+
             if abs(k) < 5:
                 k_hor.append(k)
-                cv2.line(cdst_p, (line[0], line[1]), (line[2], line[3]), (0, 0, 255), 1, cv2.LINE_AA)
+                cv2.line(cdst_p, p1, p2, (0, 0, 255), 1, cv2.LINE_AA)
             if (abs(k) < 95) and (abs(k) > 85):
-                cv2.line(cdst_p, (line[0], line[1]), (line[2], line[3]), (0, 0, 255), 1, cv2.LINE_AA)
+                cv2.line(cdst_p, p1, p2, (0, 0, 255), 1, cv2.LINE_AA)
 
     angle = np.sum(k_hor) / len(k_hor) if len(k_hor) > 0 else 0
 
@@ -68,9 +75,6 @@ def apply_houph_line(img: np.ndarray, threshold_gap: int = 10, *, config: dict) 
 
     if config.get("debug_mode", False):
         logger.debug(f"angle_horiz_avg = {angle}")
-
-    if scale != 1.0:  # upscale the gap-filled line mask back so contours are found at full resolution
-        cdst_p = cv2.resize(cdst_p, full_hw, interpolation=cv2.INTER_CUBIC)
 
     return cdst_p, angle
 
