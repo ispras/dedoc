@@ -46,14 +46,12 @@ class BoldClassifier:
 
     def __evaluation_one_bbox_image(self, image: np.ndarray) -> float:
         base_line_image = self.__get_base_line_image(image)
-        base_line_image_without_spaces = self.__get_rid_spaces(base_line_image)
 
+        # __get_rid_spaces (commented out below) never stripped anything, so s is taken from the base line image
+        # itself; (p_img > 0).mean() is the old mask-assign-then-mean on the uint8 {0,1} baseline.
         p_img = base_line_image[:, :-1] - base_line_image[:, 1:]
-        p_img[abs(p_img) > 0] = 1.
-        p_img[p_img < 0] = 0.
-        p = p_img.mean()
-
-        s = 1 - base_line_image_without_spaces.mean()
+        p = (p_img > 0).mean()
+        s = 1 - base_line_image.mean()
 
         if p > s or s == 0:
             evaluation = 1.
@@ -67,12 +65,15 @@ class BoldClassifier:
         bboxes_indicators = list(vector_bbox_indicators)
         return bboxes_indicators
 
-    def __get_rid_spaces(self, image: np.ndarray) -> np.ndarray:
-        x = image.mean(0)
-        not_space = x < 0.95
-        if len(not_space) > 3:
-            return image
-        return image[:, not_space]
+    # The guard checks len(not_space) - the number of columns, which is always > 3 for a correct bbox - so the spaces
+    # were never stripped. Fixing it to not_space.sum() makes the classifier find no bold text at all, see
+    # https://github.com/ispras/dedoc/pull/562#discussion_r3702267057
+    # def __get_rid_spaces(self, image: np.ndarray) -> np.ndarray:
+    #     x = image.mean(0)
+    #     not_space = x < 0.95
+    #     if len(not_space) > 3:
+    #         return image
+    #     return image[:, not_space]
 
     def __get_base_line_image(self, image: np.ndarray) -> np.ndarray:
         h = image.shape[0]

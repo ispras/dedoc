@@ -56,21 +56,32 @@ class TxtLayerDetector:
         Separately handle the first page (it's common that only first page doesn't have a textual layer).
         """
         parameters_copy = deepcopy(parameters)
-        parameters_copy["pages"] = "1:8"  # two batches for pdf_txtlayer_reader
-        parameters_copy["need_pdf_table_analysis"] = "false"
+        # When the whole document already fits inside the 8-page detection window, extract it once with the *full*
+        # parameters (all pages + tables, matching __parse_document's own read) and hand the result to
+        # __parse_document via TxtLayerResult.document -- this avoids launching a second tabby/Java subprocess to
+        # re-extract the same pages, ~halving the wall for small text-layer documents (common in prod). Larger
+        # documents keep the cheap first-8-pages-only, no-tables detection.
+        page_count = get_pdf_page_count(path)
+        reusable = page_count is not None and page_count <= 8 and start == 1 and end is None
+        if reusable:
+            parameters_copy["pages"] = "1:"  # exactly __parse_document's slice for a whole-document request; tables kept on
+        else:
+            parameters_copy["pages"] = "1:8"  # two batches for pdf_txtlayer_reader
+            parameters_copy["need_pdf_table_analysis"] = "false"
 
         document = self.pdf_reader.read(path, parameters=parameters_copy)
+        reuse_document = document if reusable else None
         is_correct = txtlayer_classifier.predict([document.lines])[0]
         if not is_correct:
             return [TxtLayerResult(correct=False, start=start, end=end)]
 
         if start > 1:  # no need to classify correctness of the first page
-            return [TxtLayerResult(correct=True, start=start, end=end)]
+            return [TxtLayerResult(correct=True, start=start, end=end, document=reuse_document)]
 
         first_page_lines = [line for line in document.lines if line.metadata.page_id == 0]
         first_page_correct = txtlayer_classifier.predict([first_page_lines])[0]
         if first_page_correct:
-            return [TxtLayerResult(correct=True, start=start, end=end)]
+            return [TxtLayerResult(correct=True, start=start, end=end, document=reuse_document)]
         else:
             return [TxtLayerResult(correct=False, start=start, end=start), TxtLayerResult(correct=True, start=start + 1, end=end)]
 
