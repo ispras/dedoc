@@ -139,7 +139,7 @@ class TestApiPdfReader(AbstractTestApiDocReader):
         result = self._send_request(file_name, data={"pdf_with_text_layer": "true"})
         tree = result["content"]["structure"]
         self._check_tree_sanity(tree)
-        self._test_table_refs(result["content"])
+        self._test_table_refs(result["content"], require_one_to_one=True)
 
         # checks indentations
         par = self._get_by_tree_path(tree, "0.5.0.0")
