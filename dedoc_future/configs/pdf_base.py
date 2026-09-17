@@ -17,8 +17,8 @@ class PdfBaseConfig(BaseProcessorConfig):
 
         start_page: int | None = data.get("start_page")
         end_page: int | None = data.get("end_page")
-        start_page = 0 if start_page is None else start_page - 1
-        end_page = 10 ** 10 if end_page is None else end_page
+        start_page: int = 0 if start_page is None else start_page - 1
+        end_page: int = 10 ** 10 if end_page is None else end_page
 
         if start_page < 0:
             raise ValueError("`start_page` should be > 0")

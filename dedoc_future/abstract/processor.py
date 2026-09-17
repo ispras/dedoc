@@ -1,36 +1,19 @@
 from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass
-from typing import Callable, Generic, Iterable, Sequence, Type, TypeVar
+from typing import Generic, Type, TypeVar
 
-from tdm import TalismanDocument
-from tdm.abstract.datamodel import AbstractNode
 from typing_extensions import Self
 
 from dedoc_future.abstract.config import ImmutableBaseModel
-from dedoc_future.abstract.enums import ExecMode, Resource, Scope
+from dedoc_future.abstract.enums import ExecMode, Resource
 
-_Node = TypeVar("_Node", bound=AbstractNode)
+_InputType = TypeVar("_InputType")
+_OutputType = TypeVar("_OutputType")
+_CheckType = TypeVar("_CheckType")
 _Config = TypeVar("_Config", bound=ImmutableBaseModel)
 _DeployConfig = TypeVar("_DeployConfig", bound=ImmutableBaseModel)
 
 
-@dataclass
-class ProcessorResult(Generic[_Node]):
-    """
-    Result returned by `AbstractProcessor`.
-
-    Attributes
-    ----------
-    nodes:
-        existing nodes in the document that were changed
-    structure:
-        new nodes (along with their structure) that need to be added to the document
-    """
-    nodes: Sequence[_Node]
-    structure: dict[AbstractNode, Iterable[AbstractNode]]
-
-
-class AbstractProcessor(Generic[_Node, _Config, _DeployConfig], metaclass=ABCMeta):
+class AbstractProcessor(Generic[_InputType, _OutputType, _CheckType, _Config, _DeployConfig], metaclass=ABCMeta):
     """
     Abstract processing unit for any stage of the document parsing.
     """
@@ -40,13 +23,6 @@ class AbstractProcessor(Generic[_Node, _Config, _DeployConfig], metaclass=ABCMet
         """
         Textual name of the processor.
         Should be unique for each processor.
-        """
-        raise NotImplementedError
-
-    @property
-    def scope(self) -> Scope:
-        """
-        Granularity at which the processor operates (specific node or the whole document).
         """
         raise NotImplementedError
 
@@ -61,13 +37,6 @@ class AbstractProcessor(Generic[_Node, _Config, _DeployConfig], metaclass=ABCMet
     def exec_mode(self) -> ExecMode:
         """
         The processor spawns its own OS process or can't do it
-        """
-        raise NotImplementedError
-
-    @property
-    def node_type(self) -> Type[_Node]:
-        """
-        Type of document nodes that the processor needs.
         """
         raise NotImplementedError
 
@@ -90,21 +59,24 @@ class AbstractProcessor(Generic[_Node, _Config, _DeployConfig], metaclass=ABCMet
     def from_config(cls, config: _DeployConfig) -> Self:
         raise NotImplementedError
 
-    @property
-    def predicate(self) -> Callable[[TalismanDocument, _Node, _Config], bool]:
+    @classmethod
+    def can_process(cls, data: _CheckType, config: _Config) -> bool:
         """
         Predicate function that returns whether the processor needs to be executed.
+
+        :param data: Data to check.
+        :param config: Processing configuration.
+        :return: Whether the processor can process the data.
         """
-        return lambda document, node, config: True
+        return True
 
     @abstractmethod
-    def process(self, document: TalismanDocument, nodes: Sequence[_Node], config: _Config) -> ProcessorResult[_Node]:
+    def process(self, data: _InputType, config: _Config) -> _OutputType:
         """
-        Process the input document and return an enriched document.
+        Process the input data and return some result.
 
-        :param document: Document to process.
-        :param nodes: Nodes to process (only these nodes will be changed). The nodes should belong to the given document.
+        :param data: Data to process.
         :param config: Processing configuration.
-        :return: Changed input nodes and new nodes with structure.
+        :return: Processing result.
         """
         pass

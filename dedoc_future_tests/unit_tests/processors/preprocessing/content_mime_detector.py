@@ -3,8 +3,6 @@ import tempfile
 from pathlib import Path
 from unittest import TestCase
 
-from tdm import TalismanDocumentFactory
-
 from dedoc_future.abstract.config import ImmutableBaseModel
 from dedoc_future.datamodel.nodes.file import FileNode
 from dedoc_future.processors.preprocessing.content_mime_detector import ContentMimeDetector
@@ -13,7 +11,6 @@ from dedoc_future.processors.preprocessing.content_mime_detector import ContentM
 class TestContentMimeDetector(TestCase):
     def setUp(self) -> None:
         self.data_path = Path(__file__).parent.parent.parent.parent.parent.resolve() / "tests" / "data"
-        self.document = TalismanDocumentFactory().create_document()
         self.processor = ContentMimeDetector()
         self.file_names = [
             "archives/arch_with_attachs.7z", "archives/arch_with_attachs.rar", "archives/arch_with_attachs.tar", "archives/arch_with_attachs.tar.gz",
@@ -27,39 +24,42 @@ class TestContentMimeDetector(TestCase):
 
     def test_correct(self) -> None:
         file_path = self.data_path / "pdf_with_text_layer" / "example.pdf"
-        result = self.processor.process(self.document, [FileNode(str(file_path))], ImmutableBaseModel())
+        result = self.processor.process([FileNode(str(file_path))], ImmutableBaseModel())
 
-        self.assertEqual(1, len(result.nodes))
-        self.assertEqual(0, len(result.structure))
+        self.assertEqual(1, len(result.changed_nodes))
+        self.assertEqual(0, len(result.new_nodes))
+        self.assertEqual(0, len(result.delete_nodes))
 
-        file_node = result.nodes[0]
+        file_node = result.changed_nodes[0]
         self.assertEqual("application/pdf", file_node.metadata.mime)
         self.assertEqual(".pdf", file_node.metadata.extension)
 
     def test_incorrect_extension(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             for file_name in self.file_names:
-                extension = "docx" if file_name.endswith("png") else "png"
-                file_path = self.data_path / file_name
-                tmp_file_path = Path(tmp_dir) / f"file.{extension}"
-                shutil.copyfile(file_path, tmp_file_path)
-                result = self.processor.process(self.document, [FileNode(str(tmp_file_path))], ImmutableBaseModel())
-                file_node = result.nodes[0]
-                self.assertEqual(file_path.suffix, file_node.metadata.extension, file_name)
+                with self.subTest(file_name=file_name):
+                    extension = "docx" if file_name.endswith("png") else "png"
+                    file_path = self.data_path / file_name
+                    tmp_file_path = Path(tmp_dir) / f"file.{extension}"
+                    shutil.copyfile(file_path, tmp_file_path)
+                    result = self.processor.process([FileNode(str(tmp_file_path))], ImmutableBaseModel())
+                    file_node = result.changed_nodes[0]
+                    self.assertEqual(file_path.suffix, file_node.metadata.extension)
 
     def test_without_extension(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             for file_name in self.file_names:
-                file_path = self.data_path / file_name
-                tmp_file_path = Path(tmp_dir) / "file"
-                shutil.copyfile(file_path, tmp_file_path)
-                result = self.processor.process(self.document, [FileNode(str(tmp_file_path))], ImmutableBaseModel())
-                file_node = result.nodes[0]
-                self.assertEqual(file_path.suffix, file_node.metadata.extension, file_name)
+                with self.subTest(file_name=file_name):
+                    file_path = self.data_path / file_name
+                    tmp_file_path = Path(tmp_dir) / "file"
+                    shutil.copyfile(file_path, tmp_file_path)
+                    result = self.processor.process([FileNode(str(tmp_file_path))], ImmutableBaseModel())
+                    file_node = result.changed_nodes[0]
+                    self.assertEqual(file_path.suffix, file_node.metadata.extension)
 
     def test_unknown(self) -> None:
         file_path = self.data_path / "file.bin"
-        result = self.processor.process(self.document, [FileNode(str(file_path))], ImmutableBaseModel())
-        file_node = result.nodes[0]
+        result = self.processor.process([FileNode(str(file_path))], ImmutableBaseModel())
+        file_node = result.changed_nodes[0]
         self.assertEqual("application/octet-stream", file_node.metadata.mime)
         self.assertEqual(".bin", file_node.metadata.extension)

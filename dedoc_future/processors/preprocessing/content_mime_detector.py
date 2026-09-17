@@ -3,25 +3,18 @@ from typing import Sequence, Type
 
 import magic
 import puremagic
-from tdm import TalismanDocument
 from typing_extensions import Self
 
 from dedoc.extensions import mime2extension
 from dedoc.utils.utils import splitext_
-from dedoc_future.abstract import AbstractProcessor, ExecMode, Resource, Scope
-from dedoc_future.abstract.config import ImmutableBaseModel
-from dedoc_future.abstract.processor import ProcessorResult
+from dedoc_future.abstract import AbstractNodeProcessor, ExecMode, ImmutableBaseModel, NodeProcessorResult, Resource
 from dedoc_future.datamodel.nodes.file import FileNode
 
 
-class ContentMimeDetector(AbstractProcessor[FileNode, ImmutableBaseModel, ImmutableBaseModel]):
+class ContentMimeDetector(AbstractNodeProcessor[FileNode, ImmutableBaseModel, ImmutableBaseModel]):
     @property
     def label(self) -> str:
         return "content_mime_detector"
-
-    @property
-    def scope(self) -> Scope:
-        return Scope.NODE
 
     @property
     def resource(self) -> Resource:
@@ -31,8 +24,8 @@ class ContentMimeDetector(AbstractProcessor[FileNode, ImmutableBaseModel, Immuta
     def exec_mode(self) -> ExecMode:
         return ExecMode.THREAD
 
-    @property
-    def node_type(self) -> Type[FileNode]:
+    @classmethod
+    def node_type(cls) -> Type[FileNode]:
         return FileNode
 
     @property
@@ -47,9 +40,9 @@ class ContentMimeDetector(AbstractProcessor[FileNode, ImmutableBaseModel, Immuta
     def from_config(cls, config: ImmutableBaseModel) -> Self:
         return cls()
 
-    def process(self, document: TalismanDocument, nodes: Sequence[FileNode], config: ImmutableBaseModel) -> ProcessorResult[FileNode]:
+    def process(self, data: Sequence[FileNode], config: ImmutableBaseModel) -> NodeProcessorResult[FileNode]:
         result_nodes = []
-        for node in nodes:
+        for node in data:
             mime = magic.from_file(node.content, mime=True)
 
             if mime == "application/octet-stream":  # for files with mime in {"image/x-sun-raster", "image/x-ms-bmp"}
@@ -62,4 +55,4 @@ class ContentMimeDetector(AbstractProcessor[FileNode, ImmutableBaseModel, Immuta
             metadata = replace(node.metadata, mime=mime, extension=extension)
             result_nodes.append(replace(node, metadata=metadata))
 
-        return ProcessorResult(nodes=result_nodes, structure={})
+        return NodeProcessorResult(changed_nodes=result_nodes)

@@ -1,20 +1,18 @@
 from collections import defaultdict
-from typing import Callable, Sequence, Type
+from typing import Sequence, Type
 
 import cv2
 import numpy as np
 from pdf2image.pdf2image import convert_from_path
-from tdm import TalismanDocument
+from tdm.abstract.datamodel import AbstractNode
 from typing_extensions import Self
 
-from dedoc_future.abstract import AbstractProcessor, ExecMode, Resource, Scope
-from dedoc_future.abstract.config import ImmutableBaseModel
-from dedoc_future.abstract.processor import ProcessorResult
+from dedoc_future.abstract import AbstractNodeProcessor, ExecMode, ImmutableBaseModel, NodeProcessorResult, Resource
 from dedoc_future.configs.pdf_base import PdfBaseConfig
 from dedoc_future.datamodel.nodes.page import PageNode, PageNodeWrapper
 
 
-class PopplerRender(AbstractProcessor[PageNode, PdfBaseConfig, ImmutableBaseModel]):
+class PopplerRender(AbstractNodeProcessor[PageNode, PdfBaseConfig, ImmutableBaseModel]):
     """
     Render images for pdf pages using poppler.
     """
@@ -24,10 +22,6 @@ class PopplerRender(AbstractProcessor[PageNode, PdfBaseConfig, ImmutableBaseMode
         return "poppler_render"
 
     @property
-    def scope(self) -> Scope:
-        return Scope.NODE
-
-    @property
     def resource(self) -> Resource:
         return Resource.CPU
 
@@ -35,8 +29,8 @@ class PopplerRender(AbstractProcessor[PageNode, PdfBaseConfig, ImmutableBaseMode
     def exec_mode(self) -> ExecMode:
         return ExecMode.PROCESS  # because of using poppler in pdf2image
 
-    @property
-    def node_type(self) -> Type[PageNode]:
+    @classmethod
+    def node_type(cls) -> Type[PageNode]:
         return PageNode
 
     @property
@@ -51,16 +45,13 @@ class PopplerRender(AbstractProcessor[PageNode, PdfBaseConfig, ImmutableBaseMode
     def from_config(cls, config: ImmutableBaseModel) -> Self:
         return cls()
 
-    @property
-    def predicate(self) -> Callable[[TalismanDocument, PageNode, PdfBaseConfig], bool]:
-        def check_node(document: TalismanDocument, node: PageNode, config: PdfBaseConfig) -> bool:
-            return PageNodeWrapper.wrap(node).orig_image is None
+    @classmethod
+    def can_process(cls, data: AbstractNode, config: PdfBaseConfig) -> bool:
+        return super().can_process(data, config) and PageNodeWrapper.wrap(data).orig_image is None
 
-        return check_node
-
-    def process(self, document: TalismanDocument, nodes: Sequence[PageNode], config: PdfBaseConfig) -> ProcessorResult[PageNode]:
+    def process(self, data: Sequence[PageNode], config: PdfBaseConfig) -> NodeProcessorResult[PageNode]:
         file2pages = defaultdict(list)
-        for node in nodes:
+        for node in data:
             file2pages[node.metadata.file_ref].append(node)
 
         result_nodes = []
@@ -73,4 +64,4 @@ class PopplerRender(AbstractProcessor[PageNode, PdfBaseConfig, ImmutableBaseMode
                 page_node = PageNodeWrapper.wrap(page_node).set_orig_image(page_image)
                 result_nodes.append(page_node)
 
-        return ProcessorResult(nodes=result_nodes, structure={})
+        return NodeProcessorResult(changed_nodes=result_nodes)

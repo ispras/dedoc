@@ -1,21 +1,6 @@
 from enum import Enum
 
 
-class Scope(str, Enum):
-    """
-    Granularity at which processor operates.
-
-    Attributes
-    ----------
-    NODE:
-        processor runs once per some type of node (parallelizable across nodes)
-    DOCUMENT:
-        processor needs the whole document, runs after all pages are done
-    """
-    NODE = "node"
-    DOCUMENT = "document"
-
-
 class Resource(str, Enum):
     """
     Resource that processor needs for a faster work.
