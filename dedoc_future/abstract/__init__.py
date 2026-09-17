@@ -1,7 +1,13 @@
+from .config import ImmutableBaseModel
+from .document_processor import AbstractDocumentProcessor
+from .enums import ExecMode, Resource
+from .node_processor import AbstractNodeProcessor, NodeProcessorResult
 from .processor import AbstractProcessor
-from .enums import ExecMode, Resource, Scope
 
 __all__ = [
-    'ExecMode', 'Scope', 'Resource',
+    'ImmutableBaseModel',
+    'AbstractDocumentProcessor',
+    'ExecMode', 'Resource',
+    'AbstractNodeProcessor', 'NodeProcessorResult',
     'AbstractProcessor'
 ]

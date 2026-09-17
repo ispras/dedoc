@@ -1,25 +1,19 @@
-from typing import Callable, Sequence, Type
+from typing import Sequence, Type
 
-from tdm import TalismanDocument
+from tdm.abstract.datamodel import AbstractNode
 from typing_extensions import Self
 
 from dedoc.extensions import recognized_extensions, recognized_mimes
-from dedoc_future.abstract import AbstractProcessor, ExecMode, Resource, Scope
-from dedoc_future.abstract.config import ImmutableBaseModel
-from dedoc_future.abstract.processor import ProcessorResult
+from dedoc_future.abstract import AbstractNodeProcessor, ExecMode, ImmutableBaseModel, NodeProcessorResult, Resource
 from dedoc_future.configs.base import BaseProcessorConfig
 from dedoc_future.datamodel.nodes.file import FileNode
 from dedoc_future.helpers.formats import format_suits
 
 
-class DocxProcessor(AbstractProcessor[FileNode, BaseProcessorConfig, ImmutableBaseModel]):
+class DocxProcessor(AbstractNodeProcessor[FileNode, ImmutableBaseModel, ImmutableBaseModel]):
     @property
     def label(self) -> str:
         return "docx"
-
-    @property
-    def scope(self) -> Scope:
-        return Scope.NODE
 
     @property
     def resource(self) -> Resource:
@@ -29,8 +23,8 @@ class DocxProcessor(AbstractProcessor[FileNode, BaseProcessorConfig, ImmutableBa
     def exec_mode(self) -> ExecMode:
         return ExecMode.THREAD
 
-    @property
-    def node_type(self) -> Type[FileNode]:
+    @classmethod
+    def node_type(cls) -> Type[FileNode]:
         return FileNode
 
     @property
@@ -45,9 +39,9 @@ class DocxProcessor(AbstractProcessor[FileNode, BaseProcessorConfig, ImmutableBa
     def from_config(cls, config: ImmutableBaseModel) -> Self:
         return cls()
 
-    @property
-    def predicate(self) -> Callable[[TalismanDocument, FileNode, BaseProcessorConfig], bool]:
-        return lambda document, node, config: format_suits(node, recognized_extensions.docx_like_format, recognized_mimes.docx_like_format)
+    @classmethod
+    def can_process(cls, data: AbstractNode, config: ImmutableBaseModel) -> bool:
+        return super().can_process(data, config) and format_suits(data, recognized_extensions.docx_like_format, recognized_mimes.docx_like_format)
 
-    def process(self, document: TalismanDocument, nodes: Sequence[FileNode], config: BaseProcessorConfig) -> ProcessorResult[FileNode]:
+    def process(self, data: Sequence[FileNode], config: ImmutableBaseModel) -> NodeProcessorResult[FileNode]:
         ...

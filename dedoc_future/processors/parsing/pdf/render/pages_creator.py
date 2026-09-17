@@ -1,15 +1,13 @@
 from collections import defaultdict
-from typing import Callable, Sequence, Type
+from typing import Sequence, Type
 
 import cv2
 from pdf2image.pdf2image import _page_count
-from tdm import TalismanDocument
+from tdm.abstract.datamodel import AbstractNode
 from typing_extensions import Self
 
 from dedoc.extensions import recognized_extensions, recognized_mimes
-from dedoc_future.abstract import AbstractProcessor, ExecMode, Resource, Scope
-from dedoc_future.abstract.config import ImmutableBaseModel
-from dedoc_future.abstract.processor import ProcessorResult
+from dedoc_future.abstract import AbstractNodeProcessor, ExecMode, ImmutableBaseModel, NodeProcessorResult, Resource
 from dedoc_future.configs.pdf_base import PdfBaseConfig
 from dedoc_future.datamodel.metadata.page import PageMetadata
 from dedoc_future.datamodel.nodes.file import FileNode
@@ -17,7 +15,7 @@ from dedoc_future.datamodel.nodes.page import PageNode, PageNodeWrapper
 from dedoc_future.helpers.formats import format_suits
 
 
-class PagesCreator(AbstractProcessor[FileNode, PdfBaseConfig, ImmutableBaseModel]):
+class PagesCreator(AbstractNodeProcessor[FileNode, PdfBaseConfig, ImmutableBaseModel]):
     """
     Create PDF/image page nodes for further enriching.
     """
@@ -27,10 +25,6 @@ class PagesCreator(AbstractProcessor[FileNode, PdfBaseConfig, ImmutableBaseModel
         return "pages_creator"
 
     @property
-    def scope(self) -> Scope:
-        return Scope.NODE
-
-    @property
     def resource(self) -> Resource:
         return Resource.CPU
 
@@ -38,8 +32,8 @@ class PagesCreator(AbstractProcessor[FileNode, PdfBaseConfig, ImmutableBaseModel
     def exec_mode(self) -> ExecMode:
         return ExecMode.PROCESS  # because of `pdf2image._page_count` by poppler
 
-    @property
-    def node_type(self) -> Type[FileNode]:
+    @classmethod
+    def node_type(cls) -> Type[FileNode]:
         return FileNode
 
     @property
@@ -54,13 +48,13 @@ class PagesCreator(AbstractProcessor[FileNode, PdfBaseConfig, ImmutableBaseModel
     def from_config(cls, config: ImmutableBaseModel) -> Self:
         return cls()
 
-    @property
-    def predicate(self) -> Callable[[TalismanDocument, FileNode, PdfBaseConfig], bool]:
-        return lambda document, node, config: node.metadata.need_parse  # TODO maybe check format
+    @classmethod
+    def can_process(cls, data: AbstractNode, config: PdfBaseConfig) -> bool:
+        return super().can_process(data, config) and data.metadata.need_parse  # TODO maybe check format
 
-    def process(self, document: TalismanDocument, nodes: Sequence[FileNode], config: PdfBaseConfig) -> ProcessorResult[FileNode]:
+    def process(self, data: Sequence[FileNode], config: PdfBaseConfig) -> NodeProcessorResult[FileNode]:
         page_nodes = defaultdict(list)
-        for node in nodes:
+        for node in data:
             if format_suits(node, recognized_extensions.image_like_format, recognized_mimes.image_like_format):
                 image = cv2.imread(node.content)
                 metadata = PageMetadata(number=0, file_ref=node)
@@ -71,4 +65,4 @@ class PagesCreator(AbstractProcessor[FileNode, PdfBaseConfig, ImmutableBaseModel
                     metadata = PageMetadata(number=page_number, file_ref=node)
                     page_nodes[node].append(PageNode(metadata=metadata))
 
-        return ProcessorResult(nodes=nodes, structure=page_nodes)
+        return NodeProcessorResult(new_nodes=page_nodes)

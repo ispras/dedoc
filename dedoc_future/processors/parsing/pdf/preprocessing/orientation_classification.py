@@ -1,15 +1,13 @@
-from typing import Callable, Sequence, Type
+from typing import Sequence, Type
 
 import numpy as np
 from PIL import Image
 from dedocutils.preprocessing.orientation_classification import OrientationClassifier
 from pydantic import Field
-from tdm import TalismanDocument
+from tdm.abstract.datamodel import AbstractNode
 from typing_extensions import Self
 
-from dedoc_future.abstract import AbstractProcessor, ExecMode, Resource, Scope
-from dedoc_future.abstract.config import ImmutableBaseModel
-from dedoc_future.abstract.processor import ProcessorResult
+from dedoc_future.abstract import AbstractNodeProcessor, ExecMode, ImmutableBaseModel, NodeProcessorResult, Resource
 from dedoc_future.configs.pdf_base import PdfBaseConfig
 from dedoc_future.datamodel.nodes.page import PageNode, PageNodeWrapper
 from dedoc_future.helpers.artifacts.configuration import ARTIFACTS
@@ -19,7 +17,7 @@ class OrientationClassifierConfig(ImmutableBaseModel):
     model_path: str = Field(title="Path to model", default_factory=lambda: ARTIFACTS["orientation_classifier"].download())
 
 
-class OrientationClassification(AbstractProcessor[PageNode, PdfBaseConfig, OrientationClassifierConfig]):
+class OrientationClassification(AbstractNodeProcessor[PageNode, PdfBaseConfig, OrientationClassifierConfig]):
     """
     Classify document page orientation in degrees [0, 90, 180, 270].
     """
@@ -31,10 +29,6 @@ class OrientationClassification(AbstractProcessor[PageNode, PdfBaseConfig, Orien
         return "orientation_classification"
 
     @property
-    def scope(self) -> Scope:
-        return Scope.NODE
-
-    @property
     def resource(self) -> Resource:
         return Resource.GPU
 
@@ -42,8 +36,8 @@ class OrientationClassification(AbstractProcessor[PageNode, PdfBaseConfig, Orien
     def exec_mode(self) -> ExecMode:
         return ExecMode.THREAD
 
-    @property
-    def node_type(self) -> Type[PageNode]:
+    @classmethod
+    def node_type(cls) -> Type[PageNode]:
         return PageNode
 
     @property
@@ -58,16 +52,13 @@ class OrientationClassification(AbstractProcessor[PageNode, PdfBaseConfig, Orien
     def from_config(cls, config: OrientationClassifierConfig) -> Self:
         return cls(config=config)
 
-    @property
-    def predicate(self) -> Callable[[TalismanDocument, PageNode, PdfBaseConfig], bool]:
-        def check_node(document: TalismanDocument, node: PageNode, config: PdfBaseConfig) -> bool:
-            return PageNodeWrapper.wrap(node).image is not None
+    @classmethod
+    def can_process(cls, data: AbstractNode, config: PdfBaseConfig) -> bool:
+        return super().can_process(data, config) and PageNodeWrapper.wrap(data).image is not None
 
-        return check_node
-
-    def process(self, document: TalismanDocument, nodes: Sequence[PageNode], config: PdfBaseConfig) -> ProcessorResult[PageNode]:
-        nodes = [PageNodeWrapper.wrap(node) for node in nodes]  # TODO make decorator for wrapping
+    def process(self, data: Sequence[PageNode], config: PdfBaseConfig) -> NodeProcessorResult[PageNode]:
+        nodes = [PageNodeWrapper.wrap(node) for node in data]  # TODO make decorator for wrapping
         images = [Image.fromarray(np.uint8(node.image)).convert("RGB") for node in nodes]
         angles = self.classifier.predict(images)
         result_nodes = [node.set_angle(angle) for node, angle in zip(nodes, angles)]
-        return ProcessorResult(nodes=result_nodes, structure={})
+        return NodeProcessorResult(changed_nodes=result_nodes)

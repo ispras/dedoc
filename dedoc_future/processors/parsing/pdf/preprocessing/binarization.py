@@ -1,12 +1,10 @@
-from typing import Callable, Sequence, Type
+from typing import Sequence, Type
 
 from dedocutils.preprocessing import AdaptiveBinarizer
-from tdm import TalismanDocument
+from tdm.abstract.datamodel import AbstractNode
 from typing_extensions import Self
 
-from dedoc_future.abstract import AbstractProcessor, ExecMode, Resource, Scope
-from dedoc_future.abstract.config import ImmutableBaseModel
-from dedoc_future.abstract.processor import ProcessorResult
+from dedoc_future.abstract import AbstractNodeProcessor, ExecMode, ImmutableBaseModel, NodeProcessorResult, Resource
 from dedoc_future.configs.pdf_base import PdfBaseConfig
 from dedoc_future.datamodel.nodes.page import PageNode, PageNodeWrapper
 
@@ -16,7 +14,7 @@ class BinarizerConfig(ImmutableBaseModel):
     delta: int = 40
 
 
-class Binarizer(AbstractProcessor[PageNode, PdfBaseConfig, BinarizerConfig]):
+class Binarizer(AbstractNodeProcessor[PageNode, PdfBaseConfig, BinarizerConfig]):
     """
     Turns colored pages images into black-and-white.
     """
@@ -28,10 +26,6 @@ class Binarizer(AbstractProcessor[PageNode, PdfBaseConfig, BinarizerConfig]):
         return "binarization"
 
     @property
-    def scope(self) -> Scope:
-        return Scope.NODE
-
-    @property
     def resource(self) -> Resource:
         return Resource.CPU
 
@@ -39,8 +33,8 @@ class Binarizer(AbstractProcessor[PageNode, PdfBaseConfig, BinarizerConfig]):
     def exec_mode(self) -> ExecMode:
         return ExecMode.THREAD
 
-    @property
-    def node_type(self) -> Type[PageNode]:
+    @classmethod
+    def node_type(cls) -> Type[PageNode]:
         return PageNode
 
     @property
@@ -55,18 +49,15 @@ class Binarizer(AbstractProcessor[PageNode, PdfBaseConfig, BinarizerConfig]):
     def from_config(cls, config: BinarizerConfig) -> Self:
         return cls(config=config)
 
-    @property
-    def predicate(self) -> Callable[[TalismanDocument, PageNode, PdfBaseConfig], bool]:
-        def check_node(document: TalismanDocument, node: PageNode, config: PdfBaseConfig) -> bool:
-            return PageNodeWrapper.wrap(node).image is not None
+    @classmethod
+    def can_process(cls, data: AbstractNode, config: PdfBaseConfig) -> bool:
+        return super().can_process(data, config) and PageNodeWrapper.wrap(data).image is not None
 
-        return check_node
-
-    def process(self, document: TalismanDocument, nodes: Sequence[PageNode], config: PdfBaseConfig) -> ProcessorResult[PageNode]:
+    def process(self, data: Sequence[PageNode], config: PdfBaseConfig) -> NodeProcessorResult[PageNode]:
         result_nodes = []
-        for node in nodes:
+        for node in data:
             node = PageNodeWrapper.wrap(node)
             binarized_image, _ = self.binarizer.preprocess(image=node.image)
             result_nodes.append(node.set_image(binarized_image))
 
-        return ProcessorResult(nodes=result_nodes, structure={})
+        return NodeProcessorResult(changed_nodes=result_nodes)
