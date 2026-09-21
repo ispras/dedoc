@@ -65,3 +65,8 @@ class TestApi(AbstractTestApiDocReader):
         self.assertEqual(content["subparagraphs"][1]["subparagraphs"][0]["text"].strip(), "1. Элемент нумерованного списка")
         self.assertEqual(content["subparagraphs"][1]["subparagraphs"][0]["metadata"]["paragraph_type"], "list_item")
         self._check_metainfo(result["metadata"], "text/plain", file_name)
+
+    def test_md_output(self) -> None:
+        file_name = "example.docx"
+        result: str = self._send_request(os.path.join("docx", file_name), data=dict(return_format="md"))
+        self.assertIn("Пример документа", result)
