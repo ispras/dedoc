@@ -2,7 +2,7 @@ import argparse
 import re
 from typing import Pattern
 
-from pkg_resources import parse_version
+from packaging.version import Version
 
 
 def is_correct_version(version: str, tag: str, old_version: str, regexp: Pattern) -> None:
@@ -10,7 +10,7 @@ def is_correct_version(version: str, tag: str, old_version: str, regexp: Pattern
 
     assert match is not None, "New version doesn't match the pattern"
     assert tag.startswith("v") and tag[1:] == version, "Tag value should be equal to version with `v` in the beginning"
-    assert parse_version(old_version) < parse_version(version), "New version should be greater than old version"
+    assert Version(old_version) < Version(version), "New version should be greater than old version"
 
 
 if __name__ == "__main__":
