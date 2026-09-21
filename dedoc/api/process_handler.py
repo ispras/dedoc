@@ -48,7 +48,7 @@ class ProcessHandler(AbstractProcessHandler):
             return_format = str(parameters.get("return_format", "json")).lower()
             document_tree = self.manager.parse(file_path, parameters={**dict(parameters), "attachments_dir": tmpdir})
 
-            if return_format == "html":
+            if return_format in ("html", "md"):
                 self._add_base64_info_to_attachments(document_tree, tmpdir)
             return document_tree.to_api_schema()
 
@@ -138,7 +138,7 @@ class CancellationProcessHandler(AbstractProcessHandler):
                 return_format = str(parameters.get("return_format", "json")).lower()
                 document_tree = manager.parse(file_path, parameters={**dict(parameters), "attachments_dir": tmp_dir})
 
-                if return_format == "html":
+                if return_format in ("html", "md"):
                     self._add_base64_info_to_attachments(document_tree, tmp_dir)
 
                 output_queue.put(pickle.dumps(document_tree.to_api_schema()), block=True)

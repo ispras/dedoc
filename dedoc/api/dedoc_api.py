@@ -14,6 +14,7 @@ from starlette.responses import FileResponse, HTMLResponse, JSONResponse, PlainT
 import dedoc.version
 from dedoc.api.api_args import QueryParameters
 from dedoc.api.api_utils import json2collapsed_tree, json2html, json2tree, json2txt
+from dedoc.api.md_out_type import json2md
 from dedoc.api.process_handler import CancellationProcessHandler, ProcessHandler
 from dedoc.api.schema.parsed_document import ParsedDocument
 from dedoc.common.exceptions.dedoc_error import DedocError
@@ -85,6 +86,9 @@ async def upload(request: Request, file: UploadFile = File(...), query_params: Q
             tabs=0
         )
         return HTMLResponse(content=html_content)
+
+    if return_format == "md":
+        return Response(content=json2md(document_tree), media_type="text/markdown")
 
     if return_format == "plain_text":
         txt_content = json2txt(paragraph=document_tree.content.structure)

@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Union
 
 import requests
 
@@ -30,15 +31,15 @@ class AbstractTestApiDocReader(ContentChecker):
     def _get_abs_path(self, file_name: str) -> str:
         return os.path.join(self.data_directory_path, file_name)
 
-    def _send_request(self, file_name: str, data: dict = None, expected_code: int = 200) -> dict:
+    def _send_request(self, file_name: str, data: dict = None, expected_code: int = 200) -> Union[dict, str]:
         """
         send file `file_name` in post request with `data` as parameters. Expects that response return code
         `expected_code`
 
-        :param file_name: name of file (should lie  src/tests/data folder
+        :param file_name: name of file (should lie  src/tests/data folder)
         :param data: parameter dictionary (here you can put language for example)
         :param expected_code: expected http response code. 200 for normal request
-        :return: result from json
+        :return: result from json or decoded string content
         """
         if data is None:
             data = {}
@@ -53,7 +54,7 @@ class AbstractTestApiDocReader(ContentChecker):
             self.assertEqual(expected_code, r.status_code)
             if expected_code != 200:
                 return r.content.decode()
-            if "return_format" in data and data["return_format"] in ("html", "tree"):
+            if "return_format" in data and data["return_format"] in ("html", "md", "tree"):
                 return r.content.decode()
             else:
                 return json.loads(r.content.decode())
