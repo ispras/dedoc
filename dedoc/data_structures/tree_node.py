@@ -111,9 +111,19 @@ class TreeNode(Serializable):
 
     @staticmethod
     def __shift_annotations(line: LineWithMeta, text_length: int) -> List[Annotation]:
+        from dedoc.data_structures.concrete_annotations.attach_annotation import AttachAnnotation
+        from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
+
         new_annotations = []
         for annotation in line.annotations:
-            new_annotation = Annotation(start=annotation.start + text_length, end=annotation.end + text_length, name=annotation.name, value=annotation.value)
+            start = annotation.start + text_length
+            end = annotation.end + text_length
+            if annotation.name == TableAnnotation.name:
+                new_annotation = TableAnnotation(value=annotation.value, start=start, end=end)
+            elif annotation.name == AttachAnnotation.name:
+                new_annotation = AttachAnnotation(attach_uid=annotation.value, start=start, end=end)
+            else:
+                new_annotation = Annotation(start=start, end=end, name=annotation.name, value=annotation.value, is_mergeable=annotation.is_mergeable)
             new_annotations.append(new_annotation)
         return new_annotations
 
