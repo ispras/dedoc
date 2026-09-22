@@ -2,6 +2,7 @@ import unittest
 from typing import List, Set, Tuple
 
 from dedoc.data_structures.annotation import Annotation
+from dedoc.data_structures.concrete_annotations.table_annotation import TableAnnotation
 from dedoc.structure_extractors.abstract_structure_extractor import AbstractStructureExtractor
 from dedoc.utils.annotation_merger import AnnotationMerger
 from tests.test_utils import TestTimeout
@@ -262,3 +263,20 @@ class TestAbstractStructureExtractor(unittest.TestCase):
         annotations = []
         res = AbstractStructureExtractor._select_annotations(annotations, 1, 4)
         self.assertEqual(len(res), 0)
+
+    def test_select_annotations_keeps_multiple_tables_after_merge(self) -> None:
+        """Two tables on one line must both survive a slice and AnnotationMerger."""
+        text = "Заголовок и текст"
+        annotations = [
+            TableAnnotation(value="t1", start=0, end=17),
+            TableAnnotation(value="t2", start=0, end=17)
+        ]
+        selected = AbstractStructureExtractor._select_annotations(annotations, 0, 9)
+        table_anns = [ann for ann in selected if ann.name == TableAnnotation.name]
+        self.assertEqual(2, len(table_anns))
+        self.assertTrue(all(isinstance(ann, TableAnnotation) for ann in table_anns))
+        self.assertTrue(all(ann.is_mergeable is False for ann in table_anns))
+
+        merged = AnnotationMerger().merge_annotations(selected, "Заголовок")
+        merged_tables = [ann for ann in merged if ann.name == TableAnnotation.name]
+        self.assertEqual({"t1", "t2"}, {ann.value for ann in merged_tables})
