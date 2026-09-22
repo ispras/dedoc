@@ -13,7 +13,7 @@ class TestMultipageTable(AbstractTestApiDocReader):
     def _get_tables(self, file_name: str, pdf_with_text_layer: str) -> List[dict]:
         result = self._send_request(file_name, {"pdf_with_text_layer": pdf_with_text_layer})
         content = result["content"]
-        self._test_table_refs(content=content)
+        self._test_table_refs(content=content, require_one_to_one=True)
         tables = content["tables"]
         tree = content["structure"]
         self._check_tree_sanity(tree=tree)

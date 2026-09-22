@@ -133,7 +133,7 @@ class TestApiPdfWithText(AbstractTestApiDocReader):
         file_name = "VVP_6_tables.pdf"
         result = self._send_request(file_name, dict(pdf_with_text_layer="true"))
         content = result["content"]
-        self._test_table_refs(content)
+        self._test_table_refs(content, require_one_to_one=True)
         tree = content["structure"]
         self._check_tree_sanity(tree)
 

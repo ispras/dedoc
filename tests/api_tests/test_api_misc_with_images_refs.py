@@ -28,6 +28,7 @@ class TestApiImageRefs(AbstractTestApiDocReader):
         self.__check_image_paragraph(image_paragraph=image_paragraph, image_uid=attachments_name2uid["image5.jpeg"])
         self.__check_image_paragraph(image_paragraph=image_paragraph, image_uid=attachments_name2uid["image6.jpeg"])
         self.__check_image_paragraph(image_paragraph=image_paragraph, image_uid=attachments_name2uid["image7.jpeg"])
+        self._test_attach_refs(result)
 
     def test_odt_with_images(self) -> None:
         file_name = "odt_with_images.odt"
@@ -43,6 +44,7 @@ class TestApiImageRefs(AbstractTestApiDocReader):
 
         image_paragraph = content["subparagraphs"][8]
         self.__check_image_paragraph(image_paragraph=image_paragraph, image_uid=attachments_name2uid["image3.jpeg"])
+        self._test_attach_refs(result)
 
     def test_docx_with_images_from_mac(self) -> None:
         file_name = "doc_with_images.docx"
@@ -58,6 +60,7 @@ class TestApiImageRefs(AbstractTestApiDocReader):
 
         image_paragraph = content["subparagraphs"][5]
         self.__check_image_paragraph(image_paragraph=image_paragraph, image_uid=attachments_name2uid["image3.png"])
+        self._test_attach_refs(result)
 
     def test_pdf_pdfminer_images_refs(self) -> None:
         file_name = "with_attachments_1.docx.pdf"
@@ -78,6 +81,7 @@ class TestApiImageRefs(AbstractTestApiDocReader):
         attach_annotation = structure["subparagraphs"][2]["annotations"][-1]
         self.assertEqual(attach_annotation["name"], "attachment")
         self.assertIn(attach_annotation["value"], attachment_uids)
+        self._test_attach_refs(result, require_all_linked=True, require_one_to_one=True)
 
     def test_pdf_tabby_images_refs(self) -> None:
         file_name = "with_attachments_1.docx.pdf"
@@ -98,6 +102,7 @@ class TestApiImageRefs(AbstractTestApiDocReader):
         attach_annotation = structure["subparagraphs"][2]["annotations"][-1]
         self.assertEqual(attach_annotation["name"], "attachment")
         self.assertIn(attach_annotation["value"], attachment_uids)
+        self._test_attach_refs(result, require_all_linked=True, require_one_to_one=True)
 
     def test_images_refs_from_image(self) -> None:
         file_name = "with_images.png"
@@ -111,6 +116,7 @@ class TestApiImageRefs(AbstractTestApiDocReader):
             attach_annotations = [ann for ann in subparagraphs[i]["annotations"] if ann["name"] == AttachAnnotation.name]
             self.assertEqual(len(attach_annotations), 1, f'Wrong node for attachment link: {subparagraphs[i]["text"]}')
             self.assertIn(attach_annotations[0]["value"], attachment_uids)
+        self._test_attach_refs(result, require_all_linked=True, require_one_to_one=True)
 
     def test_pptx_images_refs(self) -> None:
         file_name = "with_attachments_1.pptx"
@@ -127,6 +133,7 @@ class TestApiImageRefs(AbstractTestApiDocReader):
         attach_annotations = [ann for ann in subparagraphs[3]["annotations"] if ann["name"] == AttachAnnotation.name]
         self.assertEqual(len(attach_annotations), 1)
         self.assertIn(attach_annotations[0]["value"], attachment_uids)
+        self._test_attach_refs(result)
 
     def test_pdf_article_images_refs(self) -> None:
         file_name = "../pdf_with_text_layer/article.pdf"
@@ -143,6 +150,7 @@ class TestApiImageRefs(AbstractTestApiDocReader):
 
         self.assertTrue(attach_annotations_uids)
         self.assertTrue(attach_annotations_uids.issubset(attachment_uids))
+        self._test_attach_refs(result)
 
     def __check_image_paragraph(self, image_paragraph: dict, image_uid: str) -> None:
         text = image_paragraph["text"]
