@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v2.8 (2026-09-21)
+-----------------
+Release note: `v2.8 <https://github.com/ispras/dedoc/releases/tag/v2.8>`_
+
+* Reduced size of dedoc docker image (almost half of the previous one).
+* Updated required java version (`>=21`) for :class:`~dedoc.readers.PdfTabbyReader`.
+* Added new output format `return_format="md"` (markdown) for dedoc API.
+* Some modules became faster (image table recognition, skew correction, :class:`~dedoc.readers.PdfTabbyReader` and others).
+
 v2.7 (2026-06-24)
 -----------------
 Release note: `v2.7 <https://github.com/ispras/dedoc/releases/tag/v2.7>`_

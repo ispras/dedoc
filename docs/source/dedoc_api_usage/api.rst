@@ -115,6 +115,8 @@ Api parameters description
 
         * **html** -- :class:`~dedoc.data_structures.ParsedDocument` is transformed into html file with styles and headers according to the extracted annotations and structure;
 
+        * **md** -- :class:`~dedoc.data_structures.ParsedDocument` is transformed into markdown file with styles and structure (partly preserved);
+
         * **plain_text** -- simple textual lines of the document;
 
         * **tree** -- simple document tree representation in html format (useful for structure visualization).
