@@ -11,11 +11,18 @@ class AbstractPdfPageMarkup(metaclass=ABCMeta):
     @property
     @abstractmethod
     def image(self) -> np.ndarray | None:
+        """
+        Page image in BGR format.
+        Image may be changed (e.g. binarized) and therefore differ from the original image.
+        """
         pass
 
     @property
     @abstractmethod
     def orig_image(self) -> np.ndarray | None:
+        """
+        Original page image in BGR format.
+        """
         pass
 
     @property
@@ -57,6 +64,9 @@ class PdfPageMarkup(AbstractMarkup, AbstractPdfPageMarkup):
         self._orig_image = orig_image
         self._angle = angle
         self._text_layer = text_layer
+
+    def __hash__(self) -> int:
+        return hash((self.angle, self.text_layer))
 
     @property
     def markup(self) -> immutabledict:

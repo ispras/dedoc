@@ -1,4 +1,3 @@
-from collections import defaultdict
 from typing import Sequence, Type
 
 import cv2
@@ -50,18 +49,12 @@ class PopplerRender(AbstractNodeProcessor[PageNode, PdfBaseConfig, ImmutableBase
         return super().can_process(data, config) and PageNodeWrapper.wrap(data).orig_image is None
 
     def process(self, data: Sequence[PageNode], config: PdfBaseConfig) -> NodeProcessorResult[PageNode]:
-        file2pages = defaultdict(list)
-        for node in data:
-            file2pages[node.metadata.file_ref].append(node)
-
         result_nodes = []
-        for file_node, page_nodes in file2pages.items():
-            page_nodes = sorted(page_nodes, key=lambda x: x.metadata.number)
-            start_page = page_nodes[0].metadata.number
-            images = convert_from_path(file_node.content, first_page=start_page + 1, last_page=page_nodes[-1].metadata.number + 1)
-            for page_node in page_nodes:
-                page_image = cv2.cvtColor(np.array(images[page_node.metadata.number - start_page]), cv2.COLOR_BGR2RGB)
-                page_node = PageNodeWrapper.wrap(page_node).set_orig_image(page_image)
-                result_nodes.append(page_node)
+        for node in data:
+            page_num = node.metadata.number + 1
+            images = convert_from_path(node.metadata.file_ref.content, first_page=page_num, last_page=page_num)
+            image = cv2.cvtColor(np.array(images[0]), cv2.COLOR_RGB2BGR)
+            result_node = PageNodeWrapper.wrap(node).set_orig_image(image)
+            result_nodes.append(result_node)
 
         return NodeProcessorResult(changed_nodes=result_nodes)

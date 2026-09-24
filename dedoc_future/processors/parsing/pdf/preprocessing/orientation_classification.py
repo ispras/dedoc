@@ -1,6 +1,6 @@
 from typing import Sequence, Type
 
-import numpy as np
+import cv2
 from PIL import Image
 from dedocutils.preprocessing.orientation_classification import OrientationClassifier
 from pydantic import Field
@@ -58,7 +58,7 @@ class OrientationClassification(AbstractNodeProcessor[PageNode, PdfBaseConfig, O
 
     def process(self, data: Sequence[PageNode], config: PdfBaseConfig) -> NodeProcessorResult[PageNode]:
         nodes = [PageNodeWrapper.wrap(node) for node in data]  # TODO make decorator for wrapping
-        images = [Image.fromarray(np.uint8(node.image)).convert("RGB") for node in nodes]
+        images = [Image.fromarray(cv2.cvtColor(node.image, cv2.COLOR_BGR2RGB)) for node in nodes]
         angles = self.classifier.predict(images)
         result_nodes = [node.set_angle(angle) for node, angle in zip(nodes, angles)]
         return NodeProcessorResult(changed_nodes=result_nodes)
