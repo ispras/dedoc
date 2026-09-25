@@ -97,11 +97,11 @@ class PdfPageMarkup(AbstractMarkup, AbstractPdfPageMarkup):
         )
 
     @property
-    def image(self) -> np.ndarray | None:
+    def image(self) -> np.ndarray | None:  # TODO use shared memory for storing large images TALIE-1767
         return self._image
 
     @property
-    def orig_image(self) -> np.ndarray | None:
+    def orig_image(self) -> np.ndarray | None:  # TODO use shared memory for storing large images TALIE-1767
         return self._orig_image
 
     @property
