@@ -4,7 +4,7 @@ max-line-length = 160
 max-complexity = 13
 inline-quotes = "
 
-application-import-names = dedoc, tests, scripts, train_dataset
+application-import-names = dedoc, tests, scripts, train_dataset, dedoc_future
 import-order-style = pycharm
 
 extend-immutable-calls = File, Depends
@@ -36,6 +36,7 @@ exclude =
     scripts/fintoc2022/metric.py
 
 # ANN101 - type annotations for self
+# ANN102 - type annotation for cls in classmethod
 # T201 - prints found
 # JS101 - Multi-line container not broken after opening character
 # ANN001 - Missing type annotation for function argument
@@ -45,7 +46,8 @@ exclude =
 # N802 - function name should be lowercase
 # I251 - Banned import (Use full path)
 ignore =
-    ANN101
+    ANN101,
+    ANN102
 per-file-ignores =
     scripts/*:T201
     scripts/benchmark_pdf_performance*:JS101
