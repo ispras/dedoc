@@ -1,97 +1,99 @@
 from __future__ import annotations
 
 import logging
-from collections import defaultdict
-from dataclasses import dataclass
+from collections import defaultdict, deque
 
+from networkx import DiGraph, is_directed_acyclic_graph
 from tdm import TalismanDocument
 
-from dedoc_future.abstract.module import AbstractModule, AutoModule, ChooseModule
+from dedoc_future.abstract.modules import AbstractModule, AutoModule, ChooseModule
+from dedoc_future.configs.deploy_time import CommonDeployConfig
 from dedoc_future.configs.runtime import RuntimeConfig
+from dedoc_future.configs.runtime_plan import RuntimePlan
 from dedoc_future.errors.config import ConfigError, RuntimeConfigError, UnavailableModuleError
 from dedoc_future.execution.document_state import StepId
 from dedoc_future.modules.registry import ModuleRegistry
-from dedoc_future.configs.runtime_plan import RuntimePlan
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
 class SystemConfig:
-    registry: ModuleRegistry
-    root: AbstractModule
-    modules: dict[str, AbstractModule]
-    graph: dict[str, list[str]]
-    strict: bool = False
+
+    def __init__(
+            self,
+            registry: ModuleRegistry,
+            root_module: AbstractModule,
+            modules: dict[str, AbstractModule],
+            strict: bool = False
+    ) -> None:
+        self._registry = registry
+        self._root_module = root_module
+        self._modules = modules
+        self._strict = strict
+        self._graph = self._build_graph()
+
+    def _build_graph(self) -> DiGraph:
+        graph = DiGraph()
+        for m in self._modules.values():
+            for b in m.blockers:
+                if b not in self._modules:
+                    raise ConfigError(f"{m.name()}: blocker {b} not included in config")
+                graph.add_edge(b, m.name())
+
+        if not is_directed_acyclic_graph(graph):
+            raise ConfigError("Modules graph has cycles")
+
+        return graph
 
     def get_module(self, name: str) -> AbstractModule:
-        ...
+        return self._modules[name]
 
     @classmethod
-    def from_declarative(
+    def from_declarative_config(
             cls,
-            deploy_config: dict,
+            deploy_config: CommonDeployConfig,
             registry: ModuleRegistry,
             *,
             strict: bool = False
     ) -> SystemConfig:
         available_modules = registry.available_modules
-        root_name = deploy_config["root"]
-        if root_name not in available_modules:
+        root_name = deploy_config.root_module
+        if deploy_config.root_module not in available_modules:
             raise UnavailableModuleError(f"Root module unavailable: {root_name}")
 
-        names = deploy_config["modules"] + [root_name]
-        module_types: list[type[AbstractModule]] = []
+        names = list(deploy_config.root) + [root_name]
+        modules: dict[str, AbstractModule] = {}
 
-        for name in names:
+        while len(names) > 0:
+            name = names.pop()
             if name not in available_modules:
                 if strict:
                     raise UnavailableModuleError(f"Module unavailable: {name}")
                 logger.warning(f"Skip unavailable module: {name}")
                 continue
-            module_types.append(registry.get(name))
 
-        deploy = deploy_config.get("deploy", {})
-        modules = {}
-        for module_type in module_types:
-            deploy_config = deploy.get(module_type.name, {})
-            schema = module_type.deploy_schema()
-            modules[module_type.name] = module_type.from_config(schema.model_validate(deploy_config))
+            if name in modules:
+                continue
 
-        cfg = cls(registry=registry, root=modules[root_name], modules=modules, graph={}, strict=strict)
-        cfg._build_graph()
-        cfg.validate()
-        return cfg
+            module = registry.get(name)().materialize(deploy_config)
+            modules[name] = module
+            names.extend(module.children())
 
-    def _build_graph(self) -> None:
-        edges: dict[str, list[str]] = defaultdict(list)
-        for m in self.modules.values():
-            for b in m.blockers:
-                if b not in self.modules:
-                    raise ConfigError(f"{m.name}: blocker {b} not included in config")
-                edges[b].append(m.name)
-
-        self.graph = dict(edges)
-
-    def validate(self) -> None:
-        # TODO use some tool for this
-        WHITE, GREY, BLACK = 0, 1, 2
-        color = {n: WHITE for n in self.modules}
-
-        def dfs(n: str):
-            color[n] = GREY
-            for s in self.graph.get(n, []):
-                if color[s] == GREY:
-                    raise ConfigError(f"cycle detected involving {n} -> {s}")
-                if color[s] == WHITE:
-                    dfs(s)
-            color[n] = BLACK
-
-        for n in self.modules:
-            if color[n] == WHITE:
-                dfs(n)
+        return cls(registry=registry, root_module=modules[root_name], modules=modules, strict=strict)
 
     def bind(self, runtime_config: RuntimeConfig, document: TalismanDocument) -> RuntimePlan:
+        modules_to_resolve = deque([self._root_module])
+        resolved_modules = []
+
+        while len(modules_to_resolve) > 0:
+            module = modules_to_resolve.popleft()
+            module_config = runtime_config.get_for(module)
+            submodules = module.resolve(document, module_config)
+            if not submodules:
+                resolved_modules.append(module)
+            else:
+                modules_to_resolve.extend(submodules)
+
         resolved: dict[StepId, AbstractModule] = {}
         fallbacks: dict[StepId, StepId] = {}
 

@@ -17,7 +17,8 @@ from dedoc_future.configs.runtime_plan import RuntimePlan
 from dedoc_future.execution.blob_registry import BlobRegistry
 from dedoc_future.execution.document_state import DocumentState, StepId
 from dedoc_future.execution.subtask_tracker import SubtaskTracker
-from dedoc_future.execution.task import SplitId, SubtaskSpec, Task, TaskId, TaskOutput, TaskStatus
+from dedoc_future.execution.task import SplitId, SubtaskSpec, Task, TaskId, TaskOutput
+from dedoc_future.abstract.enums import TaskStatus
 from dedoc_future.execution.worker_pools import WorkerPools
 from dedoc_future.configs.system_config import SystemConfig
 

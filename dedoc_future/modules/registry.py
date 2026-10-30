@@ -1,4 +1,4 @@
-from dedoc_future.abstract.module import AbstractModule
+from dedoc_future.abstract.modules.abstract import AbstractModule
 from dedoc_future.errors.config import ConfigError
 
 
@@ -8,8 +8,8 @@ class ModuleRegistry:
 
     def register(self, module: type[AbstractModule]) -> None:
         if module.name in self._name2module:
-            raise ConfigError(f"Duplicate module name: {module.name}")
-        self._name2module[module.name] = module
+            raise ConfigError(f"Duplicate module name: {module.name()}")
+        self._name2module[module.name()] = module
 
     def get(self, name: str) -> type[AbstractModule]:
         if name not in self._name2module:

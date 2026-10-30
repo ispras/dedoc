@@ -1,21 +1,15 @@
 import logging
 import threading
-from enum import Enum
 
 from tdm import TalismanDocument
 from tdm.abstract.datamodel import AbstractNode, AbstractNodeLink
 
 from dedoc_future.abstract.blob_ref import NodeId
+from dedoc_future.abstract.enums import DepsPolicy
 from dedoc_future.abstract.processor import ProcessorResult
 
 StepId = str
 logger = logging.getLogger(__name__)
-
-
-class DepsPolicy(str, Enum):
-    fail = "fail"
-    cascade = "cascade"
-    keep_and_warn = "keep_and_warn"
 
 
 class DocumentState:

@@ -31,3 +31,15 @@ class ExecMode(str, Enum):
     """
     PROCESS = "process"
     THREAD = "thread"
+
+
+class TaskStatus(str, Enum):
+    ok = "ok"
+    failed = "failed"
+    fallback = "fallback"
+
+
+class DepsPolicy(str, Enum):
+    fail = "fail"
+    cascade = "cascade"
+    keep_and_warn = "keep_and_warn"

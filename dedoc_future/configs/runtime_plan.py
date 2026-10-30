@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from tdm import TalismanDocument
 
-from dedoc_future.abstract.module import AbstractModule, MergeModule
+from dedoc_future.abstract.modules import AbstractModule, MergeModule
 from dedoc_future.errors.config import ConfigError
 from dedoc_future.execution.document_state import DocumentState, StepId
 from dedoc_future.execution.task import SplitId

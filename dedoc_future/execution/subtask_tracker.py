@@ -2,7 +2,8 @@ import threading
 from dataclasses import dataclass, field
 from typing import Literal
 
-from dedoc_future.execution.task import SplitId, TaskId, TaskOutput, TaskStatus
+from dedoc_future.execution.task import SplitId, TaskId, TaskOutput
+from dedoc_future.abstract.enums import TaskStatus
 
 
 @dataclass
