@@ -4,6 +4,7 @@ from enum import Enum
 from typing import TypeVar
 
 from pydantic import RootModel
+from tdm import TalismanDocument
 from typing_extensions import Self
 
 from dedoc_future.abstract import ImmutableBaseModel
@@ -91,3 +92,23 @@ class CompositeModule(AbstractModule[_Config, _DeployConfig], metaclass=ABCMeta)
             raise ValueError(f"Submodules not found for `{self.name()}` module")
 
         return {spec.module.name(): spec.module for spec in self._modules}
+
+    def resolve_static(self, config: _Config) -> tuple[str, ...]:
+        if not self._modules:
+            raise ValueError(f"Submodules not found for `{self.name()}` module")
+
+        result_modules = []
+        for module_spec in self._modules:
+            if module_spec.optional and module_spec.module.name() not in config.root:
+                continue
+
+            resolved = module_spec.module.resolve_static(config)
+            if not resolved:
+                raise ValueError(f"Could not resolve module `{module_spec.module.name()}`")
+
+            result_modules.extend(resolved)
+
+        return tuple(result_modules)
+
+    def resolve(self, document: TalismanDocument, config: _Config) -> tuple[AbstractModule, ...]:
+        raise RuntimeError(f"Composite module `{self.name()}` should be resolved before")

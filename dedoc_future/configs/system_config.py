@@ -1,17 +1,14 @@
 from __future__ import annotations
 
 import logging
-from collections import defaultdict, deque
 
 from networkx import DiGraph, is_directed_acyclic_graph
-from tdm import TalismanDocument
 
-from dedoc_future.abstract.modules import AbstractModule, AutoModule, ChooseModule
+from dedoc_future.abstract.modules import AbstractModule
 from dedoc_future.configs.deploy_time import CommonDeployConfig
 from dedoc_future.configs.runtime import RuntimeConfig
 from dedoc_future.configs.runtime_plan import RuntimePlan
-from dedoc_future.errors.config import ConfigError, RuntimeConfigError, UnavailableModuleError
-from dedoc_future.execution.document_state import StepId
+from dedoc_future.errors.config import ConfigError, UnavailableModuleError
 from dedoc_future.modules.registry import ModuleRegistry
 
 logger = logging.getLogger(__name__)
@@ -81,74 +78,19 @@ class SystemConfig:
 
         return cls(registry=registry, root_module=modules[root_name], modules=modules, strict=strict)
 
-    def bind(self, runtime_config: RuntimeConfig, document: TalismanDocument) -> RuntimePlan:
-        modules_to_resolve = deque([self._root_module])
-        resolved_modules = []
-
-        while len(modules_to_resolve) > 0:
-            module = modules_to_resolve.popleft()
+    def bind(self, runtime_config: RuntimeConfig) -> RuntimePlan:
+        # resolve enums and optional modules
+        active_modules = set()
+        for module in self._modules.values():
             module_config = runtime_config.get_for(module)
-            submodules = module.resolve(document, module_config)
-            if not submodules:
-                resolved_modules.append(module)
-            else:
-                modules_to_resolve.extend(submodules)
+            active_modules.update(module.resolve_static(module_config))
 
-        resolved: dict[StepId, AbstractModule] = {}
-        fallbacks: dict[StepId, StepId] = {}
-
-        self._resolve(self.root, "root", runtime_config, document)
-
-        preds = self._preds_from_resolved(resolved)
-        initial = [s for s in resolved if not preds[s]]
+        subgraph = self._graph.subgraph(active_modules).copy()
+        if not is_directed_acyclic_graph(subgraph):
+            raise ConfigError("Module graph contains a cycle")
 
         return RuntimePlan(
-            steps=resolved,
-            edges=self._edges_from_resolved(resolved),
-            initial_front=initial,
-            fallbacks=fallbacks,
+            graph=subgraph,
+            modules={module_name: module for module_name, module in self._modules.items() if module_name in active_modules},
+            runtime_config=runtime_config,
         )
-
-    def _resolve(self, m: AbstractModule, ctx: str, runtime_config: RuntimeConfig, document: TalismanDocument) -> list[StepId]:
-        steps: list[StepId] = []
-
-        if isinstance(m, ChooseModule):
-            key = getattr(runtime_config.get_for(m.name, self), m.param_name)
-            if key is None:
-                raise RuntimeConfigError(f"{ctx}: runtime param '{m.name}.{m.param_name}' not set")
-            if key not in m.options:
-                raise RuntimeConfigError(f"{ctx}: value '{key}' not among options {list(m.options)}")
-            steps += self._resolve(m.options[key], f"{ctx}/{m.name}={key}", runtime_config, document)
-
-        elif isinstance(m, AutoModule):
-            ids = [resolve(o, f"{ctx}/{m.name}") for o in m.options]
-            for i, chain in enumerate(ids):
-                steps += chain
-                if i > 0:  # fallback: primary -> option_i
-                    fallbacks[ids[0][0]] = chain[0]
-        else:
-            sid: StepId = f"{ctx}/{m.name}"
-            resolved[sid] = m
-            steps.append(sid)
-            for ch in m.children():
-                steps += resolve(ch, sid)
-
-        return steps
-
-    def _preds_from_resolved(self, resolved: dict[StepId, AbstractModule]) -> dict[StepId, set[StepId]]:
-        preds = {s: set() for s in resolved}
-        for s, m in resolved.items():
-            for b in m.blockers:
-                for t, tm in resolved.items():
-                    if tm.name == b:
-                        preds[s].add(t)
-        return preds
-
-    def _edges_from_resolved(self, resolved: dict[StepId, AbstractModule]) -> dict[StepId, list[StepId]]:
-        edges: dict[StepId, list[StepId]] = defaultdict(list)
-        for s, m in resolved.items():
-            for b in m.blockers:
-                for t, tm in resolved.items():
-                    if tm.name == b:
-                        edges[t].append(s)
-        return dict(edges)

@@ -1,6 +1,8 @@
 from abc import ABCMeta
 from typing import Self
 
+from tdm import TalismanDocument
+
 from dedoc_future.abstract import ImmutableBaseModel
 from dedoc_future.abstract.modules.abstract import AbstractModule
 from dedoc_future.configs.deploy_time import CommonDeployConfig
@@ -23,3 +25,9 @@ class SplitModule(AbstractModule, metaclass=ABCMeta):
 
     def children(self) -> dict[str, AbstractModule]:
         return {}
+
+    def resolve_static(self, config: ImmutableBaseModel) -> tuple[str, ...]:
+        return (self.name(),)
+
+    def resolve(self, document: TalismanDocument, config: ImmutableBaseModel) -> tuple[AbstractModule, ...]:
+        return (self,)

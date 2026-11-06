@@ -58,8 +58,8 @@ class AbstractProcessor(Generic[_Config, _DeployConfig], metaclass=ABCMeta):
     def from_config(cls, config: _DeployConfig) -> Self:
         ...
 
-    @classmethod
-    def can_process(cls, data: TalismanDocument, config: _Config) -> bool:
+    @abstractmethod
+    def can_process(self, data: TalismanDocument, config: _Config) -> bool:
         """
         Predicate function that returns whether the processor needs to be executed.
 
@@ -67,7 +67,7 @@ class AbstractProcessor(Generic[_Config, _DeployConfig], metaclass=ABCMeta):
         :param config: Processing configuration.
         :return: Whether the processor can process the data.
         """
-        return True
+        ...
 
     @abstractmethod
     def process(self, data: TalismanDocument, config: _Config) -> ProcessorResult:
@@ -78,4 +78,4 @@ class AbstractProcessor(Generic[_Config, _DeployConfig], metaclass=ABCMeta):
         :param config: Processing configuration.
         :return: Processing result.
         """
-        pass
+        ...

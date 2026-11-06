@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from abc import ABCMeta, abstractmethod
 from typing import Generic, TypeVar
 
@@ -17,6 +18,11 @@ class AbstractModule(Generic[_Config, _DeployConfig], metaclass=ABCMeta):
 
     def __init__(self) -> None:
         self._blockers: tuple[str, ...] | None = None
+        self._uuid = uuid.uuid4()
+
+    @property
+    def instance_id(self) -> str:
+        return f"{self.name()}_{self._uuid}"
 
     def set_blockers(self, blockers: tuple[str, ...]) -> None:
         self._blockers = blockers
@@ -57,6 +63,10 @@ class AbstractModule(Generic[_Config, _DeployConfig], metaclass=ABCMeta):
 
     @abstractmethod
     def children(self) -> dict[str, AbstractModule]:
+        ...
+
+    @abstractmethod
+    def resolve_static(self, config: _Config) -> tuple[str, ...]:
         ...
 
     @abstractmethod

@@ -3,11 +3,12 @@ from enum import Enum
 from typing import TypeVar
 
 from pydantic import RootModel
+from tdm import TalismanDocument
 from typing_extensions import Self
 
 from dedoc_future.abstract import ImmutableBaseModel
-from dedoc_future.configs.deploy_time import CommonDeployConfig
 from dedoc_future.abstract.modules.abstract import AbstractModule
+from dedoc_future.configs.deploy_time import CommonDeployConfig
 
 _Config = TypeVar("_Config", bound=ImmutableBaseModel)
 _DeployConfig = TypeVar("_DeployConfig", bound=ImmutableBaseModel | RootModel)
@@ -62,3 +63,25 @@ class AutoModule(AbstractModule[_Config, _DeployConfig], metaclass=ABCMeta):
             raise ValueError(f"Submodules not found for `{self.name()}` module")
 
         return self._modules
+
+    def resolve_static(self, config: _Config) -> tuple[str, ...]:
+        if not self._modules:
+            raise ValueError(f"Submodules not found for `{self.name()}` module")
+
+        result = [self.name()]
+        for module in self._modules.values():
+            result.extend(module.resolve_static(config))
+
+        return tuple(result)
+
+    def resolve(self, document: TalismanDocument, config: _Config) -> tuple[AbstractModule, ...]:
+        if not self._modules:
+            raise ValueError(f"Submodules not found for `{self.name()}` module")
+
+        for module in self._modules.values():
+            resolved = module.resolve(document, config)
+            if resolved:
+                # choose the first suitable submodule
+                return resolved
+
+        raise ValueError(f"No option was found for `{self.name()}` module")

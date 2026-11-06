@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import TypeVar
 
+from tdm import TalismanDocument
 from typing_extensions import Self
 
 from dedoc_future.abstract import AbstractProcessor, ImmutableBaseModel
@@ -36,3 +37,15 @@ class SimpleModule(AbstractModule[_Config, _DeployConfig], metaclass=ABCMeta):
 
     def children(self) -> dict[str, AbstractModule]:
         return {}
+
+    def resolve_static(self, config: _Config) -> tuple[str, ...]:
+        return (self.name(),)
+
+    def resolve(self, document: TalismanDocument, config: _Config) -> tuple[AbstractModule, ...]:
+        if self._processor is None:
+            raise RuntimeError(f"Processor not set for `{self.name()}` module")
+
+        if self._processor.can_process(document, config):
+            return (self,)
+
+        return ()
